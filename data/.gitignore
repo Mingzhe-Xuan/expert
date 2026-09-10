@@ -1,0 +1,7 @@
+# Datasets and cloned upstream repositories are local/remote resources, not
+# version-controlled project source. Keep only download scripts and manifests.
+raw/
+sources/
+processed/
+cache/
+checkpoints/

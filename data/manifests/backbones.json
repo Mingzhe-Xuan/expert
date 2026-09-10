@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "selected_backbones": {
+    "grace": {
+      "repository": "AMS-ICAMS-RUB/grace-foundation-models",
+      "revision": "ab8eb9a2bce93762c223d0ed42264e20d99aa578",
+      "file": "checkpoints/GRACE-1L-OMAT-medium-ft-E-checkpoint.tar.gz",
+      "size_bytes": 85894694,
+      "sha256": "19a006ab5668e6aa3426de6a78ee4a9a9da373680ec9a6171787b0259a67bc20",
+      "local_path": "data/checkpoints/grace/GRACE-1L-OMAT-medium-ft-E-checkpoint.tar.gz",
+      "tensorpotential_version": "0.5.10",
+      "lmax": 4,
+      "precision": "float32",
+      "license": "Academic Software License",
+      "status": "downloaded_and_checksum_verified"
+    },
+    "dpa4": {
+      "repository": "deepmodelingcommunity/DPA4-OMat24",
+      "revision": "173bfd5a26f90a756ee891777270ef117078d9be",
+      "file": "DPA4-Plus-OMat24-v20260805.pt",
+      "size_bytes": 35550605,
+      "sha256": "6820a320dc241a4002e6c257ad21983950df178b1f80271a6e6af199adb18567",
+      "local_path": "data/checkpoints/dpa4/DPA4-Plus-OMat24-v20260805.pt",
+      "config": "DPA4-Plus-OMat24-v20260805.json",
+      "config_sha256": "967513fbd54a46fbb98b4a55f376a4d3886dd190239392b3353e3f4835826ae8",
+      "lmax": 4,
+      "mmax": 1,
+      "cutoff_angstrom": 6.0,
+      "precision": "float32",
+      "elements": "H-Og",
+      "license": "CC-BY-NC-4.0",
+      "status": "downloaded_and_checksum_recorded"
+    },
+    "equiformerv2": {
+      "repository": "facebook/OMAT24",
+      "revision": "8a5a78c7ba7b250a17e85fe85943c4608499d895",
+      "file": "eqV2_31M_mp.pt",
+      "local_path": "data/checkpoints/equiformerv2/eqV2_31M_mp.pt",
+      "required_runtime": "fairchem-core==1.10",
+      "license": "OMat24 license and use policy",
+      "status": "blocked_on_huggingface_gated_access",
+      "remediation": "Request access to facebook/OMAT24 and run `hf auth login`, then download the revision-pinned file."
+    }
+  },
+  "notes": [
+    "DPA4-Plus is selected because the released Nano, Mini, Neo and Air configs have lmax 1, 2, 3 and 3 respectively; Plus has lmax 4.",
+    "The GRACE feature tap must occur before the scalar rho/readout path; its A/AA-family intermediates use lmax 4.",
+    "All checkpoint paths are ignored by Git."
+  ]
+}

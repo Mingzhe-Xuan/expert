@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "dataset": "JARVIS-DFT DFPT raw calculations",
+  "paper_dataset_doi": "10.6084/m9.figshare.11916720.v1",
+  "raw_index_doi": "10.6084/m9.figshare.13154159.v1",
+  "license": "CC BY 4.0",
+  "raw_index": {
+    "file_id": 25295732,
+    "filename": "figshare_data-10-28-2020.json.zip",
+    "size_bytes": 5998743,
+    "md5": "0bbf6fb41120357b3ff8b19eb3690b8b",
+    "local_path": "data/raw/jarvis_dfpt/raw_file_index.zip"
+  },
+  "dfpt_archives": {
+    "indexed_count": 5000,
+    "total_size_bytes": 10685887325,
+    "expected_paper_count": 5015,
+    "count_difference": 15,
+    "note": "The frozen 2020 raw-file index exposes 5,000 DFPT archives, not all 5,015 systems reported by the paper. Do not silently label this release as a 5,015-sample dataset."
+  },
+  "processed_output": {
+    "path": "data/processed/jarvis_dfpt_bec.jsonl",
+    "tensor_field": "born_effective_charge_e",
+    "tensor_shape": "N x 3 x 3",
+    "structure": "finalpos from the same vasprun.xml",
+    "coordinates": "fractional",
+    "lattice_unit": "angstrom",
+    "bec_unit": "elementary charge"
+  },
+  "status": "index_downloaded_sample_validated_full_extraction_pending"
+}
