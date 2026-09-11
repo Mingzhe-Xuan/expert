@@ -465,3 +465,18 @@
 - Permission check: protocol-scoped Git synchronization and isolated dependency installation only;
   no persistent Git configuration change, compilation, checkpoint access, project/model execution,
   data work, tests, or GPU workload.
+- Result: the HTTP/1.1 pull succeeded and fast-forwarded to `f508814`. Torch 2.4.1+cu121 installed.
+  The wheel-only fairchem resolver then selected obsolete `hydra-core==0.11.3` and
+  `omegaconf==1.4.1` because modern OmegaConf has no wheel; the transaction was interrupted as it
+  began installing collected packages. The environment may contain partially installed dependencies
+  and is not accepted; no project/model/data workload ran.
+
+## 2026-09-12 — Repair and complete EquiformerV2 runtime
+
+- Intended connection: pull first with HTTP/1.1, install the pure-Python exceptions
+  `omegaconf==2.3.0` and `hydra-core==1.3.2`, then rerun the exact fairchem-core 1.10.0 resolver
+  with wheel-only native dependencies. Finish with `pip check`, exact listing, freeze fingerprint,
+  and disk capacity so the interrupted intermediate state cannot be mistaken for acceptance.
+- Permission check: isolated dependency repair/installation and lightweight metadata checks only.
+  The two source artifacts are pure Python; no native compilation, checkpoint access, project/model
+  execution, data processing, tests, training, inference, evaluation, or GPU workload will run.
