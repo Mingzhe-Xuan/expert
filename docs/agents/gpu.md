@@ -344,3 +344,12 @@
 - Result: the third mandatory pull produced no Git output within the 90-second bound and was
   terminated before installation. No GRACE package command ran. Following the three-failure rule,
   Guqq connection retries are paused until the outbound GitHub path has had time to recover.
+
+## 2026-09-12 — Spaced GRACE resume attempt
+
+- Intended connection: after the documented pause and local MACE lock commit, run a bounded mandatory
+  pull to `e8a70dc`; only after it succeeds, inspect the still-isolated GRACE environment and resume
+  the recorded binary-wheel TensorPotential installation and metadata/fingerprint checks.
+- Permission check: dependency installation and lightweight environment diagnostics only. No native
+  compilation, project/model execution, checkpoint loading, data processing, training, inference,
+  evaluation, or tests will run on the login node.
