@@ -199,3 +199,18 @@
 - Permission check: reading small text metadata, package metadata, paths and file sizes is authorized
   lightweight management. No hashing of large files, model import/restore, preprocessing, tests,
   training, inference, evaluation, download, or compilation will run on the login node.
+- Result: pull succeeded to `1d9396d`. The candidate venv is Python 3.10.12 with Torch
+  2.11.0+cu128, e3nn 0.4.4, ASE 3.22.1, MACE 0.3.5 and pytest 8.4.2, but lacks spglib,
+  TensorPotential, DeepMD and fairchem, so it is not accepted for this project. Exact-name searches
+  found only a valid-size JARVIS elastic resource and a zero-byte dielectric file; MatTen plus the
+  MACE/GRACE/DPA4/Equiformer acceptance files were absent. `sbatch` and `sacct` are installed. No
+  data, environment, or source was changed, and no login-node compute ran.
+
+## 2026-09-12 — Create isolated Guqq acceptance venv
+
+- Intended connection: pull first, verify the exact task environment path is absent, create
+  `/home/xmz/expert-envs/acceptance-py310` with `python3 -m venv`, and print only its Python/pip
+  versions. Package installation is deferred until its pinned plan is finalized.
+- Permission check: creating and inspecting an isolated virtual environment is explicitly allowed
+  lightweight environment management. The command will not overwrite another environment, install
+  packages, import project/model modules, or run tests, compilation, training, inference, or data work.
