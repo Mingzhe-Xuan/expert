@@ -15,8 +15,7 @@
   `home = /usr/bin`, and `include-system-site-packages = false`.
 - Installation status: MACE/core is installed and `pip check` is clean: Torch 2.11.0+cu128,
   CUDA toolkit 12.8.1, e3nn 0.4.4, MACE 0.3.16, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0,
-  ASE 3.26.0, matscipy 1.1.1, pytest 8.4.2, and python-hostlist 2.3.0. The other three runtime
-  installs are pending. The complete verified MACE snapshot is committed as
+  ASE 3.26.0, matscipy 1.1.1, pytest 8.4.2, and python-hostlist 2.3.0. The complete verified MACE snapshot is committed as
   `requirements/guqq/mace-core.txt`.
 - GRACE is installed and `pip check` is clean: TensorPotential 0.6.0, TensorFlow 2.20.0,
   Torch 2.11.0+cu128, CUDA toolkit 12.8.1, e3nn 0.5.9, NumPy 1.26.4, SciPy 1.15.3,
@@ -25,7 +24,11 @@
 - DPA4 is installed and `pip check` is clean: DeepMD-kit 3.2.0, Torch 2.11.0+cu128,
   CUDA toolkit 12.8.1, e3nn 0.5.9, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0, and ASE 3.26.0.
   Its freeze SHA-256 is `92a818e296e05dd0fe4a3d50cf3cb0fe6fbcdb538a2eefbcab0378ad44eb7f8b`.
-- EquiformerV2 installation remains pending. Exact installed versions,
+- EquiformerV2 is installed and `pip check` is clean: fairchem-core 1.10.0, Torch 2.4.1+cu121,
+  e3nn 0.5.9, Hydra 1.3.2, OmegaConf 2.3.0, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0,
+  ASE 3.26.0, and pytest 8.4.2. Its freeze SHA-256 is
+  `acf2cb6c7f575339e392ec45337b8015313dc8e7d0ec3f73e08a97f5d60efa76`.
+- All four runtime installations are dependency-clean. Exact installed versions,
   scientific stack,
   four backbone runtimes, source revisions where wheels are unavailable, and `pip freeze` fingerprint
   must be appended here after installation and before any acceptance job is submitted.

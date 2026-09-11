@@ -1,5 +1,23 @@
 # Test plan and results
 
+## 2026-09-12 — Reproducible Guqq EquiformerV2 environment lock
+
+计划检查：
+
+- 将修复后 clean `pip check` 的 Equiformer snapshot 固化为独立 exact-pin lock；
+- 通用 parser 断言无重复、全部 requirements 精确 `==`，并包含官方 cu121 index；
+- 关键版本必须为 fairchem-core 1.10.0、Torch 2.4.1+cu121、e3nn 0.5.9、Hydra 1.3.2、
+  OmegaConf 2.3.0、NumPy 1.26.4、SciPy 1.15.3 与 spglib 2.6.0；
+- 明确禁止旧 `hydra-core==0.11.3` / `omegaconf==1.4.1` 回退；执行 targeted、完整 pytest、
+  compile 与 `git diff --check`。
+
+实际结果：
+
+- `requirements/guqq/equiformerv2.txt` 固化 119 个精确 pin，并保留官方 cu121 index；
+- targeted environment-lock suite：9 passed；完整本地 suite：153 passed、0 failed、0 skipped，
+  484 warnings，220.63s；
+- `python -m compileall -q src tests` 与 `git diff --check` 均通过。
+
 ## 2026-09-12 — Reproducible Guqq DPA4 environment lock
 
 计划检查：

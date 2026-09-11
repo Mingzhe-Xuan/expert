@@ -6,9 +6,9 @@
 所有 Slurm 入口现已使用四个显式 venv contract；四套隔离 Python 3.10.12 环境均已在 Guqq
 幂等创建。两个 mixed arrays 按已冻结且验证的 `index % 4` backbone schedule 选择环境；
 MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE 安装连续三次被 Guqq
-到 GitHub 的出站 TLS/443 故障在跨回合间隔后恢复；MACE/core、GRACE 与 DPA4 均完成精确
-安装、freeze lock 和 `pip check`。Equiformer runtime 随后三次再次停在强制 pull，pip 未执行；
-本轮暂停盲连。Equiformer gated checkpoint、资源传输与全部 Slurm 验收仍未完成。
+四套隔离 runtime 均已在 Guqq 完成精确安装并通过 `pip check`；Equiformer 使用 scoped
+HTTP/1.1 pull 恢复网络，并修复 wheel-only resolver 的旧 Hydra/OmegaConf 回退。当前固化最后
+一套 freeze lock；Equiformer gated checkpoint、资源传输与全部 Slurm 验收仍未完成。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -37,6 +37,10 @@ MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE �
   151 tests 全绿，compile/diff checks 通过。下一步安装 EquiformerV2 runtime。
 - 2026-09-12：Equiformer runtime 三次连接均未完成强制 pull，wheel 安装未执行且 venv
   保持空环境；按三次失败规则暂停本轮 Guqq 重试。
+- 2026-09-12：HTTP/1.1 pull 恢复后，拦截并修复旧 Hydra/OmegaConf 回退；Equiformer 安装
+  fairchem-core 1.10.0、Torch 2.4.1+cu121、e3nn 0.5.9，`pip check` clean，剩余 15 GiB。
+- 2026-09-12：Equiformer 119-entry exact lock 与 resolver guard 完成；targeted 9 tests、完整
+  153-test suite、compile/diff checks 全绿。四套 Guqq runtime 阶段完成，下一步上传已校验资源。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

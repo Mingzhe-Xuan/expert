@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MACE_LOCK = ROOT / "requirements" / "guqq" / "mace-core.txt"
 GRACE_LOCK = ROOT / "requirements" / "guqq" / "grace.txt"
 DPA4_LOCK = ROOT / "requirements" / "guqq" / "dpa4.txt"
+EQUIFORMERV2_LOCK = ROOT / "requirements" / "guqq" / "equiformerv2.txt"
 
 
 def _locked_requirements(path: Path) -> dict[str, Requirement]:
@@ -97,3 +98,26 @@ def test_dpa4_lock_freezes_acceptance_critical_versions() -> None:
     }
     actual = {name: str(requirements[name].specifier) for name in expected}
     assert actual == expected
+
+
+def test_equiformerv2_lock_has_official_cuda_index_and_unique_exact_requirements() -> None:
+    lines = EQUIFORMERV2_LOCK.read_text(encoding="utf-8").splitlines()
+    assert "--extra-index-url https://download.pytorch.org/whl/cu121" in lines
+    assert len(_locked_requirements(EQUIFORMERV2_LOCK)) == 119
+
+
+def test_equiformerv2_lock_freezes_acceptance_critical_versions() -> None:
+    requirements = _locked_requirements(EQUIFORMERV2_LOCK)
+    expected = {
+        "fairchem-core": "==1.10.0",
+        "torch": "==2.4.1+cu121",
+        "e3nn": "==0.5.9",
+        "hydra-core": "==1.3.2",
+        "omegaconf": "==2.3.0",
+        "numpy": "==1.26.4",
+        "scipy": "==1.15.3",
+        "spglib": "==2.6.0",
+    }
+    actual = {name: str(requirements[name].specifier) for name in expected}
+    assert actual == expected
+    assert str(requirements["antlr4-python3-runtime"].specifier) == "==4.9.3"

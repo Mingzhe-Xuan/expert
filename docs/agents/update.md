@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12：用 scoped HTTP/1.1 恢复 Guqq pull，拦截 wheel-only 导致的旧 Hydra 回退；
+  完成 Equiformer venv（fairchem-core 1.10.0、Torch 2.4.1+cu121、e3nn 0.5.9），
+  `pip check` clean，freeze SHA 已记录，剩余 15 GiB。
+- 2026-09-12：固化 Equiformer 119-entry exact lock 和 modern Hydra/OmegaConf guard；
+  targeted 9 passed，完整本地 suite 153 passed、0 failed/skip，compile/diff checks 通过。
+
 - 2026-09-12：Equiformer runtime 三次尝试均被强制 pull 的出站网络故障拦截，pip 未执行；
   本轮停止盲连。前三套环境及 locks 已验证，最后 runtime 与 Slurm evidence 尚待完成。
 

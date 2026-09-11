@@ -480,3 +480,9 @@
 - Permission check: isolated dependency repair/installation and lightweight metadata checks only.
   The two source artifacts are pure Python; no native compilation, checkpoint access, project/model
   execution, data processing, tests, training, inference, evaluation, or GPU workload will run.
+- Result: HTTP/1.1 pull fast-forwarded to `30d2bcf`. The interrupted environment was repaired to
+  Hydra 1.3.2/OmegaConf 2.3.0 (with pure-Python antlr4 runtime 4.9.3), then the complete runtime
+  resolved to fairchem-core 1.10.0, Torch 2.4.1+cu121, e3nn 0.5.9, NumPy 1.26.4, SciPy 1.15.3,
+  spglib 2.6.0, and ASE 3.26.0. `pip check` was clean; freeze SHA-256 is
+  `acf2cb6c7f575339e392ec45337b8015313dc8e7d0ec3f73e08a97f5d60efa76`; 15 GiB remained.
+  No checkpoint or project/model/data workload ran.

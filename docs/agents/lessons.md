@@ -92,3 +92,15 @@
   stale checkout cannot proceed accidentally.
 - After three consecutive outbound failures, stop blind SSH retries. Record the unchanged environment,
   prepare reproducible commands locally, and retry only after a meaningful interval or network change.
+- When default Guqq HTTPS pulls repeatedly fail with GnuTLS `-110` or silent timeouts, a scoped
+  `git -c http.version=HTTP/1.1 pull --ff-only` can recover without changing persistent Git config.
+  GitHub SSH is not a fallback on this host because it has no accepted GitHub public key.
+
+## 2026-09-12 — Wheel-only resolution can silently select obsolete pure-Python dependencies
+
+- `--only-binary=:all:` caused fairchem's unconstrained Hydra dependency to backtrack from modern
+  Hydra/OmegaConf to `hydra-core==0.11.3` and `omegaconf==1.4.1`, because the modern chain includes
+  a source-only pure-Python antlr runtime. A dependency-clean solve is not sufficient if it violates
+  the runtime generation expected by the frozen backbone release.
+- Pin Hydra 1.3.2 and OmegaConf 2.3.0 explicitly, allow only their pure-Python antlr4 packaging
+  exception, then retain wheel-only policy for native dependencies and finish with `pip check`.
