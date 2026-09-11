@@ -8,6 +8,10 @@
   Git-ignored paths under `/home/xmz/expert`, followed only by size/SHA-256 checks.
 - No training, inference, evaluation, compilation, or batch processing will run on the login
   node; the gated Equiformer checkpoint is outside this connection's scope.
+- Result: the mandatory pull fast-forwarded to `1991c9f`, but the jump host reset the stream
+  after about 21 seconds; the tar write failed and no remote file is accepted as verified.
+- Retry connection plan: establish one recorded multiplexed SSH transport whose first command
+  is the same scoped pull, reuse it for atomic per-file copies, and then verify all contract files.
 
 ## 2026-09-11 — Sync Phase A checkpoint and locate checkout
 
