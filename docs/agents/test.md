@@ -4,12 +4,15 @@
 
 计划检查：
 
-- 上传前复核三份 benchmark 数据、MACE checkpoint、GRACE archive/loader artifacts 与
-  DPA4 checkpoint/config 共 11 个对象的本地 size 和 SHA-256；
+- 上传前复核三份 benchmark 数据、MACE checkpoint、GRACE archive/三个 manifest loader
+  artifacts 与 DPA4 checkpoint/config 共 10 个 contract 对象的本地 size 和 SHA-256；
 - 单一 SSH 会话必须先在 `/home/xmz/expert` 执行 scoped HTTP/1.1 fast-forward pull，再解包
   到仓库内 Git-ignored 原路径；
 - 上传后逐项核对远端 size/SHA-256，并确认工作树没有因资源同步产生 tracked source 修改；
 - 本步骤仅做网络传输和文件校验，不直接在登录节点运行任何模型计算或批量数据处理。
+
+调整说明：首个整包 tar stream 在 pull 后被跳板重置；改用一次先 pull 的 multiplex transport
+逐文件原子复制。额外 `gmm_artifacts.npz` 未被 manifest 或 adapter loader contract 引用，故不上传。
 
 ## 2026-09-12 — Reproducible Guqq EquiformerV2 environment lock
 

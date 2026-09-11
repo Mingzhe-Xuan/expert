@@ -1,7 +1,8 @@
 # Agent progress updates
 
-- 2026-09-12：开始 Guqq 资源同步单元；已复核三份 benchmark 数据和三套非门控骨干资源
-  共 11 个文件的本地 size/SHA-256，下一步经“先 pull、后流式解包”的单一 SSH 会话上传。
+- 2026-09-12：开始 Guqq 资源同步单元；已复核三份 benchmark 数据和三套非门控骨干的
+  10 个 contract 文件。首个 tar stream 在成功 pull 后被跳板重置；改为先 pull 的 multiplex
+  transport 加逐文件原子 scp，且剔除未进入 GRACE loader contract 的额外 GMM artifact。
 
 - 2026-09-12：用 scoped HTTP/1.1 恢复 Guqq pull，拦截 wheel-only 导致的旧 Hydra 回退；
   完成 Equiformer venv（fairchem-core 1.10.0、Torch 2.4.1+cu121、e3nn 0.5.9），

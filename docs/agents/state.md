@@ -42,8 +42,11 @@ gated checkpoint 与全部 Slurm 验收仍未完成。
   fairchem-core 1.10.0、Torch 2.4.1+cu121、e3nn 0.5.9，`pip check` clean，剩余 15 GiB。
 - 2026-09-12：Equiformer 119-entry exact lock 与 resolver guard 完成；targeted 9 tests、完整
   153-test suite、compile/diff checks 全绿。四套 Guqq runtime 阶段完成，下一步上传已校验资源。
-- 2026-09-12：开始资源同步阶段；冻结 11 个传输对象及其本地 size/SHA-256，采用单一 SSH
-  流会话保证远端先 pull、后写入 ignored data/checkpoint 路径并逐项复核。
+- 2026-09-12：开始资源同步阶段；冻结 10 个 contract 传输对象及其本地 size/SHA-256，采用
+  单一 SSH transport 保证远端先 pull、后写入 ignored data/checkpoint 路径并逐项复核。
+- 2026-09-12：首个 tar stream 在 pull 成功后约 21 秒被跳板重置；不采信任何半成品。
+  调整为先 pull 的 multiplex transport 加逐文件原子 scp；未被 manifest 引用的 GRACE
+  `gmm_artifacts.npz` 不属于 loader contract，已从 11-file 初稿范围剔除。
 
 ## 并行 Goal 状态（material-oriented target projection）
 
