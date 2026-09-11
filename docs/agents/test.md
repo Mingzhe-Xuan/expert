@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-11 — Copy-aware loss, metrics, and checkpoint round-trip
+
+计划检查：
+
+- dielectric/elastic/BEC coefficient MSE 分别按冻结 layout 的每个 labelled copy
+  计算；BEC 保留 atom item 维度而不做跨原子 target pooling，total 可反向传播。
+- normalizer scale 产生 train-stat weighting；raw physical-unit per-copy MAE/RMSE
+  可序列化且 repeated copies 不合并。
+- 最小可训练模块完成 optimizer update，checkpoint 原子保存/严格加载后输出一致，
+  optimizer step、normalizer、architecture、training-unit 与 convention metadata 恢复。
+- architecture/unit/layout/convention 任一不匹配均在 state mutation 前 fail closed；
+  使用安全 `weights_only=True` 加载普通 tensor/state 数据。
+- 运行目标 pytest、完整本地 pytest、compile 和 diff 检查，提交前补录结果。
+
+实际结果：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_training_checkpoint.py -q`：
+  8 passed；三 target copy-aware loss/gradient/metrics、normalizer weighting、Adam
+  update、原子 checkpoint round-trip，以及 architecture/unit/convention mismatch 在
+  model mutation 前拒绝均通过。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  59 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_training_checkpoint.py` 与
+  `git diff --check`：通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Independent training units, splits, and normalization
 
 计划检查：

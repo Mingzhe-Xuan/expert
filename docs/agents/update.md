@@ -35,6 +35,13 @@
   duplicate-group-safe fallback split，以及只允许 train fitting 的 copy-aware
   coefficient normalizer；支持 RMS/variance、物理单位 inverse 和跨单元/layout
   fail-closed loading。目标测试 6 passed，合并本地结果 51 passed、1 个既有 skip。
+- 2026-09-11：开始 copy-aware coefficient loss/metrics 与 checkpoint 实现；测试范围
+  覆盖三 targets、normalizer weighting、optimizer update、输出 round-trip、原子保存
+  和 architecture/unit/layout/convention 全部 fail-closed gates。
+- 2026-09-11：完成逐 labelled irrep-copy coefficient MSE/raw MAE-RMSE、optimizer
+  update 和 atomic checkpoint save/load；checkpoint 用安全 tensor-only load，且在
+  模型/优化器 mutation 前严格验证 architecture、training unit、完整 conventions
+  与 normalizer layout。目标测试 8 passed，合并本地结果 59 passed、1 个既有 skip。
 
 - 2026-09-11：完成 `GOAL.md` 与 `assets/docs/subgroup_chain.json`：Goal 将完整模型验收冻结为四真实 backbone、五分支/26 合法配置、A1/Full-PG、full-O3/O2、三类性质、四独立训练单元、严格 `<5M`、全部等变/单元测试及 Guqq Slurm 两级 smoke；subgroup asset 保留 32 群、80 cover edges、433 oriented instances 和 222 maximal chains，并由新增测试验证。
 

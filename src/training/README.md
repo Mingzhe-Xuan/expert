@@ -11,3 +11,5 @@ losses = coefficient_loss(prediction, target, normalizer)
 
 `CoefficientNormalizer.fit(..., split="train")` stores one statistic per labelled irrep
 copy and rejects fitting on validation/test data or loading state from another unit.
+`coefficient_mse` keeps those copies separate. Checkpoint loading verifies architecture,
+unit, layout, and full convention metadata before mutating model or optimizer state.
