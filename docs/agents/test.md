@@ -1,5 +1,31 @@
 # Test plan and results
 
+## 2026-09-11 — Full-PG subduction and finite-group CG registry
+
+计划检查：
+
+- 对 32 点群、`l=0..4` natural carriers，逐 O(3) labelled copy 构造确定性实有限群
+  irreducible subspaces；subduction matrix 正交、copy/path order 稳定且 checksum 可复现。
+- subduction→inverse 对 float64 batch round-trip；每个 PG block 在全部群操作下闭合，
+  block-off-diagonal leakage 低于预注册 module tolerance。
+- A1 invariant copies 与 Full-PG copies 均保留 O(3) source label/copy provenance；
+  Full-PG 在非平凡群/`l>0` 中存在非 A1 paths，不能退化为旧 A1-only 原型。
+- finite-group CG/intertwiner basis 由 Hom-space Reynolds projector 构造，path basis
+  正交确定，逐 operation 满足 `K^T W = W C^T`；无允许 path 时返回显式零维 basis。
+- subduction、CG、path/copy ordering checksum 可组装进 `ConventionMetadata`；运行
+  目标 pytest、完整 pytest、compile/diff 检查，提交前补录结果。
+
+实际结果：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_subduction_cg.py -q`：
+  6 passed；32 群 `l=0..4` round-trip/逐操作 equivariance/checksum、cubic `l=2`
+  `2+3` 非平凡分解、repeated provenance、32 群 vector×vector→scalar intertwiners、
+  forbidden zero-path 与 convention checksum 均通过。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  75 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_subduction_cg.py` 与 `git diff --check`：
+  通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Hall-level physical parent embedding validation
 
 计划检查：

@@ -10,6 +10,13 @@
   validation：frame/site/tensor round-trip、proper-input rotation covariance、完整
   `(W,t)` species-preserving permutations、affine group、Wyckoff split mapping、domain
   variants/checksum/cycle/connectivity 均有测试；完整本地结果 69 passed、1 个旧 skip。
+- 2026-09-11：开始 Full-PG 数学 registry：逐 labelled O(3) copy 做实有限群
+  commutant decomposition，生成可逆 subduction/copy provenance；finite-group CG
+  使用 Hom-space Reynolds projector 并逐 operation 验证 intertwining。
+- 2026-09-11：完成 Full-PG subduction/CG registry：symmetric commutant 确定性拆分
+  全部实 irreducible copies，正交 inverse 保证 feature round-trip，Hom-space Reynolds
+  生成允许/禁止 CG paths；32 群逐操作 tests、provenance、非平凡 paths 和 checksums
+  全绿。完整本地结果 75 passed、1 个旧 opt-in skip。
 
 - 2026-09-11：启动 `GOAL.md` Phase A 正式实现；审计确认仓库尚无 `src/` 包，
   本实现单元将建立规定模块边界、核心 typed contracts、五分支配置校验与冻结的

@@ -15,8 +15,10 @@ train-only copy-aware RMS/variance normalizer contract；训练层已增加逐 c
 metrics、optimizer update 和 metadata-first atomic checkpoint round-trip。合并本地
 套件 59 passed、1 个旧原型 opt-in skip。现已加入显式 Hall-setting spglib
 canonicalization、site-order-preserving frame、完整 operation permutations，以及
-affine/species/checksum/DAG parent validation；合并套件 69 passed、1 个旧 skip。
-Goal 尚未具备完成证据。
+affine/species/checksum/DAG parent validation。Full-PG 数学层现可逐 O(3) provenance
+copy 分解全部实有限群 irreps、正交 subduction/inverse，并从 Hom-space Reynolds
+projector 构造 finite-group CG paths；合并套件 75 passed、1 个旧 skip。Goal 尚未
+具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
@@ -37,6 +39,12 @@ Goal 尚未具备完成证据。
 - 2026-09-11：完成 deterministic Hall canonicalization 和 physical-parent validation；
   保留原 site order、生成 audit permutations，验证 affine closure/species mapping、
   orientation variants 与 DAG connectivity。目标联合 25 passed，完整套件 69 passed。
+- 2026-09-11：进入 Full-PG subduction/finite-group CG 实现；方案冻结为逐 O(3)
+  provenance copy 的实 commutant decomposition、正交 inverse，以及 Hom-space Reynolds
+  intertwiners，避免把 invariant/A1 projector 冒充 Full-PG。
+- 2026-09-11：完成 32 群 Full-PG real-irrep subduction/inverse 与 finite-group CG
+  registry；保留 source/copy provenance、确定性 path order/checksum，cubic `l=2`
+  明确产生 `2+3` 非 A1 blocks。目标测试 6/6，合并套件 75 passed。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置
