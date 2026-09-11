@@ -239,3 +239,12 @@
 - Result: the third environment attempt again returned only the Vlab welcome line and status 1,
   without Guqq shell, pull, or Python output. Following the existing three-failure SSH lesson, blind
   retries are paused. The venv remains unconfirmed and no login-node compute was run.
+
+## 2026-09-12 — Post-implementation Guqq sync and venv retry
+
+- Intended connection: after completing and pushing the material-operation projector as `74bccec`,
+  make one spaced retry. Run bounded `git pull` first, then idempotently create or inspect the recorded
+  `/home/xmz/expert-envs/acceptance-py310` and print its Python/pip versions.
+- Permission check: source synchronization and isolated venv creation/inspection are lightweight
+  management. No packages, project/model imports, tests, compilation, data work, or GPU computation
+  will run on the login node.
