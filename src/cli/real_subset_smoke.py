@@ -31,6 +31,7 @@ def run_schedule(index: int, *, device: str, output_root: Path) -> dict[str, obj
         checkpoint_path=checkpoint,
         device=device,
     )
+    report["index"] = index
     report["execution"] = execution_metadata()
     report_path = output_root / "reports" / f"{name}.json"
     write_smoke_report(report_path, report)

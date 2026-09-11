@@ -1,5 +1,10 @@
 # Agent progress updates
 
+- 2026-09-12：开始 efficiency report aggregation 单元；将 58/20 smoke 内嵌记录汇总为
+  同源、稳定排序且 fail-closed 的 JSON/Markdown 交付物。
+- 2026-09-12：完成严格 58/20 coverage 与 efficiency schema/numeric/CUDA/scope 校验、
+  稳定 JSON/Markdown 渲染和 CLI；targeted 14、完整项目 178 tests 全绿。
+
 - 2026-09-12：开始 runtime efficiency evidence 单元；补齐 README 已声明但代码缺失的参数、
   active experts、active downstream FLOPs、end-to-end latency 与 CUDA peak memory 报告。
 - 2026-09-12：完成并接入两套 smoke 的 efficiency profiler；GRACE external frozen variables

@@ -1,5 +1,24 @@
 # Agent state
 
+## 当前状态（Efficiency report aggregation）
+
+已完成逐次 smoke 的 runtime efficiency 采样及跨 58-row PG 与 20-row real-subset
+结果的严格汇总器；机器可读 JSON 和 Markdown 报告共享同一组已校验记录。
+
+## 当前计划（Efficiency report aggregation）
+
+1. 定义必需字段、实验身份和数值约束，缺失、失败或重复记录一律拒绝。
+2. 递归读取 smoke JSON，生成稳定排序的 versioned JSON 与 Markdown 表。
+3. 添加 CLI、单元测试和 README 用例，执行 targeted/full pytest、compile/help/diff checks。
+
+## 变更记录（Efficiency report aggregation）
+
+- 2026-09-12：开始汇总报告实现单元；以已嵌入 58/20 smoke JSON 的 efficiency record
+  为唯一事实来源，冻结 architecture/task/PG/mode/backend 身份与 active-downstream FLOPs 口径。
+- 2026-09-12：efficiency JSON/Markdown 汇总器完成；严格核验 58/20 index coverage、passed
+  状态、身份/数值/参数预算、CUDA 来源和 scope。Targeted 14、项目完整 178 tests 全绿；
+  compile/help/diff checks 通过。真实报告仍待 Guqq arrays 产出后生成。
+
 ## 并行 Goal 状态（Guqq per-backbone environments）
 
 官方包元数据证明单一 venv 无法同时满足冻结的 MACE、GRACE、DPA4 与 Equiformer runtimes。

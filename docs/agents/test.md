@@ -1,5 +1,28 @@
 # Test plan and results
 
+## 2026-09-12 — Efficiency report aggregation
+
+计划检查：
+
+- 成功读取 point-group 与 real-subset smoke JSON 中的 `efficiency` record，并按来源稳定排序；
+- 严格拒绝非 passed summary、缺少必需字段、非法数值、未知 FLOPs scope 与重复实验身份；
+- JSON 报告保留完整机器字段，Markdown 表明确标注 active downstream FLOPs、单次真实
+  end-to-end latency 与 CUDA peak memory，并覆盖 architecture/task/PG/mode/backend keys；
+- CLI 同时原子写入 JSON/Markdown，失败返回非零且不发布部分输出；
+- 运行 targeted、完整 pytest、compile、CLI help 和 `git diff --check`。
+
+实际结果：
+
+- targeted：14 passed、68 warnings；完整项目 suite：178 passed、0 failed、0 skipped、
+  496 warnings，229.84s；
+- 精确覆盖、稳定排序、Markdown scope/columns，以及 failed/missing/budget/scope/mean/CUDA
+  和重复 index 拒绝测试全部通过；
+- `python -m src.cli.efficiency_report --help`、`python -m compileall -q src tests` 与
+  `git diff --check` 通过；`uv run ruff` 因当前本地 uv 环境未安装 ruff 而未执行；
+- 一次未限定路径的 `pytest -q` 在收集用户下载的 `data/sources/matten` 上游测试时因本机
+  `torch_spline_conv` DLL 不兼容退出；该目录不属于项目 `tests/` 验收范围，随后显式完整
+  `pytest -q tests` 全绿，未降低既定项目测试范围。
+
 ## 2026-09-12 — Runtime efficiency evidence
 
 计划检查：

@@ -44,3 +44,8 @@ returning nonzero; their Slurm launchers also fingerprint Git and installed pack
 `python -m src.cli.slurm_audit --manifest ... --raw ... --output ...` is the strict post-run
 accounting gate. It expands frozen array ranges and rejects missing/duplicate allocations,
 non-`COMPLETED` states, and any exit code other than `0:0`.
+
+`python -m src.cli.efficiency_report --point-group-glob 'results/point-group-smoke/summary-JOB_*.json' --real-subset-glob 'results/real-smoke/summary-JOB_*.json' --json-output results/efficiency/report.json --markdown-output results/efficiency/report.md`
+requires the complete 58/20 row matrices and produces the paired machine-readable and Markdown
+runtime report. Validation is fail-closed, including row identity, parameter budget, numeric
+consistency, and the explicitly limited active-downstream FLOPs scope.

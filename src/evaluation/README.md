@@ -10,6 +10,11 @@ latency, and incremental CUDA peak allocation. FLOPs are explicitly scoped to To
 active-downstream operators on cached backbone features, so GRACE's TensorFlow execution is not
 silently mislabeled as observed Torch FLOPs.
 
+After all 58 point-group rows and 20 real-subset rows finish, aggregate their summaries
+with `python -m src.cli.efficiency_report`. The command validates exact row-index coverage,
+passed status, schemas, identities, numeric invariants, the `<5M` active budget, and the
+declared FLOPs/latency scopes before publishing paired JSON and Markdown reports.
+
 ```python
 report = evaluate_equivariance(model, batch, transforms)
 ```
