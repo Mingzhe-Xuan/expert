@@ -9,6 +9,19 @@
   file metadata commands before deciding whether an atomic upload can safely resume.
 - No training, inference, evaluation, compilation, data processing, or other login-node compute is
   authorized. If the mandatory pull fails, stop the connection without any resource writes.
+- Result: the HTTP/1.1 pull succeeded and fast-forwarded the server from `1991c9f` to `6395e15`.
+  The metadata-only inspection found only `data/raw/jarvis_gmtnet/jarvis_diele_piezo.pkl` at
+  3,937,792 bytes, which does not match the 6,731,047-byte manifest resource. No resource was written.
+
+## 2026-09-12 — Resume atomic contract-resource upload
+
+- Intended connection: establish one bounded persistent SSH transport whose first remote command is
+  HTTP/1.1 `git pull --ff-only`, then reuse that same authenticated transport for per-file `scp`.
+- Authorized purpose: create only the manifest-declared ignored `data/raw` and `data/checkpoints`
+  directories, upload the three dataset files plus MACE, GRACE, and DPA4 contract files under
+  temporary names, verify every remote byte size/SHA-256, and atomically rename only verified files.
+- EquiformerV2 remains excluded because gated access is unresolved. No source edit, training,
+  inference, evaluation, compilation, preprocessing, or other compute is authorized.
 
 ## 2026-09-12 — Spaced resource-sync recovery check after local DoD work
 
