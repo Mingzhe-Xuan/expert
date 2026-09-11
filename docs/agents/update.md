@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12：完成 `requirements/guqq/grace.txt`：95 个唯一 exact pins 与 8 个关键版本
+  断言；targeted 5、完整 149 tests 全绿，compile/diff 通过，准备 DPA4 安装。
+
+- 2026-09-12：Guqq 间隔重试恢复；完成 GRACE venv（TensorPotential 0.6.0、TensorFlow
+  2.20.0、Torch 2.11.0+cu128、e3nn 0.5.9），`pip check` clean，剩余 31 GiB。
+
 - 2026-09-12：完成并验证 `requirements/guqq/mace-core.txt`：71 个唯一 exact pins、官方
   cu128 index、9 个关键版本断言；targeted 3、完整 147 tests 全绿，compile/diff 通过。
 

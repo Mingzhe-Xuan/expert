@@ -8,5 +8,9 @@ their frozen PyTorch, e3nn, and framework requirements conflict.
 is the one pure-Python package whose upstream release has no wheel; all native dependencies were
 installed from binary wheels.
 
-GRACE, DPA4, and EquiformerV2 locks must be added only after their isolated Guqq environments pass
+`grace.txt` records the clean GRACE resolver result. TensorPotential requests TensorFlow's CUDA
+extra, whose accepted NVIDIA version ranges are compatible with the exact CUDA 12.8 packages used
+by Torch 2.11.0+cu128 in this environment.
+
+DPA4 and EquiformerV2 locks must be added only after their isolated Guqq environments pass
 `pip check`; do not manufacture them from an unexecuted resolver plan.

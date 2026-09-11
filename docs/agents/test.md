@@ -1,5 +1,21 @@
 # Test plan and results
 
+## 2026-09-12 — Reproducible Guqq GRACE environment lock
+
+计划检查：
+
+- 将 Guqq clean `pip check` 后的 GRACE package snapshot 固化为独立 exact-pin lock；
+- 复用通用 lock parser，断言无重复、全部有效 requirements 精确 `==`，并包含官方 cu128 index；
+- 关键版本必须为 TensorPotential 0.6.0、TensorFlow 2.20.0、Torch 2.11.0+cu128、
+  CUDA toolkit 12.8.1、e3nn 0.5.9、NumPy 1.26.4、SciPy 1.15.3 与 spglib 2.6.0；
+- 执行 targeted pytest、完整本地 pytest、compile 与 `git diff --check`。
+
+实际结果：
+
+- `grace.txt` 固化 95 个唯一 exact pins、官方 cu128 index 与全部关键版本；
+- targeted：5 passed；完整本地 `tests/`：149 passed，0 failed，0 skipped（222.33 s）；
+- `python -m compileall -q src tests` 与 `git diff --check` 通过。
+
 ## 2026-09-12 — Reproducible Guqq MACE environment lock
 
 计划检查：

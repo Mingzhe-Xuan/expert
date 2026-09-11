@@ -17,7 +17,12 @@
   CUDA toolkit 12.8.1, e3nn 0.4.4, MACE 0.3.16, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0,
   ASE 3.26.0, matscipy 1.1.1, pytest 8.4.2, and python-hostlist 2.3.0. The other three runtime
   installs are pending. The complete verified MACE snapshot is committed as
-  `requirements/guqq/mace-core.txt`. Exact installed versions,
+  `requirements/guqq/mace-core.txt`.
+- GRACE is installed and `pip check` is clean: TensorPotential 0.6.0, TensorFlow 2.20.0,
+  Torch 2.11.0+cu128, CUDA toolkit 12.8.1, e3nn 0.5.9, NumPy 1.26.4, SciPy 1.15.3,
+  spglib 2.6.0, ASE 3.26.0, and pytest 8.4.2. Its freeze SHA-256 is
+  `8e07b1621156789b07e806a8e9fc4645fc2da757ec019eb7c9c723714ec84765`.
+- DPA4 and EquiformerV2 installs remain pending. Exact installed versions,
   scientific stack,
   four backbone runtimes, source revisions where wheels are unavailable, and `pip freeze` fingerprint
   must be appended here after installation and before any acceptance job is submitted.

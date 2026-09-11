@@ -8,11 +8,12 @@ from packaging.utils import canonicalize_name
 
 ROOT = Path(__file__).resolve().parents[1]
 MACE_LOCK = ROOT / "requirements" / "guqq" / "mace-core.txt"
+GRACE_LOCK = ROOT / "requirements" / "guqq" / "grace.txt"
 
 
-def _locked_requirements() -> dict[str, Requirement]:
+def _locked_requirements(path: Path) -> dict[str, Requirement]:
     requirements: dict[str, Requirement] = {}
-    for raw_line in MACE_LOCK.read_text(encoding="utf-8").splitlines():
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#") or line.startswith("--"):
             continue
@@ -33,12 +34,12 @@ def test_mace_lock_uses_official_cuda_128_index() -> None:
 
 
 def test_mace_lock_has_unique_exact_requirements() -> None:
-    requirements = _locked_requirements()
+    requirements = _locked_requirements(MACE_LOCK)
     assert len(requirements) == 71
 
 
 def test_mace_lock_freezes_acceptance_critical_versions() -> None:
-    requirements = _locked_requirements()
+    requirements = _locked_requirements(MACE_LOCK)
     expected = {
         "torch": "==2.11.0+cu128",
         "cuda-toolkit": "==12.8.1",
@@ -49,6 +50,28 @@ def test_mace_lock_freezes_acceptance_critical_versions() -> None:
         "numpy": "==1.26.4",
         "scipy": "==1.15.3",
         "pytest": "==8.4.2",
+    }
+    actual = {name: str(requirements[name].specifier) for name in expected}
+    assert actual == expected
+
+
+def test_grace_lock_has_official_cuda_index_and_unique_exact_requirements() -> None:
+    lines = GRACE_LOCK.read_text(encoding="utf-8").splitlines()
+    assert "--extra-index-url https://download.pytorch.org/whl/cu128" in lines
+    assert len(_locked_requirements(GRACE_LOCK)) == 95
+
+
+def test_grace_lock_freezes_acceptance_critical_versions() -> None:
+    requirements = _locked_requirements(GRACE_LOCK)
+    expected = {
+        "tensorpotential": "==0.6.0",
+        "tensorflow": "==2.20.0",
+        "torch": "==2.11.0+cu128",
+        "cuda-toolkit": "==12.8.1",
+        "e3nn": "==0.5.9",
+        "numpy": "==1.26.4",
+        "scipy": "==1.15.3",
+        "spglib": "==2.6.0",
     }
     actual = {name: str(requirements[name].specifier) for name in expected}
     assert actual == expected

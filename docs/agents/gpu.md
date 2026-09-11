@@ -353,3 +353,17 @@
 - Permission check: dependency installation and lightweight environment diagnostics only. No native
   compilation, project/model execution, checkpoint loading, data processing, training, inference,
   evaluation, or tests will run on the login node.
+- Result: the pull recovered and fast-forwarded to `c972ab2`. GRACE installed successfully with
+  TensorPotential 0.6.0, TensorFlow 2.20.0, Torch 2.11.0+cu128, CUDA toolkit 12.8.1, e3nn 0.5.9,
+  NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0, and ASE 3.26.0. `pip check` was clean; the freeze
+  fingerprint is `8e07b1621156789b07e806a8e9fc4645fc2da757ec019eb7c9c723714ec84765` and
+  31 GiB remained. No project/model/data workload ran.
+
+## 2026-09-12 — Install and inspect the DPA4 environment
+
+- Intended connection: after committing the verified GRACE lock, pull first; install DeepMD-kit
+  3.2.0 with its Torch backend and the frozen CUDA 12.8/common scientific stack into the isolated
+  DPA4 venv. Finish with `pip check`, exact package listing, freeze fingerprint, and disk capacity.
+- Permission check: dependency installation and lightweight metadata checks only; native packages
+  must come from wheels. No project/model execution, checkpoint load, compilation, data processing,
+  training, inference, evaluation, or tests will run on the login node.
