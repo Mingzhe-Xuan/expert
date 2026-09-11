@@ -1,5 +1,29 @@
 # Test plan and results
 
+## 2026-09-12 — Standalone adapter Slurm evidence contract
+
+计划检查：
+
+- 共用 CLI runner 在成功与异常路径都写 machine-readable JSON、单 case JUnit 和 execution
+  metadata；异常路径保留原异常并产生非零退出；
+- 四个 adapter CLI 均要求 `--junit`，四个 sbatch 均保存 Git commit、完整 environment
+  fingerprint，并把 job/task ID 编入 artifact 名；
+- DPA4 smoke 必须显式导入并能读取其 source layout，避免真实 checkpoint 成功后才触发
+  `NameError`；
+- 对共用 runner 的成功/失败行为和四个 launcher contract 增加单元测试，随后运行 targeted、
+  完整 pytest、compile、四个 sbatch `bash -n` 与 `git diff --check`。
+
+实际结果：
+
+- 共用 runner 成功路径写入 metadata/JSON/JUnit，失败路径先写 failure JSON/JUnit 再原样抛出；
+- 四个 standalone sbatch 均包含 Git revision、`pip freeze`、JSON、JUnit 与 Slurm-ID artifact；
+- DPA4 smoke 现显式导入 `DPA4_SO3_LAYOUT`，回归断言 dimension 1600；
+- targeted：17 passed；完整本地 suite：157 passed、0 failed、0 skipped，484 warnings，214.34s；
+- `python -m compileall -q src tests`、四个 sbatch `bash -n` 与 `git diff --check` 均通过。
+
+诊断记录：前两次测试启动分别因未设置 `PYTHONPATH=.` 和受限 uv cache 失败，随后使用既定
+本地 Python、显式 `PYTHONPATH=.`、禁用第三方 pytest plugin autoload/cache 后通过；测试范围未降低。
+
 ## 2026-09-12 — Guqq benchmark/checkpoint resource synchronization
 
 计划检查：

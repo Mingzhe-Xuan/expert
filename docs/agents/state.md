@@ -9,7 +9,8 @@ MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE �
 四套隔离 runtime 均已在 Guqq 完成精确安装并通过 `pip check`；Equiformer 使用 scoped
 HTTP/1.1 pull 恢复网络，并修复 wheel-only resolver 的旧 Hydra/OmegaConf 回退。四套 runtime
 lock 已固化。资源同步连续三次因跳板/Guqq 出站网络中断，已按 `lessons.md` 暂停盲连；
-本地 10-file contract 完整。Equiformer gated checkpoint 与全部 Slurm 验收仍未完成。
+本地 10-file contract 完整。四个 standalone adapter smoke 的失败证据、JUnit、Git/environment
+fingerprint contract 已完成并通过全量测试；Equiformer gated checkpoint 与全部 Slurm 验收仍未完成。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -50,6 +51,12 @@ lock 已固化。资源同步连续三次因跳板/Guqq 出站网络中断，已
 - 2026-09-12：资源同步第二、三次均未通过 mandatory pull，分别为 GnuTLS `-110` 与
   GitHub 443 超时 133932 ms；已查阅 `lessons.md` 的出站网络经验并暂停本阶段重试。
   三次均未形成可验收上传，下一步保留原子复制方案，等待外部网络状态变化。
+- 2026-09-12：Definition-of-Done 审计发现四个 standalone adapter jobs 仅成功时写 JSON，
+  缺少失败摘要、JUnit 与独立 Git/environment fingerprints；开始统一证据 contract，另修复
+  DPA4 smoke 对未导入 `DPA4_SO3_LAYOUT` 的运行时引用。
+- 2026-09-12：standalone adapter evidence contract 完成；成功/失败均持久化 JSON/JUnit，
+  四个 sbatch 固化 Git/env artifacts，DPA4 symbol regression 修复。Targeted 17、完整 157 tests
+  全绿，compile、四个 `bash -n` 与 diff checks 通过。下一步等待 Guqq 网络恢复后上传资源。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

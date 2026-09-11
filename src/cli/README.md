@@ -8,10 +8,14 @@ failure, and is suitable for the Slurm scripts required by `GOAL.md`.
 python -m src.cli.test --config path/to/run.json
 ```
 
-`python -m src.cli.mace_smoke --device cuda --output results/backbones/mace.json`
+`python -m src.cli.mace_smoke --device cuda --output results/backbones/mace.json --junit results/backbones/mace.xml`
 runs the real manifest-pinned MACE checkpoint feature/frozen-gradient/equivariance smoke.
 The provided `scripts/slurm/mace_adapter_smoke.sbatch` is the required execution path on Guqq;
 the login node must not run this command directly.
+
+All four standalone adapter CLIs use the same evidence wrapper: success and failure both write
+JSON execution metadata plus a one-case JUnit file, while failures are re-raised for a nonzero
+Slurm exit code.
 
 `python -m src.cli.real_subset_smoke --index N --device cuda --output-root results/real-smoke`
 runs one entry from the frozen 20-run real-data coverage schedule. On Guqq it is launched

@@ -15,6 +15,9 @@ set -euo pipefail
 : "${EXPERT_MACE_VENV:?Set EXPERT_MACE_VENV to the recorded MACE/core environment}"
 source "${EXPERT_MACE_VENV}/bin/activate"
 mkdir -p logs/slurm results/backbones
+git rev-parse HEAD > "results/backbones/mace-git-${SLURM_JOB_ID}.txt"
+python -m pip freeze > "results/backbones/mace-environment-${SLURM_JOB_ID}.txt"
 python -m src.cli.mace_smoke \
   --device cuda \
-  --output "results/backbones/mace-${SLURM_JOB_ID}.json"
+  --output "results/backbones/mace-${SLURM_JOB_ID}.json" \
+  --junit "results/backbones/mace-${SLURM_JOB_ID}.xml"

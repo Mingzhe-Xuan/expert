@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import importlib.metadata
-import json
 from pathlib import Path
 
 import torch
@@ -12,6 +11,7 @@ from ..backbones import EQUIFORMER_SO3_LAYOUT, EquiformerV2BackboneAdapter
 from ..graphs import build_periodic_graph
 from ..irreps import IrrepLayout, IrrepTerm
 from ..symmetry.registry import _layout_irreps
+from .reporting import run_recorded_smoke
 
 
 SMOKE_LAYOUT = IrrepLayout(
@@ -98,11 +98,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Real gated OMat24 EquiformerV2 feature smoke")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--junit", type=Path, required=True)
     arguments = parser.parse_args()
-    result = run(arguments.device)
-    arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    arguments.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    print(json.dumps(result, indent=2))
+    run_recorded_smoke(
+        run,
+        device=arguments.device,
+        output=arguments.output,
+        junit=arguments.junit,
+        suite_name="equiformerv2_adapter_smoke",
+    )
 
 
 if __name__ == "__main__":

@@ -16,6 +16,9 @@ set -euo pipefail
 source "${EXPERT_GRACE_VENV}/bin/activate"
 export TF_FORCE_GPU_ALLOW_GROWTH=true
 mkdir -p logs/slurm results/backbones
+git rev-parse HEAD > "results/backbones/grace-git-${SLURM_JOB_ID}.txt"
+python -m pip freeze > "results/backbones/grace-environment-${SLURM_JOB_ID}.txt"
 python -m src.cli.grace_smoke \
   --device cuda \
-  --output "results/backbones/grace-${SLURM_JOB_ID}.json"
+  --output "results/backbones/grace-${SLURM_JOB_ID}.json" \
+  --junit "results/backbones/grace-${SLURM_JOB_ID}.xml"

@@ -15,6 +15,9 @@ set -euo pipefail
 : "${EXPERT_DPA4_VENV:?Set EXPERT_DPA4_VENV to the recorded DPA4 environment}"
 source "${EXPERT_DPA4_VENV}/bin/activate"
 mkdir -p logs/slurm results/backbones
+git rev-parse HEAD > "results/backbones/dpa4-git-${SLURM_JOB_ID}.txt"
+python -m pip freeze > "results/backbones/dpa4-environment-${SLURM_JOB_ID}.txt"
 python -m src.cli.dpa4_smoke \
   --device cuda \
-  --output "results/backbones/dpa4-${SLURM_JOB_ID}.json"
+  --output "results/backbones/dpa4-${SLURM_JOB_ID}.json" \
+  --junit "results/backbones/dpa4-${SLURM_JOB_ID}.xml"

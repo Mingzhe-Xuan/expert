@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import platform
 import subprocess
+import time
+from typing import Callable
 import xml.etree.ElementTree as ET
 
 import torch
@@ -62,3 +65,41 @@ def write_single_case_junit(
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     ET.ElementTree(suite).write(target, encoding="utf-8", xml_declaration=True)
+
+
+def run_recorded_smoke(
+    run_case: Callable[[str], dict[str, object]],
+    *,
+    device: str,
+    output: str | Path,
+    junit: str | Path,
+    suite_name: str,
+) -> dict[str, object]:
+    """Run one smoke case while persisting success or failure evidence."""
+
+    started = time.perf_counter()
+    error: Exception | None = None
+    try:
+        result = run_case(device)
+        result["execution"] = execution_metadata()
+    except Exception as caught:
+        error = caught
+        result = {
+            "status": "failed",
+            "error_type": type(caught).__name__,
+            "error": str(caught),
+            "execution": execution_metadata(),
+        }
+    target = Path(output)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    write_single_case_junit(
+        junit,
+        suite_name=suite_name,
+        seconds=time.perf_counter() - started,
+        error=error,
+    )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    if error is not None:
+        raise error
+    return result

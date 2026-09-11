@@ -1,5 +1,10 @@
 # Agent progress updates
 
+- 2026-09-12：DoD 审计发现 standalone adapter jobs 缺少失败 JSON/JUnit 与独立 Git/env
+  fingerprints，并发现 DPA4 smoke 的 source-layout 符号未导入；已冻结对应行为与静态测试。
+- 2026-09-12：完成共用 fail-preserving adapter runner、四套 sbatch Git/env/JSON/JUnit 证据链
+  与 DPA4 layout import 修复；targeted 17、完整 157 tests 全绿，compile/shell/diff checks 通过。
+
 - 2026-09-12：开始 Guqq 资源同步单元；已复核三份 benchmark 数据和三套非门控骨干的
   10 个 contract 文件。首个 tar stream 在成功 pull 后被跳板重置；改为先 pull 的 multiplex
   transport 加逐文件原子 scp，且剔除未进入 GRACE loader contract 的额外 GMM artifact。

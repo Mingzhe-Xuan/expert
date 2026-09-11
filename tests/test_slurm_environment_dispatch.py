@@ -95,3 +95,14 @@ def test_slurm_launchers_use_only_explicit_environment_contracts() -> None:
     for path, variable in expected.items():
         assert variable in path.read_text(encoding="utf-8")
     assert all("EXPERT_VENV" not in path.read_text(encoding="utf-8") for path in all_launchers)
+
+
+def test_standalone_adapter_launchers_persist_complete_evidence() -> None:
+    for family in FAMILIES:
+        path = ROOT / "scripts" / "slurm" / f"{family}_adapter_smoke.sbatch"
+        text = path.read_text(encoding="utf-8")
+        assert "git rev-parse HEAD" in text
+        assert "python -m pip freeze" in text
+        assert "--output" in text
+        assert "--junit" in text
+        assert "${SLURM_JOB_ID}" in text

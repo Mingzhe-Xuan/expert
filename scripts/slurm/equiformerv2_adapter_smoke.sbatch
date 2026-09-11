@@ -15,6 +15,9 @@ set -euo pipefail
 : "${EXPERT_EQUIFORMERV2_VENV:?Set EXPERT_EQUIFORMERV2_VENV to the recorded fairchem-core 1.10.0 environment}"
 source "${EXPERT_EQUIFORMERV2_VENV}/bin/activate"
 mkdir -p logs/slurm results/backbones
+git rev-parse HEAD > "results/backbones/equiformerv2-git-${SLURM_JOB_ID}.txt"
+python -m pip freeze > "results/backbones/equiformerv2-environment-${SLURM_JOB_ID}.txt"
 python -m src.cli.equiformerv2_smoke \
   --device cuda \
-  --output "results/backbones/equiformerv2-${SLURM_JOB_ID}.json"
+  --output "results/backbones/equiformerv2-${SLURM_JOB_ID}.json" \
+  --junit "results/backbones/equiformerv2-${SLURM_JOB_ID}.xml"

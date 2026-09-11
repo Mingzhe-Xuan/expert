@@ -12,6 +12,10 @@ machine-readable summaries, Slurm identifiers, and scheduler-captured stdout/std
 After completion, acceptance still requires checking every task with `sacct`; a generated
 report is not evidence that the scheduler state was `COMPLETED`.
 
+The four standalone real-checkpoint adapter launchers follow the same evidence contract: exact
+Git revision, `pip freeze`, JSON execution metadata, JUnit, and scheduler-captured stdout/stderr.
+Their CLI wrappers persist failure artifacts before returning a nonzero exit code.
+
 Both mixed-backbone arrays use `select_backbone_venv.sh`. Their frozen schedules map array
 index modulo four to MACE, GRACE, DPA4, and EquiformerV2 respectively. The full core test suite,
 fixture builder, and BEC preparation use the MACE/core environment; standalone adapter jobs use
