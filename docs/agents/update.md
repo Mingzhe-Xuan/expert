@@ -4,6 +4,8 @@
   prepare/validate 作业也具备失败保留的 summary/JUnit、Git/env 与 Slurm-ID 证据。
 - 2026-09-12：完成 32-PG builder 与 BEC prepare/validate job-level evidence；修正 BEC resume
   的旧错误污染并强制全索引计数。Targeted 27、完整 161 tests、scoped compile/shell/diff 全绿。
+- 2026-09-12：间隔两个本地实现单元后做一次 pull-first 恢复检查，仍以 GnuTLS `-110`
+  失败且未开始上传；遵守单次界限，本回合不再连接 Guqq。
 
 - 2026-09-12：DoD 审计发现 standalone adapter jobs 缺少失败 JSON/JUnit 与独立 Git/env
   fingerprints，并发现 DPA4 smoke 的 source-layout 符号未导入；已冻结对应行为与静态测试。

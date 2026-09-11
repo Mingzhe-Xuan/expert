@@ -62,6 +62,8 @@ fingerprint contract 已完成并通过全量测试；Equiformer gated checkpoin
 - 2026-09-12：两个 required data jobs 的证据 contract 完成；BEC 当前尝试 error log 可恢复，
   全索引 record-count fail-closed。Targeted 27、完整 161 tests 全绿，scoped compile、两个
   `bash -n` 与 diff checks 通过。资源与 Guqq Slurm 实跑仍等待网络恢复。
+- 2026-09-12：完成两个本地 DoD 单元后进行一次有界恢复检查；Guqq 可连接，但首条 scoped
+  HTTP/1.1 pull 再次以 GnuTLS `-110` 结束，未到 `MASTER_READY`、未写入资源。本回合停止连接。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

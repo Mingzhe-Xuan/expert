@@ -7,6 +7,9 @@
 - Authorized purpose: first run scoped HTTP/1.1 `git pull`; only if that succeeds, prepare ignored
   resource directories and expose `MASTER_READY` for atomic per-file copies and SHA-256 checks.
 - If the first pull still fails, stop for this goal turn. No login-node compute is authorized.
+- Result: Guqq accepted the session, but the first scoped HTTP/1.1 pull again ended with GnuTLS
+  recv error `-110` before `MASTER_READY`. No resource directory write or upload occurred; the
+  promised one-attempt bound was honored.
 
 ## 2026-09-12 — Synchronize verified benchmark/checkpoint resources
 
