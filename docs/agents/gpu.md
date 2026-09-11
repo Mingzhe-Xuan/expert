@@ -146,3 +146,15 @@
   any Guqq shell output. Consequently there is no evidence that the required first `git pull`, HEAD,
   `sinfo`, or disk check executed. No remote compute ran; the repeated jump-host-to-Guqq failure
   remains external while local fixture/runner implementation continues.
+
+## 2026-09-12 — Sync 32-PG acceptance pipeline and inspect prerequisites
+
+- Intended connection: enter `/home/xmz/expert` through the configured jump host and execute
+  `timeout 30s git pull` as the first substantive remote operation, synchronizing commit
+  `1cd29c1` before any inspection.
+- Authorized purpose after the pull: inspect HEAD, `sinfo`, `squeue`, repository status, filesystem
+  capacity, recorded virtual environment, dataset manifests/resources, and checkpoint presence for
+  fixture generation and the three Slurm acceptance suites.
+- Permission check: all listed commands are lightweight login-node management. No imports that load
+  checkpoints, tests, compilation, inference, training, evaluation, or batch processing will run on
+  the login node; those operations require later `sbatch` submission.
