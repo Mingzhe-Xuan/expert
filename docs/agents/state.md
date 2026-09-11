@@ -94,6 +94,9 @@ fingerprint contract 已完成并通过全量测试；Equiformer gated checkpoin
 - 2026-09-12：runtime efficiency evidence 完成并接入两套 smoke；GRACE 外部 TensorFlow
   frozen variables 单列计入 total parameters，FLOPs scope 明确不冒充 TF 总量。Targeted 16、
   完整 170 tests 全绿，compile/diff checks 通过。真实 CUDA 数值待 Guqq jobs 生成。
+- 2026-09-12：两项 efficiency 补缺推送后，Guqq 一次 pull 成功并同步至 `6395e15`，确认
+  远端资源仍不完整；后续 control-master 被重置，SCP staging 的 pull-first 连接又以 GnuTLS
+  `-110` 失败。未创建 staging、未上传或覆盖文件，保留原子方案等待间隔恢复。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

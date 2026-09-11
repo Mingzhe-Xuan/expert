@@ -34,6 +34,9 @@
   atomically rename only matches. Any missing/mismatched item leaves final paths untouched.
 - This is resource transfer and lightweight checksum/file management only; no source edit, compile,
   data conversion, model execution, evaluation, training, or unsubmitted compute is authorized.
+- Result: the required pull-first staging connection reached Guqq but its GitHub HTTPS pull ended
+  with GnuTLS receive error `-110`; the guarded `mkdir` did not execute, and SCP was not started.
+  The atomic fallback remains ready for a later spaced recovery; no remote resource changed.
 
 ## 2026-09-12 — Spaced resource-sync recovery check after local DoD work
 
