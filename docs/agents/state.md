@@ -7,8 +7,9 @@
 幂等创建。两个 mixed arrays 按已冻结且验证的 `index % 4` backbone schedule 选择环境；
 MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE 安装连续三次被 Guqq
 四套隔离 runtime 均已在 Guqq 完成精确安装并通过 `pip check`；Equiformer 使用 scoped
-HTTP/1.1 pull 恢复网络，并修复 wheel-only resolver 的旧 Hydra/OmegaConf 回退。当前固化最后
-一套 freeze lock；Equiformer gated checkpoint、资源传输与全部 Slurm 验收仍未完成。
+HTTP/1.1 pull 恢复网络，并修复 wheel-only resolver 的旧 Hydra/OmegaConf 回退。四套 runtime
+lock 已固化；现进入三份 benchmark 数据与 MACE/GRACE/DPA4 资源的校验上传。Equiformer
+gated checkpoint 与全部 Slurm 验收仍未完成。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -41,6 +42,8 @@ HTTP/1.1 pull 恢复网络，并修复 wheel-only resolver 的旧 Hydra/OmegaCon
   fairchem-core 1.10.0、Torch 2.4.1+cu121、e3nn 0.5.9，`pip check` clean，剩余 15 GiB。
 - 2026-09-12：Equiformer 119-entry exact lock 与 resolver guard 完成；targeted 9 tests、完整
   153-test suite、compile/diff checks 全绿。四套 Guqq runtime 阶段完成，下一步上传已校验资源。
+- 2026-09-12：开始资源同步阶段；冻结 11 个传输对象及其本地 size/SHA-256，采用单一 SSH
+  流会话保证远端先 pull、后写入 ignored data/checkpoint 路径并逐项复核。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

@@ -1,5 +1,14 @@
 # GPU / server activity
 
+## 2026-09-12 — Synchronize verified benchmark/checkpoint resources
+
+- Intended connection: one `ssh Guqq` streaming session.
+- Authorized purpose: first run a scoped HTTP/1.1 `git pull`, then stream three verified
+  benchmark datasets plus the MACE/GRACE/DPA4 checkpoints and GRACE loader artifacts into
+  Git-ignored paths under `/home/xmz/expert`, followed only by size/SHA-256 checks.
+- No training, inference, evaluation, compilation, or batch processing will run on the login
+  node; the gated Equiformer checkpoint is outside this connection's scope.
+
 ## 2026-09-11 — Sync Phase A checkpoint and locate checkout
 
 - Intended connection: `ssh Guqq` through the configured `vlab` jump host.
