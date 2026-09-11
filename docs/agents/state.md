@@ -69,6 +69,12 @@ fingerprint contract 已完成并通过全量测试；Equiformer gated checkpoin
 - 2026-09-12：strict sacct audit 完成；精确展开 expected `JobIDRaw`，拒绝缺失、重复、
   非 `COMPLETED` 与非 `0:0`，并保存 raw/JSON。Targeted 12、完整 167 tests 全绿，CLI
   help、compile/diff checks 通过。最终 scheduler evidence 仍需 Guqq 实跑后生成。
+- 2026-09-12：DoD 审计继续发现 efficiency README 无对应实现；开始增加真实 forward latency、
+  CUDA peak allocation、PyTorch-dispatched active downstream FLOPs，以及 total/trainable/
+  active parameters 和逐样本 active-expert counts，并接入 58/20 smoke reports。
+- 2026-09-12：runtime efficiency evidence 完成并接入两套 smoke；GRACE 外部 TensorFlow
+  frozen variables 单列计入 total parameters，FLOPs scope 明确不冒充 TF 总量。Targeted 16、
+  完整 170 tests 全绿，compile/diff checks 通过。真实 CUDA 数值待 Guqq jobs 生成。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

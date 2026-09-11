@@ -139,6 +139,12 @@ def test_five_structure_runner_updates_checkpoints_and_serializes_metrics(tmp_pa
     }
     assert report["active_nonbackbone_parameters"] < 5_000_000
     assert set(report["test_metrics"]) == {"trace", "traceless"}
+    efficiency = report["efficiency"]
+    assert efficiency["architecture"] == _config().variant_id
+    assert efficiency["task"] == "dielectric"
+    assert efficiency["active_nonbackbone_parameters"] < 5_000_000
+    assert efficiency["active_downstream_flops"] > 0
+    assert efficiency["peak_cuda_allocated_bytes"] is None
 
 
 def test_real_smoke_schedule_covers_every_unit_branch_backbone_and_mode() -> None:

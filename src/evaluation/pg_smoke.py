@@ -15,6 +15,7 @@ from ..models import build_backbone_adapter, BackboneTensorModel
 from ..experts import PointGroupTensorModel, default_hidden_layout
 from ..symmetry import SymmetryRecord, canonicalize_structure
 from .fixtures import validate_point_group_fixture_manifest
+from .efficiency import profile_model_efficiency
 
 
 PG_PGE_VARIANTS = (14, 17, 18, 25)
@@ -171,6 +172,19 @@ def run_point_group_smoke(
     active = downstream.active_nonbackbone_parameter_count((symmetry,))
     if active >= 5_000_000:
         raise AssertionError("32-PG active parameter budget exceeded")
+    efficiency = profile_model_efficiency(
+        system,
+        lambda: system.forward_with_graph(graph, (symmetry,)),
+        lambda cached: downstream(
+            cached.backbone_features, cached.graph, (symmetry,)
+        ),
+        architecture=architecture,
+        task=row["task"],
+        point_groups=(symmetry.current_point_group,),
+        active_nonbackbone_parameters=active,
+        active_expert_counts=downstream.active_expert_counts((symmetry,)),
+        device=graph.positions.device,
+    )
     return {
         "status": "passed",
         "index": index,
@@ -186,4 +200,5 @@ def run_point_group_smoke(
         "nodes": result.graph.num_nodes,
         "edges": result.graph.num_edges,
         "active_nonbackbone_parameters": active,
+        "efficiency": efficiency,
     }

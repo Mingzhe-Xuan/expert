@@ -6,6 +6,7 @@ from .fixtures import (
     validate_point_group_fixture_manifest,
     write_point_group_fixture_manifest,
 )
+from .efficiency import profile_model_efficiency
 from .pg_smoke import (
     FLOAT32_TOLERANCE,
     audit_backbone_graph_automorphism,
@@ -22,4 +23,5 @@ __all__ = [
     "select_point_group_fixtures",
     "validate_point_group_fixture_manifest",
     "write_point_group_fixture_manifest",
+    "profile_model_efficiency",
 ]

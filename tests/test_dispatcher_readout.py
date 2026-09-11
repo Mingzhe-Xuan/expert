@@ -6,7 +6,11 @@ import pytest
 import spglib
 import torch
 
-from src.configs import ARCHITECTURE_BRANCHES, enumerate_architecture_configs
+from src.configs import (
+    ARCHITECTURE_BRANCHES,
+    ArchitectureConfig,
+    enumerate_architecture_configs,
+)
 from src.data import TrainingUnit
 from src.experts import PointGroupTensorModel, default_hidden_layout
 from src.graphs import build_periodic_graph, collate_periodic_graphs
@@ -65,6 +69,23 @@ def _convention() -> ConventionMetadata:
         copy_ordering="target-contract-v1",
         subduction_checksum="b" * 64,
     )
+
+
+def test_active_expert_counts_distinguish_expert_free_and_routed_samples() -> None:
+    symmetries = (_record("1"), _record("2"))
+    direct = PointGroupTensorModel(
+        ArchitectureConfig("B+R", "none", "none", "full_o3", "none"),
+        "dielectric",
+        hidden_layout=SMALL_LAYOUT,
+    )
+    routed = PointGroupTensorModel(
+        ArchitectureConfig("B+PGE+R", "none", "none", "full_o3", "a1_only"),
+        "dielectric",
+        hidden_layout=SMALL_LAYOUT,
+        expert_point_groups=("1", "2"),
+    )
+    assert direct.active_expert_counts(symmetries) == (0, 0)
+    assert routed.active_expert_counts(symmetries) == (1, 1)
 
 
 def test_three_readouts_have_correct_scope_constraints_and_no_bec_pi_g() -> None:

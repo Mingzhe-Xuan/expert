@@ -1,5 +1,10 @@
 # Agent progress updates
 
+- 2026-09-12：开始 runtime efficiency evidence 单元；补齐 README 已声明但代码缺失的参数、
+  active experts、active downstream FLOPs、end-to-end latency 与 CUDA peak memory 报告。
+- 2026-09-12：完成并接入两套 smoke 的 efficiency profiler；GRACE external frozen variables
+  纳入 total parameter 口径，FLOPs 显式限定 active downstream scope。Targeted 16、完整 170 tests 全绿。
+
 - 2026-09-12：开始 strict Slurm terminal-state audit 单元；将用 versioned job manifest 精确
   展开并核验全部单作业与 array tasks，替代无法形成完成证明的人工 `sacct` 浏览。
 - 2026-09-12：完成 strict sacct CLI、manifest schema 与数组完整性校验；targeted 12、完整

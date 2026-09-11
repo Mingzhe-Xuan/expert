@@ -1,5 +1,31 @@
 # Test plan and results
 
+## 2026-09-12 — Runtime efficiency evidence
+
+计划检查：
+
+- profiler 必须报告 total/trainable/active non-backbone parameters、逐样本 active expert
+  count（mean/max）、真实 end-to-end forward latency、CUDA peak allocated bytes；
+- active FLOPs 用缓存 backbone feature 上的实际 downstream forward，经 Torch profiler
+  统计 dispatched operators，并明确 scope，避免把 TensorFlow GRACE 未观测部分冒充总 FLOPs；
+- profiling 保持并恢复 model train/eval 状态，CUDA 测量前后同步，非 CUDA 明确将 peak 记为 null；
+- 58-row PG smoke 与 20-row real-subset smoke 均嵌入带 architecture/task/PG/mode/backend keys
+  的 efficiency record；
+- 添加 CPU linear reference、active-expert counts 与 smoke integration 测试，运行 targeted、
+  完整 pytest、compile 和 `git diff --check`。
+
+实际结果：
+
+- efficiency record 包含 architecture/task/PG/mode/三个 backend keys，以及 total、Torch
+  registered、external frozen、trainable、active non-backbone parameters；
+- active expert counts 按样本去重并报告 list/mean/max；expert-free 为 0，current-only routed 为 1；
+- end-to-end latency 为同步单次真实 forward；CUDA incremental peak 在 CUDA 上测量、CPU 为 null；
+- active downstream FLOPs 由缓存 backbone feature 上的 Torch profiler 实测，并以
+  `torch_dispatched_active_downstream_forward` 明确 scope；GRACE TensorFlow 参数独立计数；
+- 58-row point-group 与 20-row real-subset JSON 均嵌入 efficiency record；
+- targeted：16 passed；完整本地 suite：170 passed、0 failed、0 skipped，496 warnings，219.24s；
+- `python -m compileall -q src tests` 与 `git diff --check` 通过。
+
 ## 2026-09-12 — Strict Slurm terminal-state audit
 
 计划检查：

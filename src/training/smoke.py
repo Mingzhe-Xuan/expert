@@ -12,6 +12,7 @@ from ..backbones import BackboneResourceRegistry
 from ..configs import ArchitectureConfig
 from ..data import TensorSample, TrainingUnit, load_five_structure_smoke
 from ..experts import PointGroupTensorModel, default_hidden_layout
+from ..evaluation.efficiency import profile_model_efficiency
 from ..graphs import PeriodicGraph, build_periodic_graph, collate_periodic_graphs
 from ..heads import TARGET_LAYOUTS, cartesian_to_irreps, rotate_cartesian
 from ..irreps import ConventionMetadata
@@ -226,6 +227,26 @@ def run_five_structure_smoke(
     active = system.downstream.active_nonbackbone_parameter_count(train.symmetries)
     if active >= 5_000_000:
         raise AssertionError("active non-backbone parameter budget was exceeded")
+    efficiency_symmetries = test.symmetries
+    efficiency = profile_model_efficiency(
+        system,
+        lambda: system.forward_with_graph(test.graph, efficiency_symmetries),
+        lambda cached: system.downstream(
+            cached.backbone_features, cached.graph, efficiency_symmetries
+        ),
+        architecture=architecture,
+        task=unit.target,
+        point_groups=tuple(
+            symmetry.current_point_group for symmetry in efficiency_symmetries
+        ),
+        active_nonbackbone_parameters=system.downstream.active_nonbackbone_parameter_count(
+            efficiency_symmetries
+        ),
+        active_expert_counts=system.downstream.active_expert_counts(
+            efficiency_symmetries
+        ),
+        device=test.graph.positions.device,
+    )
     return {
         "schema_version": 1,
         "status": "passed",
@@ -248,6 +269,7 @@ def run_five_structure_smoke(
         "trainable_parameters": sum(parameter.numel() for parameter in trainable),
         "active_nonbackbone_parameters": active,
         "point_groups": list(point_groups),
+        "efficiency": efficiency,
     }
 
 

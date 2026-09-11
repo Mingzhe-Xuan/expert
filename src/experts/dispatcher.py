@@ -248,3 +248,20 @@ class PointGroupTensorModel(nn.Module):
             modules.extend(expert_container[key] for key in sorted(keys))
         parameters = {id(parameter): parameter for module in modules for parameter in module.parameters()}
         return sum(parameter.numel() for parameter in parameters.values())
+
+    def active_expert_counts(
+        self,
+        symmetries: tuple[SymmetryRecord, ...],
+        parent_dags: tuple[ParentDAGSpec | None, ...] | None = None,
+    ) -> tuple[int, ...]:
+        """Return the number of deduplicated routed expert branches per sample."""
+
+        parent_dags = parent_dags or (None,) * len(symmetries)
+        if len(parent_dags) != len(symmetries):
+            raise ValueError("parent DAGs must align with symmetries")
+        if self.routing_gate is None:
+            return (0,) * len(symmetries)
+        return tuple(
+            len(set(self._active_halls(symmetry, dag)))
+            for symmetry, dag in zip(symmetries, parent_dags)
+        )

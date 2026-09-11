@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -189,6 +190,10 @@ class GRACEBackboneAdapter(nn.Module):
             model_only=True,
             expect_partial=True,
             assert_existing_objects_matched=True,
+        )
+        self.external_frozen_parameter_count = sum(
+            math.prod(int(dimension) for dimension in variable.shape)
+            for variable in model.model.variables
         )
         cutoff, symbols, indices = extract_cutoff_and_elements(instructions)
         element_map = {str(symbol): int(index) for symbol, index in zip(symbols, indices)}

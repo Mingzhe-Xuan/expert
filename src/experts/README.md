@@ -19,3 +19,5 @@ the common O(3) layout.
 `PointGroupTensorModel` is the frozen five-branch downstream dispatcher. It consumes a
 real `O3FeatureBatch`, conditionally executes only configured modules, routes only through
 validated Hall DAG nodes, fuses in the shared O(3) layout, and invokes one task readout.
+It reports deduplicated active non-backbone parameters and per-sample active expert counts;
+expert-free branches report zero, while routed branches count each validated Hall node once.
