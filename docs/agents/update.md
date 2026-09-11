@@ -1,5 +1,13 @@
 # Agent progress updates
 
+- 2026-09-11：开始 MACE/GRACE/DPA4/EquiformerV2 正式 adapters；测试计划冻结为
+  manifest/checksum/runtime fail-closed、scalar readout 前真实 tap、统一 `O3FeatureBatch`、
+  graph reuse、checkpoint frozen policy，以及 SO(3) 模型的双前向 parity Reynolds wrapper。
+- 2026-09-11：完成 backbone 基础提交候选：补齐 MACE-MP medium-0b3 revision/size/SHA
+  和四资源 feature/parity/graph metadata；实现严格 resource registry、周期反演双调用
+  Reynolds wrapper 与 O(3) interface projector。目标 5 passed，合并 112 passed、1 旧 skip；
+  四个真实 checkpoint feature taps 仍是下一实现单元。
+
 - 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
   canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整
   `(W,t)` operations 与 species-preserving audit permutations。

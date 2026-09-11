@@ -71,6 +71,12 @@ Goal 尚未具备完成证据。
 - 2026-09-11：退出 dispatcher/readout 阶段：三类输出、父 Hall 校验和 26-config
   train/checkpoint 矩阵均通过；期间修复 float32 fixed-space 判秩缺陷。下一步实现并
   验证四个真实预训练 backbone adapters。
+- 2026-09-11：进入四真实 backbone adapter 阶段；先冻结资源 metadata、真实 feature
+  tap、graph reuse/rebuild、frozen-gradient 和 parity 验收。DPA4/EquiformerV2 必须以
+  双真实前向的 inversion-paired Reynolds wrapper 接入，Equiformer gated 资源仍需解决。
+- 2026-09-11：完成 backbone resource/parity/interface 基础层：manifest 现含四项冻结
+  metadata 与 MACE 文件 SHA，资源校验 fail closed；SO(3) wrapper 在保留右手 cell 的
+  周期反演对上执行两次 extractor 并产生显式 even/odd blocks。真实四 adapter 尚未完成。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

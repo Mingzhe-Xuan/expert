@@ -1,5 +1,13 @@
 # Agent lessons
 
+## 2026-09-11 — Periodic inversion for SO(3)-to-O(3) feature projection
+
+- Do not negate the Cartesian cell to construct the inversion partner: that changes its
+  handedness and can send a backbone down a different cell convention. Keep the same cell and
+  map fractional sites as `(-s) mod 1`, preserving the original species/node order explicitly.
+- Parity projection must combine two actual frozen-backbone evaluations of the paired structures.
+  Relabelling one SO(3) feature tensor with even/odd metadata provides no reflection guarantee.
+
 ## 2026-09-11 — Determine symmetry fixed-space rank in reference precision
 
 - A point-group Reynolds projector may have forbidden eigenvalues at float32 round-off scale.

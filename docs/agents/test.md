@@ -1,5 +1,36 @@
 # Test plan and results
 
+## 2026-09-11 — Four real pretrained backbone adapters
+
+计划检查：
+
+- `data/manifests/backbones.json` 必须冻结 MACE/GRACE/DPA4/EquiformerV2 四项的
+  repository/revision/license/runtime/local path/checksum/feature tap/parity/graph contract；
+  缺文件、checksum 不符、版本不兼容或 gated 权限未解决时 fail closed。
+- 四 adapter 在原 scalar readout 前提取真实 checkpoint node features，转换为明确
+  `IrrepLayout`/component order/node batch/edge geometry 的 `O3FeatureBatch`；优先复用
+  backbone graph，否则按冻结 graph spec 确定性重建。
+- MACE/GRACE 逐 checkpoint 审计并测试 O(3) parity；DPA4/EquiformerV2 使用固定的
+  inversion-paired Reynolds wrapper，以两次真实 backbone evaluation 构造 parity
+  channels，禁止仅改 metadata。
+- 默认冻结 checkpoint 参数并固定 eval 行为；允许的 interface projection 参数可反传，
+  active non-backbone 计数包含它们。测试 batch/node mapping、float/device、empty-edge、
+  proper/improper transforms、反射配对和 finite gradients。
+- 本地运行纯 contract/parity/manifest tests；四个 checkpoint 的真实最小 batch
+  feature/rotation/reflection/frozen-gradient 测试登记为 Guqq-only，但最终 Slurm 报告
+  必须四项全绿且无 skip/xfail。
+
+阶段性实际结果（resource/parity/interface 基础层）：
+
+- `uv run python -m pytest tests/test_backbone_contracts.py -q`：5 passed；覆盖四项 manifest
+  顺序与必填元数据、gated/missing/size/SHA/path-escape fail-closed、周期反演 involution、
+  双真实 extractor 调用、proper/improper O(3) 协变、冻结策略及 interface projector 梯度。
+- `uv run python -m pytest tests assets/model_code/tests -q`：112 passed，1 个既有 opt-in
+  skip，0 failed。此结果不等同于四个真实 checkpoint acceptance；后者仍待 adapter 与
+  Guqq Slurm suite。
+
+
+
 ## 2026-09-11 — Five-branch dispatcher and three tensor readouts
 
 计划检查：
