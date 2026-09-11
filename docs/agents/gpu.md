@@ -400,3 +400,17 @@
 - Permission check: isolated dependency installation and lightweight metadata checks only, using
   wheels for native packages. No compilation, project/model execution, checkpoint loading, data
   processing, tests, training, inference, evaluation, or unsubmitted compute will run.
+- Result: the server pulled to `46f4d15`; the DPA4 venv installed DeepMD-kit 3.2.0, Torch
+  2.11.0+cu128, CUDA toolkit 12.8.1, e3nn 0.5.9, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0,
+  and ASE 3.26.0. `pip check` was clean; the freeze fingerprint is
+  `92a818e296e05dd0fe4a3d50cf3cb0fe6fbcdb538a2eefbcab0378ad44eb7f8b`; 24 GiB remained.
+  No project/model/data workload ran.
+
+## 2026-09-12 — Install and inspect the EquiformerV2 runtime
+
+- Intended connection: after committing the verified DPA4 lock, pull first; install the exact
+  fairchem-core 1.10.0 runtime with its compatible PyTorch 2.4/CUDA wheel stack and pinned common
+  scientific/test packages, then emit `pip check`, freeze fingerprint, and disk-capacity evidence.
+- Permission check: isolated dependency installation and lightweight metadata checks only; all
+  native dependencies must use wheels. No compilation, project/model execution, gated checkpoint
+  access, data processing, tests, training, inference, evaluation, or unsubmitted compute will run.

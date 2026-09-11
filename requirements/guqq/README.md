@@ -12,5 +12,8 @@ installed from binary wheels.
 extra, whose accepted NVIDIA version ranges are compatible with the exact CUDA 12.8 packages used
 by Torch 2.11.0+cu128 in this environment.
 
-DPA4 and EquiformerV2 locks must be added only after their isolated Guqq environments pass
+`dpa4.txt` records DeepMD-kit 3.2.0 with its Torch extra and the exact CUDA 12.8/e3nn stack used
+by the selected DPA4 checkpoint adapter.
+
+The EquiformerV2 lock must be added only after its isolated Guqq environment passes
 `pip check`; do not manufacture them from an unexecuted resolver plan.

@@ -1,5 +1,21 @@
 # Test plan and results
 
+## 2026-09-12 — Reproducible Guqq DPA4 environment lock
+
+计划检查：
+
+- 将 Guqq clean `pip check` 后的 DPA4 snapshot 固化为独立 exact-pin lock；
+- 通用 parser 断言无重复、全部 requirements 精确 `==`，并包含官方 cu128 index；
+- 关键版本必须为 DeepMD-kit 3.2.0、Torch 2.11.0+cu128、CUDA toolkit 12.8.1、
+  e3nn 0.5.9、NumPy 1.26.4、SciPy 1.15.3 与 spglib 2.6.0；
+- 执行 targeted pytest、完整本地 pytest、compile 与 `git diff --check`。
+
+实际结果：
+
+- `dpa4.txt` 固化 80 个唯一 exact pins、官方 cu128 index 与全部关键版本；
+- targeted：7 passed；完整本地 `tests/`：151 passed，0 failed，0 skipped（229.92 s）；
+- `python -m compileall -q src tests` 与 `git diff --check` 通过。
+
 ## 2026-09-12 — Reproducible Guqq GRACE environment lock
 
 计划检查：

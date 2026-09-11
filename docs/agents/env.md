@@ -22,7 +22,10 @@
   Torch 2.11.0+cu128, CUDA toolkit 12.8.1, e3nn 0.5.9, NumPy 1.26.4, SciPy 1.15.3,
   spglib 2.6.0, ASE 3.26.0, and pytest 8.4.2. Its freeze SHA-256 is
   `8e07b1621156789b07e806a8e9fc4645fc2da757ec019eb7c9c723714ec84765`.
-- DPA4 and EquiformerV2 installs remain pending. Exact installed versions,
+- DPA4 is installed and `pip check` is clean: DeepMD-kit 3.2.0, Torch 2.11.0+cu128,
+  CUDA toolkit 12.8.1, e3nn 0.5.9, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0, and ASE 3.26.0.
+  Its freeze SHA-256 is `92a818e296e05dd0fe4a3d50cf3cb0fe6fbcdb538a2eefbcab0378ad44eb7f8b`.
+- EquiformerV2 installation remains pending. Exact installed versions,
   scientific stack,
   four backbone runtimes, source revisions where wheels are unavailable, and `pip freeze` fingerprint
   must be appended here after installation and before any acceptance job is submitted.

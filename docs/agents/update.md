@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12：完成 `requirements/guqq/dpa4.txt`：80 个唯一 exact pins 与 7 个关键版本
+  断言；targeted 7、完整 151 tests 全绿，compile/diff 通过，准备 Equiformer runtime。
+
+- 2026-09-12：跨回合间隔后 Guqq pull 恢复；完成 DPA4 venv（DeepMD-kit 3.2.0、Torch
+  2.11.0+cu128、e3nn 0.5.9），`pip check` clean，freeze SHA 已记录，剩余 24 GiB。
+
 - 2026-09-12：DPA4 安装三次均在强制 pull 阶段无输出终止，pip 未执行；按三次失败规则
   暂停本轮 Guqq 重连。MACE/GRACE 已验证，DPA4/Equiformer 与 Slurm evidence 仍待完成。
 

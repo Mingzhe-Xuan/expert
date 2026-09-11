@@ -6,9 +6,9 @@
 所有 Slurm 入口现已使用四个显式 venv contract；四套隔离 Python 3.10.12 环境均已在 Guqq
 幂等创建。两个 mixed arrays 按已冻结且验证的 `index % 4` backbone schedule 选择环境；
 MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE 安装连续三次被 Guqq
-到 GitHub 的出站 TLS/443 故障曾在 GRACE 间隔重试时恢复；MACE/core 与 GRACE 均完成精确
-安装并通过 `pip check`。DPA4 随后三次又停在强制 pull 阶段且未执行 pip，按 lessons 暂停
-本轮盲连；DPA4/Equiformer 环境及全部 Slurm 验收仍未完成。
+到 GitHub 的出站 TLS/443 故障在跨回合间隔后恢复；MACE/core、GRACE 与 DPA4 均完成精确
+安装并通过 `pip check`。当前固化 DPA4 freeze lock，随后安装最后一套 Equiformer runtime；
+Equiformer gated checkpoint 与全部 Slurm 验收仍未完成。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -31,6 +31,10 @@ MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE �
   149 tests 全绿，compile/diff checks 通过。下一步安装 DPA4 runtime。
 - 2026-09-12：DPA4 三次连接均未完成首个强制 pull，全部安装被 `set -e` 门控且 venv
   未改变；停止本轮网络重试，保留 MACE/GRACE 已验证边界等待下一次间隔恢复。
+- 2026-09-12：跨回合间隔后 pull 恢复；DPA4 安装 DeepMD-kit 3.2.0、Torch 2.11.0+cu128、
+  e3nn 0.5.9 与冻结科学栈，`pip check` clean，freeze SHA 已记录，剩余 24 GiB。
+- 2026-09-12：完成 80-entry DPA4 freeze lock 与关键版本静态验收；targeted 7、完整
+  151 tests 全绿，compile/diff checks 通过。下一步安装 EquiformerV2 runtime。
 
 ## 并行 Goal 状态（material-oriented target projection）
 
