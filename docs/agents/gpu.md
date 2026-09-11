@@ -423,3 +423,12 @@
   PyTorch 2.4.1/cu121 and fairchem-core 1.10.0 wheel stack only after it succeeds.
 - Permission check: unchanged isolated dependency-installation and metadata-check scope; no native
   compilation, gated-resource access, project/model execution, data work, tests, or GPU workload.
+- Result: the second connection returned no pull result within the 120-second bound and ended before
+  any pip output. The EquiformerV2 venv remains unchanged.
+
+## 2026-09-12 — Final bounded EquiformerV2 runtime retry
+
+- Intended connection: make one final bounded mandatory pull and run the exact wheel-only runtime
+  installation only on success; otherwise stop this network path for the turn.
+- Permission check: unchanged isolated package-management scope, with no compilation, checkpoint
+  access, project/model execution, data processing, tests, or GPU workload.
