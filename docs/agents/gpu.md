@@ -225,3 +225,14 @@
   and pip versions after either path.
 - Permission check: isolated venv creation/inspection only, with no installation, imports, tests,
   compilation, model/data processing, or other compute workload on the login node.
+- Result: the idempotent retry again returned only the Vlab welcome line and status 1, with no Guqq
+  shell or command output. No environment existence/creation can be inferred. The existing SSH
+  pre-auth guidance in `docs/agents/lessons.md` was consulted; after one shorter bounded retry, blind
+  retries will pause if the same external condition persists.
+
+## 2026-09-12 — Final bounded venv retry before pause
+
+- Intended connection: run the mandatory bounded pull, then the shortest idempotent existence-or-
+  create command for `/home/xmz/expert-envs/acceptance-py310`, followed only by `python --version`.
+- Permission check: this is the same isolated, non-overwriting lightweight environment operation;
+  no install, project import, tests, compilation, data processing, or model workload is authorized.
