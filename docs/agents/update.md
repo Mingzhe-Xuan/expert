@@ -37,6 +37,11 @@
   JARVIS-DFPT BEC 统一为 immutable `TensorSample`，支持 frozen resource gate、published/
   seeded split、target irrep conversion、node order 和 3/1/1 smoke selection。目标 11 passed、
   完整项目 119 passed；三个本地真实源实读通过，完整 BEC output 继续 fail closed。
+- 2026-09-12：开始 end-to-end model/smoke runner；先冻结 canonical frame target、backbone
+  graph reuse、3/1/1 optimizer/checkpoint/metrics 和真实-vs-test-seam 边界，再实现 Slurm CLI。
+- 2026-09-12：完成真实 backbone→原生 graph→dispatcher composition、canonical target batch、
+  3/1/1 optimizer/checkpoint/metrics runner、20-run coverage schedule 与 Slurm array；定向
+  4 passed、完整项目 123 passed。真实 jobs、GPU 指标与 checkpoint evidence 仍待 Guqq。
 
 - 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
   canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整

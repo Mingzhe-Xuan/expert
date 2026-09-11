@@ -12,3 +12,8 @@ python -m src.cli.test --config path/to/run.json
 runs the real manifest-pinned MACE checkpoint feature/frozen-gradient/equivariance smoke.
 The provided `scripts/slurm/mace_adapter_smoke.sbatch` is the required execution path on Guqq;
 the login node must not run this command directly.
+
+`python -m src.cli.real_subset_smoke --index N --device cuda --output-root results/real-smoke`
+runs one entry from the frozen 20-run real-data coverage schedule. On Guqq it is launched
+only through `slurm/smoke_real_subsets.sbatch` and records checkpoint, metrics, Git commit,
+runtime, CUDA device, and Slurm identifiers.

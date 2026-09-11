@@ -1,5 +1,36 @@
 # Test plan and results
 
+## 2026-09-12 — End-to-end model and five-structure smoke runner
+
+计划检查：
+
+- 组合四类 adapter 与 `PointGroupTensorModel`，确保 adapter 直接投影到当前 architecture 的
+  hidden layout，downstream 复用 backbone 返回的 edge geometry，而不是静默使用输入 fallback graph；
+- 将每个 `TensorSample` 逐结构 canonicalize、保持 site order、collate，并把 raw target 旋转到
+  canonical coefficient frame；global target 按 crystal 拼接，BEC 按 atom 拼接；
+- smoke runner 严格执行 3 train / 1 validation / 1 test、train-only normalizer、一次 optimizer
+  update、validation、checkpoint save/load、test metrics JSON；backbone 冻结而 interface/downstream
+  获得有限梯度；
+- 提供真实 backbone factory 和依赖注入的单元测试 seam；测试 seam 只验证 orchestration，最终
+  acceptance 仍必须由四个真实 checkpoint 的 Slurm runs 提供，不能以 analytic extractor 替代；
+- report 固定记录 commit、unit、architecture、backbone、sample IDs、loss、per-copy metrics、
+  active/trainable parameters 与 checkpoint path，缺少资源或不兼容 metadata 时非零失败。
+
+实际结果：
+
+- 新增 end-to-end composition，单元测试证明 downstream 使用 adapter 返回的原生 edge tensors
+  （共享 storage），缺失任一 geometry field 时 fail closed；canonical batch 的 target scope 与
+  symmetry/sample mapping 对齐。
+- orchestration-only analytic seam 完成 3/1/1 train-only normalization、optimizer update、
+  validation、atomic checkpoint reload、test per-copy metrics；明确不计作真实 backbone 证据。
+- 20-run schedule 自动检查：四独立 unit 各覆盖五 branches，每个 target 覆盖四 backbones，
+  `a1_only|full_pg` 与 adaptation/O3E/readout 各自 `full_o3|o2_tp` 均有覆盖。
+- `tests/test_end_to_end_smoke.py`：4 passed；完整项目 `tests/`：123 passed，0 failed，
+  0 skip；compileall、schedule JSON 和 diff whitespace 检查通过。
+- `slurm/smoke_real_subsets.sbatch` 尚未提交；真实 checkpoint restore、GPU forward/backward、
+  latency/memory 和科学数据链结果仍待 Guqq，不能由本地 seam 结果替代。
+
+
 ## 2026-09-11 — Four independent real-data modules
 
 计划检查：

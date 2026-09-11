@@ -111,6 +111,14 @@ Goal 尚未具备完成证据。
   irrep coefficients、单位与来源元数据，严格校验资源及 split，并固定 3/1/1 selection。
   三个现有真实源的五样本解析通过，完整项目 119 passed；BEC 完整 JSONL 仍待 Guqq Slurm。
   下一实现单元转入 end-to-end smoke trainer/report 与三个总 Slurm entry points。
+- 2026-09-12：进入 end-to-end execution 单元；模块边界冻结为 `models/` 中真实
+  backbone→backbone graph→dispatcher 组合，以及 `training/` 中 sample canonicalization、
+  train-only normalization、3/1/1 update/eval/checkpoint/report。单元测试可注入解析型 extractor，
+  但 Guqq 最终证据必须运行真实四 checkpoint。
+- 2026-09-12：完成 end-to-end composition、canonical 3/1/1 smoke runner、20-run pairwise
+  schedule 和 real-subset Slurm array 入口；目标 4 passed、完整项目 123 passed、0 skip。
+  当前仅 orchestration 通过，20 个真实 jobs 尚未运行；下一单元补 32-PG versioned fixtures/
+  smoke runner 与 `test_all`、`smoke_32_point_groups` 总入口。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置
