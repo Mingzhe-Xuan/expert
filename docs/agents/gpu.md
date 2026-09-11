@@ -378,3 +378,13 @@
   then run `pip check`, exact package listing, freeze fingerprint, and disk-capacity checks.
 - Permission check: unchanged isolated dependency-installation scope using wheels only; no source
   edits, compilation, project/model execution, checkpoint loading, data work, tests, or GPU workload.
+- Result: the corrected connection again returned no pull result within its 120-second bound and
+  ended before any pip output. The DPA4 environment remains treated as unchanged.
+
+## 2026-09-12 — Final bounded DPA4 installation retry
+
+- Intended connection: make one final bounded mandatory pull and proceed with the exact recorded
+  DPA4 wheel installation only if it succeeds. Stop this network path for the turn after another
+  pull failure.
+- Permission check: unchanged isolated package-management and metadata-check scope; no compilation,
+  project/model execution, checkpoint loading, data processing, tests, or GPU workload.
