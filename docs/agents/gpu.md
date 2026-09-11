@@ -391,3 +391,12 @@
 - Result: the final attempt again returned only the Vlab banner and no pull result before the
   120-second bound ended. No pip command ran and the DPA4 venv remains unchanged. Further blind
   connections are paused for this turn under the recorded outbound-network lesson.
+
+## 2026-09-12 — Cross-turn spaced DPA4 resume attempt
+
+- Intended connection: after a full-turn pause, perform a bounded mandatory pull to `d506c4a`; only
+  on success, install the exact CUDA 12.8 Torch/DeepMD 3.2 DPA4 stack and emit dependency, freeze,
+  and disk-capacity evidence.
+- Permission check: isolated dependency installation and lightweight metadata checks only, using
+  wheels for native packages. No compilation, project/model execution, checkpoint loading, data
+  processing, tests, training, inference, evaluation, or unsubmitted compute will run.
