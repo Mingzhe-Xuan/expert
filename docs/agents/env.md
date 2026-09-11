@@ -16,7 +16,8 @@
 - Installation status: MACE/core is installed and `pip check` is clean: Torch 2.11.0+cu128,
   CUDA toolkit 12.8.1, e3nn 0.4.4, MACE 0.3.16, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0,
   ASE 3.26.0, matscipy 1.1.1, pytest 8.4.2, and python-hostlist 2.3.0. The other three runtime
-  installs are pending. Exact installed versions,
+  installs are pending. The complete verified MACE snapshot is committed as
+  `requirements/guqq/mace-core.txt`. Exact installed versions,
   scientific stack,
   four backbone runtimes, source revisions where wheels are unavailable, and `pip freeze` fingerprint
   must be appended here after installation and before any acceptance job is submitted.

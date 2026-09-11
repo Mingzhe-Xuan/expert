@@ -341,3 +341,6 @@
   in accordance with the existing three-failure lesson.
 - Permission check: unchanged isolated dependency-installation and metadata-check scope; no compute,
   project/model execution, compilation, data processing, training, inference, evaluation, or tests.
+- Result: the third mandatory pull produced no Git output within the 90-second bound and was
+  terminated before installation. No GRACE package command ran. Following the three-failure rule,
+  Guqq connection retries are paused until the outbound GitHub path has had time to recover.

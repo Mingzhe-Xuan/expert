@@ -5,7 +5,10 @@
 官方包元数据证明单一 venv 无法同时满足冻结的 MACE、GRACE、DPA4 与 Equiformer runtimes。
 所有 Slurm 入口现已使用四个显式 venv contract；四套隔离 Python 3.10.12 环境均已在 Guqq
 幂等创建。两个 mixed arrays 按已冻结且验证的 `index % 4` backbone schedule 选择环境；
-MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`；当前进入 GRACE 安装。
+MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE 安装连续三次被 Guqq
+到 GitHub 的出站 TLS/443 故障挡在强制 pull 阶段，环境未改变；暂停盲目重连，先在本地固化
+已验证 MACE 环境锁与自动化检查。71-entry lock 已完成并通过完整 147-test suite；下一步待
+Guqq 出站网络恢复后继续 GRACE 安装。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -18,6 +21,10 @@ MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`；当前�
   site packages；环境创建阶段完成，转入 MACE/core 起始的逐套安装与版本验证。
 - 2026-09-12：MACE/core 安装 Torch 2.11.0+cu128、e3nn 0.4.4、MACE 0.3.16 及冻结科学栈，
   `pip check` 无冲突，磁盘剩余 41 GiB；转入 GRACE/TensorPotential 环境安装。
+- 2026-09-12：GRACE 三次尝试均在首个强制 Git pull 因 Guqq 出站 GitHub 网络失败而终止，
+  未执行安装；按 lessons 暂停重试，转为本地 MACE freeze lock 与静态验收单元。
+- 2026-09-12：完成 71-entry MACE/core freeze lock、官方 cu128 index 与关键版本静态验收；
+  targeted 3、完整 147 tests 全绿，compile/diff checks 通过。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

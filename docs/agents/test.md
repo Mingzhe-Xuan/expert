@@ -1,5 +1,24 @@
 # Test plan and results
 
+## 2026-09-12 — Reproducible Guqq MACE environment lock
+
+计划检查：
+
+- 将 Guqq 已通过 `pip check` 的完整 MACE/core `pip freeze` 固化为独立 requirements lock；
+- lock 中每个有效 requirement 必须使用精确 `==` pin，包名不得重复，并显式包含 PyTorch
+  官方 cu128 index；
+- 静态测试必须断言关键验收版本 Torch 2.11.0+cu128、CUDA toolkit 12.8.1、e3nn 0.4.4、
+  MACE 0.3.16、spglib 2.6.0、ASE 3.26.0、NumPy 1.26.4、SciPy 1.15.3 与 pytest 8.4.2；
+- 执行 targeted pytest、完整本地 pytest、compile 与 `git diff --check`。
+
+实际结果：
+
+- `mace-core.txt` 固化 Guqq clean `pip freeze` 的 71 个唯一精确 pins，并包含官方 cu128 index；
+- targeted：3 passed；完整本地 `tests/`：147 passed，0 failed，0 skipped（182.87 s）；
+- `python -m compileall -q src tests` 与 `git diff --check` 通过。首次完整命令使用 pytest
+  console entry point 时因提升权限会话的非 ASCII cwd 编码丢失 `src` 路径；改用项目既有
+  `uv run python -m pytest` 后正常收集并全绿，不属于代码失败。
+
 ## 2026-09-12 — Per-backbone Guqq environment dispatch
 
 计划检查：

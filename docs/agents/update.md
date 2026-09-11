@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12：完成并验证 `requirements/guqq/mace-core.txt`：71 个唯一 exact pins、官方
+  cu128 index、9 个关键版本断言；targeted 3、完整 147 tests 全绿，compile/diff 通过。
+
+- 2026-09-12：GRACE 安装三次均由首个强制 pull 的 Guqq→GitHub TLS/443 故障安全拦截；
+  环境未改变，停止盲目重连并启动已验证 MACE/core 完整 freeze lock 固化。
+
 - 2026-09-12：完成 Guqq MACE/core venv：Torch 2.11.0+cu128、MACE 0.3.16、e3nn 0.4.4
   与冻结科学栈安装成功，`pip check` clean；安装后根文件系统尚余 41 GiB。
 

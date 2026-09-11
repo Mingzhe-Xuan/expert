@@ -84,3 +84,11 @@
   DeepMD 3.2 requires e3nn 0.5.9+ with Torch 2.11. These constraints cannot be faithfully resolved
   in one venv. Mixed-backbone Slurm arrays must select a recorded per-backbone environment from the
   frozen schedule; dependency overrides or a shared environment would invalidate checkpoint evidence.
+
+## 2026-09-12 — Gate remote mutations behind the mandatory pull
+
+- Guqq may accept SSH while its outbound GitHub connection fails with GnuTLS termination or port-443
+  timeout. Keep `set -e` and the mandatory `git pull --ff-only` before package or job commands so a
+  stale checkout cannot proceed accidentally.
+- After three consecutive outbound failures, stop blind SSH retries. Record the unchanged environment,
+  prepare reproducible commands locally, and retry only after a meaningful interval or network change.
