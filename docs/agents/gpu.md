@@ -214,3 +214,14 @@
 - Permission check: creating and inspecting an isolated virtual environment is explicitly allowed
   lightweight environment management. The command will not overwrite another environment, install
   packages, import project/model modules, or run tests, compilation, training, inference, or data work.
+- Result: the client received only `Welcome to Vlab` and then exited 1, with no Guqq shell, pull,
+  creation, or version output. There is no evidence that the environment command executed; no
+  login-node compute or confirmed filesystem change occurred.
+
+## 2026-09-12 — Idempotent retry of isolated venv creation
+
+- Intended connection: pull first, then create the recorded task venv only if absent; if the prior
+  connection created it without returning output, do not overwrite it. Print `pyvenv.cfg`, Python,
+  and pip versions after either path.
+- Permission check: isolated venv creation/inspection only, with no installation, imports, tests,
+  compilation, model/data processing, or other compute workload on the login node.
