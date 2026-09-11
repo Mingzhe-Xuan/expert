@@ -454,3 +454,14 @@
 - Permission check: this is a non-mutating alternate Git transport probe followed conditionally by
   the already authorized isolated package installation; no compilation, model/data work, tests, or
   GPU workload will run.
+- Result: GitHub SSH responded immediately with `Permission denied (publickey)`; the server has no
+  usable GitHub SSH identity. No pull or environment mutation occurred.
+
+## 2026-09-12 — HTTP/1.1 Git pull for Equiformer resume
+
+- Intended connection: run the mandatory pull with one-command `http.version=HTTP/1.1` to avoid the
+  observed GnuTLS/HTTP2 termination behavior; only after success, run the recorded wheel-only
+  Equiformer runtime installation and environment checks.
+- Permission check: protocol-scoped Git synchronization and isolated dependency installation only;
+  no persistent Git configuration change, compilation, checkpoint access, project/model execution,
+  data work, tests, or GPU workload.
