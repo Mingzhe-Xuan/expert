@@ -1,5 +1,17 @@
 # GPU / server activity
 
+## 2026-09-11 — Sync Phase A checkpoint and locate checkout
+
+- Intended connection: `ssh Guqq` through the configured `vlab` jump host.
+- Authorized purpose: synchronize pushed commit `eb6ad94`, identify the existing project
+  checkout if its path is not already known, and perform lightweight `git`/Slurm status
+  inspection only.
+- The first attempted remote operation will be `git pull` in the most likely project
+  checkout. If that path is absent, only read-only directory discovery will follow; a
+  later connection will begin with `git pull` in the resolved checkout.
+- No training, inference, evaluation, compilation, batch processing, or other
+  computational workload will run on the login node.
+
 ## 2026-09-11 — JARVIS-DFPT BEC preparation
 
 - Intended connection: `ssh Guqq`.
