@@ -414,3 +414,12 @@
 - Permission check: isolated dependency installation and lightweight metadata checks only; all
   native dependencies must use wheels. No compilation, project/model execution, gated checkpoint
   access, data processing, tests, training, inference, evaluation, or unsubmitted compute will run.
+- Result: SSH reached Guqq, but the mandatory pull failed with GnuTLS receive error `-110`; `set -e`
+  prevented all pip commands. The EquiformerV2 venv remained unchanged.
+
+## 2026-09-12 — Retry EquiformerV2 runtime installation
+
+- Intended connection: repeat the bounded mandatory pull, then install the previously recorded
+  PyTorch 2.4.1/cu121 and fairchem-core 1.10.0 wheel stack only after it succeeds.
+- Permission check: unchanged isolated dependency-installation and metadata-check scope; no native
+  compilation, gated-resource access, project/model execution, data work, tests, or GPU workload.
