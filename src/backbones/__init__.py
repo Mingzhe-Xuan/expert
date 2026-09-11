@@ -9,6 +9,7 @@ from .parity import (
     invert_periodic_graph,
 )
 from .mace import MACEBackboneAdapter, irrep_layout_from_e3nn
+from .grace import GRACEBackboneAdapter, GRACE_SOURCE_LAYOUT, convert_grace_aa
 from .dpa4 import (
     DPA4BackboneAdapter,
     DPA4_SO3_LAYOUT,
@@ -18,6 +19,7 @@ from .resources import (
     BACKBONE_FAMILIES,
     BackboneResource,
     BackboneResourceRegistry,
+    ResourceArtifact,
     require_distribution_version,
 )
 
@@ -27,14 +29,18 @@ __all__ = [
     "BackboneResourceRegistry",
     "DPA4BackboneAdapter",
     "DPA4_SO3_LAYOUT",
+    "GRACEBackboneAdapter",
+    "GRACE_SOURCE_LAYOUT",
     "InversionPairedReynolds",
     "MACEBackboneAdapter",
     "O3InterfaceProjector",
+    "ResourceArtifact",
     "SO3FeatureBatch",
     "SO3Layout",
     "SO3Term",
     "invert_periodic_graph",
     "flatten_dpa4_latent",
+    "convert_grace_aa",
     "irrep_layout_from_e3nn",
     "require_distribution_version",
 ]

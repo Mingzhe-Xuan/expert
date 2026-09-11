@@ -12,6 +12,27 @@ BACKBONE_FAMILIES = ("mace", "grace", "dpa4", "equiformerv2")
 
 
 @dataclass(frozen=True, slots=True)
+class ResourceArtifact:
+    filename: str
+    path: Path
+    size_bytes: int
+    sha256: str
+
+    def verify(self, family: str) -> Path:
+        if not self.path.is_file():
+            raise FileNotFoundError(f"missing {family} artifact: {self.path}")
+        if self.path.stat().st_size != self.size_bytes:
+            raise ValueError(f"{family} artifact {self.filename} size mismatch")
+        digest = hashlib.sha256()
+        with self.path.open("rb") as stream:
+            for block in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(block)
+        if digest.hexdigest() != self.sha256:
+            raise ValueError(f"{family} artifact {self.filename} SHA-256 mismatch")
+        return self.path
+
+
+@dataclass(frozen=True, slots=True)
 class BackboneResource:
     family: str
     repository: str
@@ -34,6 +55,7 @@ class BackboneResource:
     sha256: str | None = None
     config_path: Path | None = None
     config_sha256: str | None = None
+    artifacts: tuple[ResourceArtifact, ...] = ()
 
     @property
     def available(self) -> bool:
@@ -62,6 +84,8 @@ class BackboneResource:
             config_digest = hashlib.sha256(self.config_path.read_bytes()).hexdigest()
             if config_digest != self.config_sha256:
                 raise ValueError(f"{self.family} config SHA-256 mismatch")
+        for artifact in self.artifacts:
+            artifact.verify(self.family)
         return self.local_path
 
 
@@ -119,6 +143,19 @@ class BackboneResourceRegistry:
             )
             if config_path is not None and workspace != config_path and workspace not in config_path.parents:
                 raise ValueError(f"{family} config path escapes the workspace")
+            artifacts = []
+            for artifact in raw.get("artifacts", []):
+                artifact_path = (workspace / str(artifact["path"])).resolve()
+                if workspace != artifact_path and workspace not in artifact_path.parents:
+                    raise ValueError(f"{family} artifact path escapes the workspace")
+                artifacts.append(
+                    ResourceArtifact(
+                        filename=str(artifact["file"]),
+                        path=artifact_path,
+                        size_bytes=int(artifact["size_bytes"]),
+                        sha256=str(artifact["sha256"]).lower(),
+                    )
+                )
             parity = str(raw["parity_policy"])
             expected_parity = (
                 "inversion_paired_reynolds"
@@ -153,6 +190,7 @@ class BackboneResourceRegistry:
                     if raw.get("config_sha256") is None
                     else str(raw["config_sha256"]).lower()
                 ),
+                artifacts=tuple(artifacts),
             )
         self.path = manifest_path
         self._resources = resources

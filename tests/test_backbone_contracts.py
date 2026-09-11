@@ -13,6 +13,8 @@ from src.backbones import (
     BackboneResourceRegistry,
     DPA4BackboneAdapter,
     DPA4_SO3_LAYOUT,
+    GRACEBackboneAdapter,
+    GRACE_SOURCE_LAYOUT,
     InversionPairedReynolds,
     MACEBackboneAdapter,
     O3InterfaceProjector,
@@ -21,6 +23,7 @@ from src.backbones import (
     SO3Term,
     invert_periodic_graph,
     flatten_dpa4_latent,
+    convert_grace_aa,
     irrep_layout_from_e3nn,
     require_distribution_version,
 )
@@ -96,6 +99,7 @@ def test_resource_verification_rejects_size_checksum_and_path_escape(tmp_path) -
         )
         record.pop("config", None)
         record.pop("config_sha256", None)
+        record.pop("artifacts", None)
     manifest = tmp_path / "backbones.json"
     manifest.write_text(json.dumps(source), encoding="utf-8")
     registry = BackboneResourceRegistry(manifest, workspace_root=tmp_path)
@@ -242,6 +246,48 @@ def test_dpa4_resource_gate_precedes_deepmd_import_and_runtime_is_pinned() -> No
 
     with pytest.raises(FileNotFoundError, match="unavailable"):
         DPA4BackboneAdapter(
+            IrrepLayout((IrrepTerm(1, 0, "e", "target"),)),
+            registry=UnavailableRegistry(),
+        )
+
+
+def test_grace_aa_layout_and_copy_major_conversion_are_explicit() -> None:
+    assert GRACE_SOURCE_LAYOUT.dimension == 4512
+    counts = {
+        degree: sum(term.multiplicity for term in GRACE_SOURCE_LAYOUT.terms if term.degree == degree)
+        for degree in range(5)
+    }
+    assert counts == {0: 160, 1: 128, 2: 224, 3: 160, 4: 192}
+    assert all(term.natural_parity for term in GRACE_SOURCE_LAYOUT.terms)
+
+    raw = torch.arange(2 * 32 * 141, dtype=torch.float64).reshape(2, 32, 141)
+    identity = tuple(torch.eye(2 * degree + 1, dtype=torch.float64) for degree in range(5))
+    converted = convert_grace_aa(raw, identity)
+    assert converted.shape == (2, 4512)
+    # First l=1 history begins after five scalar-history blocks.
+    assert torch.equal(converted[:, 5 * 32 : 5 * 32 + 3], raw[:, 0, 5:8])
+    assert torch.equal(converted[:, 5 * 32 + 31 * 3 : 5 * 32 + 32 * 3], raw[:, 31, 5:8])
+    with pytest.raises(ValueError, match="shape"):
+        convert_grace_aa(raw[:, :, :-1], identity)
+
+
+def test_grace_manifest_corrects_scalar_rho_tap_and_resource_gate_precedes_runtime() -> None:
+    registry = BackboneResourceRegistry()
+    resource = registry["grace"]
+    assert resource.feature_tap.startswith("instruction:AA,")
+    assert "4512" in resource.feature_layout
+    assert tuple(artifact.filename for artifact in resource.artifacts) == (
+        "model.yaml", "checkpoint.index", "checkpoint.data-00000-of-00001"
+    )
+    unavailable = replace(resource, status="blocked_for_test")
+
+    class UnavailableRegistry:
+        def __getitem__(self, family):
+            assert family == "grace"
+            return unavailable
+
+    with pytest.raises(FileNotFoundError, match="unavailable"):
+        GRACEBackboneAdapter(
             IrrepLayout((IrrepTerm(1, 0, "e", "target"),)),
             registry=UnavailableRegistry(),
         )

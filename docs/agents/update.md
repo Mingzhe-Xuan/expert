@@ -19,6 +19,12 @@
 - 2026-09-11：完成 DPA4-Plus adapter 候选、共享 parity edge-geometry 透传与
   `dpa4_adapter_smoke.sbatch`；目标测试 9 passed、合并 116 passed、1 旧 skip，compile/diff
   检查通过。真实 checkpoint 的 DeePMD 3.2/GPU 数值验收仍需在 Guqq 经 Slurm 执行。
+- 2026-09-11：开始 GRACE adapter；测试计划先冻结 archive metadata、官方 restore、
+  scalar readout 前 `rho` feature tap、真实 bond geometry、冻结梯度与 O(3) 数值验收。
+- 2026-09-11：完成 GRACE adapter 候选；确认 `rho` 实为 17-channel scalar-only 并将 tap
+  修正为 4512-component `AA`，实现 27 个 history copy 的显式 layout、runtime-derived
+  TensorPotential→e3nn 基变换、artifact 逐文件 checksum 与 Slurm smoke。目标 11 passed、
+  合并 118 passed、1 旧 skip；真实 checkpoint restore 尚待 Guqq。
 
 - 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
   canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整

@@ -1,5 +1,42 @@
 # Test plan and results
 
+## 2026-09-11 — Real GRACE tensorpotential adapter
+
+计划检查：
+
+- 解析发布 archive 中的 `model.yaml`，严格验证 TensorPotential 版本、element map、cutoff、
+  `rho` instruction 类型和最终 scalar readout 的连接关系；不凭名称猜测 feature tap。
+- 通过官方 TensorPotential restore/load API 恢复权重，在 scalar readout 前提取明确的
+  `rho` 中间张量；验证实际 shape、allowed `(l, parity)` blocks 与 component ordering。
+- 复用 TensorPotential 自身构造的 bond indices、周期 shifts/vectors 和 node ordering，输出
+  统一 `O3FeatureBatch`；checkpoint 永久冻结，仅 interface projector 接受梯度。
+- 对真实小结构测试 identity/proper/improper/reflection、mixed batch、edge round-trip、有限
+  backward；真实 checkpoint 运算只经 Guqq Slurm，且不得以随机网络或 skip 代替。
+- 若发布要求的 `tensorpotential==0.5.10` 无可安装 artifact，则必须定位可复现的官方源码
+  revision 或明确 fail closed，不静默使用 0.5.9/0.6.x。
+
+阶段性实际结果（真实 Slurm 尚待执行）：
+
+- YAML/instruction audit 证实 `rho.only_invar=true`、`ls_max=[0,0,0,0]`、17 scalar
+  channels；原 manifest 的 (l\le4) `rho` 描述错误。正式 tap 改为共同馈入 `AA1/AA2`
+  两条高阶分支的 `AA`：32 channels、141 angular/history slots、总宽 4,512。
+- `AA` metadata 精确分成 27 个自然宇称 history copies：各阶总 multiplicity 为
+  `l0=160, l1=128, l2=224, l3=160, l4=192`；转换保持每个 32-channel copy 的
+  contiguous m-block。
+- 用官方 TensorPotential 球谐和 e3nn 在 64 个确定性单位向量上求正交基变换；`l=0..4`
+  最大残差为 `3.6e-15`。adapter 构造时会对实际 runtime 重新推导并以 `2e-12` fail closed。
+- checkpoint 声明版本 0.5.10，但 PyPI 与官方 tags 均无该发行版；选择 checkpoint 后首个
+  正式官方兼容 loader `tensorpotential==0.6.0`，同时保留 metadata 0.5.10 双重校验，
+  不伪称存在 0.5.10 artifact。
+- archive、`model.yaml`、TensorFlow checkpoint index/data 均已记录独立 size/SHA 并纳入
+  registry 校验；创建 `grace_adapter_smoke.sbatch` 做真实 restore/proper/improper/backward。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_backbone_contracts.py -q`：
+  11 passed；完整套件：118 passed、1 个既有 opt-in skip、0 failed。
+- `python -m compileall -q src tests/test_backbone_contracts.py`、manifest JSON 与
+  `git diff --check`：通过。`uv run ruff check ...` 未执行，因为当前 uv 环境没有 ruff
+  executable；未把工具缺失记作代码通过。
+
+
 ## 2026-09-11 — Real DPA4-Plus SO(3) adapter
 
 计划检查：

@@ -28,3 +28,8 @@ official `Tester`, reuses its sparse neighbor schema, and taps the SeZM descript
 final `[node, lm, 1, channel]` state. The adapter converts each degree block to e3nn's
 copy-major layout, obtains explicit even/odd O(3) carriers from two real checkpoint
 calls, and trains only the final interface projector.
+
+`GRACEBackboneAdapter` verifies both the published archive and every extracted
+TensorFlow checkpoint artifact. It taps the 4,512-component natural-parity `AA`
+state—the common last equivariant state before the two higher-order scalar branches—
+and derives a strictly validated TensorPotential-to-e3nn real-harmonic basis map.

@@ -118,3 +118,15 @@
 - Result: the jump host connected, but the Guqq leg again closed before a remote shell was
   established. The required first `git pull` therefore did not execute, and no remote command or
   login-node compute ran. Further implementation continues locally before another recorded retry.
+
+## 2026-09-11 — Sync DPA4 adapter and inspect Slurm runtime
+
+- Intended connection: after pushing commit `607c057`, connect through the configured vlab jump,
+  enter `/home/xmz/expert`, and run `timeout 30s git pull` as the first substantive remote operation.
+- Authorized purpose after a successful pull: inspect HEAD, existing virtual-environment package
+  metadata, local MACE/DPA4 checkpoint presence, filesystem capacity, and Slurm GPU resources.
+- Permission check: these are lightweight login-node management operations only. Checkpoint load,
+  feature extraction, equivariance checks, and backward passes will be submitted with `sbatch`.
+- Result: the client received only the vlab jump-host welcome line and then exited with status 1.
+  No Guqq shell output was received, so there is no evidence that the required `git pull` or any
+  later inspection command executed. No login-node compute ran; another blind retry is deferred.

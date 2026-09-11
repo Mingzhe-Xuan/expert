@@ -89,6 +89,13 @@ Goal 尚未具备完成证据。
   和伴随 config，复用官方 sparse edges，显式转换 `64x(l=0..4)` copy-major layout，并以
   双真实调用 Reynolds wrapper 补全 O(3) parity。目标 9 passed、合并 116 passed、1 旧
   skip；Guqq 本轮在 shell 建立前断开，真实 runtime/layout/equivariance 仍待 Slurm。
+- 2026-09-11：进入真实 GRACE adapter 单元；先从发布 archive 的 `model.yaml` 与官方
+  TensorPotential loader/instruction graph 冻结精确 restore API、`rho` tap、O(3) layout 和
+  bond geometry contract。要求的 0.5.10 不在 PyPI，必须先解决可复现 runtime 来源。
+- 2026-09-11：GRACE adapter 候选完成本地验收；源码审计纠正 `rho` scalar-only 误标，
+  改取共同高阶分支 `AA` 的 27-copy/4512-component 自然宇称状态，并对 runtime 球谐基
+  到 e3nn 的正交转换严格求解。目标 11 passed、合并 118 passed、1 旧 skip；0.6.0
+  兼容 restore 和真实数值等变性仍待 Guqq Slurm，未误标完成。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

@@ -1,5 +1,18 @@
 # Agent lessons
 
+## 2026-09-11 — Verify the angular support of a named readout input
+
+- A configuration field such as `allowed_l_p` states what an instruction may support, not what a
+  particular checkpoint actually emits. GRACE's `rho` lists degrees beyond zero but its
+  `ls_max=[0,0,0,0]` makes it an invariant-only, 17-channel scalar tensor.
+- Freeze a backbone tap from the instantiated instruction metadata: inspect `only_invar`, `lmax`,
+  every `(l,m,parity,history)` row, and its downstream graph position. Here the correct common
+  equivariant tap is `AA`, before the `AA1` and `AA2` higher-order scalar branches.
+- Distinct real-spherical-harmonic implementations need an explicit per-degree change of basis.
+  Derive it from deterministic samples, require an orthogonal map and a tight reconstruction
+  residual, then apply it independently to every labelled copy.
+
+
 ## 2026-09-11 — Periodic inversion for SO(3)-to-O(3) feature projection
 
 - Do not negate the Cartesian cell to construct the inversion partner: that changes its

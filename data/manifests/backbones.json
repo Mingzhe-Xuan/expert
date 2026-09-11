@@ -28,11 +28,32 @@
       "size_bytes": 85894694,
       "sha256": "19a006ab5668e6aa3426de6a78ee4a9a9da373680ec9a6171787b0259a67bc20",
       "local_path": "data/checkpoints/grace/GRACE-1L-OMAT-medium-ft-E-checkpoint.tar.gz",
-      "required_runtime": "tensorpotential==0.5.10",
-      "tensorpotential_version": "0.5.10",
+      "required_runtime": "tensorpotential==0.6.0 compatibility loader; checkpoint metadata=0.5.10",
+      "tensorpotential_version": "0.6.0",
+      "checkpoint_metadata_version": "0.5.10",
+      "artifacts": [
+        {
+          "file": "model.yaml",
+          "path": "data/checkpoints/grace/GRACE-1L-OMAT-medium-ft-E/model.yaml",
+          "size_bytes": 7437,
+          "sha256": "d75b61eb693ed5558a25726832ef6337aa06eafebbb5f08d72d41fa67c7933c3"
+        },
+        {
+          "file": "checkpoint.index",
+          "path": "data/checkpoints/grace/GRACE-1L-OMAT-medium-ft-E/checkpoint.index",
+          "size_bytes": 1803,
+          "sha256": "0c9d39013c65d65198436edf293eda9fc6dd2b39392ad67fcc0f4587f02c0605"
+        },
+        {
+          "file": "checkpoint.data-00000-of-00001",
+          "path": "data/checkpoints/grace/GRACE-1L-OMAT-medium-ft-E/checkpoint.data-00000-of-00001",
+          "size_bytes": 17853070,
+          "sha256": "975121a73eec007f84c86781a2e9297764e917adc9ea5dcb1132bd4ddd370a59"
+        }
+      ],
       "pretraining_dataset": "OMat24 with energy fine-tuning",
-      "feature_tap": "instruction:rho before LinMLPOut2ScalarTarget",
-      "feature_layout": "17 channels over explicit allowed_l_p natural-parity blocks through l=4",
+      "feature_tap": "instruction:AA, common last equivariant state before AA1/AA2 scalar branches",
+      "feature_layout": "32 channels over 27 natural-parity history copies; 4512 coefficients through l=4",
       "lmax": 4,
       "cutoff_angstrom": 6.0,
       "precision": "float32",
