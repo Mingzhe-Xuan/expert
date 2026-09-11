@@ -31,6 +31,12 @@
   3200-component SO(3) tap、fairchem graph geometry 复用、paired-inversion O(3) completion、
   frozen/interface gradient smoke 与 Slurm 入口。目标 13 passed、完整项目 114 passed；受限
   checkpoint 的 checksum、restore 和数值验收仍待用户完成 OMat24 access 后在 Guqq 执行。
+- 2026-09-11：开始四个独立 real-data modules；测试计划先冻结统一 tensor sample、三种
+  source schema、published split、resource checksum、BEC site order 和 3/1/1 smoke selection。
+- 2026-09-11：完成 real-data loader 候选；JARVIS dielectric/elastic、MatTen elastic 与
+  JARVIS-DFPT BEC 统一为 immutable `TensorSample`，支持 frozen resource gate、published/
+  seeded split、target irrep conversion、node order 和 3/1/1 smoke selection。目标 11 passed、
+  完整项目 119 passed；三个本地真实源实读通过，完整 BEC output 继续 fail closed。
 
 - 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
   canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整

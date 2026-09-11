@@ -103,6 +103,14 @@ Goal 尚未具备完成证据。
   1.10.0 官方 loader，冻结 final-normalized `[N,25,128]` node tap，并复用返回的周期图。
   目标 13 passed、完整项目 114 passed；exact OMat24 checkpoint 仍待用户许可和 Guqq
   真实 restore/equivariance，因此该 backbone 未误标为完成，下一阶段转入统一真实数据管线。
+- 2026-09-11：进入四个独立真实数据模块实现单元；已审计 GMTNet JARVIS pickle、MatTen
+  column-oriented JSON 和 JARVIS-DFPT processed JSONL schema。模块边界冻结为 resource/split
+  manifest 验证、统一 sample contract、逐来源 parser 和确定性 3/1/1 smoke selection；完整
+  BEC 提取和真实模型训练仍只经 Guqq Slurm。
+- 2026-09-11：四个独立数据 loader 候选完成；统一 sample 同时保留结构、Cartesian target、
+  irrep coefficients、单位与来源元数据，严格校验资源及 split，并固定 3/1/1 selection。
+  三个现有真实源的五样本解析通过，完整项目 119 passed；BEC 完整 JSONL 仍待 Guqq Slurm。
+  下一实现单元转入 end-to-end smoke trainer/report 与三个总 Slurm entry points。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

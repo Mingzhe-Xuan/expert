@@ -1,5 +1,39 @@
 # Test plan and results
 
+## 2026-09-11 — Four independent real-data modules
+
+计划检查：
+
+- 定义统一、不可变的 tensor sample contract，严格验证 lattice、fractional sites、atomic
+  numbers、global/node target shape、finite values、单位和独立 `TrainingUnit`；
+- JARVIS dielectric/elastic loader 复用已冻结 GMTNet published split 和过滤规则，分别解析
+  3x3 dielectric 与 kbar→GPa 后的 6x6 Voigt elastic，并还原完整 minor/major-symmetric
+  3x3x3x3 tensor；
+- MatTen loader 复用文件内 train/val/test split，解析 pymatgen structure dict 与原生完整
+  elastic tensor，不依赖 pymatgen runtime；
+- JARVIS-DFPT loader 流式解析 calculation-matched JSONL，保持 finalpos site order、逐原子
+  N×3×3 BEC、source hashes 和 ASR metadata；processed output 缺失时严格失败；
+- 四个 loader 都验证 manifest resource size/checksum、sample ID 唯一性、split 覆盖与无泄漏，
+  并提供固定 3/1/1 五结构 smoke selection；使用小型临时真实-schema fixtures 做单元测试，
+  完整文件解析及端到端训练留给 Guqq Slurm。
+
+实际结果：
+
+- synthetic real-schema fixtures 覆盖四个 loader、Voigt expansion、Cartesian↔irrep、node
+  scope/site order、source metadata、resource gate、pending BEC gate 和 graph construction；
+  `tests/test_real_data_modules.py + test_training_units.py`：11 passed。
+- 三个本地可用真实数据源的冻结 3/1/1 均通过 size/SHA 和解析：JARVIS dielectric
+  5 structures（5–46 atoms）、JARVIS elastic 5 structures（6–24 atoms）、MatTen elastic
+  5 structures（2–5 atoms）；target shape/units 分别为 3×3 dimensionless 与
+  3×3×3×3 GPa。
+- 完整项目 `uv run python -m pytest tests -q --basetemp ... -p no:cacheprovider`：
+  119 passed，0 failed，0 skip；`python -m compileall -q src tests` 与
+  `git diff --check` 通过。
+- 首次定向收集暴露 `TARGET_LAYOUTS` 错误模块边界（从 `src.irreps` 导入）；修正为公开
+  `src.heads` 接口后全部通过。完整 BEC processed JSONL 仍缺失，默认 loader 按计划
+  fail closed，不能将 10 个下载样本冒充完整数据。
+
+
 ## 2026-09-11 — Real EquiformerV2 SO(3) adapter
 
 计划检查：
