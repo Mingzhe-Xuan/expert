@@ -1,5 +1,33 @@
 # Test plan and results
 
+## 2026-09-11 — Full-O(3) and complete local-O(2) tensor products
+
+计划检查：
+
+- `full_o3` 与 `o2_tp` 使用同一 `IrrepLayout`/batch contract，输出 shape 正确、参数
+  梯度及两输入梯度有限；无允许 parity path 时显式输出零宽/零值而非伪路径。
+- `full_o3` 对随机 proper/improper O(3) 满足 equivariance，覆盖 `0e/0o`、polar 与
+  pseudo carriers。
+- `o2_tp` 按每个 O(3) degree/copy triple 枚举完整 local O(2) Hom-space paths，而非
+  full-O(3) TP 加 projector；默认 `mmax=2`，支持 full-m control。
+- `o2_tp` 对随机 proper/improper global transforms 等变，并对 local-frame SO(2)
+  gauge rotation 与 O(2) reflection gauge 不变；edge-axis reversal cases 单独覆盖。
+- path/copy ordering 与 fixed coupling checksum 稳定，parameter count 可审计；运行
+  目标 pytest、完整 pytest、compile/diff 检查，提交前补录结果。
+
+实际结果：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_tensor_product_backends.py -q`：
+  12 passed；双 backend shape/grad/parameter audit、proper/improper O(3)、local SO(2)
+  rotation/reflection gauges、mmax/full-m、forbidden parity、polar/pseudo edge reversal
+  与 fail-closed inputs 全部通过。
+- full-m vector×vector→scalar 枚举两个独立 local-O(2) paths，`mmax=0` 仅一个，证明
+  实现没有退化为 full-O(3) scalar dot-product path。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  87 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_tensor_product_backends.py` 与
+  `git diff --check`：通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Full-PG subduction and finite-group CG registry
 
 计划检查：

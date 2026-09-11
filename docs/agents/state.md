@@ -18,7 +18,9 @@ canonicalization、site-order-preserving frame、完整 operation permutations�
 affine/species/checksum/DAG parent validation。Full-PG 数学层现可逐 O(3) provenance
 copy 分解全部实有限群 irreps、正交 subduction/inverse，并从 Hom-space Reynolds
 projector 构造 finite-group CG paths；合并套件 75 passed、1 个旧 skip。Goal 尚未
-具备完成证据。
+具备完成证据。Phase C 现已实现 full-O(3) TP 与真正逐 degree/copy triple 枚举完整
+bandlimited Hom paths 的 local-O(2) TP，支持 `mmax=2`/full-m、local O(2) gauge 和
+global improper O(3)；合并套件 87 passed、1 个旧 skip。
 
 ## 当前计划（Phase A 正式实现启动）
 
@@ -45,6 +47,12 @@ projector 构造 finite-group CG paths；合并套件 75 passed、1 个旧 skip�
 - 2026-09-11：完成 32 群 Full-PG real-irrep subduction/inverse 与 finite-group CG
   registry；保留 source/copy provenance、确定性 path order/checksum，cubic `l=2`
   明确产生 `2+3` 非 A1 blocks。目标测试 6/6，合并套件 75 passed。
+- 2026-09-11：Phase A 数学 registry/canonicalization gate 的本地基础测试已绿，进入
+  Phase C 双 TP backend；`o2_tp` 将逐 degree/copy triple 枚举 local O(2) intertwiners，
+  不复用旧原型“full O(3) TP 后裁 m-band”的不完整实现。
+- 2026-09-11：完成 `full_o3 | o2_tp` backend；O2 coupling 由非混叠 dihedral
+  quadrature 的完整 Hom basis 构造，逐 multiplicity path 独立学习。目标测试 12/12，
+  proper/improper、gauge、mmax、parity 与 reversal 全绿，合并套件 87 passed。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

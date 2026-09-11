@@ -17,6 +17,12 @@
   全部实 irreducible copies，正交 inverse 保证 feature round-trip，Hom-space Reynolds
   生成允许/禁止 CG paths；32 群逐操作 tests、provenance、非平凡 paths 和 checksums
   全绿。完整本地结果 75 passed、1 个旧 opt-in skip。
+- 2026-09-11：开始 Phase C `full_o3 | o2_tp` backends；Full-O(3) 使用 e3nn 固定
+  convention，local-O(2) 将按 degree/copy triples 枚举完整 bandlimited Hom paths，
+  并验证 global O(3)、local gauge、improper/parity 与 edge reversal。
+- 2026-09-11：完成双 TP backend：`full_o3` 使用完整 e3nn paths；`o2_tp` 对每个
+  degree/copy triple 以非混叠 O(2) quadrature 枚举完整 Hom paths 并保留独立权重，
+  支持默认 `mmax=2` 与 full-m。目标测试 12 passed，完整本地 87 passed、1 个旧 skip。
 
 - 2026-09-11：启动 `GOAL.md` Phase A 正式实现；审计确认仓库尚无 `src/` 包，
   本实现单元将建立规定模块边界、核心 typed contracts、五分支配置校验与冻结的
