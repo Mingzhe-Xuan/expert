@@ -8,3 +8,6 @@ fails closed on incompatibility.
 ```python
 losses = coefficient_loss(prediction, target, normalizer)
 ```
+
+`CoefficientNormalizer.fit(..., split="train")` stores one statistic per labelled irrep
+copy and rejects fitting on validation/test data or loading state from another unit.

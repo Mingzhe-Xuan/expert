@@ -1,5 +1,29 @@
 # Test plan and results
 
+## 2026-09-11 — Independent training units, splits, and normalization
+
+计划检查：
+
+- 只允许 JARVIS dielectric、JARVIS elastic、MatTen elastic、JARVIS-DFPT BEC 四个
+  `dataset × property` 配对，配置/normalizer/checkpoint namespace 不可跨单元共享。
+- fallback split 使用 seed `20260911`、按 material/duplicate group 划分，结果确定、
+  全覆盖且 train/validation/test 无样本或 group 泄漏；5 groups 产生 3/1/1。
+- coefficient normalizer 仅允许 `split=train` 拟合，按 target layout 的显式 repeated
+  copy 分别保存 scale；支持 RMS/variance、有限小样本 fallback 和物理单位 inverse。
+- normalizer state 含 layout/copy order 与训练单元 identity，不兼容加载 fail closed。
+- 运行目标 pytest、完整本地 pytest、compile 和 diff 检查，提交前补录结果。
+
+实际结果：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_training_units.py -q`：
+  6 passed；四合法 pairing/非法 pairing、确定性 duplicate-group split、5-group
+  3/1/1、RMS/variance copy-aware inverse、非 train fitting 拒绝及跨单元/layout
+  state 拒绝均通过。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  51 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_training_units.py` 与 `git diff --check`：
+  通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Complete cutoff PBC graph construction
 
 计划检查：

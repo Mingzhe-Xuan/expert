@@ -28,6 +28,13 @@
   strict-cutoff image edges，保留 directed multiedges/cell shifts，支持 mixed-size
   collation、空边和统一 `.to()`；目标测试 6 passed，合并本地结果 45 passed、
   1 个既有 opt-in skip。
+- 2026-09-11：开始四个独立训练单元的 config/split/normalizer 基础；测试计划已覆盖
+  合法 pairing、seed 20260911、duplicate-group 防泄漏、5-group 3/1/1、train-only
+  fitting、RMS/variance inverse 和 state compatibility。
+- 2026-09-11：完成四个合法 `dataset × property` contract、seed 20260911 的
+  duplicate-group-safe fallback split，以及只允许 train fitting 的 copy-aware
+  coefficient normalizer；支持 RMS/variance、物理单位 inverse 和跨单元/layout
+  fail-closed loading。目标测试 6 passed，合并本地结果 51 passed、1 个既有 skip。
 
 - 2026-09-11：完成 `GOAL.md` 与 `assets/docs/subgroup_chain.json`：Goal 将完整模型验收冻结为四真实 backbone、五分支/26 合法配置、A1/Full-PG、full-O3/O2、三类性质、四独立训练单元、严格 `<5M`、全部等变/单元测试及 Guqq Slurm 两级 smoke；subgroup asset 保留 32 群、80 cover edges、433 oriented instances 和 222 maximal chains，并由新增测试验证。
 

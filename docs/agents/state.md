@@ -10,7 +10,9 @@ closure/identity/inverse/正交化，并可生成 `l<=4` O(3) 表示、invariant
 global PG fixed-space projection、de-canonicalization；BEC 另具独立 ASR 与显式可选
 joint projector。Phase B 已增加无任意邻居截断的完整 cutoff PBC image enumeration、
 mixed-size collation 和 device/dtype transfer。合并本地套件 45 passed、1 个旧原型
-opt-in skip；Goal 尚未具备完成证据。
+opt-in skip。四个独立训练单元现已有合法 pairing、group-safe seeded split 和
+train-only copy-aware RMS/variance normalizer contract。合并本地套件 51 passed、
+1 个旧原型 opt-in skip；Goal 尚未具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
@@ -45,6 +47,12 @@ opt-in skip；Goal 尚未具备完成证据。
 - 2026-09-11：完成自适应 reciprocal-bound PBC graph 构造、完整 directed image
   multiedges、strict cutoff、mixed-size collation 与 `.to()`；skew brute-force 和
   proper/improper covariance 测试通过，合并套件 45 passed。
+- 2026-09-11：进入独立训练单元/split/normalization 实现；先冻结四个合法
+  dataset-property 配对、按 duplicate group 的确定性 8:1:1 fallback、train-only
+  repeated-copy normalizer 与 fail-closed state tests。
+- 2026-09-11：完成四独立 training-unit contract、seed 20260911 group-preserving
+  split 和 train-only coefficient normalizer；5-group 产生 3/1/1，RMS/variance
+  均按显式 irrep copy 保存并支持 inverse，合并套件 51 passed。
 
 ## 当前状态（GOAL 与 subgroup-chain 资产整理）
 
