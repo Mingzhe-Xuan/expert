@@ -434,3 +434,12 @@
   access, project/model execution, data processing, tests, or GPU workload.
 - Result: the third connection again returned no mandatory-pull result within 120 seconds and ended
   before pip. The EquiformerV2 venv remains unchanged; blind retries are paused for this turn.
+
+## 2026-09-12 — Cross-turn spaced EquiformerV2 runtime resume
+
+- Intended connection: after a full-turn pause, perform a bounded mandatory pull to `607015b`; only
+  after success, install PyTorch 2.4.1/cu121, fairchem-core 1.10.0, and the pinned common stack,
+  followed by dependency, freeze-fingerprint, and disk-capacity checks.
+- Permission check: isolated dependency installation and lightweight metadata checks only, with
+  wheel-only native packages. No compilation, gated checkpoint access, project/model execution,
+  data processing, tests, training, inference, evaluation, or unsubmitted compute will run.
