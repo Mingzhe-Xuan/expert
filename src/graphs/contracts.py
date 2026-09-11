@@ -83,3 +83,26 @@ class PeriodicGraph:
     @property
     def num_edges(self) -> int:
         return self.edge_index.shape[1]
+
+    def to(
+        self,
+        device: torch.device | str,
+        dtype: torch.dtype | None = None,
+    ) -> "PeriodicGraph":
+        """Move all tensors together; integer topology retains integer dtype."""
+
+        floating_dtype = self.positions.dtype if dtype is None else dtype
+        if not floating_dtype.is_floating_point:
+            raise TypeError("PeriodicGraph floating tensors require a floating dtype")
+        return PeriodicGraph(
+            positions=self.positions.to(device=device, dtype=floating_dtype),
+            cell=self.cell.to(device=device, dtype=floating_dtype),
+            atomic_numbers=self.atomic_numbers.to(device=device),
+            node_batch=self.node_batch.to(device=device),
+            edge_index=self.edge_index.to(device=device),
+            cell_shifts=self.cell_shifts.to(device=device),
+            edge_vectors=self.edge_vectors.to(device=device, dtype=floating_dtype),
+            edge_distances=self.edge_distances.to(device=device, dtype=floating_dtype),
+            cutoff=self.cutoff,
+            boundary_convention=self.boundary_convention,
+        )

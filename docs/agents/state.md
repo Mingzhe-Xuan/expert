@@ -8,8 +8,9 @@ contracts、三类 target layouts、checkpoint convention fail-closed 校验、�
 closure/identity/inverse/正交化，并可生成 `l<=4` O(3) 表示、invariant projector、
 确定性 basis/checksum。三类 target 现具备高精度 Cartesian↔irrep、O(3) transform、
 global PG fixed-space projection、de-canonicalization；BEC 另具独立 ASR 与显式可选
-joint projector。合并本地套件 39 passed、1 个旧原型 opt-in skip；Goal 仍处于
-Phase A，尚不具备完成证据。
+joint projector。Phase B 已增加无任意邻居截断的完整 cutoff PBC image enumeration、
+mixed-size collation 和 device/dtype transfer。合并本地套件 45 passed、1 个旧原型
+opt-in skip；Goal 尚未具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
@@ -38,6 +39,12 @@ Phase A，尚不具备完成证据。
 - 2026-09-11：完成三 target 高精度 transforms、global fixed-space projector、
   frame/site-order 恢复、BEC ASR 与 optional joint projector；目标测试 8/8，合并
   套件 39 passed。通过 basis 极分解修复 e3nn default-float 的约 `1e-7` 精度上限。
+- 2026-09-11：进入 Phase B cutoff PBC graph 实现单元；测试计划冻结为完整 image
+  shell、skew cell 自适应 bounds、mixed-size collation、empty fallback、device/dtype
+  transfer 与 proper/improper covariance。
+- 2026-09-11：完成自适应 reciprocal-bound PBC graph 构造、完整 directed image
+  multiedges、strict cutoff、mixed-size collation 与 `.to()`；skew brute-force 和
+  proper/improper covariance 测试通过，合并套件 45 passed。
 
 ## 当前状态（GOAL 与 subgroup-chain 资产整理）
 

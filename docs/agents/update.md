@@ -21,6 +21,13 @@
   PG fixed-space projection、de-canonicalization，以及 BEC 独立 ASR 和显式 optional
   joint projector；使用 float64 极分解修复 e3nn change-of-basis 的单精度遗留误差，
   未放宽测试标准。目标测试 8 passed，合并本地结果 39 passed、1 个既有 opt-in skip。
+- 2026-09-11：开始 Phase B cutoff PBC graph constructor/collation；测试范围先冻结为
+  image multiedges、完整等距 shell、skew cells、严格 boundary、mixed batches、空边
+  fallback、device/dtype transfer 和 O(3) covariance。
+- 2026-09-11：完成 Phase B PBC graph 基础：通过 reciprocal bounds 自适应枚举全部
+  strict-cutoff image edges，保留 directed multiedges/cell shifts，支持 mixed-size
+  collation、空边和统一 `.to()`；目标测试 6 passed，合并本地结果 45 passed、
+  1 个既有 opt-in skip。
 
 - 2026-09-11：完成 `GOAL.md` 与 `assets/docs/subgroup_chain.json`：Goal 将完整模型验收冻结为四真实 backbone、五分支/26 合法配置、A1/Full-PG、full-O3/O2、三类性质、四独立训练单元、严格 `<5M`、全部等变/单元测试及 Guqq Slurm 两级 smoke；subgroup asset 保留 32 群、80 cover edges、433 oriented instances 和 222 maximal chains，并由新增测试验证。
 

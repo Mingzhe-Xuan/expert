@@ -1,5 +1,29 @@
 # Test plan and results
 
+## 2026-09-11 — Complete cutoff PBC graph construction
+
+计划检查：
+
+- 单原子 cubic cell 在跨边界 cutoff 下枚举完整六邻居等距 shell，并保留同一原子对
+  的不同 image multiedges、整数 shifts 与双向 edges；严格 cutoff boundary 不纳入。
+- skew/non-reduced cell 的自适应 image bounds 与较大 brute-force enumeration 一致，
+  不使用 `max_neighbors` 截断。
+- mixed-size graph collation 正确偏移 node/graph indices 并保持 edge geometry；空边、
+  退化小 cutoff、float32/float64 与 CPU/GPU `.to()` contract 可用。
+- 对 cell/positions 同时施加 proper/improper O(3) 变换时，edge topology/shifts 不变，
+  vectors 协变、distances 不变。
+- 运行目标 pytest、完整本地 pytest、compile 和 diff 检查，提交前补录结果。
+
+实际结果：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_periodic_graph_builder.py -q`：
+  6 passed；cubic 六邻居 shell、严格 boundary、双站点 image multiedges、skew cell
+  brute-force 对照、mixed collation/dtype transfer 与 proper/improper covariance 全绿。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  45 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_periodic_graph_builder.py` 与
+  `git diff --check`：通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Target Cartesian transforms and BEC controls
 
 计划检查：
