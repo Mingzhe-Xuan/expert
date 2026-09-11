@@ -169,3 +169,17 @@
   `sinfo`, `squeue`, disk capacity, candidate venv directories, and named manifest files.
 - Permission check: this remains lightweight login-node management only. Any test, import-heavy
   resource validation, fixture scan, model execution, or data extraction must be submitted to Slurm.
+- Result: connection and the required first `git pull` succeeded; `/home/xmz/expert` fast-forwarded
+  cleanly from `6ec34e2` to `2150d4b`. `sinfo` reported one available `compute` node with `gpu:1`,
+  `squeue -u xmz` was empty, and the repository filesystem had about 52 GiB free at 98% use.
+  Neither `/home/xmz/expert/.venv` nor `/home/xmz/expert/venv` exists; the fixed `ls` therefore
+  returned 1 before the manifest listing. No login-node compute ran.
+
+## 2026-09-12 — Locate existing Guqq environment and acceptance resources
+
+- Intended connection: first run bounded `git pull` in `/home/xmz/expert`, then use fixed `find`,
+  `ls`, and file metadata commands to locate existing `pyvenv.cfg` files, dataset manifests and
+  sources, backbone checkpoint files, and ignored result directories without reading model data.
+- Permission check: path and metadata inspection plus environment discovery are lightweight login-
+  node management. No dependency installation, checksum scan, Python import, test, extraction,
+  checkpoint load, or model execution will occur; compute remains reserved for Slurm.
