@@ -25,6 +25,12 @@
   修正为 4512-component `AA`，实现 27 个 history copy 的显式 layout、runtime-derived
   TensorPotential→e3nn 基变换、artifact 逐文件 checksum 与 Slurm smoke。目标 11 passed、
   合并 118 passed、1 旧 skip；真实 checkpoint restore 尚待 Guqq。
+- 2026-09-11：开始 EquiformerV2 adapter；先审计官方 fairchem checkpoint loader、最终
+  node SO(3) coefficient tap 和 radius graph contract，同时保持 OMat24 gated resource fail closed。
+- 2026-09-11：完成 EquiformerV2 adapter 候选；实现官方 checkpoint loader、final-normalized
+  3200-component SO(3) tap、fairchem graph geometry 复用、paired-inversion O(3) completion、
+  frozen/interface gradient smoke 与 Slurm 入口。目标 13 passed、完整项目 114 passed；受限
+  checkpoint 的 checksum、restore 和数值验收仍待用户完成 OMat24 access 后在 Guqq 执行。
 
 - 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
   canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整

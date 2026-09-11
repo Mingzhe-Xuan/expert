@@ -13,6 +13,8 @@ from src.backbones import (
     BackboneResourceRegistry,
     DPA4BackboneAdapter,
     DPA4_SO3_LAYOUT,
+    EQUIFORMER_SO3_LAYOUT,
+    EquiformerV2BackboneAdapter,
     GRACEBackboneAdapter,
     GRACE_SOURCE_LAYOUT,
     InversionPairedReynolds,
@@ -23,6 +25,7 @@ from src.backbones import (
     SO3Term,
     invert_periodic_graph,
     flatten_dpa4_latent,
+    flatten_equiformer_embedding,
     convert_grace_aa,
     irrep_layout_from_e3nn,
     require_distribution_version,
@@ -288,6 +291,46 @@ def test_grace_manifest_corrects_scalar_rho_tap_and_resource_gate_precedes_runti
 
     with pytest.raises(FileNotFoundError, match="unavailable"):
         GRACEBackboneAdapter(
+            IrrepLayout((IrrepTerm(1, 0, "e", "target"),)),
+            registry=UnavailableRegistry(),
+        )
+
+
+def test_equiformerv2_embedding_flattening_is_copy_major_with_frozen_layout() -> None:
+    embedding = torch.arange(2 * 25 * 128, dtype=torch.float32).reshape(2, 25, 128)
+    flattened = flatten_equiformer_embedding(embedding)
+    assert flattened.shape == (2, 3200)
+    assert EQUIFORMER_SO3_LAYOUT.dimension == 3200
+    assert tuple(
+        (term.multiplicity, term.degree) for term in EQUIFORMER_SO3_LAYOUT.terms
+    ) == ((128, 0), (128, 1), (128, 2), (128, 3), (128, 4))
+    assert torch.equal(flattened[:, 128 + 19 * 3 : 128 + 20 * 3], embedding[:, 1:4, 19])
+    l4_offset = 128 * 16
+    assert torch.equal(
+        flattened[:, l4_offset + 127 * 9 : l4_offset + 128 * 9],
+        embedding[:, 16:25, 127],
+    )
+    with pytest.raises(ValueError, match="shape"):
+        flatten_equiformer_embedding(embedding[:, :-1])
+
+
+def test_equiformerv2_exact_gated_resource_fails_before_fairchem_import() -> None:
+    registry = BackboneResourceRegistry()
+    resource = registry["equiformerv2"]
+    assert resource.repository == "facebook/OMAT24"
+    assert resource.revision == "8a5a78c7ba7b250a17e85fe85943c4608499d895"
+    assert resource.filename == "eqV2_31M_mp.pt"
+    assert resource.required_runtime == "fairchem-core==1.10.0"
+    assert resource.status == "blocked_on_huggingface_gated_access"
+    unavailable = replace(resource, status="blocked_for_test")
+
+    class UnavailableRegistry:
+        def __getitem__(self, family):
+            assert family == "equiformerv2"
+            return unavailable
+
+    with pytest.raises(FileNotFoundError, match="unavailable"):
+        EquiformerV2BackboneAdapter(
             IrrepLayout((IrrepTerm(1, 0, "e", "target"),)),
             registry=UnavailableRegistry(),
         )

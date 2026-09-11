@@ -29,6 +29,14 @@ final `[node, lm, 1, channel]` state. The adapter converts each degree block to 
 copy-major layout, obtains explicit even/odd O(3) carriers from two real checkpoint
 calls, and trains only the final interface projector.
 
+`EquiformerV2BackboneAdapter` requires the exact gated `facebook/OMAT24`
+`eqV2_31M_mp.pt` artifact and fairchem-core 1.10.0. It uses fairchem's official
+checkpoint loader, taps the backbone's final normalized `[node, lm, channel]`
+`node_embedding`, reuses the returned periodic radius graph, and applies the same
+two-real-forward inversion construction as DPA4. The adapter fails closed before
+importing fairchem while the gated artifact is unavailable; an OC20 checkpoint is
+not a valid substitute.
+
 `GRACEBackboneAdapter` verifies both the published archive and every extracted
 TensorFlow checkpoint artifact. It taps the 4,512-component natural-parity `AA`
 state—the common last equivariant state before the two higher-order scalar branches—

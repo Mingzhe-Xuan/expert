@@ -1,5 +1,38 @@
 # Test plan and results
 
+## 2026-09-11 — Real EquiformerV2 SO(3) adapter
+
+计划检查：
+
+- 保持 Goal 冻结的 `facebook/OMAT24@8a5a.../eqV2_31M_mp.pt`，严格验证 gated
+  checkpoint size/SHA、官方 fairchem runtime/config 与内部 SO(3) coefficient layout；
+  不用 OC20、随机权重或其他文件替换最终验收资源。
+- 通过官方 fairchem graph/model API 加载 checkpoint，在 energy/force scalar/vector head 前
+  取最后 node SO(3) embedding；验证 resolution/lmax/mmax/channel ordering 和 node mapping。
+- 复用官方 radius graph、cell offsets、edge vectors与 cutoff；用周期反演 pair 两次真实
+  forward 构造 O(3) even/odd blocks，再进入 trainable interface projector。
+- 本地覆盖 resource gate 先于 fairchem import、layout flatten、双调用/frozen policy 和 Slurm
+  smoke contract；真实 checkpoint proper/improper/backward 仅经 Guqq Slurm，0 skip/xfail。
+- 官方页面若继续要求用户同意许可并共享联系信息，保持 fail closed 并记录最小人工动作；
+  不自动代表用户接受协议。
+
+实际结果：
+
+- 官方 fairchem-core 1.10.0 源码确认 checkpoint 使用 HydraModel，最终 backbone
+  `forward` 在所有 8 层和 final norm 后返回 `node_embedding` 与实际 `graph`；冻结布局为
+  `[N,25,128]`、`lmax=[4]`、`mmax=[2]`、cutoff 12 Å。
+- 新增 copy-major flatten/layout 与严格 gated resource 测试；
+  `uv run python -m pytest tests/test_backbone_contracts.py -q --basetemp ...`：13 passed。
+- `uv run python -m pytest tests -q --basetemp ...`：114 passed，0 failed，0 skip；
+  `python -m compileall -q src tests`、manifest `json.tool` 和 `git diff --check` 通过。
+- 一次未限定路径的 `pytest` 错误收集了 Git 忽略的 `data/sources/*` 和 `data/vendor/*`
+  上游仓库测试，产生 48 个缺失上游可选依赖/fixture 的 collection errors；这超出已冻结的
+  项目测试范围，随后显式限定 `tests/` 的完整项目套件通过，未降低任何项目测试标准。
+- exact checkpoint 仍因 Hugging Face OMat24 人工许可门控而不可下载；因此本地只验收了
+  fail-closed、布局、脚本和静态 contract，真实 restore/proper/improper/backward Slurm
+  验收继续待资源访问，未用 OC20 权重代替、未声明真实 smoke 已通过。
+
+
 ## 2026-09-11 — Real GRACE tensorpotential adapter
 
 计划检查：

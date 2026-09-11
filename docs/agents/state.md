@@ -96,6 +96,13 @@ Goal 尚未具备完成证据。
   改取共同高阶分支 `AA` 的 27-copy/4512-component 自然宇称状态，并对 runtime 球谐基
   到 e3nn 的正交转换严格求解。目标 11 passed、合并 118 passed、1 旧 skip；0.6.0
   兼容 restore 和真实数值等变性仍待 Guqq Slurm，未误标完成。
+- 2026-09-11：进入 EquiformerV2 adapter 单元；官方模型页再次确认 checkpoint 文件可列出
+  但下载必须由用户接受 OMat24 协议并共享联系信息。先实现官方源码/API、SO(3) tap、graph
+  和 parity contract；资源继续严格 gated，不代替用户接受许可。
+- 2026-09-11：完成 EquiformerV2 adapter 候选与 Slurm smoke；严格使用 fairchem-core
+  1.10.0 官方 loader，冻结 final-normalized `[N,25,128]` node tap，并复用返回的周期图。
+  目标 13 passed、完整项目 114 passed；exact OMat24 checkpoint 仍待用户许可和 Guqq
+  真实 restore/equivariance，因此该 backbone 未误标为完成，下一阶段转入统一真实数据管线。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

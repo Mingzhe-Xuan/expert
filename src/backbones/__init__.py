@@ -15,6 +15,11 @@ from .dpa4 import (
     DPA4_SO3_LAYOUT,
     flatten_dpa4_latent,
 )
+from .equiformerv2 import (
+    EQUIFORMER_SO3_LAYOUT,
+    EquiformerV2BackboneAdapter,
+    flatten_equiformer_embedding,
+)
 from .resources import (
     BACKBONE_FAMILIES,
     BackboneResource,
@@ -29,6 +34,8 @@ __all__ = [
     "BackboneResourceRegistry",
     "DPA4BackboneAdapter",
     "DPA4_SO3_LAYOUT",
+    "EQUIFORMER_SO3_LAYOUT",
+    "EquiformerV2BackboneAdapter",
     "GRACEBackboneAdapter",
     "GRACE_SOURCE_LAYOUT",
     "InversionPairedReynolds",
@@ -40,6 +47,7 @@ __all__ = [
     "SO3Term",
     "invert_periodic_graph",
     "flatten_dpa4_latent",
+    "flatten_equiformer_embedding",
     "convert_grace_aa",
     "irrep_layout_from_e3nn",
     "require_distribution_version",
