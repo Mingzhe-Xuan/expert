@@ -443,3 +443,14 @@
 - Permission check: isolated dependency installation and lightweight metadata checks only, with
   wheel-only native packages. No compilation, gated checkpoint access, project/model execution,
   data processing, tests, training, inference, evaluation, or unsubmitted compute will run.
+- Result: the default HTTPS pull returned no result within 120 seconds and ended before pip. The
+  EquiformerV2 environment remains unchanged.
+
+## 2026-09-12 — Probe GitHub SSH pull path for Equiformer resume
+
+- Intended connection: use `git pull` against the repository's GitHub SSH URL as the first remote
+  operation, bounded to 45 seconds. Only if that authenticated pull succeeds may the recorded
+  wheel-only Equiformer runtime installation continue.
+- Permission check: this is a non-mutating alternate Git transport probe followed conditionally by
+  the already authorized isolated package installation; no compilation, model/data work, tests, or
+  GPU workload will run.
