@@ -9,3 +9,6 @@ parent DAG.
 ```python
 dag = ParentDAGSpec(material_id="sample", current_hall_number=1, embeddings=())
 ```
+
+`PointGroupRegistry()` validates the frozen 32-group candidate asset and provides O(3)
+representation matrices, invariant projectors, deterministic bases, and basis checksums.

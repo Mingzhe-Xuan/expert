@@ -4,8 +4,10 @@
 
 已建立正式 `src/` 包的 12 个一级模块边界和 README，落地六项核心 typed
 contracts、三类 target layouts、checkpoint convention fail-closed 校验、五分支
-配置 schema 与冻结 26-config manifest。新增测试 15/15 通过，合并现有本地套件
-27 passed、1 个旧原型 opt-in skip；Goal 仍处于 Phase A，尚不具备完成证据。
+配置 schema 与冻结 26-config manifest。正式 32 点群 registry 现已验证 operation
+closure/identity/inverse/正交化，并可生成 `l<=4` O(3) 表示、invariant projector、
+确定性 basis/checksum。合并现有本地套件 31 passed、1 个旧原型 opt-in skip；
+Goal 仍处于 Phase A，尚不具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
@@ -22,6 +24,12 @@ contracts、三类 target layouts、checkpoint convention fail-closed 校验、�
 - 2026-09-11：完成正式模块骨架、typed contracts、target layouts、convention
   checksum 和 26-config schema/manifest；新增测试 15/15 通过，完整本地集合为
   27 passed、1 个旧 opt-in skip。下一实现单元转入数学 registries 与 transforms。
+- 2026-09-11：进入 Phase A 点群 registry/invariant-subspace 实现单元；测试计划已
+  冻结为 32 群 closure、O(3) 表示同态、projector/basis 与 target fixed-space 检查。
+  Guqq 同步尝试仅到达跳板欢迎信息后悬挂，已终止相关 SSH 进程，未运行远端计算。
+- 2026-09-11：完成 32 点群 registry、fractional→Cartesian 正交化、O(3) 表示、
+  invariant projector 和确定性 basis/checksum；目标测试 4/4、合并套件 31 passed。
+  PyTorch/e3nn 兼容处理仅登记 `slice` safe global，未禁用安全 checkpoint 加载。
 
 ## 当前状态（GOAL 与 subgroup-chain 资产整理）
 

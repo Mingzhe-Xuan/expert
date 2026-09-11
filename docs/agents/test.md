@@ -1,5 +1,31 @@
 # Test plan and results
 
+## 2026-09-11 — Phase A point-group registry and invariant subspaces
+
+计划检查：
+
+- 正式 registry 从冻结 asset 读取且仅读取 32 个 crystallographic point groups，
+  验证每组 operation closure、identity/inverse、order 和笛卡尔正交化。
+- 对 `l=0..4` 的 natural O(3) carriers 生成确定性点群表示与 invariant subspace；
+  projector 幂等、basis 正交且在全部群操作下不变。
+- dielectric、elastic、BEC 三个 target layout 的 fixed-subspace bases 维数稳定，
+  basis checksum 可进入 checkpoint conventions。
+- 针对 proper/improper operation 验证表示同态；执行目标 pytest、compile 和
+  `git diff --check`，结果在提交前补录。
+
+实际结果：
+
+- 首次测试收集因 PyTorch 2.6+ `weights_only=True` 与 e3nn 内置 Wigner 常量中的
+  `slice` 对象不兼容而失败；实现改为仅向 safe globals 登记 Python 内置 `slice`，
+  未关闭安全加载，也未放宽任何数学 tolerance。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_point_group_registry.py -q`：
+  4 passed，覆盖 32 群 registry/正交化、抽样表示同态、全部 target invariant
+  projector/basis 和 C1/Ci/cubic 已知 fixed-space 维数。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  31 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_point_group_registry.py` 与
+  `git diff --check`：通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Phase A contracts and architecture schema
 
 计划检查：

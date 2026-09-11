@@ -7,6 +7,13 @@
   `PeriodicGraph`/`O3FeatureBatch`/symmetry/parent DAG/`TensorPrediction` contracts、
   三类 target layouts、checkpoint convention checksum，以及与运行时枚举严格一致的
   26-config manifest；新增测试 15 passed，合并本地套件 27 passed、1 个旧 opt-in skip。
+- 2026-09-11：开始实现正式 32 点群 registry、`l=0..4` O(3) 表示和 invariant
+  subspace；Guqq 同步命令经 ProxyJump 仅返回 vlab 欢迎信息后悬挂，相关 SSH
+  进程已终止，尚无 Guqq checkout 同步证据。
+- 2026-09-11：完成正式 32 点群 registry 和 invariant-subspace 单元：构造时验证
+  operation count/identity/inverse/closure，生成正交 Cartesian operations、O(3)
+  表示、幂等 projector、确定性 basis 与 checksum；测试覆盖全部群和三类 targets，
+  合并本地结果 31 passed、1 个既有 opt-in skip。
 
 - 2026-09-11：完成 `GOAL.md` 与 `assets/docs/subgroup_chain.json`：Goal 将完整模型验收冻结为四真实 backbone、五分支/26 合法配置、A1/Full-PG、full-O3/O2、三类性质、四独立训练单元、严格 `<5M`、全部等变/单元测试及 Guqq Slurm 两级 smoke；subgroup asset 保留 32 群、80 cover edges、433 oriented instances 和 222 maximal chains，并由新增测试验证。
 

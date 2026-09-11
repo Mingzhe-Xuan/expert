@@ -11,6 +11,11 @@
   later connection will begin with `git pull` in the resolved checkout.
 - No training, inference, evaluation, compilation, batch processing, or other
   computational workload will run on the login node.
+- Result: the ProxyJump command reached the jump path and printed `Welcome to Vlab`, but
+  produced no Guqq-side Git or checkout-discovery output within 30 seconds. The two SSH
+  processes started by this attempt were terminated locally. No login-node computation,
+  repository mutation, or Slurm submission occurred; commit `6ec34e2` remains pushed but
+  is not yet proven synchronized to Guqq.
 
 ## 2026-09-11 — JARVIS-DFPT BEC preparation
 
