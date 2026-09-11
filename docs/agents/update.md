@@ -23,6 +23,13 @@
 - 2026-09-11：完成双 TP backend：`full_o3` 使用完整 e3nn paths；`o2_tp` 对每个
   degree/copy triple 以非混叠 O(2) quadrature 枚举完整 Hom paths 并保留独立权重，
   支持默认 `mmax=2` 与 full-m。目标测试 12 passed，完整本地 87 passed、1 个旧 skip。
+- 2026-09-11：开始 shared adaptation、routed O3E、A1/Full-PG experts、continuous
+  routing 与 O(3)-space fusion；测试覆盖双 backend placements、empty edges、O(3)/32-PG
+  equivariance、两层权重独立、parent limits、path dedup、梯度与 `<5M`。
+- 2026-09-11：完成 Phase C 核心 modules：adaptation/O3E 在完整 PBC edges 上放置
+  独立选择的 TP backend；A1 与 Full-PG experts 各含两个独立 blocks，C1 可显式
+  bypass；continuous residual gates 对 Hall active set 去重归一，fusion 回公共 O(3)
+  space。目标测试 16 passed，完整本地 103 passed、1 个旧 skip。
 
 - 2026-09-11：启动 `GOAL.md` Phase A 正式实现；审计确认仓库尚无 `src/` 包，
   本实现单元将建立规定模块边界、核心 typed contracts、五分支配置校验与冻结的

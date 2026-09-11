@@ -8,3 +8,10 @@ common O(3) target space.
 ```python
 output = expert(features, graph, symmetry, parent_dag)
 ```
+
+`O3Adaptation` and `RoutedO3Expert` place the selected TP backend on complete directed
+PBC edges. `A1PointGroupExpert` processes only invariant coordinates;
+`FullPointGroupExpert` subduces and retains every real finite-group carrier. Both PG modes
+contain exactly two independent blocks (with an explicit C1 identity bypass). Continuous
+residual gates operate only on Hall-validated, deduplicated active sets before fusion in
+the common O(3) layout.

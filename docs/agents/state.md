@@ -20,7 +20,9 @@ copy 分解全部实有限群 irreps、正交 subduction/inverse，并从 Hom-sp
 projector 构造 finite-group CG paths；合并套件 75 passed、1 个旧 skip。Goal 尚未
 具备完成证据。Phase C 现已实现 full-O(3) TP 与真正逐 degree/copy triple 枚举完整
 bandlimited Hom paths 的 local-O(2) TP，支持 `mmax=2`/full-m、local O(2) gauge 和
-global improper O(3)；合并套件 87 passed、1 个旧 skip。
+global improper O(3)。shared adaptation、routed O3E、A1/Full-PG 两 block experts、
+continuous Hall active-set gates 和公共 O(3) fusion 已接通；合并套件 103 passed、
+1 个旧 skip。Goal 尚未具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
@@ -53,6 +55,12 @@ global improper O(3)；合并套件 87 passed、1 个旧 skip。
 - 2026-09-11：完成 `full_o3 | o2_tp` backend；O2 coupling 由非混叠 dihedral
   quadrature 的完整 Hom basis 构造，逐 multiplicity path 独立学习。目标测试 12/12，
   proper/improper、gauge、mmax、parity 与 reversal 全绿，合并套件 87 passed。
+- 2026-09-11：进入 adaptation/O3E/PGE/routing/fusion 实现；双 O3 placements 复用已
+  验证 TP contract，PGE 两层独立 block 分为 A1 invariant 与 Full-PG subduced modes，
+  并先登记 32 群/continuous gate/active-parameter tests。
+- 2026-09-11：完成 shared adaptation、routed O3E、A1/Full-PG PGE、continuous gate
+  与 hierarchical fusion；32 群双 PGE mode、双 TP backend proper/improper、empty
+  fallback、两 block 独立和 `<5M` 初审全绿。目标 16 passed，合并 103 passed。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

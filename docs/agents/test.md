@@ -1,5 +1,32 @@
 # Test plan and results
 
+## 2026-09-11 — Adaptation, O3E, dual-mode PGE, routing and fusion
+
+计划检查：
+
+- shared adaptation 与 routed O3E 的每个实际 TP placement 分别构造 `full_o3`、
+  `o2_tp`，使用完整 PBC directed edges，支持 empty-edge self fallback、梯度和随机
+  proper/improper O(3) equivariance。
+- 每个 PG expert 恰有两个参数对象不共享的 blocks；C1 bypass 仍保持相同 I/O contract。
+- `a1_only` 只保留逐 O(3) source/copy 标记的 invariant coordinates；`full_pg` 使用
+  正交 subduction，保留全部 non-trivial blocks，并对 32 群逐 operation 等变。
+- continuous residual gates 权重非负、归一、可微，current/compatible parents active
+  set 去重；parent residual 极限和 duplicate paths 不重复计参数/feature。
+- hierarchical fusion 只接受公共 O(3) layout，按归一权重融合；双模式 backward
+  到达两个 blocks 和所有应训练 routing/fusion 参数，active parameter 初步审计 `<5M`。
+- 运行目标 pytest、完整 pytest、compile/diff 检查，提交前补录结果。
+
+实际结果：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_expert_modules.py -q`：
+  16 passed；adaptation/O3E 双 backend×proper/improper、empty fallback、32 群双 PGE
+  mode、两 block 参数独立、C1 bypass、Full-PG nontrivial carrier、continuous gates、
+  fusion 与 active `<5M` 初审全部通过。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  103 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_expert_modules.py` 与 `git diff --check`：
+  通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Full-O(3) and complete local-O(2) tensor products
 
 计划检查：
