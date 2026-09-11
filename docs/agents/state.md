@@ -3,8 +3,9 @@
 ## 并行 Goal 状态（Guqq per-backbone environments）
 
 官方包元数据证明单一 venv 无法同时满足冻结的 MACE、GRACE、DPA4 与 Equiformer runtimes。
-所有 Slurm 入口现已使用四个显式 venv contract；两个 mixed arrays 按已冻结且验证的
-`index % 4` backbone schedule 选择环境，避免 resolver 冲突或运行时静默替换版本。
+所有 Slurm 入口现已使用四个显式 venv contract；四套隔离 Python 3.10.12 环境均已在 Guqq
+幂等创建。两个 mixed arrays 按已冻结且验证的 `index % 4` backbone schedule 选择环境；
+当前进入逐环境依赖安装与 fingerprint 验收。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -13,6 +14,8 @@
 - 2026-09-12：四环境 selector、九个相关 launchers 与 fail-closed 测试完成；targeted 13、
   完整 144 tests 全绿，全部 shell syntax/compile/diff checks 通过。下一步在 Guqq 建立三套
   剩余 venv，并安装/记录四套精确环境。
+- 2026-09-12：Guqq 先拉取至 `e2aa7cd`，四套隔离 venv 均确认 Python 3.10.12、无 system
+  site packages；环境创建阶段完成，转入 MACE/core 起始的逐套安装与版本验证。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

@@ -270,3 +270,16 @@
   using only quote-safe commands and print each complete `pyvenv.cfg` instead of a regular expression.
 - Permission check: this remains lightweight isolated-environment management only. No package install,
   project/model import, test, compilation, data processing, or compute workload will run.
+- Result: the mandatory pull fast-forwarded the server checkout from `742cdfb` to `e2aa7cd`. The
+  three absent environments were created, and all four recorded paths report Python 3.10.12,
+  pip 22.0.2, `/usr/bin` as `home`, and `include-system-site-packages = false`. No packages were
+  installed and no compute workload ran.
+
+## 2026-09-12 — Install and inspect the MACE/core environment
+
+- Intended connection: pull the latest audit commit first, inspect filesystem capacity, install the
+  frozen MACE/core Python dependencies into `/home/xmz/expert-envs/acceptance-py310`, and run only
+  package metadata/import/version checks plus `pip check` and `pip freeze`.
+- Permission check: package installation and short environment diagnostics are allowed lightweight
+  login-node operations. Binary wheels will be required where applicable; no project tests,
+  compilation, data processing, model loading, training, inference, evaluation, or Slurm job will run.

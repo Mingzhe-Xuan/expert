@@ -4,14 +4,15 @@
 
 - MACE/core path: `/home/xmz/expert-envs/acceptance-py310` (created and verified after the
   intermittent SSH retry; retained rather than needlessly replacing the empty task-specific venv).
-- Planned GRACE path: `/home/xmz/expert-envs/grace-py310`
-- Planned DPA4 path: `/home/xmz/expert-envs/dpa4-py310`
-- Planned EquiformerV2 path: `/home/xmz/expert-envs/equiformerv2-py310`
+- GRACE path: `/home/xmz/expert-envs/grace-py310`
+- DPA4 path: `/home/xmz/expert-envs/dpa4-py310`
+- EquiformerV2 path: `/home/xmz/expert-envs/equiformerv2-py310`
 - Creation command pattern: `python3 -m venv /home/xmz/expert-envs/<name>`
 - Isolation: `include-system-site-packages = false`; the path is task-specific and must be absent
   before creation, so no unrelated environment is overwritten.
 - Initial runtime expectation: Guqq `/usr/bin/python3` (Python 3.10.x), with pip supplied by `venv`.
-- Creation status: MACE/core exists with Python 3.10.12 and pip 22.0.2; the other three are pending.
+- Creation status: all four task-specific venvs exist with Python 3.10.12, pip 22.0.2,
+  `home = /usr/bin`, and `include-system-site-packages = false`.
 - Installation status: not started. Exact installed versions, CUDA/PyTorch build, scientific stack,
   four backbone runtimes, source revisions where wheels are unavailable, and `pip freeze` fingerprint
   must be appended here after installation and before any acceptance job is submitted.

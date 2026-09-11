@@ -1,5 +1,8 @@
 # Agent progress updates
 
+- 2026-09-12：Guqq 已按规定先 pull；MACE/core、GRACE、DPA4、EquiformerV2 四套独立
+  Python 3.10.12 venv 均已创建并确认不继承 system site packages，进入逐套安装阶段。
+
 - 2026-09-12：官方 PyPI metadata 审计确认四 backbone runtime 不能共用一个 venv；启动
   `EXPERT_MACE_VENV|EXPERT_GRACE_VENV|EXPERT_DPA4_VENV|EXPERT_EQUIFORMERV2_VENV`
   Slurm contract 与 frozen array-index selector 实现。
