@@ -1,5 +1,8 @@
 # Agent progress updates
 
+- 2026-09-12：完成 Guqq MACE/core venv：Torch 2.11.0+cu128、MACE 0.3.16、e3nn 0.4.4
+  与冻结科学栈安装成功，`pip check` clean；安装后根文件系统尚余 41 GiB。
+
 - 2026-09-12：MACE/core 首次依赖解析在安装前因 `python-hostlist` 无 wheel 而安全停止；
   同时识别 PyPI Torch 2.11 默认 CUDA 13 偏离冻结 CUDA 12.8，改用官方 cu128 wheel 索引。
 

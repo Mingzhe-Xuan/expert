@@ -308,3 +308,16 @@
 - Permission check: isolated dependency installation and metadata diagnostics only. The only
   non-wheel exception is a pure-Python packaging artifact; no native compilation, project import,
   model loading, data processing, training, inference, evaluation, or tests will run.
+- Result: the server pulled to `7f50e7d`. The isolated MACE/core venv now has Torch 2.11.0+cu128,
+  CUDA toolkit 12.8.1, e3nn 0.4.4, MACE 0.3.16, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0,
+  ASE 3.26.0, matscipy 1.1.1, pytest 8.4.2, and pure-Python python-hostlist 2.3.0. `pip check`
+  reported no broken requirements; 41 GiB remained. No project/model/data workload ran.
+
+## 2026-09-12 — Install and inspect the GRACE environment
+
+- Intended connection: pull first, install Torch 2.11 from the official CUDA 12.8 index, then
+  install TensorPotential 0.6.0 and the common pinned scientific/test stack into the isolated GRACE
+  venv. Finish with `pip check/show/freeze`, a freeze SHA-256 fingerprint, and disk-capacity output.
+- Permission check: dependency installation and short package metadata checks are allowed on the
+  login node; native packages must come from wheels. No project/model import, checkpoint load,
+  data processing, training, inference, evaluation, tests, or compilation will run.

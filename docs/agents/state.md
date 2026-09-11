@@ -5,7 +5,7 @@
 官方包元数据证明单一 venv 无法同时满足冻结的 MACE、GRACE、DPA4 与 Equiformer runtimes。
 所有 Slurm 入口现已使用四个显式 venv contract；四套隔离 Python 3.10.12 环境均已在 Guqq
 幂等创建。两个 mixed arrays 按已冻结且验证的 `index % 4` backbone schedule 选择环境；
-当前进入逐环境依赖安装与 fingerprint 验收。
+MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`；当前进入 GRACE 安装。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -16,6 +16,8 @@
   剩余 venv，并安装/记录四套精确环境。
 - 2026-09-12：Guqq 先拉取至 `e2aa7cd`，四套隔离 venv 均确认 Python 3.10.12、无 system
   site packages；环境创建阶段完成，转入 MACE/core 起始的逐套安装与版本验证。
+- 2026-09-12：MACE/core 安装 Torch 2.11.0+cu128、e3nn 0.4.4、MACE 0.3.16 及冻结科学栈，
+  `pip check` 无冲突，磁盘剩余 41 GiB；转入 GRACE/TensorPotential 环境安装。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

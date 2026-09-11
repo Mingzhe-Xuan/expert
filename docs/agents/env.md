@@ -13,10 +13,11 @@
 - Initial runtime expectation: Guqq `/usr/bin/python3` (Python 3.10.x), with pip supplied by `venv`.
 - Creation status: all four task-specific venvs exist with Python 3.10.12, pip 22.0.2,
   `home = /usr/bin`, and `include-system-site-packages = false`.
-- Installation status: MACE/core packaging tools are upgraded, but its first dependency transaction
-  installed no scientific packages because `python-hostlist` has no wheel; installation will use the
-  official PyTorch CUDA 12.8 index and a pure-Python packaging exception. Exact installed versions,
-  CUDA/PyTorch build, scientific stack,
+- Installation status: MACE/core is installed and `pip check` is clean: Torch 2.11.0+cu128,
+  CUDA toolkit 12.8.1, e3nn 0.4.4, MACE 0.3.16, NumPy 1.26.4, SciPy 1.15.3, spglib 2.6.0,
+  ASE 3.26.0, matscipy 1.1.1, pytest 8.4.2, and python-hostlist 2.3.0. The other three runtime
+  installs are pending. Exact installed versions,
+  scientific stack,
   four backbone runtimes, source revisions where wheels are unavailable, and `pip freeze` fingerprint
   must be appended here after installation and before any acceptance job is submitted.
 - Resource status: MACE, GRACE and DPA4 artifacts exist locally and may be transferred by `scp` after
