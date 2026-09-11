@@ -1,5 +1,33 @@
 # Test plan and results
 
+## 2026-09-11 — Target Cartesian transforms and BEC controls
+
+计划检查：
+
+- dielectric、elastic、BEC 的 Cartesian↔irrep round-trip 在 float64 下保持目标
+  tensor symmetry，且 coefficient width 与冻结 layout 一致。
+- proper/improper O(3) 旋转前后的 coefficient 表示和 Cartesian 变换一致。
+- point-group fixed-space coefficient projector 对 32 群均幂等，投影结果满足所有
+  群操作；global heads 可使用它而 BEC raw head 不隐式调用它。
+- BEC ASR 按 crystal 独立去除逐分量原子和，不依赖 `pi_g`；optional joint
+  permutation/tensor projector 满足 `Z[pi_g(i)]=R_g Z[i]R_g^T`，并验证与 ASR 交换。
+- 运行目标 pytest、完整本地 pytest、compile 和 diff 检查，提交前补录结果。
+
+实际结果：
+
+- 首轮 round-trip 的三项参数化 case 均显示约 `0.9–1.9e-7` 最大误差；诊断证明
+  e3nn 0.5 的符号 change-of-basis 经 default-float 中间量生成，事后转换 float64
+  仍保留该误差。实现改为对冻结 basis 做 float64 极分解正交化，并从同一 basis
+  诱导 target representation；未放宽原测试 tolerance。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_target_transforms.py -q`：
+  8 passed，覆盖三 target round-trip 与 proper/improper covariance、tensor intrinsic
+  symmetries、32 群 global projector、BEC ASR 梯度、joint projector/ASR 交换和
+  frame/site-order 恢复。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  39 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_target_transforms.py` 与
+  `git diff --check`：通过；后者仅报告 LF→CRLF 提示。
+
 ## 2026-09-11 — Phase A point-group registry and invariant subspaces
 
 计划检查：

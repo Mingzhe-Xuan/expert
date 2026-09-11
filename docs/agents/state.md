@@ -6,15 +6,18 @@
 contracts、三类 target layouts、checkpoint convention fail-closed 校验、五分支
 配置 schema 与冻结 26-config manifest。正式 32 点群 registry 现已验证 operation
 closure/identity/inverse/正交化，并可生成 `l<=4` O(3) 表示、invariant projector、
-确定性 basis/checksum。合并现有本地套件 31 passed、1 个旧原型 opt-in skip；
-Goal 仍处于 Phase A，尚不具备完成证据。
+确定性 basis/checksum。三类 target 现具备高精度 Cartesian↔irrep、O(3) transform、
+global PG fixed-space projection、de-canonicalization；BEC 另具独立 ASR 与显式可选
+joint projector。合并本地套件 39 passed、1 个旧原型 opt-in skip；Goal 仍处于
+Phase A，尚不具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
 1. 完成 Phase A 数学 registries：点群表示、subduction/inverse、CG/path/copy order
-   和 Cartesian↔irrep transforms，并补齐 round-trip/intertwining tests。
+   并补齐 round-trip/intertwining tests。
 2. 实现 canonicalization 与 Hall-level embedding operation validation。
-3. Phase A gate 全绿后进入 Phase B 的 cutoff PBC graph 和真实 backbone adapters。
+3. 实现 Phase B cutoff PBC graph constructor/collation/covariance audit，再进入真实
+   backbone adapters。
 
 ## 变更记录（Phase A 正式实现启动）
 
@@ -30,6 +33,11 @@ Goal 仍处于 Phase A，尚不具备完成证据。
 - 2026-09-11：完成 32 点群 registry、fractional→Cartesian 正交化、O(3) 表示、
   invariant projector 和确定性 basis/checksum；目标测试 4/4、合并套件 31 passed。
   PyTorch/e3nn 兼容处理仅登记 `slice` safe global，未禁用安全 checkpoint 加载。
+- 2026-09-11：进入 target transforms/BEC controls 实现单元；先冻结 round-trip、
+  O(3) covariance、32 群 fixed-space、逐 crystal ASR、联合 projector 与交换性测试。
+- 2026-09-11：完成三 target 高精度 transforms、global fixed-space projector、
+  frame/site-order 恢复、BEC ASR 与 optional joint projector；目标测试 8/8，合并
+  套件 39 passed。通过 basis 极分解修复 e3nn default-float 的约 `1e-7` 精度上限。
 
 ## 当前状态（GOAL 与 subgroup-chain 资产整理）
 

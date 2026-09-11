@@ -9,3 +9,7 @@ changing the headline raw output.
 prediction = TensorPrediction(raw, coefficients, task="bec", scope="node",
                               node_batch=node_batch)
 ```
+
+`cartesian_to_irreps` and `irreps_to_cartesian` preserve the frozen repeated-copy
+ordering. `apply_bec_asr` is permutation-independent; `project_bec_joint_symmetry` is an
+explicit optional diagnostic that requires audited site permutations.

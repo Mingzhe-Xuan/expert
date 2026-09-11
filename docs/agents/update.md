@@ -14,6 +14,13 @@
   operation count/identity/inverse/closure，生成正交 Cartesian operations、O(3)
   表示、幂等 projector、确定性 basis 与 checksum；测试覆盖全部群和三类 targets，
   合并本地结果 31 passed、1 个既有 opt-in skip。
+- 2026-09-11：开始 target Cartesian transforms 与 BEC controls 实现；测试范围已
+  覆盖三类 target round-trip/O(3) covariance、32 群 fixed-space、ASR、optional
+  joint projector 及两者交换性。
+- 2026-09-11：完成三类 target 的高精度 Cartesian↔irrep/O(3) transforms、global
+  PG fixed-space projection、de-canonicalization，以及 BEC 独立 ASR 和显式 optional
+  joint projector；使用 float64 极分解修复 e3nn change-of-basis 的单精度遗留误差，
+  未放宽测试标准。目标测试 8 passed，合并本地结果 39 passed、1 个既有 opt-in skip。
 
 - 2026-09-11：完成 `GOAL.md` 与 `assets/docs/subgroup_chain.json`：Goal 将完整模型验收冻结为四真实 backbone、五分支/26 合法配置、A1/Full-PG、full-O3/O2、三类性质、四独立训练单元、严格 `<5M`、全部等变/单元测试及 Guqq Slurm 两级 smoke；subgroup asset 保留 32 群、80 cover edges、433 oriented instances 和 222 maximal chains，并由新增测试验证。
 

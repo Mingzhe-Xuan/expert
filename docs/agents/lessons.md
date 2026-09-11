@@ -1,5 +1,19 @@
 # Agent lessons
 
+## 2026-09-11 — e3nn 0.5 with PyTorch 2.6+ and float64 tensor transforms
+
+- PyTorch 2.6+ defaults `torch.load` to `weights_only=True`; e3nn 0.5 packaged Wigner
+  constants contain Python `slice` objects. Permit only builtin `slice` with
+  `torch.serialization.add_safe_globals` before importing e3nn; do not disable safe
+  loading globally.
+- e3nn `CartesianTensor` can produce a float64 `change_of_basis` whose values were first
+  generated through default-float intermediates. Casting does not remove the resulting
+  roughly `1e-7` round-trip error.
+- For float64 reference tests, compute the closest orthonormal basis via polar/SVD repair
+  once and induce coefficient representations from that same repaired basis. Using an
+  independently generated representation with the repaired basis introduces a subtle
+  convention mismatch, especially for repeated elastic irrep copies.
+
 ## 2026-09-11 — SSH closes before key exchange
 
 - Symptom: TCP port 22 succeeds, but OpenSSH reports
