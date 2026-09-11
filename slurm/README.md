@@ -25,3 +25,22 @@ index modulo four to MACE, GRACE, DPA4, and EquiformerV2 respectively. The full 
 fixture builder, and BEC preparation use the MACE/core environment; standalone adapter jobs use
 their matching environment. A single combined environment is unsupported because the frozen
 backbone releases have incompatible e3nn and PyTorch requirements.
+
+After every submitted job is terminal, create an ignored manifest containing the real IDs:
+
+```json
+{
+  "schema_version": 1,
+  "jobs": [
+    {"name": "test_all", "job_id": "12345"},
+    {"name": "point_group_smoke", "job_id": "12346", "array": {"start": 0, "end": 57}},
+    {"name": "real_subset_smoke", "job_id": "12347", "array": {"start": 0, "end": 19}}
+  ]
+}
+```
+
+Run the lightweight login-node audit with
+`python -m src.cli.slurm_audit --manifest results/acceptance/jobs.json --raw results/acceptance/sacct.txt --output results/acceptance/sacct-audit.json`.
+It queries allocation-only pipe-delimited records and fails unless every expected single job or
+array task appears exactly once with state `COMPLETED` and exit code `0:0`. Array parent and step
+rows cannot conceal a missing task.

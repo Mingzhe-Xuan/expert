@@ -1,5 +1,10 @@
 # Agent progress updates
 
+- 2026-09-12：开始 strict Slurm terminal-state audit 单元；将用 versioned job manifest 精确
+  展开并核验全部单作业与 array tasks，替代无法形成完成证明的人工 `sacct` 浏览。
+- 2026-09-12：完成 strict sacct CLI、manifest schema 与数组完整性校验；targeted 12、完整
+  167 tests 全绿，CLI help/compile/diff 通过。真实 audit JSON 待 Guqq jobs 结束后生成。
+
 - 2026-09-12：开始 required data-job evidence 单元；目标是让 32-PG fixture 构建和完整 BEC
   prepare/validate 作业也具备失败保留的 summary/JUnit、Git/env 与 Slurm-ID 证据。
 - 2026-09-12：完成 32-PG builder 与 BEC prepare/validate job-level evidence；修正 BEC resume

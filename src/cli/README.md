@@ -40,3 +40,7 @@ Its `src.cli.test_all` wrapper emits JUnit plus a JSON count/status summary even
 pytest returns a nonzero exit code, and makes any skipped/xfail item fail acceptance.
 Both GPU array CLIs likewise preserve a one-case JUnit file and failure summary before
 returning nonzero; their Slurm launchers also fingerprint Git and installed packages.
+
+`python -m src.cli.slurm_audit --manifest ... --raw ... --output ...` is the strict post-run
+accounting gate. It expands frozen array ranges and rejects missing/duplicate allocations,
+non-`COMPLETED` states, and any exit code other than `0:0`.

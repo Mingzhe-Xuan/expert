@@ -1,5 +1,25 @@
 # Test plan and results
 
+## 2026-09-12 — Strict Slurm terminal-state audit
+
+计划检查：
+
+- 定义 versioned acceptance job manifest，单作业与 array range 展开为精确 `JobIDRaw` 集合；
+- 解析 `sacct -X -n -P` 输出，拒绝缺失/重复期望任务、未知期望字段、非 `COMPLETED`
+  state、非 `0:0` exit code；允许并忽略 array parent allocation 行与无关 step 行；
+- CLI 调用固定字段的 `sacct`，持久化 raw output 和 machine-readable audit JSON，任何失败返回非零；
+- 对成功、数组缺口、失败 state/exit、duplicate 和 CLI subprocess contract 增加测试，再运行
+  targeted、完整 pytest、compile 与 `git diff --check`。
+
+实际结果：
+
+- manifest schema 精确展开单作业和闭区间 arrays；未知字段、非法 ID/range fail closed；
+- parser 固定六列 allocation-only `sacct` 格式，auditor 拒绝缺失、重复、失败 state/exit；
+  array parent 与 `.batch` 等非期望行被忽略且不能填补 task 缺口；
+- CLI 使用 `sacct -X -n -P`、一次查询全部基础 job IDs，并分别保存 raw 与 JSON audit；
+- targeted：12 passed；完整本地 suite：167 passed、0 failed、0 skipped，484 warnings，214.42s；
+- CLI help、`python -m compileall -q src tests` 与 `git diff --check` 通过。
+
 ## 2026-09-12 — Required data-job Slurm evidence contract
 
 计划检查：

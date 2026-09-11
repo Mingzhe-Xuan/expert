@@ -64,6 +64,11 @@ fingerprint contract 已完成并通过全量测试；Equiformer gated checkpoin
   `bash -n` 与 diff checks 通过。资源与 Guqq Slurm 实跑仍等待网络恢复。
 - 2026-09-12：完成两个本地 DoD 单元后进行一次有界恢复检查；Guqq 可连接，但首条 scoped
   HTTP/1.1 pull 再次以 GnuTLS `-110` 结束，未到 `MASTER_READY`、未写入资源。本回合停止连接。
+- 2026-09-12：继续最终证据审计；发现仓库仅文字要求人工查看 `sacct`，没有逐任务机器校验。
+  开始实现冻结 job manifest 与 strict sacct parser/auditor，覆盖 58/20 arrays 及所有单作业。
+- 2026-09-12：strict sacct audit 完成；精确展开 expected `JobIDRaw`，拒绝缺失、重复、
+  非 `COMPLETED` 与非 `0:0`，并保存 raw/JSON。Targeted 12、完整 167 tests 全绿，CLI
+  help、compile/diff checks 通过。最终 scheduler evidence 仍需 Guqq 实跑后生成。
 
 ## 并行 Goal 状态（material-oriented target projection）
 
