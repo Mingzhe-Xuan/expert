@@ -1,5 +1,20 @@
 # Agent state
 
+## 并行 Goal 状态（32-PG equilibrium fixtures）
+
+已完成 source iterator、deterministic selector、versioned validator、58-row real-checkpoint
+smoke runner，以及三个 Goal 必需 Slurm entry points 的完整证据输出。实际 32-record asset
+仍必须由 Guqq Slurm 生成并经 scp 回本地，prototype synthetic structures 不能充当最终验收证据。
+
+## 并行 Goal 变更记录（32-PG equilibrium fixtures）
+
+- 2026-09-12：冻结真实 equilibrium 来源、32-group exact coverage、Hall re-detection、record
+  checksum 与 missing/tamper failure 测试；下一步实现并验证生成器和 Slurm entry point。
+- 2026-09-12：完成 32-PG fixture selector/validator、58-row schedule、真实 adapter forward/backward、
+  backbone-native periodic edge automorphism 与 target/BEC joint audit；三个验收 launcher 均保存
+  JUnit、JSON、Git/environment/Slurm metadata，且全量 pytest 的 skip/xfail 会非零失败。本地 129 tests
+  全绿；下一步必须在 Guqq 生成真实 fixture 并运行全部 Slurm jobs。
+
 ## 当前状态（Phase A 正式实现启动）
 
 已建立正式 `src/` 包的 12 个一级模块边界和 README，落地六项核心 typed

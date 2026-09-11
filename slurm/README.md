@@ -5,3 +5,8 @@ training smoke runs, and batch data processing on Guqq. Activate the recorded pr
 virtual environment through `EXPERT_VENV`; outputs belong under ignored `logs/` and
 `results/` directories. Every server session must first follow `AGENTS.md`: record the
 connection purpose, connect, and run `git pull` before submitting a job.
+
+The three acceptance launchers persist Git and package fingerprints, JUnit XML,
+machine-readable summaries, Slurm identifiers, and scheduler-captured stdout/stderr.
+After completion, acceptance still requires checking every task with `sacct`; a generated
+report is not evidence that the scheduler state was `COMPLETED`.

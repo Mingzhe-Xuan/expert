@@ -17,3 +17,7 @@ calculation-matched JARVIS-DFPT JSONL. All become immutable `TensorSample` objec
 with fractional structure data plus Cartesian and frozen-order irrep targets.
 `load_five_structure_smoke` selects the first 3/1/1 records from the retained
 published or seeded split; it does not redefine or shrink the underlying split.
+
+`load_structure_candidates` is the structure-only, checksum-gated iterator used by
+the 32-point-group fixture builder. It preserves source sample IDs and provenance,
+and deliberately rejects BEC because that source is not an equilibrium benchmark.

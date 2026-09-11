@@ -1,5 +1,13 @@
 # Agent progress updates
 
+- 2026-09-12：开始 32-PG real-equilibrium fixture pipeline；将从已冻结 JARVIS/MatTen
+  structures 经 Slurm 选择每点群一条，保存 Hall/source/checksum，并拒绝 synthetic prototype
+  充当最终 fixture。保留同工作区 published benchmark 审计的全部并发改动。
+- 2026-09-12：完成 equilibrium structure iterator、32-group deterministic fixture manifest、
+  58-row real-checkpoint smoke、periodic graph/BEC joint audit 和完整 Slurm evidence wrappers；
+  targeted 11 passed，完整本地套件 129 passed、0 skip，compile/sbatch syntax/diff checks 通过。
+  未生成 synthetic acceptance asset；真实 fixture 与 GPU/Slurm 证据仍待 Guqq。
+
 - 2026-09-11：开始 MACE/GRACE/DPA4/EquiformerV2 正式 adapters；测试计划冻结为
   manifest/checksum/runtime fail-closed、scalar readout 前真实 tap、统一 `O3FeatureBatch`、
   graph reuse、checkpoint frozen policy，以及 SO(3) 模型的双前向 parity Reynolds wrapper。

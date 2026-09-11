@@ -11,6 +11,7 @@ from src.data import (
     TensorSample,
     TrainingUnit,
     load_five_structure_smoke,
+    load_structure_candidates,
     load_training_dataset,
     voigt_stiffness_to_cartesian,
 )
@@ -83,6 +84,12 @@ def test_jarvis_dielectric_and_elastic_loaders_preserve_published_3_1_1(tmp_path
         dielectric[2].target_cartesian,
         atol=1e-10,
     )
+    candidates = load_structure_candidates(
+        TrainingUnit("jarvis_tensor", "dielectric"),
+        manifest_path=dielectric_manifest,
+    )
+    assert [candidate.sample_id for candidate in candidates] == ids
+    assert candidates[0].source_dataset == "jarvis_tensor__dielectric"
 
     voigt_kbar = torch.arange(36, dtype=torch.float64).reshape(6, 6)
     voigt_kbar = 0.5 * (voigt_kbar + voigt_kbar.T)
@@ -144,6 +151,11 @@ def test_matten_loader_reads_column_oriented_structure_and_native_tensor(tmp_pat
     assert [sample.sample_id for sample in samples] == [f"matten-{i}" for i in range(5)]
     assert samples[0].source["formula"] == "SiO"
     assert torch.equal(samples[0].atomic_numbers, torch.tensor([14, 8]))
+    candidates = load_structure_candidates(
+        TrainingUnit("matten", "elastic"), manifest_path=manifest
+    )
+    assert len(candidates) == 5
+    assert candidates[3].sample_id == "matten-3"
 
 
 def test_bec_loader_preserves_node_scope_site_order_source_and_saved_split(tmp_path) -> None:

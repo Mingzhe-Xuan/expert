@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-12 — Real-equilibrium 32-point-group fixture pipeline
+
+计划检查：
+
+- 从 checksum-verified GMTNet JARVIS 与 MatTen equilibrium structure records 中选择 fixture，
+  禁止沿用 prototype 的 synthetic Wyckoff orbit 作为最终 32-PG acceptance evidence；
+- selection 使用冻结 source priority、最少原子数和 stable sample ID 排序，经 spglib explicit
+  Hall re-detection 后恰好覆盖 32 crystallographic point groups，每组一条；缺组必须非零失败；
+- versioned manifest 为每条记录保存 dataset/source manifest、sample ID、expected PG/SG/Hall、
+  species、lattice、fractional coordinates、construction method、spglib version 和 record SHA-256；
+- validator 重新计算 record checksum、site shape/species、晶格可逆性与 expected PG/Hall，并拒绝
+  重复/缺失/额外点群；fixture 生成属于批量数据处理，仅通过 Guqq Slurm，结果 scp 回本地后提交；
+- 使用 small-schema candidates 覆盖 deterministic selection、32-group completeness、tamper
+  rejection 和 missing-group failure；这些 synthetic test candidates 不计作最终 equilibrium fixtures。
+
+实际结果：
+
+- targeted：`tests/test_point_group_fixtures.py`、`tests/test_real_data_modules.py`、
+  `tests/test_cli_reports.py` 共 11 passed，0 failed，0 skipped；覆盖 selector/validator、真实 schema
+  structure iterator、58-row schedule、周期 image-edge multiset audit 与成功/失败 JUnit 序列化；
+- full local suite：129 passed，0 failed，0 skipped（183.08 s）；
+- `python -m compileall -q src tests`、四个相关 sbatch 的 `bash -n` 与 `git diff --check` 均通过；
+- 本地未生成 synthetic acceptance asset，也未运行真实 checkpoint smoke。最终 32-record fixture、58 个
+  GPU rows、四个 real-subset training units 与 scheduler `sacct` 证据仍必须在 Guqq 经 Slurm 完成。
+
 ## 2026-09-12 — End-to-end model and five-structure smoke runner
 
 计划检查：

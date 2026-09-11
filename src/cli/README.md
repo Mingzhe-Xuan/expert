@@ -17,3 +17,17 @@ the login node must not run this command directly.
 runs one entry from the frozen 20-run real-data coverage schedule. On Guqq it is launched
 only through `slurm/smoke_real_subsets.sbatch` and records checkpoint, metrics, Git commit,
 runtime, CUDA device, and Slurm identifiers.
+
+`python -m src.cli.build_point_group_fixtures --output results/point-groups/...json`
+scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.
+It is batch data processing and must run through `slurm/build_point_group_fixtures.sbatch`
+on Guqq, never directly on the login node.
+
+`slurm/smoke_32_point_groups.sbatch` runs the frozen 58-row matrix: 32 mandatory
+per-group PGE rows plus the exhaustive 26 architecture rows. Each row uses a real
+checkpoint and records graph automorphism, target symmetry, backward, and parameter
+budget evidence. `slurm/test_all.sbatch` is the aggregate project test entry point.
+Its `src.cli.test_all` wrapper emits JUnit plus a JSON count/status summary even when
+pytest returns a nonzero exit code, and makes any skipped/xfail item fail acceptance.
+Both GPU array CLIs likewise preserve a one-case JUnit file and failure summary before
+returning nonzero; their Slurm launchers also fingerprint Git and installed packages.

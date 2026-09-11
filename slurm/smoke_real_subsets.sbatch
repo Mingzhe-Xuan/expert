@@ -16,7 +16,11 @@ set -euo pipefail
 : "${EXPERT_VENV:?Set EXPERT_VENV to the recorded project virtual environment}"
 source "${EXPERT_VENV}/bin/activate"
 mkdir -p logs/slurm results/real-smoke
+git rev-parse HEAD > "results/real-smoke/git-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.txt"
+python -m pip freeze > "results/real-smoke/environment-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.txt"
 python -m src.cli.real_subset_smoke \
   --index "${SLURM_ARRAY_TASK_ID}" \
   --device cuda \
-  --output-root results/real-smoke
+  --output-root results/real-smoke \
+  --summary "results/real-smoke/summary-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.json" \
+  --junit "results/real-smoke/junit-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.xml"

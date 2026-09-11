@@ -67,3 +67,12 @@
   server administrator to inspect `sshd` availability, `MaxStartups`, source-IP
   filtering and tools such as fail2ban. On the next successful connection,
   still make `git pull` the first remote operation.
+# 2026-09-12 — Point-group acceptance must use detected operations
+
+- A crystallographic point-group symbol does not by itself freeze the orientation of a material's
+  Hall setting. Acceptance checks for forbidden tensor components must construct representations
+  from the fixture's spglib-detected Cartesian operations; using only the registry's representative
+  Hall group can silently test a differently oriented fixed subspace.
+- Slurm smoke commands are not self-auditing merely because they return nonzero on failure. Each
+  command must write failure JSON and JUnit before re-raising, and the aggregate pytest wrapper must
+  convert skip/xfail counts into a nonzero acceptance result.

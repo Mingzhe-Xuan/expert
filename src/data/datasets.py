@@ -135,6 +135,41 @@ class IndependentTensorDataset(Sequence[TensorSample]):
         return tuple(self._by_id[sample_id] for sample_id in ids)
 
 
+@dataclass(frozen=True, slots=True)
+class StructureCandidate:
+    """One equilibrium structure candidate before point-group fixture selection."""
+
+    sample_id: str
+    source_dataset: str
+    source_manifest_sha256: str
+    lattice: torch.Tensor
+    fractional_positions: torch.Tensor
+    atomic_numbers: torch.Tensor
+
+    def __post_init__(self) -> None:
+        node_count = self.fractional_positions.shape[0]
+        if not self.sample_id or not self.source_dataset:
+            raise ValueError("structure candidates require source and stable sample ID")
+        if len(self.source_manifest_sha256) != 64:
+            raise ValueError("source manifest SHA-256 is required")
+        if self.lattice.shape != (3, 3) or abs(float(torch.linalg.det(self.lattice))) < 1e-12:
+            raise ValueError("candidate lattice must be invertible with shape [3, 3]")
+        if self.fractional_positions.shape != (node_count, 3) or node_count < 1:
+            raise ValueError("candidate fractional positions must be non-empty [N, 3]")
+        if self.atomic_numbers.shape != (node_count,) or self.atomic_numbers.dtype != torch.long:
+            raise TypeError("candidate atomic numbers must be torch.long [N]")
+        if not torch.isfinite(self.lattice).all() or not torch.isfinite(
+            self.fractional_positions
+        ).all():
+            raise ValueError("candidate geometry must contain only finite values")
+        if bool(((self.atomic_numbers < 1) | (self.atomic_numbers > 118)).any()):
+            raise ValueError("candidate atomic numbers must be in the range 1..118")
+
+    @property
+    def cartesian_positions(self) -> torch.Tensor:
+        return self.fractional_positions @ self.lattice
+
+
 def voigt_stiffness_to_cartesian(voigt: torch.Tensor) -> torch.Tensor:
     """Expand a stiffness Voigt matrix without engineering-strain scale factors."""
 
@@ -485,3 +520,68 @@ def load_five_structure_smoke(
         return dataset.five_structure_smoke()
     dataset = load_training_dataset(unit, manifest_path=resolved, sample_ids=ids)
     return dataset.five_structure_smoke()
+
+
+def load_structure_candidates(
+    unit: TrainingUnit,
+    *,
+    manifest_path: str | Path | None = None,
+) -> tuple[StructureCandidate, ...]:
+    """Load equilibrium structures without converting targets for fixture selection."""
+
+    if unit.dataset == "jarvis_dfpt":
+        raise ValueError("incomplete JARVIS-DFPT is not a 32-PG fixture source")
+    path = (
+        DEFAULT_DATA_MANIFESTS[(unit.dataset, unit.target)]
+        if manifest_path is None
+        else manifest_path
+    )
+    resolved, manifest = _load_manifest(path)
+    resource = _resource_path(resolved, str(manifest["local_file"]))
+    _verify_resource(resource, size_bytes=manifest["bytes"], sha256=manifest["sha256"])
+    manifest_sha = hashlib.sha256(resolved.read_bytes()).hexdigest()
+    candidates = []
+    if unit.dataset == "jarvis_tensor":
+        with resource.open("rb") as stream:
+            records = pickle.load(stream)  # noqa: S301
+        split = _published_split(manifest)
+        allowed = set(split.train + split.validation + split.test)
+        for raw in records:
+            sample_id = str(raw["JARVIS_ID"])
+            if sample_id not in allowed:
+                continue
+            lattice, fractional, numbers = _structure_from_jarvis(raw["atoms"])
+            candidates.append(
+                StructureCandidate(
+                    sample_id,
+                    unit.namespace,
+                    manifest_sha,
+                    lattice,
+                    fractional,
+                    numbers,
+                )
+            )
+    else:
+        raw = json.loads(resource.read_text(encoding="utf-8"))
+        indices = (
+            *manifest["split_indices"]["train"],
+            *manifest["split_indices"]["val"],
+            *manifest["split_indices"]["test"],
+        )
+        for index_value in indices:
+            index = str(index_value)
+            lattice, fractional, numbers = _structure_from_matten(raw["structure"][index])
+            candidates.append(
+                StructureCandidate(
+                    f"matten-{index}",
+                    unit.namespace,
+                    manifest_sha,
+                    lattice,
+                    fractional,
+                    numbers,
+                )
+            )
+    ids = [candidate.sample_id for candidate in candidates]
+    if len(ids) != len(set(ids)):
+        raise ValueError("fixture-source candidate IDs must be unique within a dataset")
+    return tuple(candidates)

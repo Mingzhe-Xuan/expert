@@ -7,3 +7,8 @@ Markdown with architecture, task, PG, mode, and backend keys.
 ```python
 report = evaluate_equivariance(model, batch, transforms)
 ```
+
+`select_point_group_fixtures` deterministically chooses one checksum-traceable equilibrium
+structure for each of the 32 crystallographic point groups. The final manifest is generated
+from frozen JARVIS/MatTen resources through Slurm and re-detects every exact Hall setting;
+prototype synthetic Wyckoff-orbit structures are not accepted as final fixtures.
