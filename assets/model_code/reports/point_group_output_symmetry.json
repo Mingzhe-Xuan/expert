@@ -1,0 +1,1213 @@
+{
+  "method": "two-general-orbit synthetic crystals; symmetry-complete edge orbit; scalar O(3) input features",
+  "tolerances": {
+    "relative_zero_leakage": 1e-06,
+    "relative_invariance": 1e-05
+  },
+  "point_groups": [
+    {
+      "number": 1,
+      "point_group": "1",
+      "schoenflies": "C1",
+      "example": "synthetic Si1Ge1 (P1)",
+      "space_group": "P1",
+      "num_atoms": 2,
+      "detected_point_group": "1",
+      "dielectric": {
+        "forced_zero_components": [],
+        "max_forced_zero_abs": 0.0,
+        "relative_zero_leakage": 0.0,
+        "max_relative_invariance_error": 0.0,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [],
+        "max_forced_zero_abs": 0.0,
+        "relative_zero_leakage": 0.0,
+        "max_relative_invariance_error": 3.103270529436486e-09,
+        "passed": true
+      }
+    },
+    {
+      "number": 2,
+      "point_group": "-1",
+      "schoenflies": "Ci",
+      "example": "synthetic Si2Ge2 (P-1)",
+      "space_group": "P-1",
+      "num_atoms": 4,
+      "detected_point_group": "-1",
+      "dielectric": {
+        "forced_zero_components": [],
+        "max_forced_zero_abs": 0.0,
+        "relative_zero_leakage": 0.0,
+        "max_relative_invariance_error": 0.0,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [],
+        "max_forced_zero_abs": 0.0,
+        "relative_zero_leakage": 0.0,
+        "max_relative_invariance_error": 6.247305339712739e-09,
+        "passed": true
+      }
+    },
+    {
+      "number": 3,
+      "point_group": "2",
+      "schoenflies": "C2",
+      "example": "synthetic Si2Ge2 (P2)",
+      "space_group": "P2",
+      "num_atoms": 4,
+      "detected_point_group": "2",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 3.704312689922773e-10,
+        "relative_zero_leakage": 3.704312689922773e-10,
+        "max_relative_invariance_error": 2.5617156396151586e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C16",
+          "C24",
+          "C26",
+          "C34",
+          "C36",
+          "C45",
+          "C56"
+        ],
+        "max_forced_zero_abs": 7.8005735204556e-10,
+        "relative_zero_leakage": 7.8005735204556e-10,
+        "max_relative_invariance_error": 2.2399493104785506e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 4,
+      "point_group": "m",
+      "schoenflies": "Cs",
+      "example": "synthetic Si2Ge2 (Pm)",
+      "space_group": "Pm",
+      "num_atoms": 4,
+      "detected_point_group": "m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 8.231806347680504e-10,
+        "relative_zero_leakage": 8.231806347680504e-10,
+        "max_relative_invariance_error": 8.336852985735277e-09,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C16",
+          "C24",
+          "C26",
+          "C34",
+          "C36",
+          "C45",
+          "C56"
+        ],
+        "max_forced_zero_abs": 5.652015522272791e-10,
+        "relative_zero_leakage": 5.567622509164091e-10,
+        "max_relative_invariance_error": 1.7578764754944132e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 5,
+      "point_group": "2/m",
+      "schoenflies": "C2h",
+      "example": "synthetic Si4Ge4 (P2/m)",
+      "space_group": "P2/m",
+      "num_atoms": 8,
+      "detected_point_group": "2/m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 3.29272248356105e-10,
+        "relative_zero_leakage": 3.29272248356105e-10,
+        "max_relative_invariance_error": 3.484182187207807e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C16",
+          "C24",
+          "C26",
+          "C34",
+          "C36",
+          "C45",
+          "C56"
+        ],
+        "max_forced_zero_abs": 1.2076970534735665e-09,
+        "relative_zero_leakage": 1.2076970534735665e-09,
+        "max_relative_invariance_error": 1.4017109606356826e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 6,
+      "point_group": "222",
+      "schoenflies": "D2",
+      "example": "synthetic Si4Ge4 (P222)",
+      "space_group": "P222",
+      "num_atoms": 8,
+      "detected_point_group": "222",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.0579515522256564e-11,
+        "relative_zero_leakage": 2.0579515522256564e-11,
+        "max_relative_invariance_error": 6.725277046371048e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 6.072861657990813e-10,
+        "relative_zero_leakage": 6.072861657990813e-10,
+        "max_relative_invariance_error": 1.6720582607376855e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 7,
+      "point_group": "mm2",
+      "schoenflies": "C2v",
+      "example": "synthetic Si4Ge4 (Pmm2)",
+      "space_group": "Pmm2",
+      "num_atoms": 8,
+      "detected_point_group": "mm2",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 1.646361241780525e-10,
+        "relative_zero_leakage": 1.646361241780525e-10,
+        "max_relative_invariance_error": 3.767111422803282e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 1.1598668692158753e-09,
+        "relative_zero_leakage": 1.1598668692158753e-09,
+        "max_relative_invariance_error": 2.628536321935826e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 8,
+      "point_group": "mmm",
+      "schoenflies": "D2h",
+      "example": "synthetic Si8Ge8 (Pmmm)",
+      "space_group": "Pmmm",
+      "num_atoms": 16,
+      "detected_point_group": "mmm",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.778234586831019e-10,
+        "relative_zero_leakage": 2.778234586831019e-10,
+        "max_relative_invariance_error": 6.580231826092131e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 5.168759864560002e-10,
+        "relative_zero_leakage": 5.127355254292627e-10,
+        "max_relative_invariance_error": 1.6931041102452582e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 9,
+      "point_group": "4",
+      "schoenflies": "C4",
+      "example": "synthetic Si4Ge4 (P4)",
+      "space_group": "P4",
+      "num_atoms": 8,
+      "detected_point_group": "4",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 1.8521563449613865e-10,
+        "relative_zero_leakage": 1.8521563449613865e-10,
+        "max_relative_invariance_error": 5.963242699635884e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C24",
+          "C25",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 4.0457504013602374e-09,
+        "relative_zero_leakage": 4.0457504013602374e-09,
+        "max_relative_invariance_error": 2.626403272643074e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 10,
+      "point_group": "-4",
+      "schoenflies": "S4",
+      "example": "synthetic Si4Ge4 (P-4)",
+      "space_group": "P-4",
+      "num_atoms": 8,
+      "detected_point_group": "-4",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.057951586920126e-10,
+        "relative_zero_leakage": 2.057951586920126e-10,
+        "max_relative_invariance_error": 2.2860159987203588e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C24",
+          "C25",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 3.507142576353317e-09,
+        "relative_zero_leakage": 3.507142576353317e-09,
+        "max_relative_invariance_error": 1.8595287087919132e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 11,
+      "point_group": "4/m",
+      "schoenflies": "C4h",
+      "example": "synthetic Si8Ge8 (P4/m)",
+      "space_group": "P4/m",
+      "num_atoms": 16,
+      "detected_point_group": "4/m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 1.2347708966409243e-10,
+        "relative_zero_leakage": 1.2347708966409243e-10,
+        "max_relative_invariance_error": 6.408330754936742e-09,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C24",
+          "C25",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 4.9766004650564355e-09,
+        "relative_zero_leakage": 4.9766004650564355e-09,
+        "max_relative_invariance_error": 1.0286212415167029e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 12,
+      "point_group": "422",
+      "schoenflies": "D4",
+      "example": "synthetic Si8Ge8 (P422)",
+      "space_group": "P422",
+      "num_atoms": 16,
+      "detected_point_group": "422",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 8.231806208902626e-11,
+        "relative_zero_leakage": 8.231806208902626e-11,
+        "max_relative_invariance_error": 9.125052713443438e-09,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 2.346337013570121e-10,
+        "relative_zero_leakage": 2.346337013570121e-10,
+        "max_relative_invariance_error": 1.7540696717333049e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 13,
+      "point_group": "4mm",
+      "schoenflies": "C4v",
+      "example": "synthetic Si8Ge8 (P4mm)",
+      "space_group": "P4mm",
+      "num_atoms": 16,
+      "detected_point_group": "4mm",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.0965380820303636e-10,
+        "relative_zero_leakage": 2.0965380820303636e-10,
+        "max_relative_invariance_error": 1.0571909569989657e-07,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 3.2940286609495217e-10,
+        "relative_zero_leakage": 3.2940286609495217e-10,
+        "max_relative_invariance_error": 2.796617479816632e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 14,
+      "point_group": "-42m",
+      "schoenflies": "D2d",
+      "example": "synthetic Si8Ge8 (P-42m)",
+      "space_group": "P-42m",
+      "num_atoms": 16,
+      "detected_point_group": "-42m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 1.5434641412181982e-11,
+        "relative_zero_leakage": 1.5434641412181982e-11,
+        "max_relative_invariance_error": 1.666913647113688e-07,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 2.0096969921556962e-10,
+        "relative_zero_leakage": 2.0096969921556962e-10,
+        "max_relative_invariance_error": 2.0329746064362553e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 15,
+      "point_group": "4/mmm",
+      "schoenflies": "D4h",
+      "example": "synthetic Si16Ge16 (P4/mmm)",
+      "space_group": "P4/mmm",
+      "num_atoms": 32,
+      "detected_point_group": "4/mmm",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.1094002933264022e-10,
+        "relative_zero_leakage": 2.1094002933264022e-10,
+        "max_relative_invariance_error": 5.550403514575919e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 8.39196559465627e-11,
+        "relative_zero_leakage": 8.39196559465627e-11,
+        "max_relative_invariance_error": 2.580952127573255e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 16,
+      "point_group": "3",
+      "schoenflies": "C3",
+      "example": "synthetic Si3Ge3 (P3)",
+      "space_group": "P3",
+      "num_atoms": 6,
+      "detected_point_group": "3",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 6.859838391770623e-11,
+        "relative_zero_leakage": 6.859838391770623e-11,
+        "max_relative_invariance_error": 1.6084257481452369e-07,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C16",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45"
+        ],
+        "max_forced_zero_abs": 1.8309904703528446e-09,
+        "relative_zero_leakage": 1.8309904703528446e-09,
+        "max_relative_invariance_error": 1.1887688344813796e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 17,
+      "point_group": "-3",
+      "schoenflies": "C3i",
+      "example": "synthetic Si6Ge6 (P-3)",
+      "space_group": "P-3",
+      "num_atoms": 12,
+      "detected_point_group": "-3",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 1.0975741843166631e-10,
+        "relative_zero_leakage": 1.0975741843166631e-10,
+        "max_relative_invariance_error": 7.219851827500179e-09,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C16",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45"
+        ],
+        "max_forced_zero_abs": 7.450580596923828e-09,
+        "relative_zero_leakage": 7.450580596923828e-09,
+        "max_relative_invariance_error": 1.839244134771434e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 18,
+      "point_group": "32",
+      "schoenflies": "D3",
+      "example": "synthetic Si6Ge6 (P312)",
+      "space_group": "P312",
+      "num_atoms": 12,
+      "detected_point_group": "32",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.4695417932818486e-10,
+        "relative_zero_leakage": 2.4695417932818486e-10,
+        "max_relative_invariance_error": 1.2200892740565905e-07,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C16",
+          "C24",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C56"
+        ],
+        "max_forced_zero_abs": 1.7701897725430626e-09,
+        "relative_zero_leakage": 1.7701897725430626e-09,
+        "max_relative_invariance_error": 1.5787826157520612e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 19,
+      "point_group": "3m",
+      "schoenflies": "C3v",
+      "example": "synthetic Si6Ge6 (P3m1)",
+      "space_group": "P3m1",
+      "num_atoms": 12,
+      "detected_point_group": "3m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 5.4878709215833155e-11,
+        "relative_zero_leakage": 5.4878709215833155e-11,
+        "max_relative_invariance_error": 2.3633621282215245e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C15",
+          "C16",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46"
+        ],
+        "max_forced_zero_abs": 3.725290298461914e-09,
+        "relative_zero_leakage": 3.725290298461914e-09,
+        "max_relative_invariance_error": 8.805136531009339e-08,
+        "passed": true
+      }
+    },
+    {
+      "number": 20,
+      "point_group": "-3m",
+      "schoenflies": "D3d",
+      "example": "synthetic Si12Ge12 (P-31m)",
+      "space_group": "P-31m",
+      "num_atoms": 24,
+      "detected_point_group": "-3m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.1608491385105566e-10,
+        "relative_zero_leakage": 2.1608491385105566e-10,
+        "max_relative_invariance_error": 4.1696438302096794e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C16",
+          "C24",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C56"
+        ],
+        "max_forced_zero_abs": 2.9027229508926666e-09,
+        "relative_zero_leakage": 2.9027229508926666e-09,
+        "max_relative_invariance_error": 1.8667608969735738e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 21,
+      "point_group": "6",
+      "schoenflies": "C6",
+      "example": "synthetic Si6Ge6 (P6)",
+      "space_group": "P6",
+      "num_atoms": 12,
+      "detected_point_group": "6",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 6.448248601742534e-10,
+        "relative_zero_leakage": 6.448248601742534e-10,
+        "max_relative_invariance_error": 5.887068255105987e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 7.622372732996041e-10,
+        "relative_zero_leakage": 7.622372732996041e-10,
+        "max_relative_invariance_error": 2.593090755453886e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 22,
+      "point_group": "-6",
+      "schoenflies": "C3h",
+      "example": "synthetic Si6Ge6 (P-6)",
+      "space_group": "P-6",
+      "num_atoms": 12,
+      "detected_point_group": "-6",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.366644380469296e-10,
+        "relative_zero_leakage": 2.366644380469296e-10,
+        "max_relative_invariance_error": 5.6916455548616796e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 1.0117594956282616e-10,
+        "relative_zero_leakage": 1.0117594956282616e-10,
+        "max_relative_invariance_error": 1.955259563146683e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 23,
+      "point_group": "6/m",
+      "schoenflies": "C6h",
+      "example": "synthetic Si12Ge12 (P6/m)",
+      "space_group": "P6/m",
+      "num_atoms": 24,
+      "detected_point_group": "6/m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 5.419272808282471e-10,
+        "relative_zero_leakage": 5.419272808282471e-10,
+        "max_relative_invariance_error": 5.411714631975428e-09,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 2.095451728800768e-10,
+        "relative_zero_leakage": 2.095451728800768e-10,
+        "max_relative_invariance_error": 1.9282511232177058e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 24,
+      "point_group": "622",
+      "schoenflies": "D6",
+      "example": "synthetic Si12Ge12 (P622)",
+      "space_group": "P622",
+      "num_atoms": 24,
+      "detected_point_group": "622",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 8.231806208902626e-11,
+        "relative_zero_leakage": 8.231806208902626e-11,
+        "max_relative_invariance_error": 5.680657721995885e-09,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 8.375632826185253e-11,
+        "relative_zero_leakage": 8.375632826185253e-11,
+        "max_relative_invariance_error": 2.0521309807008947e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 25,
+      "point_group": "6mm",
+      "schoenflies": "C6v",
+      "example": "synthetic Si12Ge12 (P6mm)",
+      "space_group": "P6mm",
+      "num_atoms": 24,
+      "detected_point_group": "6mm",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 8.746293966854779e-11,
+        "relative_zero_leakage": 8.746293966854779e-11,
+        "max_relative_invariance_error": 1.3599820647414163e-07,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 4.751863347252083e-10,
+        "relative_zero_leakage": 4.751863347252083e-10,
+        "max_relative_invariance_error": 2.0591829752447666e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 26,
+      "point_group": "-6m2",
+      "schoenflies": "D3h",
+      "example": "synthetic Si12Ge12 (P-6m2)",
+      "space_group": "P-6m2",
+      "num_atoms": 24,
+      "detected_point_group": "-6m2",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 8.231806208902626e-11,
+        "relative_zero_leakage": 8.231806208902626e-11,
+        "max_relative_invariance_error": 1.9173965526420034e-08,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 1.5065029779215422e-10,
+        "relative_zero_leakage": 1.5065029779215422e-10,
+        "max_relative_invariance_error": 2.1330761512672325e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 27,
+      "point_group": "6/mmm",
+      "schoenflies": "D6h",
+      "example": "synthetic Si24Ge24 (P6/mmm)",
+      "space_group": "P6/mmm",
+      "num_atoms": 48,
+      "detected_point_group": "6/mmm",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 9.475152606963633e-11,
+        "relative_zero_leakage": 9.475152606963633e-11,
+        "max_relative_invariance_error": 1.7620000392071233e-07,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 2.8766303228344725e-10,
+        "relative_zero_leakage": 2.8766303228344725e-10,
+        "max_relative_invariance_error": 2.095887481345926e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 28,
+      "point_group": "23",
+      "schoenflies": "T",
+      "example": "synthetic Si12Ge12 (P23)",
+      "space_group": "P23",
+      "num_atoms": 24,
+      "detected_point_group": "23",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 8.038873386406742e-13,
+        "relative_zero_leakage": 8.038873386406742e-13,
+        "max_relative_invariance_error": 1.9748380708506375e-09,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 5.230419222734817e-11,
+        "relative_zero_leakage": 5.230419222734817e-11,
+        "max_relative_invariance_error": 2.9125384770622986e-08,
+        "passed": true
+      }
+    },
+    {
+      "number": 29,
+      "point_group": "m-3",
+      "schoenflies": "Th",
+      "example": "synthetic Si24Ge24 (Pm-3)",
+      "space_group": "Pm-3",
+      "num_atoms": 48,
+      "detected_point_group": "m-3",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 3.429919325989572e-12,
+        "relative_zero_leakage": 3.429919325989572e-12,
+        "max_relative_invariance_error": 4.2953551826485636e-10,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 4.251862056880995e-11,
+        "relative_zero_leakage": 4.251862056880995e-11,
+        "max_relative_invariance_error": 2.4048529212450376e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 30,
+      "point_group": "432",
+      "schoenflies": "O",
+      "example": "synthetic Si24Ge24 (P432)",
+      "space_group": "P432",
+      "num_atoms": 48,
+      "detected_point_group": "432",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 9.43227787542078e-12,
+        "relative_zero_leakage": 9.43227787542078e-12,
+        "max_relative_invariance_error": 2.5277538395762633e-10,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 5.833745812811042e-12,
+        "relative_zero_leakage": 5.833745812811042e-12,
+        "max_relative_invariance_error": 6.569948851620211e-08,
+        "passed": true
+      }
+    },
+    {
+      "number": 31,
+      "point_group": "-43m",
+      "schoenflies": "Td",
+      "example": "synthetic Si24Ge24 (P-43m)",
+      "space_group": "P-43m",
+      "num_atoms": 48,
+      "detected_point_group": "-43m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 2.5724394402820705e-12,
+        "relative_zero_leakage": 2.5724394402820705e-12,
+        "max_relative_invariance_error": 3.774414669699411e-10,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 1.512418246196745e-10,
+        "relative_zero_leakage": 1.512418246196745e-10,
+        "max_relative_invariance_error": 2.0432726444141736e-07,
+        "passed": true
+      }
+    },
+    {
+      "number": 32,
+      "point_group": "m-3m",
+      "schoenflies": "Oh",
+      "example": "synthetic Si48Ge48 (Pm-3m)",
+      "space_group": "Pm-3m",
+      "num_atoms": 96,
+      "detected_point_group": "m-3m",
+      "dielectric": {
+        "forced_zero_components": [
+          "yz",
+          "xz",
+          "xy"
+        ],
+        "max_forced_zero_abs": 1.714959662994786e-12,
+        "relative_zero_leakage": 1.714959662994786e-12,
+        "max_relative_invariance_error": 5.561746618809593e-10,
+        "passed": true
+      },
+      "elastic": {
+        "forced_zero_components": [
+          "C14",
+          "C15",
+          "C16",
+          "C24",
+          "C25",
+          "C26",
+          "C34",
+          "C35",
+          "C36",
+          "C45",
+          "C46",
+          "C56"
+        ],
+        "max_forced_zero_abs": 1.4730246189476048e-10,
+        "relative_zero_leakage": 1.4730246189476048e-10,
+        "max_relative_invariance_error": 2.1826143381531438e-07,
+        "passed": true
+      }
+    }
+  ]
+}

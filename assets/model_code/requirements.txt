@@ -1,0 +1,7 @@
+torch>=2.1
+e3nn==0.4.4
+mace-torch==0.3.16
+numpy==1.26.4
+matscipy==1.1.1
+spglib>=2.6
+scipy>=1.10
