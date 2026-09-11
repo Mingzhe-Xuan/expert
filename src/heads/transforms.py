@@ -133,6 +133,32 @@ def project_to_point_group(
     return (coefficients @ basis) @ basis.T
 
 
+def project_to_symmetry_operations(
+    coefficients: torch.Tensor,
+    task: str,
+    rotations: torch.Tensor,
+) -> torch.Tensor:
+    """Project a global target using the material's detected Cartesian operations."""
+
+    if task == "bec":
+        raise ValueError("BEC raw predictions must not use the global fixed-space projector")
+    layout = TARGET_LAYOUTS.get(task)
+    if layout is None:
+        raise ValueError(f"unsupported target task {task!r}")
+    if coefficients.ndim < 1 or coefficients.shape[-1] != layout.dimension:
+        raise ValueError("coefficient width does not match the target layout")
+    if rotations.ndim != 3 or rotations.shape[1:] != (3, 3) or rotations.shape[0] < 1:
+        raise ValueError("rotations must be non-empty with shape [num_operations, 3, 3]")
+    if rotations.device != coefficients.device:
+        raise ValueError("coefficients and rotations must share a device")
+    representations = torch.stack(
+        [target_representation(rotation, task, dtype=coefficients.dtype) for rotation in rotations]
+    )
+    projector = representations.mean(dim=0)
+    projector = 0.5 * (projector + projector.T)
+    return coefficients @ projector.T
+
+
 def apply_bec_asr(bec: torch.Tensor, node_batch: torch.Tensor) -> torch.Tensor:
     """Enforce the acoustic sum rule independently in every crystal."""
 

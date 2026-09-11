@@ -7,12 +7,17 @@ from torch import nn
 
 from ..graphs import PeriodicGraph
 from ..irreps import IrrepLayout, IrrepTerm
-from ..symmetry import PointGroupRegistry, SymmetryRecord
+from ..symmetry import SymmetryRecord
 from ..symmetry.registry import _layout_irreps
 from ..tensor_products import build_tensor_product
 from e3nn import o3
 from .contracts import TARGET_LAYOUTS, TensorPrediction
-from .transforms import apply_bec_asr, irreps_to_cartesian, project_to_point_group, rotate_cartesian
+from .transforms import (
+    apply_bec_asr,
+    irreps_to_cartesian,
+    project_to_symmetry_operations,
+    rotate_cartesian,
+)
 
 
 def _readout_edge_layout(lmax: int = 2) -> IrrepLayout:
@@ -53,7 +58,6 @@ class TensorReadout(nn.Module):
             _layout_irreps(hidden_layout), _layout_irreps(self.target_layout)
         )
         self.radial = nn.Sequential(nn.Linear(1, 8), nn.SiLU(), nn.Linear(8, 1))
-        self.registry = PointGroupRegistry()
 
     def coefficient_forward(
         self,
@@ -91,9 +95,12 @@ class TensorReadout(nn.Module):
         pooled = pooled / counts.clamp_min(1).unsqueeze(-1)
         constrained = []
         for graph_index, symmetry in enumerate(symmetries):
-            group = self.registry[symmetry.current_point_group]
             constrained.append(
-                project_to_point_group(pooled[graph_index : graph_index + 1], self.task, group)
+                project_to_symmetry_operations(
+                    pooled[graph_index : graph_index + 1],
+                    self.task,
+                    symmetry.rotations,
+                )
             )
         return torch.cat(constrained)
 

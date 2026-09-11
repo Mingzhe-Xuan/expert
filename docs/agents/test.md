@@ -1,5 +1,27 @@
 # Test plan and results
 
+## 2026-09-12 — Material-operation-aware global tensor projection
+
+计划检查：
+
+- 新增只接受 dielectric/elastic 的 Reynolds projector，直接由 `SymmetryRecord.rotations`
+  构造 target coefficient representations；拒绝 BEC、空操作集、错误 shape/device/width；
+- 对非代表 orientation（将非平凡 crystallographic group 共轭到另一 Cartesian orientation）
+  验证投影结果逐操作不变、幂等且保持有限梯度；明确证明代表 registry projector 与该实际
+  orientation 的固定子空间不同，防止测试退化为既有 representative-Hall case；
+- `TensorReadout` 必须逐 crystal 使用对应 `SymmetryRecord` operations，mixed batch 不串扰，
+  dielectric/elastic 最终 Cartesian intrinsic symmetry 与 O(3) contract 保持不变；
+- targeted 与完整 `tests/` 均须 0 failed/skip，另执行 compile 与 diff whitespace 检查。
+
+实际结果：
+
+- 非代表 `mm2` orientation 的 dielectric/elastic projector 验证了逐操作不变、幂等、有限梯度，
+  且与 representative-Hall fixed space 明确不同；空 operation、错误 width 与 BEC 均 fail closed；
+- mixed-crystal `TensorReadout` 对两个不同 Cartesian orientations 独立投影并完成 backward；
+- targeted projector/mixed-batch：12 passed；含全部 26 configs 的 dispatcher suite：15 passed；
+- 完整本地 `tests/`：133 passed，0 failed，0 skipped（181.14 s）；
+  `python -m compileall -q src tests` 与 `git diff --check` 通过。
+
 ## 2026-09-12 — Real-equilibrium 32-point-group fixture pipeline
 
 计划检查：

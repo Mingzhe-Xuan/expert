@@ -99,6 +99,45 @@ def test_three_readouts_have_correct_scope_constraints_and_no_bec_pi_g() -> None
     assert "pi_g" not in inspect.signature(TensorReadout.forward).parameters
 
 
+def test_global_readout_uses_each_crystals_actual_operation_orientation() -> None:
+    torch.manual_seed(313)
+    graph = _graph(torch.float64)
+    first = _record("mm2", torch.float64)
+    frame = o3.rand_matrix(dtype=torch.float64)
+    second_rotations = torch.einsum(
+        "ij,gjk,lk->gil", frame, first.rotations, frame
+    )
+    second = SymmetryRecord(
+        canonical_frame=first.canonical_frame,
+        current_point_group=first.current_point_group,
+        current_space_group=first.current_space_group,
+        hall_number=first.hall_number,
+        rotations=second_rotations,
+        translations=first.translations,
+    )
+    features = torch.randn(
+        graph.num_nodes, SMALL_LAYOUT.dimension, dtype=torch.float64, requires_grad=True
+    )
+    head = TensorReadout(SMALL_LAYOUT, "dielectric", "full_o3", cutoff=1.4).double()
+    coefficients = head(features, graph, (first, second)).irrep_coefficients
+    for index, symmetry in enumerate((first, second)):
+        representations = torch.stack(
+            [
+                target_representation(rotation, "dielectric")
+                for rotation in symmetry.rotations
+            ]
+        )
+        transformed = torch.einsum("gij,j->gi", representations, coefficients[index])
+        assert torch.allclose(
+            transformed,
+            coefficients[index].expand_as(transformed),
+            atol=2e-8,
+            rtol=2e-8,
+        )
+    coefficients.square().sum().backward()
+    assert features.grad is not None and torch.isfinite(features.grad).all()
+
+
 def test_readout_is_o3_equivariant_for_proper_and_improper_rotations() -> None:
     torch.manual_seed(44)
     graph = _graph(torch.float64)

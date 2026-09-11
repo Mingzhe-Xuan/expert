@@ -72,7 +72,8 @@
 - A crystallographic point-group symbol does not by itself freeze the orientation of a material's
   Hall setting. Acceptance checks for forbidden tensor components must construct representations
   from the fixture's spglib-detected Cartesian operations; using only the registry's representative
-  Hall group can silently test a differently oriented fixed subspace.
+  Hall group can silently test a differently oriented fixed subspace. The model's global readout
+  projector must use those same per-material operations, not merely leave them to the audit layer.
 - Slurm smoke commands are not self-auditing merely because they return nonzero on failure. Each
   command must write failure JSON and JUnit before re-raising, and the aggregate pytest wrapper must
   convert skip/xfail counts into a nonzero acceptance result.

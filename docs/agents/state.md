@@ -1,5 +1,18 @@
 # Agent state
 
+## 并行 Goal 状态（material-oriented target projection）
+
+已将 dielectric/elastic global readout 从 point-group symbol 的 representative Hall projector
+改为逐材料 `SymmetryRecord.rotations` Reynolds projector。非代表 orientation、mixed batch、
+幂等/不变性/梯度与完整 26-config 回归均通过；BEC raw head 继续不使用该 projector。
+
+## 并行 Goal 变更记录（material-oriented target projection）
+
+- 2026-09-12：冻结 actual-operation projector 的 shape/task/device、幂等、不变性、梯度与
+  non-representative orientation 测试；下一步实现 heads/readout 接口并跑完整套件。
+- 2026-09-12：operation-aware projector 与 readout 已完成；targeted 12/15 tests 及完整
+  133-test suite 全绿，compile/diff checks 通过。下一步回到 Guqq 环境与资源准备。
+
 ## 并行 Goal 状态（32-PG equilibrium fixtures）
 
 已完成 source iterator、deterministic selector、versioned validator、58-row real-checkpoint

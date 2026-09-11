@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-12：验收审计发现 global head 仍使用代表 Hall orientation，而非材料实际
+  `SymmetryRecord.rotations`；启动 operation-aware Reynolds projector 修复与非代表 orientation
+  回归测试，保持 BEC raw head 不依赖 symmetry projector。
+- 2026-09-12：完成逐材料 operation-aware global projector；非代表 `mm2` orientation 与
+  mixed-crystal readout 回归证明实际 fixed space、不变性、幂等和 backward，完整套件
+  133 passed、0 skip，compile/diff checks 通过。
+
 - 2026-09-12：开始 32-PG real-equilibrium fixture pipeline；将从已冻结 JARVIS/MatTen
   structures 经 Slurm 选择每点群一条，保存 Hall/source/checksum，并拒绝 synthetic prototype
   充当最终 fixture。保留同工作区 published benchmark 审计的全部并发改动。

@@ -18,3 +18,7 @@ explicit optional diagnostic that requires audited site permutations.
 empty-edge self fallback. Dielectric/elastic pool per crystal and enter the detected PG
 fixed space; BEC remains node-wise and returns raw plus independent ASR output without
 consulting audit permutations.
+
+The global fixed-space projector uses the material's Cartesian operations from its
+`SymmetryRecord`, not only the representative Hall orientation attached to a point-group symbol.
+This preserves the actual setting and axis convention detected for each structure.

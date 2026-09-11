@@ -9,6 +9,7 @@ from .transforms import (
     irreps_to_cartesian,
     project_bec_joint_symmetry,
     project_to_point_group,
+    project_to_symmetry_operations,
     rotate_cartesian,
     target_representation,
 )
@@ -23,6 +24,7 @@ __all__ = [
     "irreps_to_cartesian",
     "project_bec_joint_symmetry",
     "project_to_point_group",
+    "project_to_symmetry_operations",
     "rotate_cartesian",
     "target_representation",
 ]

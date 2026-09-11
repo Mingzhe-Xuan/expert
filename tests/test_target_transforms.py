@@ -11,6 +11,7 @@ from src.heads import (
     irreps_to_cartesian,
     project_bec_joint_symmetry,
     project_to_point_group,
+    project_to_symmetry_operations,
     rotate_cartesian,
     target_representation,
 )
@@ -69,6 +70,52 @@ def test_global_point_group_projection_for_all_groups() -> None:
             )
     with pytest.raises(ValueError, match="raw"):
         project_to_point_group(torch.zeros(2, 9), "bec", registry["1"])
+
+
+@pytest.mark.parametrize("task", ["dielectric", "elastic"])
+def test_material_operation_projector_preserves_nonrepresentative_orientation(
+    task: str,
+) -> None:
+    torch.manual_seed(1701)
+    group = PointGroupRegistry()["mm2"]
+    frame = o3.rand_matrix(dtype=torch.float64)
+    rotations = torch.einsum(
+        "ij,gjk,lk->gil", frame, group.cartesian_rotations, frame
+    )
+    coefficients = torch.randn(
+        3, TARGET_LAYOUTS[task].dimension, dtype=torch.float64, requires_grad=True
+    )
+    projected = project_to_symmetry_operations(coefficients, task, rotations)
+    projected_twice = project_to_symmetry_operations(projected, task, rotations)
+    representations = torch.stack(
+        [target_representation(rotation, task) for rotation in rotations]
+    )
+    transformed = torch.einsum("gij,bj->gbi", representations, projected)
+    assert torch.allclose(
+        transformed,
+        projected.expand(group.order, -1, -1),
+        atol=2e-8,
+        rtol=2e-8,
+    )
+    assert torch.allclose(projected_twice, projected, atol=2e-8, rtol=2e-8)
+    representative = project_to_point_group(coefficients, task, group)
+    assert not torch.allclose(projected, representative, atol=1e-5, rtol=1e-5)
+    projected.square().sum().backward()
+    assert coefficients.grad is not None and torch.isfinite(coefficients.grad).all()
+
+    with pytest.raises(ValueError, match="non-empty"):
+        project_to_symmetry_operations(coefficients, task, rotations[:0])
+    with pytest.raises(ValueError, match="width"):
+        project_to_symmetry_operations(torch.zeros(2, 1), task, rotations)
+
+
+def test_material_operation_projector_rejects_bec() -> None:
+    with pytest.raises(ValueError, match="raw"):
+        project_to_symmetry_operations(
+            torch.zeros(2, TARGET_LAYOUTS["bec"].dimension),
+            "bec",
+            torch.eye(3).unsqueeze(0),
+        )
 
 
 def test_bec_asr_is_independent_per_crystal_and_differentiable() -> None:
