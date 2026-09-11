@@ -1,5 +1,62 @@
 # Test plan and results
 
+## 2026-09-11 — Phase A contracts and architecture schema
+
+计划检查：
+
+- `src/` 的 12 个一级模块均可导入且各自包含 README。
+- `ArchitectureConfig` 只接受五个冻结分支，并对不存在的 adaptation、O3E、PGE
+  placement 强制使用 `none`；PGE 分支要求 `a1_only | full_pg`。
+- 枚举结果恰好为 `2 + 4 + 8 + 4 + 8 = 26`，manifest 与运行时枚举逐项一致且稳定。
+- `PeriodicGraph`、`O3FeatureBatch`、`SymmetryRecord`、`ParentEmbeddingSpec`、
+  `ParentDAGSpec` 与 `TensorPrediction` 对 shape、dtype、scope 和关键不变量 fail closed。
+- 执行本实现单元的 pytest、compile/import 检查和 `git diff --check`；实际结果须在
+  提交前补录，任一失败均不提交。
+
+实际结果：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_phase_a_contracts.py -q`：
+  15 passed，0 failed，0 skipped。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  27 passed，0 failed，1 skipped；唯一 skip 是旧原型中由
+  `RUN_FULL_PG_OUTPUT_TEST=1` 控制的 32-PG/64-forward regression，不属于本次
+  Phase A 新测试。它仍是完整 Goal 后续必须消除的验收缺口，未据此宣称完成。
+- `python -m compileall -q src tests/test_phase_a_contracts.py`：通过。
+- `python -m json.tool src/configs/architecture_variant_manifest.json`：通过。
+- `git diff --check`：通过；仅报告 Git 的 LF→CRLF 工作树提示，无 whitespace error。
+
+## 2026-09-11 — vlab jump host for Guqq
+
+计划检查：
+
+- `ssh -G Guqq` 必须解析出目标 `211.86.155.221`、用户 `xmz`、目标 Ed25519
+  密钥及 `proxyjump vlab`。
+- `ssh -G vlab` 必须解析出 `vlab.ustc.edu.cn`、用户 `ubuntu` 和专用 PEM 密钥。
+- `ssh -o BatchMode=yes -o ConnectTimeout=15 vlab true` 必须无需交互认证并以
+  状态 0 退出。
+- `ssh -o BatchMode=yes -o ConnectTimeout=20 Guqq git pull` 必须经 vlab 跳转、
+  无密码提示并在 Guqq 调用规范要求的首个远程操作 `git pull`；只有默认登录目录
+  本身是 Git 仓库时，才要求该 Git 命令返回状态 0。
+- 修改前备份用户级 SSH config；修改后不改变其他 Host 条目。
+
+实际结果：
+
+- `ssh -G Guqq`：解析为 `xmz@211.86.155.221`、
+  `~/.ssh/id_ed25519_codex` 和 `proxyjump vlab`，通过。
+- `ssh -G vlab`：解析为 `ubuntu@vlab.ustc.edu.cn` 和
+  `C:\Users\asus\.ssh\vlab-vm12818.pem`，通过。
+- `ssh -o BatchMode=yes -o ConnectTimeout=15 vlab true`：状态 0，无密码提示。
+- `ssh -o BatchMode=yes -o ConnectTimeout=20 Guqq git pull`：成功经 vlab 登录并
+  在 Guqq 执行远程命令；因默认登录目录不是 Git 仓库而返回状态 1。该结果不属于
+  SSH 失败，但表明后续拉取前必须先进入项目仓库目录。
+- 验收边界修订依据：用户目标是 SSH 免密登录，项目规范要求连接后把 `git pull`
+  作为首个远程操作，但未规定项目仓库位于默认登录目录；远端返回 Git 自身的
+  `not a git repository` 已证明 SSH 认证、跳转和远程命令执行均已完成。
+- `ssh -o BatchMode=yes -o ConnectTimeout=20 Guqq true`：状态 0，无密码提示，
+  端到端免密验收通过。
+- 原配置已备份到 `C:\Users\asus\.ssh\config.bak-vlab-20260911`；配置差异检查
+  仅应包含 `Host Guqq` 下新增的 `ProxyJump vlab`。
+
 ## 2026-09-11 — GOAL and subgroup-chain artifacts
 
 计划检查：

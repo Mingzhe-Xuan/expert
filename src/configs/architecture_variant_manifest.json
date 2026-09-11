@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "generator": "src.configs.enumerate_architecture_configs",
+  "expected_branch_counts": {"B+R": 2, "B+A+R": 4, "B+A+O3E+R": 8, "B+PGE+R": 4, "B+A+PGE+R": 8},
+  "variant_ids": [
+    "b_plus_r__a-none__o3e-none__pg-none__r-full_o3",
+    "b_plus_r__a-none__o3e-none__pg-none__r-o2_tp",
+    "b_plus_a_plus_r__a-full_o3__o3e-none__pg-none__r-full_o3",
+    "b_plus_a_plus_r__a-full_o3__o3e-none__pg-none__r-o2_tp",
+    "b_plus_a_plus_r__a-o2_tp__o3e-none__pg-none__r-full_o3",
+    "b_plus_a_plus_r__a-o2_tp__o3e-none__pg-none__r-o2_tp",
+    "b_plus_a_plus_o3e_plus_r__a-full_o3__o3e-full_o3__pg-none__r-full_o3",
+    "b_plus_a_plus_o3e_plus_r__a-full_o3__o3e-full_o3__pg-none__r-o2_tp",
+    "b_plus_a_plus_o3e_plus_r__a-full_o3__o3e-o2_tp__pg-none__r-full_o3",
+    "b_plus_a_plus_o3e_plus_r__a-full_o3__o3e-o2_tp__pg-none__r-o2_tp",
+    "b_plus_a_plus_o3e_plus_r__a-o2_tp__o3e-full_o3__pg-none__r-full_o3",
+    "b_plus_a_plus_o3e_plus_r__a-o2_tp__o3e-full_o3__pg-none__r-o2_tp",
+    "b_plus_a_plus_o3e_plus_r__a-o2_tp__o3e-o2_tp__pg-none__r-full_o3",
+    "b_plus_a_plus_o3e_plus_r__a-o2_tp__o3e-o2_tp__pg-none__r-o2_tp",
+    "b_plus_pge_plus_r__a-none__o3e-none__pg-a1_only__r-full_o3",
+    "b_plus_pge_plus_r__a-none__o3e-none__pg-a1_only__r-o2_tp",
+    "b_plus_pge_plus_r__a-none__o3e-none__pg-full_pg__r-full_o3",
+    "b_plus_pge_plus_r__a-none__o3e-none__pg-full_pg__r-o2_tp",
+    "b_plus_a_plus_pge_plus_r__a-full_o3__o3e-none__pg-a1_only__r-full_o3",
+    "b_plus_a_plus_pge_plus_r__a-full_o3__o3e-none__pg-a1_only__r-o2_tp",
+    "b_plus_a_plus_pge_plus_r__a-full_o3__o3e-none__pg-full_pg__r-full_o3",
+    "b_plus_a_plus_pge_plus_r__a-full_o3__o3e-none__pg-full_pg__r-o2_tp",
+    "b_plus_a_plus_pge_plus_r__a-o2_tp__o3e-none__pg-a1_only__r-full_o3",
+    "b_plus_a_plus_pge_plus_r__a-o2_tp__o3e-none__pg-a1_only__r-o2_tp",
+    "b_plus_a_plus_pge_plus_r__a-o2_tp__o3e-none__pg-full_pg__r-full_o3",
+    "b_plus_a_plus_pge_plus_r__a-o2_tp__o3e-none__pg-full_pg__r-o2_tp"
+  ]
+}

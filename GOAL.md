@@ -2,7 +2,7 @@
 
 ## 1. Objective
 
-在 `assets/model_code/` 中完成 `proposal.md` 定义的晶体张量预测系统，使四类真实 pretrained backbone、五个 architecture branches、两种 PG hidden modes、两种 O(3) tensor-product backends，以及 dielectric、elastic、BEC 三类 target 均具有完整且可训练的 forward/backward 实现。
+在 `src` 中完成 `proposal.md` 定义的晶体张量预测系统，使四类真实 pretrained backbone、五个 architecture branches、两种 PG hidden modes、两种 O(3) tensor-product backends，以及 dielectric、elastic、BEC 三类 target 均具有完整且可训练的 forward/backward 实现。
 
 最终实现必须在 Guqq 上通过：
 
@@ -189,10 +189,10 @@ spglib 负责当前结构 symmetry detection、standardization 和 operation val
 
 ## 8. Required package structure and interfaces
 
-将 `assets/model_code/pg_tensor_model/` 整理为以下模块边界；每个一级模块目录必须有 README，说明输入、输出、conventions 和最小用例：
+文件结构如下；每个一级模块目录必须有 README，说明输入、输出、conventions 和最小用例：
 
 ```text
-pg_tensor_model/
+src/
   backbones/       # four real checkpoint adapters and O(3) wrapper
   graphs/          # cutoff PBC graph contract and covariance audit
   symmetry/        # canonicalization, PG registry, parent embeddings, gates

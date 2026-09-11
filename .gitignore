@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Task-generated resources and evidence do not belong in ordinary Git history.
+data/checkpoints/
+data/raw/
+data/processed/
+results/
+logs/
+checkpoints/

@@ -1,5 +1,28 @@
 # Agent state
 
+## 当前状态（Phase A 正式实现启动）
+
+已建立正式 `src/` 包的 12 个一级模块边界和 README，落地六项核心 typed
+contracts、三类 target layouts、checkpoint convention fail-closed 校验、五分支
+配置 schema 与冻结 26-config manifest。新增测试 15/15 通过，合并现有本地套件
+27 passed、1 个旧原型 opt-in skip；Goal 仍处于 Phase A，尚不具备完成证据。
+
+## 当前计划（Phase A 正式实现启动）
+
+1. 完成 Phase A 数学 registries：点群表示、subduction/inverse、CG/path/copy order
+   和 Cartesian↔irrep transforms，并补齐 round-trip/intertwining tests。
+2. 实现 canonicalization 与 Hall-level embedding operation validation。
+3. Phase A gate 全绿后进入 Phase B 的 cutoff PBC graph 和真实 backbone adapters。
+
+## 变更记录（Phase A 正式实现启动）
+
+- 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
+  确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置
+  schema，并在实现前登记对应测试。
+- 2026-09-11：完成正式模块骨架、typed contracts、target layouts、convention
+  checksum 和 26-config schema/manifest；新增测试 15/15 通过，完整本地集合为
+  27 passed、1 个旧 opt-in skip。下一实现单元转入数学 registries 与 transforms。
+
 ## 当前状态（GOAL 与 subgroup-chain 资产整理）
 
 已将 `proposal.md` 与 32 点群子群资料收敛为可执行的 `GOAL.md`，并生成供实现消费的 `assets/docs/subgroup_chain.json`；JSON 完整性测试和当前原型测试通过。当前代码仍仅为 MACE + A1 dielectric/elastic 原型，BEC、Full-PG、其余三类 backbone、五分支 dispatcher 与完整 Guqq 测试矩阵属于后续 Goal 执行内容，尚未误标为完成。
@@ -53,17 +76,15 @@
 
 ## 当前状态
 
-commit `e65c0e0` 已按用户明确授权推送到 `origin/main`。GRACE 与 DPA4-Plus
-checkpoint 已下载并校验，JARVIS-DFPT BEC 提取器通过 10 样本验证。完整
-5,000 档案提取被服务器 SSH 在密钥交换前主动断开所阻塞；EquiformerV2 另受
-Hugging Face 人工门控限制。
+已将本机 SSH 别名 `Guqq` 配置为经 `vlab` 跳转，并完成端到端免密验收。
+`vlab true` 与 `Guqq true` 均以状态 0 退出；Guqq 的首个远程操作确为
+`git pull`，但默认登录目录不是 Git 仓库，因此该 Git 命令本身以状态 1 退出。
 
 ## 当前计划
 
-1. 等待 Guqq SSH 服务端的 pre-authentication close 状态解除。
-2. 恢复连接后先 `git pull`，下载 raw index 并提交完整 Slurm 作业。
-3. 将生成的 JSONL、summary 和 errors 文件复制回本地并更新 manifest。
-4. 用户完成 `facebook/OMAT24` 访问申请和 `hf auth login` 后下载 EquiformerV2。
+1. 后续直接使用 `ssh Guqq` 经 vlab 登录。
+2. 若需在 Guqq 拉取代码，先切换到服务器上的项目仓库目录再运行 `git pull`。
+3. 保留 `C:\Users\asus\.ssh\config.bak-vlab-20260911` 作为回滚备份。
 
 ## 变更记录
 
@@ -86,3 +107,9 @@ Hugging Face 人工门控限制。
   banner 和进入 key exchange 前关闭；无认证尝试、无远程命令执行。下一步需由
   服务器管理员检查 sshd、`MaxStartups`、源 IP 过滤及 fail2ban/CrowdSec 等
   pre-auth 策略，或待该状态解除后再连接并首先执行 `git pull`。
+- 2026-09-11：开始配置 `vlab` 作为 `Guqq` 跳板机；确认现有 `vlab` 专用密钥和
+  `Guqq-server` 跳转条目可复用，下一步备份用户级配置、修改 `Guqq` 并执行
+  静态解析与端到端免密验收。
+- 2026-09-11：完成 `vlab` 跳板配置和免密验收；`Guqq` 已增加
+  `ProxyJump vlab`，静态解析正确，vlab 与 Guqq 的 BatchMode 连接均返回 0。
+  Guqq 首次远程 `git pull` 已执行但因登录目录不是仓库返回 1；SSH 配置任务完成。

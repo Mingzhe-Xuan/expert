@@ -42,3 +42,16 @@
 - Cross-check: `ssh-keyscan -T 10` received no host key/banner, while `ssh -G`
   still resolved the expected user `xmz`, port 22, and
   `~/.ssh/id_ed25519_codex` identity.
+
+## 2026-09-11 — Guqq connection through vlab
+
+- Intended connection: first validate passwordless access to `vlab`, then connect
+  to `Guqq` through `ProxyJump vlab`.
+- Permission check: SSH configuration and lightweight connectivity diagnostics
+  only; if Guqq login succeeds, the first remote operation is `git pull`.
+- No training, inference, evaluation, compilation, batch processing, or other
+  compute workload will run directly on either login host.
+- Result: passwordless BatchMode access to both `vlab` and `Guqq` succeeded.
+  The first Guqq remote operation was `git pull`; it reached the remote shell
+  but returned `not a git repository` because the login directory is not the
+  project checkout. A subsequent no-op `true` command exited with status 0.

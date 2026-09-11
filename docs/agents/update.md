@@ -1,5 +1,13 @@
 # Agent progress updates
 
+- 2026-09-11：启动 `GOAL.md` Phase A 正式实现；审计确认仓库尚无 `src/` 包，
+  本实现单元将建立规定模块边界、核心 typed contracts、五分支配置校验与冻结的
+  26-config manifest。测试范围已先写入 `docs/agents/test.md`。
+- 2026-09-11：完成首个 Phase A 实现单元：正式 `src/` 模块骨架和 README、
+  `PeriodicGraph`/`O3FeatureBatch`/symmetry/parent DAG/`TensorPrediction` contracts、
+  三类 target layouts、checkpoint convention checksum，以及与运行时枚举严格一致的
+  26-config manifest；新增测试 15 passed，合并本地套件 27 passed、1 个旧 opt-in skip。
+
 - 2026-09-11：完成 `GOAL.md` 与 `assets/docs/subgroup_chain.json`：Goal 将完整模型验收冻结为四真实 backbone、五分支/26 合法配置、A1/Full-PG、full-O3/O2、三类性质、四独立训练单元、严格 `<5M`、全部等变/单元测试及 Guqq Slurm 两级 smoke；subgroup asset 保留 32 群、80 cover edges、433 oriented instances 和 222 maximal chains，并由新增测试验证。
 
 - 2026-09-11：冻结 dataset × property 独立训练、官方 split/8:1:1 fallback、backbone graph/6 Å fallback 规则；定义 32 点群单结构 forward/backward 与每训练单元 5 结构 train/test 两级 smoke，并将 unnatural-parity carrier 改为逐 target 审计（仅 BEC 加 `1x1e`）。
@@ -22,3 +30,7 @@
   TCP 22 可达但服务端在 SSH banner/key exchange 前主动断开，本地 alias、用户、
   端口和 identity 配置正确。故障继续定位为服务端 sshd/pre-auth 网络策略问题，
   `git pull` 和后续 Slurm 操作均未能执行。
+- 2026-09-11：完成本机 SSH 跳板配置：备份用户级 config，为 `Host Guqq` 增加
+  `ProxyJump vlab`，并通过 `ssh -G` 静态解析、vlab BatchMode 登录及 Guqq
+  BatchMode 端到端状态 0 验收。首次 Guqq 远程操作按规范执行 `git pull`，但因
+  默认登录目录不是 Git 仓库返回状态 1；SSH 免密链路本身已确认正常。
