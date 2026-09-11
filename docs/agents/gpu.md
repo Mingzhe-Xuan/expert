@@ -1,5 +1,15 @@
 # GPU / server activity
 
+## 2026-09-12 — Post-report bounded resource-sync recovery
+
+- Intended connection: after completing and pushing runtime sampling plus JSON/Markdown aggregation,
+  make one bounded `ssh Guqq` recovery attempt.
+- Authorized purpose: first run scoped HTTP/1.1 `git pull --ff-only` in `/home/xmz/expert`; only on
+  success, print the remote HEAD and inspect the exact resource target directories with lightweight
+  file metadata commands before deciding whether an atomic upload can safely resume.
+- No training, inference, evaluation, compilation, data processing, or other login-node compute is
+  authorized. If the mandatory pull fails, stop the connection without any resource writes.
+
 ## 2026-09-12 — Spaced resource-sync recovery check after local DoD work
 
 - Intended connection: one bounded multiplexed `ssh Guqq` transport after two completed local

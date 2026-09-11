@@ -1,5 +1,8 @@
 # Agent progress updates
 
+- 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
+  仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。
+
 - 2026-09-12：开始 efficiency report aggregation 单元；将 58/20 smoke 内嵌记录汇总为
   同源、稳定排序且 fail-closed 的 JSON/Markdown 交付物。
 - 2026-09-12：完成严格 58/20 coverage 与 efficiency schema/numeric/CUDA/scope 校验、
