@@ -321,3 +321,13 @@
 - Permission check: dependency installation and short package metadata checks are allowed on the
   login node; native packages must come from wheels. No project/model import, checkpoint load,
   data processing, training, inference, evaluation, tests, or compilation will run.
+- Result: SSH reached Guqq, but the mandatory first `git pull` failed with GnuTLS receive error
+  `-110` because the GitHub TLS connection terminated improperly. `set -e` prevented every install
+  and diagnostic command after the pull; the GRACE environment remained unchanged.
+
+## 2026-09-12 — Retry GRACE installation after transient Git TLS failure
+
+- Intended connection: repeat the mandatory pull; only if it succeeds, perform the previously
+  recorded binary-wheel GRACE installation and package/fingerprint checks.
+- Permission check: unchanged isolated package-management scope, with no project/model execution,
+  compilation, data processing, training, inference, evaluation, or tests.
