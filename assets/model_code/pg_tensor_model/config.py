@@ -18,10 +18,9 @@ class ModelConfig:
     residual_cell_weight: float = 0.5
     residual_position_weight: float = 0.5
     dag_path: Path = (
-        Path(__file__).resolve().parents[3]
+        Path(__file__).resolve().parents[2]
         / "docs"
-        / "ref"
-        / "crystallographic_point_group_subgroups.json"
+        / "subgroup_chain.json"
     )
 
     def __post_init__(self) -> None:

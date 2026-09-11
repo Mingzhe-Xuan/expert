@@ -11,9 +11,9 @@
 
 晶体材料的介电张量、弹性张量等性质不仅取决于化学组成和局域几何环境，还严格受到晶体对称性的约束。近年来，基于 O(3)/E(3) 等变神经网络的模型已经能够从原子结构直接预测张量性质，并保证坐标旋转或反射下的物理协变性。然而，标准 O(3)-等变网络通常只利用“任意三维旋转/反射下的连续群对称性”，并未显式利用 relaxed equilibrium crystal 所具有的、结构依赖的离散 stabilizer symmetry，即 crystallographic point group。与此同时，当前高质量张量标签仍显著少于能量、力和结构数据，使得直接为每个张量任务或每个点群从头训练模型存在明显的数据效率问题。
 
-本研究拟提出一种 **pretrained O(3)-equivariant backbone + shared O(3) adaptation + hierarchical symmetry-breaking gates + lightweight \(A_1\)-only point-group branches** 的晶体表示框架。核心思想是：首先利用在大规模原子数据上预训练的 O(3)-等变 backbone 提取具有通用化学和几何意义、同时保留方向信息的高质量表示；再通过跨点群共享的 natural-parity O(3) task adaptation 形成下游表示；随后对当前点群及其物理兼容的父群分别激活轻量分支。对每个激活群 \(K\)，该分支执行 \(O(3)\rightarrow K\) subduction、显式 \(A_1\) restriction、\(A_1\otimes A_1\rightarrow A_1\) message passing、equivariant norm、global pooling 与 \(\mathrm{Fix}_K(V_T)\)-constrained readout。各分支输出再提升回统一 O(3) tensor-irrep space，并根据当前结构与各父群 symmetry operations 之间的 normalized residual 构造连续、O(3)-invariant gates，进行层级加权平均；最后统一转换回 Cartesian basis 和原始输入坐标系。shared adaptation 默认采用 complete local `o2_tp`，每个 PG branch 串联两个参数独立的 PG blocks，post-fusion readout 默认采用一层 `o2_tp` tensor product。子群分支权重在父群对称性恢复时严格趋于零，从而同时利用跨点群迁移、离散对称性特化与结构形变路径上的连续性。
+本研究拟提出一种 **pretrained O(3)-equivariant backbone + optional O(3) adaptation + symmetry-routed O(3)/PG experts + O(3) readout** 的晶体表示框架。顶层只保留五个 architecture branches：`B+R`、`B+A+R`、`B+A+O3E+R`、`B+PGE+R` 与 `B+A+PGE+R`。PG expert 的 hidden representation 保留参数高效的 `a1_only` 与保留全部 finite-group irreps 的 `full_pg` 两种完整实现；adaptation、O(3) expert 与 readout 中实际存在的 O(3) tensor product 均可在 `full_o3` 与 complete local `o2_tp` 间切换。对每个激活群 \(K\)，PG 分支先执行 \(O(3)\rightarrow K\) subduction，再按配置执行 \(A_1\otimes A_1\rightarrow A_1\) 或完整 \(\Gamma_1\otimes\Gamma_2\rightarrow\Gamma_3\) message passing。global dielectric / elastic 在 PG norm 后执行 global pooling 与 \(\mathrm{Fix}_K(V_T)\)-constrained readout；atom-resolved BEC 保留节点轴，并由共享 O(3) node carriers 与 PG-specialized node features共同进入 node-wise equivariant head。各 expert 分支输出在公共 O(3) tensor-irrep space 中，根据当前结构与各父群 symmetry operations 之间的 normalized residual 构造连续、O(3)-invariant gates 并进行层级加权平均；最后经一个 O(3)-equivariant readout 转换回 Cartesian basis 和原始输入坐标系。子群分支权重在父群对称性恢复时严格趋于零，从而同时利用跨点群迁移、离散对称性特化与结构形变路径上的连续性。
 
-本研究第一阶段只考虑 relaxed equilibrium structures 上的 **global dielectric / elastic tensors**，所有任务统一执行 global pooling；atom-resolved Born effective charge（BEC）移至后续扩展，不进入第一阶段模型、参数预算或主 benchmark。主实验采用 **JARVIS tensor benchmark** 与 **MatTen elastic benchmark**。研究将系统区分并量化四类增益：**pretraining gain、hard-routing gain、hierarchical continuity gain 和 point-group representation gain**。同时通过 anisotropy-conditioned analysis、irrep-wise error、symmetry violation、symmetry-breaking path continuity、sample-efficiency curve、parameter-matched ablation 等实验回答一个更一般的科学问题：
+本研究第一阶段同时覆盖 relaxed equilibrium structures 上的 **global dielectric / elastic tensors** 与 **atom-resolved Born effective charge（BEC）**。global 任务执行 permutation-invariant pooling，BEC 保持 \(N\times3\times3\) 节点级输出。主实验采用 **JARVIS tensor / JARVIS-DFPT BEC benchmark** 与 **MatTen elastic benchmark**。研究将系统区分并量化四类增益：**pretraining gain、expert specialization gain、hierarchical continuity gain 和 point-group representation gain**。同时通过 anisotropy-conditioned analysis、irrep-wise error、symmetry violation、symmetry-breaking path continuity、sample-efficiency curve、parameter-matched ablation 等实验回答一个更一般的科学问题：
 
 > **How can universally pretrained O(3)-equivariant representations be efficiently specialized to the discrete stabilizer symmetries of equilibrium crystals for tensorial property prediction?**
 
@@ -334,37 +334,37 @@ $$
 
 ---
 
-### RQ2：父群—子群层级条件化是否具有独立价值？
+### RQ2：O(3) adaptation 是否具有独立价值？
 
 比较：
 
 $$
-\text{Shared-O3}
+\text{B+R}
 \quad\text{vs.}\quad
-\text{Shared-O3 + hierarchical }A_1\text{-only branches}.
+\text{B+A+R}.
 $$
 
 该实验回答：
 
-> **hierarchical symmetry-breaking awareness**
+> **shared task adaptation**
 
 是否具有独立价值。
 
 ---
 
-### RQ3：显式进入 point-group representation space 是否提供层级条件化之外的额外收益？
+### RQ3：point-group routing 本身是否有价值？
 
 比较：
 
 $$
-\text{Hierarchical-O3}
+\text{B+A+R}
 \quad\text{vs.}\quad
-\text{PG-}A_1\text{ representation model}.
+\text{B+A+O3E+R}.
 $$
 
 该实验回答：
 
-> **representation-level PG awareness**
+> **group-conditioned expert specialization without changing the O(3) carrier space**
 
 是否具有独立价值。
 
@@ -382,18 +382,18 @@ $$
 
 ---
 
-### RQ5：shared O(3) adaptation 与 current-plus-parent \(A_1\)-only branches 是否具有互补性？
+### RQ5：O(3) adaptation 与 PG expert 是否具有互补性？
 
 假设：
 
 - shared O(3) adaptation 学习跨 point group transferable 的 tensor knowledge；
-- current / parent branches 学习由连续 parent-group residuals 调制的层级 specialization。
+- 比较 `B+PGE+R` 与 `B+A+PGE+R`，判断 shared task adaptation 是否仍能改善 PG-specialized representation。
 
 ---
 
-### RQ6：作为容量对照，中间 non-trivial PG irreps 是否带来额外收益？
+### RQ6：中间 non-trivial PG irreps 是否带来额外收益？
 
-主模型固定为 \(A_1\)-only；为量化这一压缩的精度代价，再比较：
+模型保留 `a1_only` 与 `full_pg` 两种正式实现，并在相同任务、backbone 与 active-parameter/FLOPs 口径下比较：
 
 $$
 \text{Full PG intermediate representation}
@@ -417,7 +417,7 @@ $$
 
 ### H2 — Hierarchical continuity hypothesis
 
-对当前点群及其物理兼容父群运行 \(A_1\)-only 分支，并使用连续、O(3)-invariant 的 symmetry-breaking gates 融合其输出，可以在保留 PG specialization 的同时缓解 hard point-group switching 导致的表示不连续。关键边界条件是：当父群对称性恢复时，相应子群分支权重必须趋于零。
+O(3) expert 或 PG expert 都按当前点群及其物理兼容父群运行，并使用连续、O(3)-invariant 的 symmetry-breaking gates 融合输出。这样可以在保留 specialization 的同时缓解 hard point-group switching 导致的表示不连续；当父群对称性恢复时，相应子群 expert 权重必须趋于零。
 
 ---
 
@@ -446,9 +446,9 @@ PG-aware model 相比纯 O(3) model 的收益应随可学习 anisotropic signal 
 在每个 PG 的数据量较少时：
 
 $$
-\text{Hierarchical-A1}
+\text{B+A+PGE+R}
 >
-\text{Branch-only},
+\text{B+PGE+R},
 $$
 
 因为 shared O(3) adaptation 能跨点群迁移 tensor-task knowledge，降低数据碎片化。
@@ -557,9 +557,9 @@ $$
 
 ---
 
-### 3.2.3 后续扩展（不进入第一阶段）：Born effective charge
+### 3.2.3 Atom-resolved Born effective charge
 
-以下 BEC 设计仅保留为 future work，不进入当前 global-only 模型的实现范围、参数量统计、主实验或验收条件。
+BEC 是第一阶段正式 benchmark、实现范围、参数量统计与验收条件的一部分，但与 global dielectric / elastic 使用不同的 pooling 与 head。
 
 Born effective charge 是 atom-resolved rank-2 tensor：
 
@@ -588,16 +588,17 @@ $$
 - Wyckoff orbit；
 - symmetry-related atoms 之间的 permutation-covariance。
 
-与 dielectric / elastic 的网络主体保持一致，区别集中在 PG norm 之后：
+模型按任务显式区分 global 与 node-wise 路径：
 
 $$
 \begin{aligned}
 \text{dielectric / elastic:}&\quad \{q_i\}\rightarrow \operatorname{Pool}_i(q_i)\rightarrow \text{global readout},\\
-\text{BEC:}&\quad \{q_i\}\rightarrow \{\text{shared node-wise equivariant readout}(q_i)\}.
+\text{BEC:}&\quad \{h_i^{\mathrm{shared}}\oplus q_i^{\mathrm{PG}}\}
+\rightarrow \{\text{shared node-wise equivariant readout}\}.
 \end{aligned}
 $$
 
-即 BEC 不做 global pooling，输出完整的 \(N\times3\times3\) tensor。需要强调：这是同一主干上的 pooling 开关，而不是把每个原子分别投影到全局 \(\mathrm{Fix}_K(V_Z)\)；对任意 \(g\in K\)，逐原子输出必须满足：
+BEC 不做 global pooling，输出完整的 \(N\times3\times3\) tensor。BEC head 的输入必须保留未经过 per-node \(A_1\) restriction 的 shared O(3) node carriers；`a1_only` 模式将 PG-specialized trivial channels 作为额外 conditioning，`full_pg` 模式则同时提供 non-trivial PG node carriers。两种模式都不得把每个原子分别投影到 global \(\mathrm{Fix}_K(V_Z)\)。对任意空间群操作 \(g=(R_g,t_g)\)，逐原子输出必须满足：
 
 $$
 \hat Z^*_{\pi_g(\kappa)}
@@ -605,7 +606,56 @@ $$
 R_g\hat Z^*_{\kappa}R_g^\top,
 $$
 
-其中 \(\pi_g\) 是空间群操作诱导的原子置换。该关系不需要额外的 Wyckoff-specific module：只要 PG-equivariant PBC message passing 对节点、周期边和 feature fiber 的联合群作用严格等变，且 tensor readout 在所有节点间共享，它便由图网络的 permutation-equivariance 与 PG-equivariance 自动推出；当 \(\pi_g(\kappa)=\kappa\)（模晶格平移）时，又自动退化为该 site stabilizer 的 fixed-subspace constraint。第一版可进一步对预测施加 acoustic sum rule 投影 \(\sum_\kappa \hat Z^*_{\kappa,\alpha\beta}=0\)，并同时报告投影前后的误差。
+其中 \(\pi_g\) 由
+
+$$
+W_gs_i+t_g=s_{\pi_g(i)}+n_{g,i},
+\qquad n_{g,i}\in\mathbb Z^3,
+$$
+
+确定，并保持元素种类。这里需要修正一个容易混淆的表述：**PG feature-fiber equivariance 单独并不定义节点置换，但它与 message-passing GNN 的 permutation-equivariance 以及 PBC graph constructor 的空间群协变性组合后，会内蕴推出所需的联合等变性。** 具体地，若
+
+$$
+F(R_gx)=\rho(g)F(x),
+\qquad
+F(P_{\pi_g}x)=P_{\pi_g}F(x),
+$$
+
+并且真实晶体对称操作使旋转后的周期图与原图仅相差 node/edge permutation，则
+
+$$
+\rho(g)F(x)=P_{\pi_g}F(x).
+$$
+
+因此 \(\pi_g\) 不需要、也不得作为默认模型 forward 的额外输入或 learned routing signal；它只由 symmetry metadata 离线派生并缓存，用于 graph-automorphism audit、BEC equivariance test，以及非默认的 hard-projection control。主模型的 BEC 约束必须来自 PBC graph covariance、GNN permutation-equivariance 与 feature-fiber equivariance 本身，不能依赖 projector 才成立。`a1_only` 不是满足 BEC 约束的障碍：在 trivial fiber 上联合关系退化为同一 Wyckoff orbit 的 scalar channels 相等；但逐节点 \(A_1\) 压缩可能降低表达完备性，因此 BEC head 必须保留上述 shared O(3) carrier residual，并以 `full_pg` 作为正式对照。
+
+默认策略明确为：
+
+$$
+\boxed{
+\text{model forward: no }\pi_g
+\quad;\quad
+\text{audit / optional projector: use }\pi_g
+}
+$$
+
+在图构造严格协变时，末端联合 Reynolds projector 理论上是恒等操作；实现中只将其保留为 diagnostic 和非默认 hard-enforcement control：
+
+$$
+(\Pi_{G,Z}\hat Z)_i
+=
+\frac{1}{|G|}
+\sum_{g\in G}
+R_g\hat Z_{\pi_g^{-1}(i)}R_g^\top.
+$$
+
+该投影不做 pooling、不增加可学习参数，输出仍为原子级 \(N\times3\times3\) 张量。headline 结果必须首先报告不使用该 projector 的 raw forward。第一版同时实现 acoustic sum rule 投影
+
+$$
+\sum_\kappa \hat Z^*_{\kappa,\alpha\beta}=0,
+$$
+
+并报告 hard projection / ASR 前后的误差与 violation。ASR 只在原子轴上汇总 BEC 并消除总和残差，不需要 \(\pi_g\)，与联合空间群 projector 是相互独立的物理约束。
 
 ---
 
@@ -1100,7 +1150,7 @@ $$
 
 ## 5.1 总体思想
 
-模型采用以下 hierarchy：
+完整分支采用以下 hierarchy；其余四个分支按 §7.1 的定义跳过 adaptation 或替换/跳过 expert：
 
 $$
 \boxed{
@@ -1118,15 +1168,16 @@ $$
 
 1. spglib canonicalization；
 2. pretrained O(3)-equivariant backbone；
-3. 1–2 个 shared O(3) experts，其 TP backend 由参数在 full O(3) 与 SO(2)-reduced 实现间切换；
-4. 确定当前点群 \(G_x\)、物理兼容的父群集合及其嵌入关系；
+3. 由 architecture selector 决定是否执行一层 shared O(3) adaptation；
+4. expert-free 分支直接进入 readout；expert 分支确定当前点群 \(G_x\)、物理兼容的父群集合及其嵌入关系；
 5. 根据当前结构对各父群操作的连续 parent-group residual 构造 hierarchical gates；
-6. 对每个激活群 \(K\in\mathcal A(x)\) 运行 global \(A_1\)-only 分支：\(O(3)\rightarrow K\) subduction、trivial-irrep restriction、两个参数独立的 \(A_1\otimes A_1\rightarrow A_1\) message-passing blocks、equivariant norm、global pooling 与 \(\mathrm{Fix}_K(V_T)\) readout；
-7. 将各分支输出 inverse-subduce 到统一 O(3) tensor-irrep space；
-8. 使用满足父群极限条件的权重做加权平均；
-9. 执行一个融合后的共享 O(3)-equivariant TP readout；主设置为 1 层 `o2_tp`，并以 `full_o3` 和 identity 作为消融；
-10. 统一执行 irrep-to-Cartesian；
-11. de-canonicalization 回原始输入 frame。
+6. `O3E` 对每个激活群运行保持 O(3) representation 的 routed expert；`PGE` 则先 subduce，并按 `pg_hidden_mode: a1_only | full_pg` 运行两个参数独立的 PG blocks；
+7. global dielectric / elastic 对节点执行 pooling；PG expert 额外读取 \(\mathrm{Fix}_K(V_T)\)。BEC 始终保留节点轴，并保留合法的 O(3) node carriers；
+8. 将各 expert 分支输出置于统一 O(3) tensor-irrep space；PG 输出需要 inverse subduction；
+9. 使用满足父群极限条件的 invariant scalar weights 做 global 或 node-wise hierarchical fusion；
+10. 五个分支均执行一个 O(3)-equivariant TP readout，正式 backend 仅为 `full_o3 | o2_tp`；BEC head 输出 \(0e\oplus1e\oplus2e\)；
+11. 统一执行 irrep-to-Cartesian；
+12. de-canonicalization 回原始输入 frame；BEC 同时恢复原始 site order，并可选执行联合空间群投影与 ASR 投影。
 
 这里的“父群”不是当前点群的所有抽象 supergroups，而是具有明确 orientation / setting embedding、并对应可实现结构畸变路径的 compatible parent groups。
 
@@ -1146,33 +1197,43 @@ flowchart TD
     XC --> B["Pretrained O(3)-equivariant backbone"]
     B --> H["Universal O(3) features h"]
 
-    H --> SH["Shared O(3) adaptation TP: full_o3 or o2_tp"]
-    H -. optional residual .-> BASE["Shared O(3) branch input"]
+    H --> SEL{"Architecture 1--5"}
+    SEL -->|1 or 4: bypass A| BASE["Expert input z"]
+    SEL -->|2, 3 or 5| SH["O(3) adaptation A: full_o3 or o2_tp"]
     SH --> BASE
 
     G --> SET["Active set A(x): current group plus compatible parents"]
     A --> SET
-    SET --> ZK["For each K in A(x): branch input z_K = shared"]
+    BASE --> DIRECT["No expert: architectures 1 and 2"]
+    SET --> ZK["For each K in A(x): routed expert input z_K"]
     BASE --> ZK
 
-    ZK --> SUBK["Subduction O(3) to K"]
-    SUBK --> A1K["Restrict to provenance-labelled A1 blocks"]
-    A1K --> PGK1["A1 x A1 to A1 PG block 1"]
-    PGK1 --> PGK2["A1 x A1 to A1 PG block 2, independent parameters"]
-    PGK2 --> NORMK["A1 block norm per node"]
-    NORMK --> POOLK["Permutation-invariant global pool"]
+    ZK --> ETYPE{"Expert type"}
+    ETYPE -->|O3: architecture 3| O3E["O(3) expert: full_o3 or o2_tp"]
+    O3E --> MIX
+
+    ETYPE -->|PG: architectures 4 and 5| SUBK["Subduction O(3) to K"]
+    SUBK --> MODE["PG hidden mode: a1_only or full_pg"]
+    MODE --> PGK1["PG block 1"]
+    PGK1 --> PGK2["PG block 2, independent parameters"]
+    PGK2 --> NORMK["PG block norm per node"]
+    NORMK --> SCOPE{"Output scope"}
+    SCOPE -->|dielectric or elastic| POOLK["Permutation-invariant global pool"]
     POOLK --> FIXK["Readout in Fix_K(V_T)"]
-    FIXK --> LIFT["Inverse subduction to common O(3) tensor-irrep space"]
+    SCOPE -->|BEC| NODEK["Keep node axis and shared O(3) carrier residual"]
+    FIXK --> LIFT["Lift to common O(3) target space"]
+    NODEK --> LIFT
 
     RES --> W["Continuous hierarchical weights w_K"]
     SET --> W
-    W --> MIX["Weighted average across A1-only branches"]
+    W --> MIX["Global or node-wise hierarchical fusion"]
     LIFT --> MIX
-    MIX --> O3RO["One shared O(3) readout TP; main: o2_tp"]
+    DIRECT --> O3RO["One O(3) readout TP: full_o3 or o2_tp"]
+    MIX --> O3RO
     O3RO --> CART["Irrep to Cartesian tensor"]
     Q --> DEC["De-canonicalization"]
     CART --> DEC
-    DEC --> OUT["Tensor in original Cartesian frame"]
+    DEC --> OUT["Global tensor or atom-resolved BEC"]
 ```
 
 ---
@@ -1302,35 +1363,35 @@ Backbone 的角色是提供：
 
 ---
 
-## 5.5 Step 3：Shared O(3) experts
+## 5.5 Step 3：Shared O(3) adaptation
 
 设置：
 
 $$
-N_s=1\text{ or }2
+N_{\mathrm{adapt}}=1\text{ or }2
 $$
 
-个 shared experts，所有 configurations 均激活。
+层顺序的 shared adaptation blocks；只在 architectures 2、3、5 中激活，默认取 1 层。
 
-第 \(k\) 个 shared expert：
+第 \(k\) 个 shared adaptation block：
 
 $$
-s_{k,i}
+z_i^{(k)}
 =
-E_{\theta_k}^{\mathrm{shared}}(h)_i
+E_{\theta_k}^{\mathrm{adapt}}(z^{(k-1)})_i
 =
 M^{O(3)}_{\theta_k}
 \left(
 \sum_{j\in\mathcal N(i)}
 T^{O(3)}_{\theta_k}
-\left(h_j,e_{ij};
-w_{k,\pi}\!\left([h_j^{\mathrm{inv}}\mid h_i^{\mathrm{inv}}]\right)
+\left(z_j^{(k-1)},e_{ij};
+w_{k,\pi}\!\left([z_j^{(k-1),\mathrm{inv}}\mid z_i^{(k-1),\mathrm{inv}}]\right)
 ;\texttt{shared\_adaptation\_tp\_backend}
 \right)
 \right).
 $$
 
-其中 \(T^{O(3)}_{\theta_k}\) 根据 `shared_adaptation_tp_backend` 选择 full O(3) CG TP 或保持完整 parity 的 edge-frame O(2) TP。即：
+其中 \(z^{(0)}=h\)，adaptation 的输出为 \(z_{\mathrm{adapt}}=z^{(N_{\mathrm{adapt}})}\)。\(T^{O(3)}_{\theta_k}\) 根据 `shared_adaptation_tp_backend` 选择 full O(3) CG TP 或保持完整 parity 的 edge-frame O(2) TP。即：
 
 $$
 \boxed{
@@ -1344,25 +1405,49 @@ $$
 其中每条 TP path 的权重由源节点与目标节点 invariant features 的拼接产生：
 
 $$
-w_{k,\pi}\!\left([h_{\mathrm{src}}\mid h_{\mathrm{tgt}}]\right)
+w_{k,\pi}\!\left([z_{\mathrm{src}}^{(k-1)}\mid z_{\mathrm{tgt}}^{(k-1)}]\right)
 =
 \operatorname{MLP}_{k,\pi}
 \!\left(
-[h_{\mathrm{src}}^{\mathrm{inv}}\mid h_{\mathrm{tgt}}^{\mathrm{inv}}]
+[z_{\mathrm{src}}^{(k-1),\mathrm{inv}}\mid z_{\mathrm{tgt}}^{(k-1),\mathrm{inv}}]
 \right).
 $$
 
 因此 shared adaptation 的输出仍是一组 node-wise O(3)-equivariant features；TP 负责图上的消息构造与聚合，EqMLP 只对各节点的聚合结果分别处理。
 
-主设置默认使用 `o2_tp`，并取下文给出的 local \(m_{\max}=2\)；`full_o3` 作为 full-angular control，并与 `o2_tp` 做参数量或 active-FLOPs 匹配。两者不是同时激活的 mixture branches，而是同一 shared expert 的互斥实现选项。
+主设置默认使用 `o2_tp`，并取下文给出的 local \(m_{\max}=2\)；`full_o3` 作为 full-angular control，并与 `o2_tp` 做参数量或 active-FLOPs 匹配。两者不是同时激活的 mixture branches，而是同一 adaptation block 的互斥实现选项。
 
 注意：
 
-> **Shared expert 到这里结束，不包含 PG tensor product / PG MLP。**
+> **Shared adaptation 到这里结束，不包含 O(3) expert、PG tensor product 或 PG MLP。**
 
 其任务是从通用 pretrained features 中形成跨 point groups 可迁移的：
 
 > **tensor-task-aware O(3) representation**
+
+### 5.5.1 Routed O(3) expert
+
+Architecture 3 在 shared adaptation 后增加 O(3) expert。它使用与 PG expert 完全相同的 active groups、parent DAG、continuous gates 与每群/每层独立参数，但 hidden features 始终保留在公共 O(3) irrep space，不执行 finite-group subduction：
+
+$$
+u_{K,i}^{O(3)}
+=
+E_{K,\theta_K}^{O(3)}(z_{\mathrm{shared}})_i,
+\qquad
+u_i^{O(3)}
+=
+\sum_{K\in\mathcal A(x)}w_K(x)u_{K,i}^{O(3)}.
+$$
+
+每个 O(3) expert 的 TP backend 独立开放
+
+$$
+\texttt{o3\_expert\_tp\_backend}
+\in
+\{\texttt{full\_o3},\texttt{o2\_tp}\}.
+$$
+
+该分支是 PG expert 的严格 representation-space control：二者共享 routing/gates 和大致匹配的 active parameters/FLOPs，区别仅在 expert 使用 O(3) irreps 还是 finite-group irreps。
 
 ---
 
@@ -1775,22 +1860,24 @@ $$
 
 ---
 
-## 5.8 Step 6：每个激活群运行 global \(A_1\)-only 分支
+## 5.8 Step 6：每个激活群运行 configurable PG branch
 
-先形成所有分支共享的 O(3) task representation：
+先根据 architecture 形成 expert 输入：
 
 $$
-z_{\mathrm{shared},i}
+z_i
 =
 \alpha_0h_{\mathrm{skip},i}
 +
-\sum_{k=1}^{N_s}s_{k,i}.
+z_{\mathrm{adapt},i}.
 $$
 
-为保证任意 crystallographic point group 分支在进入 PG-TP 前都具有 trivial-irrep seed，shared O(3) representation 必须保留至少一个真正的 even scalar channel：
+其中 architecture 4 取 \(\alpha_0=1\)、\(z_{\mathrm{adapt}}=0\)，直接使用 backbone features；architecture 5 启用 adaptation，\(\alpha_0\) 仅表示可选的 backbone residual coefficient。这一记号不产生额外 architecture branch。
+
+为保证任意 crystallographic point group 分支在进入 PG-TP 前都具有 trivial-irrep seed，expert 输入必须保留至少一个真正的 even scalar channel：
 
 $$
-n_{0,+}^{\mathrm{shared}}\ge 1.
+n_{0,+}^{z}\ge 1.
 $$
 
 这是主架构的强制 layout constraint，而不是可选 ablation。由于对任意 \(K\subset O(3)\)：
@@ -1828,13 +1915,27 @@ U_K^{(\ell,p)}
 \right),
 $$
 
-其中 \(n_{\ell,p}\) 是该 O(3) irrep 的 channel multiplicity；\(U_K^{(\ell,p)}\) 只作用于 \(m\)-components，不混合 learnable channels。离线 registry 仍保存完整 \((\Gamma,a,\mu)\) 分解，但主模型在 subduction 后立即施加 trivial-irrep projector：
+其中 \(n_{\ell,p}\) 是该 O(3) irrep 的 channel multiplicity；\(U_K^{(\ell,p)}\) 只作用于 \(m\)-components，不混合 learnable channels。离线 registry 保存完整 \((\Gamma,a,\mu)\) 分解。两种必须实现的 PG hidden mode 为：
+
+$$
+z_{K,i}^{\texttt{a1\_only}}
+=P_{A_1,K}\mathcal U_Kz_{K,i},
+$$
+
+以及
+
+$$
+z_{K,i}^{\texttt{full\_pg}}
+=\mathcal U_Kz_{K,i}.
+$$
+
+`a1_only` 只实例化 trivial-irrep paths；`full_pg` 保留全部 finite-group irreps、subduction copies 与 fusion multiplicities。前者的显式形式为：
 
 $$
 z_{K,i}^{A_1}:=P_{A_1,K}\mathcal U_K z_{K,i}.
 $$
 
-每个保留 block 必须继续携带 \((\ell,p,a,c)\) provenance；\(A_1\) 表示在 \(K\) 下不变，并不等同于 \(\ell=0\)。由于主模型丢弃 non-trivial PG irreps，下面的完整 \(\mathcal U_K\) 只用于定义和验证 basis，不能声称 hidden-state restriction 可逆：
+每个 block 必须继续携带 \((\ell,p,\Gamma,a,c)\) provenance；\(A_1\) 表示在 \(K\) 下不变，并不等同于 \(\ell=0\)。在 `a1_only` 中，完整 \(\mathcal U_K\) 只用于定义和验证 basis，不能声称 hidden-state restriction 可逆；在 `full_pg` 中则保留完整的正交基变换：
 
 $$
 \mathcal U_K^{-1}
@@ -1845,7 +1946,7 @@ $$
 =I.
 $$
 
-在本文采用的 real orthonormal PGH convention 下可实现为 \(\mathcal U_K^\top\)。主模型的 \(P_{A_1,K}\mathcal U_K\) 是 restriction / projection，不可逆；只有最终 target-specific \(A_1\) coefficients 通过固定 injection 后，才使用 \(\mathcal U_{K,t}^\dagger\) 提升到公共 target space。Full-PG 仅作为 capacity ablation。
+在本文采用的 real orthonormal PGH convention 下可实现为 \(\mathcal U_K^\top\)。`a1_only` 的 \(P_{A_1,K}\mathcal U_K\) 是 restriction / projection，不可逆；只有最终 target-specific coefficients 通过固定 injection 后，才使用 \(\mathcal U_{K,t}^\dagger\) 提升到公共 target space。`full_pg` 则允许所有保留的 PG irreps通过 \(\mathcal U_K^\dagger\) 回到公共 O(3) carrier space。
 
 对于每个 \((\ell,p)\)：
 
@@ -1871,9 +1972,9 @@ $$
 
 ---
 
-## 5.9 Step 7：主模型的 \(A_1\)-only point-group tensor product
+## 5.9 Step 7：`a1_only` 与 `full_pg` point-group tensor products
 
-对 restriction 后的 \(A_1\) node/edge features 在同一 PBC graph 上执行 finite-group tensor-product message passing。主 path table 只实例化 \(A_1^{\mathrm{node}}\otimes A_1^{\mathrm{edge}}\rightarrow A_1^{\mathrm{out}}\)；完整 finite-group fusion table 仍离线保存，用于正确性测试与 Full-PG ablation。为压缩指标，定义一个 PGH block label：
+在同一 PBC graph 上执行 finite-group tensor-product message passing。`a1_only` path table 只实例化 \(A_1^{\mathrm{node}}\otimes A_1^{\mathrm{edge}}\rightarrow A_1^{\mathrm{out}}\)；`full_pg` path table 从同一 immutable registry 实例化所有满足 fusion rule 的 \(\Gamma_s\otimes\Gamma_e\rightarrow\Gamma_o\) paths。为统一两种实现，定义一个 PGH block label：
 
 $$
 \lambda
@@ -1921,7 +2022,7 @@ A_1^{\mathrm{out}}
 }
 $$
 
-对应的所有配置允许的径向 paths。该路径保证 \(A_1\) channel 在表示布局上存在且可被一层 PG-TP 更新，但不保证任意样本上的数值严格非零。主模型有意不实例化 \(\Gamma\otimes\Gamma^*\rightarrow A_1\) 等 non-trivial-input paths；这些路径只在 `full_to_a1` / Full-PG capacity ablation 中恢复。两层 PG blocks 用于扩大消息传播与 nonlinear refinement，并各自维护独立参数；第二层不是为了保证 \(A_1\) 存在。
+对应的所有配置允许的径向 paths。该路径保证 \(A_1\) channel 在表示布局上存在且可被一层 PG-TP 更新，但不保证任意样本上的数值严格非零。`a1_only` 有意不实例化 \(\Gamma\otimes\Gamma^*\rightarrow A_1\) 等 non-trivial-input paths；`full_pg` 则恢复这些路径及其 non-trivial outputs。两层 PG blocks 用于扩大消息传播与 nonlinear refinement，并各自维护独立参数；第二层不是为了保证 \(A_1\) 存在。
 
 一条完整的 PG TP path 记为：
 
@@ -2158,7 +2259,7 @@ TPPathSpec(
 )
 ```
 
-枚举规则为：读取 `src_block.irrep_id = alpha` 与 `edge_block.irrep_id = beta`，查询 `fusion[(alpha, beta)]`；只有期望 output layout 中存在相应 \(\gamma\) 时，才为每个 \(\eta=1,\ldots,N_{\alpha\beta}^{\gamma}\)、径向通道和输入/输出 channel 创建 path。对主模型和 \(A_1\)-only ablation，output layout 均不得删除 trivial-irrep block；对前述 scalar node/edge blocks，枚举器不得通过 path pruning 删除 \(A_1\otimes A_1\rightarrow A_1\) paths。将所有 paths 按
+枚举规则为：读取 `src_block.irrep_id = alpha` 与 `edge_block.irrep_id = beta`，查询 `fusion[(alpha, beta)]`；只有期望 output layout 中存在相应 \(\gamma\) 时，才为每个 \(\eta=1,\ldots,N_{\alpha\beta}^{\gamma}\)、径向通道和输入/输出 channel 创建 path。两种 PG mode 的 output layout 均不得删除 mandatory trivial-irrep carrier；对前述 scalar node/edge blocks，枚举器不得通过 path pruning 删除 \(A_1\otimes A_1\rightarrow A_1\) paths。将所有 paths 按
 
 $$
 (\alpha,\beta,\gamma,\eta,
@@ -2257,9 +2358,9 @@ group_registry/
 
 `convention.json` 至少记录 MultiPie version、group setting、operation ordering、Cartesian-axis convention、real/complex harmonics、parity rule、irrep component ordering、repeated-copy ordering 与 CG gauge。版本或 checksum 不同的 registry 不允许与旧 checkpoint 静默混用。
 
-#### pymatgen / CrystalNN：只作为可控图构造选项
+#### Cutoff PBC graph：优先复用 backbone
 
-CrystalNN 可用于严格复现 PGEqNN 的 Wyckoff-graph / neighbor-selection setting，但主模型优先沿用 pretrained backbone 的 PBC cutoff graph，原因是：
+下游模型直接复用所选 pretrained backbone 的 PBC cutoff graph，包括相同的 node order、`edge_index`、cell shifts、cutoff 与边界 convention；若 backbone API 不暴露已构造的图，则按该 checkpoint 记录的 graph specification 确定性重建。只有在 checkpoint/API 均没有可复用 graph specification 时，才使用默认 cutoff \(r_{\mathrm{cut}}=6\,\text{Å}\)。CrystalNN 仅用于严格复现 PGEqNN baseline，不作为主模型图后端。这样做的原因是：
 
 - 避免预训练和下游使用不同 graph semantics；
 - radial-cutoff graph 更易保持 node/edge permutation closure；
@@ -2269,10 +2370,16 @@ CrystalNN 可用于严格复现 PGEqNN 的 Wyckoff-graph / neighbor-selection se
 
 ```python
 graph_backend = "backbone_cutoff"  # main
-# alternatives: "crystalnn_reproduction", "fixed_radius_ablation"
+fallback_cutoff_angstrom = 6.0
+# baseline-only alternative: "crystalnn_reproduction"
 ```
 
-无论选择何种 backend，都在 preprocessing 后缓存 `edge_index`、periodic image vector 和构图参数；不得在每个 epoch 重新调用 CrystalNN。
+无论选择何种 backend，都在 preprocessing 后缓存 `edge_index`、整数 `cell_shift`、periodic displacement vector 和构图参数；不得在每个 epoch 重新调用 CrystalNN。cutoff backend 必须根据晶胞与 cutoff 自动确定足够的 image-search range，包含 cutoff 内的完整 periodic multiedge set，并满足：
+
+- 不得用任意 `max_neighbors` 截断一个等距 symmetry shell；若必须限邻居，只能按完整 shell 取舍；
+- cutoff 边界使用固定数值 policy，并标记距离边界过近的 graph-unstable samples；
+- 同一原子对经不同 cell shifts 形成的多条边必须分别保存；
+- 对每个缓存的空间群操作验证 node permutation、edge permutation、cell-shift transport 与 displacement rotation。
 
 综上，成熟晶体学库负责提供经过同行验证的 crystallographic metadata 与候选 basis data，而模型仓库负责统一 convention、生成 CG/path tables 并执行严格等变性验收。这样既复用 PGEqNN 的可靠基础设施，又保持本文多 PG branches、inverse subduction 和 common-space fusion 所需的完整 gauge control。
 
@@ -2325,9 +2432,9 @@ PG-equivariant MLP 不负责跨节点通信；它只在单个节点的 multiplic
 - norm-based nonlinearities；
 - repeated PG TP + PG EqMLP blocks。
 
-主模型顺序使用两个轻量 \(A_1\)-only blocks；两层的 TP path head、self-interaction、EqMLP 与 norm 参数均相互独立。不同深度之间不共享完整 PG-block 参数，但仍复用跨点群公共的低维 `r_route` router latent。Full-PG ablation 才使用一般 blockwise maps。
+两种 mode 都顺序使用两个 PG blocks；两层的 TP path head、self-interaction、EqMLP 与 norm 参数均相互独立。不同深度之间不共享完整 PG-block 参数，但仍复用跨点群公共的低维 `r_route` router latent。`full_pg` 使用按 \(\Gamma\) 分块的 intertwiners、合法 CG paths、equivariant gates 与 irrep-wise norm，不允许对 representation components 使用任意 dense mixing。
 
-在进入 constrained readout 前，先对各节点的 \(q_{K,i}\) 施加 PG-equivariant normalization。第一阶段固定 \(\texttt{output\_scope=global}\)，随后执行 permutation-invariant global pooling：
+在进入 task head 前，先对各节点的 \(q_{K,i}\) 施加 PG-equivariant normalization。`output_scope` 由任务确定：dielectric / elastic 使用 `global`，BEC 使用 `node`。global 路径执行 permutation-invariant pooling：
 
 $$
 \bar q_K
@@ -2338,13 +2445,13 @@ $$
 \right].
 $$
 
-下面的 site-output 形式只作为未来 BEC 扩展的接口备注，不在第一阶段执行：
+BEC 路径不执行 pooling，而是保持：
 
 $$
 \bar q_{K,i}=\operatorname{Norm}^{PG}_K(q_{K,i}),
 $$
 
-主模型的 global pooling 采用按节点求和或求均值；它不混合 representation components，因此保持 PG-equivariance。norm 对 provenance-labelled \(A_1\) blocks 使用带 \(\epsilon\) 与每个 channel 可学习标量增益的 RMSNorm；主模型中的加性 bias 只作用于这些 trivial blocks。Full-PG ablation 仍必须按 irrep block 归一化，不能对非平凡 irrep components 使用普通逐元素 LayerNorm。
+global pooling 采用按节点求和或求均值；它不混合 representation components，因此保持 PG-equivariance。norm 对 provenance-labelled \(A_1\) blocks 使用带 \(\epsilon\) 与每个 channel 可学习标量增益的 RMSNorm；加性 bias 只作用于 trivial blocks。`full_pg` 必须按 irrep block 归一化，不能对非平凡 irrep components 使用普通逐元素 LayerNorm。BEC 的 `a1_only` 路径不得只把 \(\bar q_{K,i}\) 映射到任意 Cartesian matrix；它必须同时保留 \(h_i^{\mathrm{shared}}\) 作为 O(3)-equivariant carrier，使最终 node head 对 \(P_{\pi_g}\otimes\rho_Z(R_g)\) 等变。
 
 ---
 
@@ -2374,7 +2481,7 @@ V_C
 D^{(4,+)}.
 $$
 
-BEC（仅 future-work target registry，不进入第一阶段）：
+BEC：
 
 $$
 V_Z
@@ -2417,12 +2524,13 @@ $$
 
 因此 global 输出在 architecture level 上严格满足 point-group constraints，而不是依赖 loss“学会”哪些 tensor components 应该为零或相等。
 
-以下 node-wise readout 仅记录未来 BEC 扩展；当前 global-only implementation 不构建这些参数。对 BEC 不使用 global \(A_1\) readout，也不引入独立的 Wyckoff-specific readout。对所有节点共享同一个 PG-equivariant tensor map \(R^{\mathrm{node}}_{K,Z}\)：
+对 BEC 不使用 global \(A_1\) readout，也不引入独立的 Wyckoff-specific readout。对所有节点共享同一个 equivariant tensor map \(R^{\mathrm{node}}_{K,Z}\)，其输入同时包含 shared O(3) carrier 与 PG-specialized node feature：
 
 $$
 \hat Z^*_{K,i}
 =
-R^{\mathrm{node}}_{K,Z}(\bar q_{K,i}).
+R^{\mathrm{node}}_{K,Z}
+\left(h_i^{\mathrm{shared}}\oplus\bar q_{K,i}\right).
 $$
 
 由于前述 PBC message passing 对联合的节点置换—feature 变换等变，且 \(R^{\mathrm{node}}_{K,Z}\) 在节点间共享，所以直接得到：
@@ -2435,13 +2543,13 @@ $$
 R_g\hat Z^*_{K,i}R_g^\top.
 $$
 
-因此，同一 Wyckoff orbit 上的 tensor relation 已由网络自动保证；若 \(g\) 固定节点 \(i\)（模晶格平移），则 \(\hat Z^*_{K,i}\in\mathrm{Fix}_{K_i}(V_Z)\) 也自动成立。无需只预测 orbit representative，也无需手工展开 Wyckoff orbit。任务切换在模型结构上主要就是是否 pooling。
+因此，同一 Wyckoff orbit 上的 tensor relation 已由网络自动保证；若 \(g\) 固定节点 \(i\)（模晶格平移），则 \(\hat Z^*_{K,i}\in\mathrm{Fix}_{K_i}(V_Z)\) 也自动成立。无需只预测 orbit representative，也无需手工展开 Wyckoff orbit。任务切换同时改变 `output_scope`、target irreps 与 head：BEC 使用 node scope 和 \(0e\oplus1e\oplus2e\)，dielectric / elastic 使用 global scope 与各自 fixed-subspace head。
 
 ---
 
 ## 5.12 Step 10：提升到公共空间并进行 branch fusion
 
-每个 \(A_1\)-only 分支的最终 target representation 先映射回相同的 O(3) tensor-irrep space。这里 inverse subduction 只表示最终 target coordinates 的逆基变换，并不声称能够逆转分支内的 restriction、TP、非线性或 pooling。
+每个 `a1_only` 或 `full_pg` 分支的最终 target representation 先映射回相同的 O(3) tensor-irrep space。这里 inverse subduction 只表示最终 target coordinates 的逆基变换；特别是在 `a1_only` 中，它并不声称能够逆转分支内的 restriction、TP、非线性或 pooling。
 
 对任务 \(t\) 的 target layout 定义：
 
@@ -2632,17 +2740,13 @@ $$
 
 这里不能在 canonical frame 中直接使用一个固定 \(e_z\) 作为唯一 reference axis，否则该 readout 只对其 stabilizer O(2) 等变而不对全局 O(3) 等变。若某个样本没有有效边或合法协变 reference axis，`o2_tp` 必须退化到预先声明的 equivariant linear/identity path，而不能使用不连续的任意轴。
 
-该层用于在公共 O(3) tensor-irrep space 中做最终的 nonlinear channel/copy mixing 与任务校准，而不是重新执行 point-group routing。若只需要 Schur-linear copy mixing，则不需要 TP，两个 backend 应共享同一个 linear/identity fast path。在 BEC 中 readout 按节点共享地作用。由于 \(R_{t,\beta}^{O(3)}\) 对输入 structure 与 features 联合 O(3)-equivariant，它既不破坏 global 任务的 \(\mathrm{Fix}_{G_x}(V_t)\) constraint，也不破坏 BEC 的 node permutation–tensor rotation equivariance。主实验应比较：
+该层用于在公共 O(3) tensor-irrep space 中做最终的 nonlinear channel/copy mixing 与任务校准，而不是重新执行 point-group routing。若只需要 Schur-linear copy mixing，则两个 backend 应共享同一个 linear fast path。在 BEC 中 readout 按节点共享地作用。由于 \(R_{t,\beta}^{O(3)}\) 对输入 structure 与 features 联合 O(3)-equivariant，它既不破坏 global 任务的 \(\mathrm{Fix}_{G_x}(V_t)\) constraint，也不破坏 BEC 的 node permutation–tensor rotation equivariance。正式 architecture 中 readout backend 只比较：
 
 $$
-R_t^{O(3)}=I
-\qquad\text{vs.}\qquad
-R_{t,\beta}^{O(3)}=\text{learned TP readout},
-\quad
 \beta\in\{\texttt{full\_o3},\texttt{o2\_tp}\}.
 $$
 
-主配置显式保留必要的 structural carrier，使这一层执行非退化的 tensor-product mixing。若消融配置在 inverse subduction 后只输出最终 tensor 所需的最小系数、没有额外 channel multiplicity，且不保留可耦合的 structural carrier，则该层会退化为简单的 copy mixing 或缩放；该情形归入 identity readout ablation。
+主配置显式保留必要的 structural carrier，使这一层执行非退化的 tensor-product mixing。若某一任务的合法路径只能退化为 Schur-linear copy mixing，则将其作为相应 backend 内部的等变 fast path 记录，而不另立 identity readout architecture。
 
 对于连续结构路径 \(x(t)\to x(0)\)，若 \(x(0)\) 恢复父群 \(K_0\)，并且 branch maps、group embeddings 与 frame transport 在公共 gauge 下连续，则所有严格低于 \(K_0\) 的分支满足：
 
@@ -2729,7 +2833,7 @@ $$
 \{w_K(x)\}_{K\in\mathcal A(x)}.
 $$
 
-连续 parent-group residuals 决定当前群与兼容父群 \(A_1\)-only 分支的贡献。point-group identity 只确定候选 subgroup structure，不直接充当 one-hot gate。
+连续 parent-group residuals 决定当前群与兼容父群 mode-specific PG 分支的贡献。point-group identity 只确定候选 subgroup structure，不直接充当 one-hot gate。
 
 ---
 
@@ -2740,14 +2844,17 @@ O(3)
 \downarrow
 K
 \rightarrow
-PG_K\text{-}A_1\text{ TP}
+PG_K\text{ TP}_{\texttt{a1\_only}\mid\texttt{full\_pg}}
 \rightarrow
-PG_K\text{-}A_1\text{ EqMLP}
+PG_K\text{ EqMLP}_{\texttt{a1\_only}\mid\texttt{full\_pg}}
 \rightarrow
-\operatorname{Pool}+\mathrm{Fix}_K(V_T)
+\begin{cases}
+\operatorname{Pool}+\mathrm{Fix}_K(V_T),&\text{global},\\
+\text{node-wise }V_Z,&\text{BEC}.
+\end{cases}
 $$
 
-每个激活群的主分支显式利用自身 subduction 中的 provenance-labelled trivial irreps；Full-PG fusion rules 保留为 ablation registry，而不进入默认 forward。global tensor 通过 fixed-subspace readout 保证输出约束，之后各分支输出提升回公共 O(3) tensor space 再融合。
+每个激活群按配置运行 `a1_only` 或 `full_pg`。前者显式利用 provenance-labelled trivial irreps，后者运行完整 fusion rules；global tensor 都通过 fixed-subspace readout 保证输出约束，BEC 都通过共享 node-wise equivariant head保持节点轴。之后各分支输出提升回公共 O(3) tensor space再融合。
 
 这两个机制可以被独立 ablate，是方法可解释性的重要组成部分。
 
@@ -2758,19 +2865,6 @@ $$
 ```python
 # x: relaxed crystal structure
 x_bar, Gx, Qx, symmetry_meta = canonicalize_with_spglib(x)
-
-# Embedded current-to-parent DAG paths and parent-symmetry residuals
-paths = compatible_parent_paths(Gx, symmetry_meta)
-active_groups = unique_groups(paths)  # current group plus all compatible parents
-parent_residual = parent_group_operation_residuals(x_bar, paths)
-a_edge = residual_breaking_gates(parent_residual)  # invariant; a(0) = 0
-path_prior = continuous_path_compatibility(x_bar, paths)
-weights = aggregate_path_stick_breaking_weights(
-    paths, path_prior, a_edge
-)  # one weight per active group; nonnegative; sum = 1
-
-# Raw pretrained features; SO(3)-only families are evaluated on x and iota*x.
-# The wrapper keeps only the natural-parity sector p=(-1)^ell in phase 1.
 raw, raw_inv, edge_attr, edge_index = pretrained_SO3_or_O3_backbone_pair(x_bar)
 h = o3_feature_wrapper(
     raw, raw_inv,
@@ -2787,92 +2881,82 @@ edge_attr = shared_radial_projection(
     edge_attr, num_basis=8, path_channels=2
 )
 
-# Independent, mutually exclusive TP implementation switches
-shared_adaptation_tp_backend = config.shared_adaptation_tp_backend
-shared_readout_tp_backend = config.shared_readout_tp_backend
-# each is one of: "full_o3" | "o2_tp"
+# Architecture dispatcher: only these five values are legal.
+arch = config.architecture
+assert arch in {
+    "B+R", "B+A+R", "B+A+O3E+R", "B+PGE+R", "B+A+PGE+R"
+}
+uses_adaptation = arch in {"B+A+R", "B+A+O3E+R", "B+A+PGE+R"}
+expert_type = {
+    "B+R": "none",
+    "B+A+R": "none",
+    "B+A+O3E+R": "o3",
+    "B+PGE+R": "pg",
+    "B+A+PGE+R": "pg",
+}[arch]
 
-# shared O(3) branch input
-shared = sum(
-    shared_expert_k(
+z = h
+if uses_adaptation:
+    z = shared_o3_adaptation(
         h,
         edge_attr,
         edge_index,
-        tp_backend=shared_adaptation_tp_backend,
-        path_weight_from_endpoint_invariants="concat(src, tgt)",
-    )  # TP messages + neighbor sum + node-wise EqMLP
-    for k in range(N_s)
-)
+        tp_backend=config.shared_adaptation_tp_backend,  # full_o3 | o2_tp
+        output_irreps=task_hidden_irreps(task, arch),
+    )
 
-if use_backbone_skip:
-    shared = shared + project_if_needed(h)
+assert has_required_task_carriers(z, task)
 
-assert has_o3_irrep(shared, ell=0, parity=+1, min_channels=1)
+if expert_type == "none":
+    # Architectures 1/2 bypass parent routing and expert modules.
+    coeff_o3 = prepare_o3_readout_input(z, task, output_scope=task.output_scope)
+else:
+    paths = compatible_parent_paths(Gx, symmetry_meta)
+    active_groups = unique_groups(paths)
+    residuals = parent_group_operation_residuals(x_bar, paths)
+    weights = continuous_hierarchical_weights(paths, residuals)
+    route_latent = shared_endpoint_router(
+        concat_o3_trivial_channels(z, edge_index)
+    )
+    branch_outputs_o3 = []
+    for group_K in active_groups:
+        if expert_type == "o3":
+            # Architecture 3: remains in the common O(3) representation.
+            output_o3_K = routed_o3_experts[group_K](
+                z, edge_attr, edge_index,
+                tp_backend=config.o3_expert_tp_backend,  # full_o3 | o2_tp
+                route_latent=route_latent,
+                task=task,
+            )
+        else:
+            # Architectures 4/5: subduce, run two independent PG blocks,
+            # then lift each branch back to the common O(3) target space.
+            output_o3_K = pg_expert_forward(
+                z, edge_attr, edge_index,
+                group=group_K,
+                hidden_mode=config.pg_hidden_mode,  # a1_only | full_pg
+                num_independent_blocks=2,
+                task=task,
+                preserve_node_axis=(task == "bec"),
+                route_latent=route_latent,
+            )
+        branch_outputs_o3.append((weights[group_K], output_o3_K))
 
-# Every active current/parent group runs a global A1-only branch
-# Compute the fixed-width invariant endpoint latent once and reuse it across PGs
-route_latent = shared_endpoint_router(
-    concat_o3_trivial_channels(shared, edge_index)  # [src | tgt] per edge
-)
-branch_coeff_o3 = []
-for group_K in active_groups:
-    weight_K = weights[group_K]
-    z_K = shared
-    z_pg_full_K = subduction[group_K](z_K)
-    edge_pg_full_K = subduction[group_K](edge_attr)
-    a1_K = point_group_specs[group_K].trivial_irrep_id
-    z_pg_K = restrict_to_irrep_with_provenance(z_pg_full_K, a1_K)
-    edge_pg_K = restrict_to_irrep_with_provenance(edge_pg_full_K, a1_K)
-    if group_K == "C1":
-        z_pg_K = c1_bypass_projection(z_K)
-    else:
-        assert path_table_has(
-            PG_path_set[group_K], src=a1_K, edge=a1_K, out=a1_K
-        )
-        for layer in range(2):
-            z_pg_K = A1_message_blocks[group_K][layer](
-                z_pg_K,
-                edge_pg_K,
-                edge_index,
-                fixed_cg=fixed_PG_CG[group_K],
-                allowed_paths=PG_path_set[group_K],
-                path_weights=low_rank_group_path_head[group_K](route_latent),
-                self_interaction=PG_self_interaction[group_K],
-            )  # the two sequential PG blocks have independent parameters
-        z_pg_K = PG_equivariant_norm_per_node[group_K](z_pg_K)
-    branch_input_K = permutation_invariant_node_pool(z_pg_K)
-    independent_A1_K = readout_fix_subspace[group_K, task](branch_input_K)
-    coeff_pg_K = inject_A1_into_full_PGH[group_K, task](independent_A1_K)
-    coeff_o3_K = inverse_subduction_dagger_to_tensor_irreps[
-        group_K, task
-    ](coeff_pg_K)
-    branch_coeff_o3.append((weight_K, coeff_o3_K))
+    coeff_o3 = common_o3_space_weighted_fusion(branch_outputs_o3)
 
-# Fusion is legal only after every branch is lifted to the common O(3) space
-coeff_o3 = sum(
-    weight_K * coeff_o3_K
-    for weight_K, coeff_o3_K in branch_coeff_o3
-)
-
-# One shared TP readout after common-space weighted fusion (main: o2_tp).
-# o2_tp receives covariant PBC edge axes; it must never use a fixed global axis.
-coeff_o3_out = shared_O3_tp_readout[task](
+# Every architecture has exactly one O(3) TP readout.
+coeff_o3_out = task_o3_readout[task](
     coeff_o3,
-    structural_carrier=shared,
+    structural_carrier=z,
     edge_attr=edge_attr,
     edge_index=edge_index,
-    tp_backend=shared_readout_tp_backend,
-    empty_edge_fallback="equivariant_linear_or_identity",
+    output_scope="node" if task == "bec" else "global",
+    output_irreps=target_irreps(task),
+    tp_backend=config.shared_readout_tp_backend,  # full_o3 | o2_tp
 )
 
 T_can = irrep_to_cartesian[task](coeff_o3_out)
-
-# recover tensor in original Cartesian frame
-T_pred = decanonicalize_tensor(
-    T_can, Qx, task
-)
-
-return T_pred
+return decanonicalize_tensor_and_site_order(T_can, Qx, symmetry_meta, task)
 ```
 
 ---
@@ -2889,12 +2973,7 @@ $$
 \mathrm{frozen}.
 $$
 
-只训练：
-
-- shared O(3) experts；
-- current / parent PG stages 与 readouts；
-- 融合后的 1 层共享 O(3)-equivariant TP readout；
-- 受约束的 gate calibration parameters（若启用）。
+按所选 architecture，只训练其中实际存在的 downstream modules：shared O(3) adaptation、routed O(3) experts 或 PG experts、O(3) readout，以及 expert 分支使用的受约束 gate calibration parameters。不存在的模块不得实例化或计入 optimizer。
 
 优点：
 
@@ -2923,11 +3002,7 @@ Backbone 全冻结。
 
 不建议每个 baseline 都乘上三种 finetune setting，以免实验组合爆炸。
 
-优先比较：
-
-- O(3)-Base；
-- Single-PG-Rep；
-- Hierarchical-A1。
+优先在分支 1 `B+R`、分支 3 `B+A+O3E+R` 与分支 5 `B+A+PGE+R` 上比较，以覆盖最小基线、O(3) expert control 与完整 PG model。
 
 ---
 
@@ -2994,7 +3069,7 @@ $$
 
 ## 6.4 Point-group imbalance
 
-PG-specific \(A_1\)-only branches 仍可能面临：
+PG-specific branches 仍可能面临：
 
 $$
 |\mathcal D_{G_1}|
@@ -3005,7 +3080,7 @@ $$
 候选策略：
 
 1. group-balanced batch sampling；
-2. shared expert + hierarchical \(A_1\)-only branches，自然缓解 rare-PG overfitting；
+2. shared expert + hierarchical PG branches，自然缓解 rare-PG overfitting；
 3. PG-specific stages 使用更强 weight decay；
 4. 使用 bottleneck / low-rank parameterization；
 5. minimum-sample threshold；
@@ -3038,7 +3113,7 @@ $$
 - low-rank channel mixing；
 - shallow TP / MLP blocks。
 
-shared adaptation 与 post-fusion shared readout 分别通过 `shared_adaptation_tp_backend` 和 `shared_readout_tp_backend` 在 `full_o3` 与 `o2_tp` 之间独立切换。除报告各自原生规模外，还需分别调整 channel multiplicity、path multiplicity 或 EqMLP width，构造：
+shared adaptation、routed O(3) expert 与 O(3) readout 分别通过 `shared_adaptation_tp_backend`、`o3_expert_tp_backend` 和 `shared_readout_tp_backend` 在 `full_o3` 与 `o2_tp` 之间独立切换。除报告各自原生规模外，还需分别调整 channel multiplicity、path multiplicity 或 EqMLP width，构造：
 
 $$
 N_{\mathrm{trainable}}^{\mathrm{full\_o3}}
@@ -3046,7 +3121,7 @@ N_{\mathrm{trainable}}^{\mathrm{full\_o3}}
 N_{\mathrm{trainable}}^{\mathrm{o2\_tp}},
 $$
 
-的 parameter-matched comparison，以区分收益来自 TP parameterization 还是单纯的参数量变化。两个位置形成 \(2\times2\) backend factorial；若 readout 使用 identity，则 `shared_readout_tp_backend` 记为 `none`，不计入该 factorial。
+的 parameter-matched comparison，以区分收益来自 TP parameterization 还是单纯的参数量变化。按 architecture 实际存在的位置形成 backend factorial；不存在的 adaptation/expert 记为 `none`。O(3) readout 始终存在，因此不再把 identity 当作正式 architecture 选项。
 
 应报告：
 
@@ -3068,12 +3143,14 @@ $$
 - inference latency；
 - peak GPU memory。
 
-hierarchical full-branch model 的单样本 active cost 为：
+expert 分支的单样本 active cost 为：
 
 $$
-N_s\text{ shared experts}
+\mathbf 1_{\mathrm{uses\ adaptation}}N_{\mathrm{adapt}}
 +
-|\mathcal A(x)|\text{ complete PG branches}.
+|\mathcal A(x)|\text{ routed O(3) or PG experts}
++
+1\text{ O(3) readout}.
 $$
 
 因此必须额外报告平均 / 最大 active branch 数、各 embedded subgroup DAG 的 FLOPs，以及相对 single-branch hard routing 的 latency overhead。第一版通过限制 benchmark 中允许的 compatible parent embeddings、共享低维 router 与浅层 PG blocks 控制成本；完整 PG block 参数按点群、按深度独立，不能以 hard top-\(k\) 截断破坏连续性作为默认实现。
@@ -3090,13 +3167,23 @@ $$
 d_{\ell,p}=n_{\ell,p}(2\ell+1).
 $$
 
-因此不能只使用一个对所有阶相同的 `hidden_multiplicity`；否则高阶 blocks 会因 \(2\ell+1\) components 和更多 TP paths 快速主导参数量与 FLOPs。第一版只保留 natural-parity sector \(p=(-1)^\ell\)，并采用下列 tapered profile：
+因此不能只使用一个对所有阶相同的 `hidden_multiplicity`；否则高阶 blocks 会因 \(2\ell+1\) components 和更多 TP paths 快速主导参数量与 FLOPs。每个 target property 在建模前先分解其 O(3) target representation，并计算相对 natural-parity sector \(p=(-1)^\ell\) 缺少的 irreps：
+
+$$
+\Delta\mathcal H_t
+:=
+\bigoplus_{(\ell,p):\,n_{\ell,p}^{(t)}>0,\ p\ne(-1)^\ell}
+n_{\ell,p}^{(t)}D^{(\ell,p)}.
+$$
+
+只为该性质单独加入 \(\Delta\mathcal H_t\)，不把它传播到其他性质的模型。dielectric / elastic 的 \(\Delta\mathcal H_t=\varnothing\)，只需要 natural-parity carriers；BEC 的 \(\Delta\mathcal H_t=D^{(1,+)}=1e\)。两种 PG mode 采用参数匹配后的 tapered natural-parity profiles：
 
 | global order \(\ell\) | 0 | 1 | 2 | 3 | 4 |
 |---:|---:|---:|---:|---:|---:|
-| `multiplicity_by_l` | 8 | 2 | 2 | 2 | 2 |
+| `a1_only` natural multiplicity | 8 | 2 | 2 | 2 | 2 |
+| `full_pg` natural multiplicity | 4 | 1 | 1 | 1 | 1 |
 
-对应 layout 为
+`a1_only` 对应基础 layout 为
 
 $$
 8\times0e
@@ -3106,15 +3193,37 @@ $$
 +2\times4e,
 $$
 
-总 component dimension 为 \(56\)。其中 mandatory \((0,+)\) carrier 不得被 width pruning 删除。该 pure-natural layout 与第一阶段的 parity-even global dielectric/elastic targets 对齐；BEC、magnetic、chiral 或其他 pseudo/odd-parity targets 需要按 target decomposition 补充 unnatural-parity blocks，属于后续扩展。
+总 component dimension 为 \(56\)；`full_pg` 的基础 layout 为
+
+$$
+4\times0e
++1\times1o
++1\times2e
++1\times3o
++1\times4e,
+$$
+
+总 component dimension 为 \(28\)。其中 mandatory \((0,+)\) carrier 不得被 width pruning 删除。BEC 的一般 polar--polar rank-2 tensor 含 antisymmetric \(1e\) block，因此 BEC 模型在两种 PG mode 下均额外加入一个最小 \(1e\) carrier；dielectric 与 elastic 不加入 natural parity 以外的 carrier：
+
+$$
+\begin{aligned}
+\mathcal H_{\mathrm{dielectric/elastic}}^{m}
+&=\mathcal H_{\mathrm{natural}}^{m},\\
+\mathcal H_{\mathrm{BEC}}^{m}
+&=\mathcal H_{\mathrm{natural}}^{m}\oplus1\times1e,
+\qquad m\in\{\texttt{a1\_only},\texttt{full\_pg}\}.
+\end{aligned}
+$$
+
+若 backbone tap 不提供 \(1e\)，所选 architecture 中最早存在且能够合法生成该 carrier 的 O(3) TP（adaptation、O(3) expert 或最终 readout）必须通过显式 allowed path 生成并保留它；不得只在 Cartesian head 中无依据地添加九个普通标量输出。各分支的 path-presence smoke test 必须覆盖这一差异。
 
 各阶段的默认 width policy 为：
 
 | Stage | 默认 multiplicity policy |
 |---|---|
-| Shared O(3) adaptation | natural parity \([8,2,2,2,2]\) |
-| PG branch | subduction 后只保留带 \((\ell,p,a,c)\) provenance 的 \(A_1\) blocks |
-| Shared TP readout | 主设置为 1 层 `o2_tp`；只保留 target orders 和必要 structural-carrier copies，不再复制完整 hidden layout |
+| Shared O(3) adaptation | 使用 mode-specific natural profile；仅 BEC 额外保留 `1x1e` |
+| PG branch | `a1_only` 保留 provenance-labelled trivial blocks；`full_pg` 保留全部 \((\ell,p,\Gamma,a,c)\) blocks |
+| Shared TP readout | global 输出 target irreps；BEC node head 输出 `1x0e+1x1e+1x2e` |
 
 对 `o2_tp`，不得再定义一个脱离 global labels 的统一 `m_multiplicity`。local \(m\) block 的 channel collection 必须由 global blocks 确定性派生：
 
@@ -3133,10 +3242,10 @@ $$
 | Module | TP/message-passing layers |
 |---|---:|
 | Shared O(3) adaptation | 1 |
-| 每个 active PG branch | 2 个顺序的 \(A_1\)-only blocks，参数互不共享 |
-| Post-fusion shared TP readout | 1，默认 `o2_tp` |
+| 每个 active PG branch | 2 个顺序的 mode-specific PG blocks，参数互不共享 |
+| O(3) TP readout | 1，默认 `o2_tp` |
 
-即主模型执行 1 次 shared adaptation、2 个参数独立的 PG message-passing blocks，以及融合后的 1 层 shared `o2_tp` readout。单层 shared adaptation 可通过 natural-parity TP paths 形成目标所需的高阶 carriers；subduction 后保留的 \(A_1^{(\ell=0,2,4)}\) provenance-labelled blocks 则由两层独立变换依次扩大图感受野并做 nonlinear refinement。主模型不会在第二个 block 中产生 non-trivial PG irreps；\(\Gamma\otimes\Gamma'\to A_1\) 只属于 `full_to_a1` / Full-PG ablation。只有在 frozen backbone features 明显不够 task-ready 时，才把 shared adaptation 增至 2 层。最小深度消融取
+这些层数只在对应 architecture 中生效：architectures 2/3/5 执行 shared adaptation，architectures 4/5 的每个 active PG expert 执行 2 个参数独立的 PG message-passing blocks，五个分支均执行 1 层 O(3) readout。`a1_only` 的第二个 block 仍只产生 trivial irreps；`full_pg` 的两个 blocks 均保留完整合法 fusion paths。只有在 frozen backbone features 明显不够 task-ready 时，才把 shared adaptation 增至 2 层。最小深度消融取
 
 $$
 (N_{\mathrm{adapt}},N_{\mathrm{PG}})
@@ -3151,9 +3260,8 @@ $$
 | Task setting | target highest \(\ell\) | hidden \(\ell_{\max}\) | main `o2_tp` \(m_{\max}\) | full-bandwidth O(2) control |
 |---|---:|---:|---:|---:|
 | Dielectric | 2 | 3 | 2 | 3 |
-| BEC（future work） | 2 | 需额外补充 `1e`；不进入第一阶段 | 2 | \(\ell_{\max}\) |
+| BEC | 2 | 4，并额外补充 `1e` carrier | 2 | 4 |
 | Elastic | 4 | 4 | 2 | 4 |
-| Unified dielectric/elastic interface | 4 | 4 | 2 | 4 |
 
 虽然 dielectric 的 target 最高只有 \(\ell=2\)，AnisoNet 的调参结果支持在 hidden representation 中保留到 \(\ell=3\)。Elastic 的 target 本身包含 \(\ell=4\)，因此必须保证在 branch 或最终 readout 中显式存在 \(4e\) output path；统一配置直接令 hidden \(\ell_{\max}=4\)。
 
@@ -3172,14 +3280,33 @@ $$
 第一版 headline configuration 冻结为：
 
 ```yaml
+architecture:
+  name: B+A+PGE+R  # B+R | B+A+R | B+A+O3E+R | B+PGE+R | B+A+PGE+R
+
 representation:
-  parity_layout: natural
-  multiplicity_by_l: [8, 2, 2, 2, 2]
-  lmax: 4
+  a1_only_natural_multiplicity_by_l: [8, 2, 2, 2, 2]
+  full_pg_natural_multiplicity_by_l: [4, 1, 1, 1, 1]
+  extra_irreps_by_property:
+    dielectric: []
+    elastic: []
+    bec: [1x1e]
+  lmax_by_property:
+    dielectric: 3
+    elastic: 4
+    bec: 4
   o2_mmax: 2
+
+data:
+  training_unit: one_dataset_one_property
+  reuse_benchmark_split: true
+  fallback_split: [0.8, 0.1, 0.1]
+  fallback_split_seed: 20260911
+  graph_backend: backbone_cutoff
+  fallback_cutoff_angstrom: 6.0
 
 tensor_product:
   shared_adaptation_tp_backend: o2_tp
+  o3_expert_tp_backend: o2_tp
   shared_readout_tp_backend: o2_tp
 
 router:
@@ -3190,8 +3317,22 @@ radial:
   path_channels: 2
 
 point_group:
-  hidden_irreps: a1_only
+  hidden_mode: a1_only  # a1_only | full_pg; both implementations required
   c1_policy: bypass_pg_tp
+
+task_heads:
+  dielectric:
+    output_scope: global
+    output_irreps: 1x0e+1x2e
+  elastic:
+    output_scope: global
+    output_irreps: 2x0e+2x2e+1x4e
+  bec:
+    output_scope: node
+    output_irreps: 1x0e+1x1e+1x2e
+    use_shared_o3_carrier_residual: true
+    joint_space_group_projection: disabled  # headline forward; diagnostic | hard_control only in ablation
+    acoustic_sum_rule_projection: true
 
 depth:
   shared_adaptation_layers: 1
@@ -3208,168 +3349,59 @@ depth:
 | depth \((N_{\mathrm{adapt}},N_{\mathrm{PG\ block}})\) | \((1,1),(1,2),(2,2)\) | \((1,2)\)，两个 PG blocks 参数独立 |
 | `o2_tp` \(m_{\max}\) | \(1,2,\ell_{\max}\) | 2 |
 | radial path channels | 1, 2, 4 | 2 |
-| PG hidden irreps | strict \(A_1\)-only, `full_to_a1`, Full-PG | strict \(A_1\)-only |
-| post-fusion readout | identity, one `o2_tp`, one `full_o3` TP | one `o2_tp` |
+| PG hidden mode | `a1_only`, `full_pg` | 两者均实现；主结果并列报告 |
+| O(3) readout backend | one `o2_tp`, one `full_o3` TP | one `o2_tp` |
 
-上述 profile ablation 是对整套逐阶宽度做协同缩放，而不是搜索一个 uniform multiplicity。比较 `full_o3` 与不同 \(m_{\max}\) 的 `o2_tp` 时，除原生配置外还必须按 trainable parameters 或 active FLOPs 匹配；不能仅令两者具有相同的 \(n_{\ell,p}\) 就声称计算预算相同。第一阶段的硬性效率验收仍为每个样本去重后实际参与 forward 的非-backbone 参数 \(N_{\mathrm{active/sample}}<5\)M；共享参数被多个分支调用时只计一次，但两个独立 PG blocks 必须分别计数，末端 TP readout 也必须计入。原先基于 recurrent weight sharing 与 identity readout 的 0.3--1.2M 预估不再沿用，应在 path table 冻结后按各点群重新统计 active parameters。对 \(C_1\)，由于所有 components 均为 trivial irrep，主设置跳过没有群论收益的 PG-TP，直接进入 constrained global readout 与末端 shared TP。
+上述 profile ablation 是对整套逐阶宽度做协同缩放，而不是搜索一个 uniform multiplicity。比较 `full_o3` 与不同 \(m_{\max}\) 的 `o2_tp` 时，除原生配置外还必须按 trainable parameters 或 active FLOPs 匹配；不能仅令两者具有相同的 \(n_{\ell,p}\) 就声称计算预算相同。第一阶段的硬性效率验收仍为每个样本去重后实际参与 forward 的非-backbone 参数 \(N_{\mathrm{active/sample}}<5\)M；共享参数被多个分支调用时只计一次，但两个独立 PG blocks 必须分别计数，末端 TP readout 也必须计入。早期基于不同模块边界的参数预估不再沿用，应在 path table 冻结后按五个 architecture、各点群与各 TP backend 重新统计 active parameters。对 \(C_1\)，由于所有 components 均为 trivial irrep，主设置跳过没有群论收益的 PG-TP，直接进入 constrained global readout 与末端 shared TP。
 
-当前 reference implementation 的逐参数统计见 `assets/model_code/reports/parameters_by_point_group.md`。在不含 backbone、current group 加全部 abstract class-DAG ancestors 均激活的口径下，32 个点群等权平均激活 6.94 个 experts；dielectric / elastic 的平均 active parameters 分别约为 0.392M / 0.392M。全部 32 个 PG experts 同时实例化时，双任务模型共有约 3.596M 参数。最坏的 \(C_1\) 因 class DAG 将全部 32 个群视为 ancestors，active parameters 约为 3.590M / 3.594M，仍严格低于 5M；其余点群也均满足 5M 上限，其中下一高的 \(C_2\) elastic forward 约为 1.787M。该平均值尚未按实际数据集点群频率加权，且 abstract ancestor set 不是最终 material-specific compatible-parent set，因此正式预算应在 embedded parent metadata 确定后重新统计。
+当前 `a1_only` reference implementation 的逐参数统计见 `assets/model_code/reports/parameters_by_point_group.md`。在不含 backbone、current group 加全部 abstract class-DAG ancestors 均激活的口径下，32 个点群等权平均激活 6.94 个 experts；dielectric / elastic 的平均 active parameters 分别约为 0.392M / 0.392M。全部 32 个 PG experts 同时实例化时，双任务模型共有约 3.596M 参数。最坏的 \(C_1\) active parameters 约为 3.590M / 3.594M。
 
----
-
-# 7. Baselines
-
-Baseline 分为两类：
-
-1. **same-backbone causal baselines**；
-2. **published baselines**。
-
-第一类用于证明每个模块的因果作用。
-
-第二类用于与领域已有方法比较绝对性能。
+按相同 `r_route=8`、2 个径向 channels、两个独立 PG blocks、\(C_1\) bypass 与 abstract class-DAG 口径，对尚待实现的 `full_pg` + \([4,1,1,1,1]\) 做 finite-group character/path-count 估算：全部实例化约 3.86M，32 群等权平均 active parameters 约 0.545M，最坏约 3.86M。该数字尚不含新增 BEC head 与 `1e` carrier，必须在实际 Full-PG path table 和 BEC head 实现后重新逐群统计；两种 mode 的每样本非-backbone active parameters 均必须严格小于 5M。
 
 ---
 
-## 7.1 Same-backbone causal baselines
+# 7. Architecture branches 与 published baselines
 
-| Baseline | Shared O(3) | PG branches | Continuous hierarchy | PG TP/MLP + norm + constrained readout | 核心问题 |
-|---|---:|---:|---:|---:|---|
-| **O(3)-Base** | ✗ | ✗ | ✗ | ✗ | pretrained O(3) representation 本身能做到什么？ |
-| **O(3)+Projection** | ✗ | ✗ | ✗ | output only | 只在 output enforce symmetry 是否已经足够？ |
-| **Shared-O3** | ✓ | ✗ | ✗ | ✗ | task-specific O(3) adaptation 是否有用？ |
-| **Hard-Routing-O3** | ✓ | current only | ✗ | ✗ | 原始 one-hot routing 的收益与不连续性是什么？ |
-| **Single-PG-Rep** | ✓ | current only | ✗ | ✓ | 单一 current-group PG representation 是否有用？ |
-| **Parent-Average-Control** | ✓ | current + parents | arbitrary average | ✓ | 增益是否只来自额外容量 / ensemble？ |
-| **Hierarchical-A1** | ✓ | current + parents | symmetry-breaking gates | ✓ | 轻量主模型是否兼顾精度、对称性、连续性与 5M active-parameter budget？ |
-| **Branch-only** | ✗ | current + parents | symmetry-breaking gates | ✓ | shared transfer 是否缓解 long-tail branch 的数据碎片化？ |
+顶层 architecture 只保留以下五个分支。记 `B` 为 pretrained O(3) backbone，`A` 为 shared O(3) adaptation，`O3E` 为按当前点群及 compatible parents 路由的 O(3) experts，`PGE` 为使用相同 routing/gates 的 point-group experts，`R` 为任务对应的 O(3)-equivariant readout。
 
----
+| ID | Short name | Architecture | 作用 |
+|---:|---|---|---|
+| 1 | `B+R` | O(3) backbone → O(3) readout | 最小 pretrained tensor baseline |
+| 2 | `B+A+R` | O(3) backbone → O(3) adaptation → O(3) readout | 隔离 shared task adaptation 的收益 |
+| 3 | `B+A+O3E+R` | O(3) backbone → O(3) adaptation → O(3) expert → O(3) readout | 在不进入 PG irrep space 时测试 symmetry-routed specialization |
+| 4 | `B+PGE+R` | O(3) backbone → PG expert → O(3) readout | 测试 PG specialization 在没有 shared adaptation 时能否独立工作 |
+| 5 | `B+A+PGE+R` | O(3) backbone → O(3) adaptation → PG expert → O(3) readout | 完整模型，测试 shared transfer 与 PG specialization 的互补性 |
 
-### 7.1.1 O(3)-Base
+五个分支均使用相同的 backbone feature tap、task target representation、数据 split 和 readout接口。`O3E` 与 `PGE` 使用同一 current-plus-compatible-parent active set、continuous residual gates 和 hierarchical fusion，因此分支 3 与分支 5 的差异只在 expert representation space；不再保留 one-hot hard routing、output-only projection、ordinary parent average、single-current-PG 或 branch-without-backbone 作为顶层 architecture。
 
-同一个 pretrained backbone + 标准 O(3)-equivariant tensor head。
+所有包含 O(3) TP 的位置都使用统一开关：
 
-作为最基本对照。
+```yaml
+o3_tp_backend:
+  adaptation: full_o3 | o2_tp
+  expert: full_o3 | o2_tp
+  readout: full_o3 | o2_tp
+```
 
----
+不存在相应模块的分支将该字段记为 `none`，而不是实例化空模块。例如 `B+R` 只有 `readout` backend，`B+A+R` 没有 `expert` backend。`full_o3` 与 `o2_tp` 必须具有相同的输入/输出 O(3) irreps contract，并同时报告原生规模与 parameter/FLOPs-matched 结果。
 
-### 7.1.2 O(3)+Projection
+“五个 architecture branches”与“配置实例数”必须区分。若三个 O(3) TP backend 独立切换，则分支 1--5 分别包含 \(2,4,8,4,8\) 个 backend/mode configurations，合计 26 个；它们仍属于五个因果结构分支，而不是 26 个新架构。实际 benchmark 可按研究问题采用配对切片，不要求一次性穷举所有 backbone × task × configuration 的笛卡尔积。
 
-先正常输出：
+所有包含 PG expert 的分支 4/5 都必须实现：
 
-$$
-\hat T,
-$$
+```yaml
+pg_hidden_mode: a1_only | full_pg
+```
 
-再进行：
+其中 `a1_only` 使用 \([8,2,2,2,2]\) natural layout，`full_pg` 使用预算匹配的 \([4,1,1,1,1]\) natural layout；两者在 BEC 中均额外保留 `1x1e` carrier，dielectric / elastic 不添加 unnatural-parity carrier。二者共享相同 parent DAG、gates、pooling/head policy 与 `<5M` active-parameter验收条件。
 
-$$
-\hat T_{\mathrm{sym}}
-=
-P_G(\hat T).
-$$
-
-即：
-
-$$
-P_G(\hat T)
-=
-\frac1{|G|}
-\sum_{g\in G}
-\rho_T(g)\hat T.
-$$
-
-这是必须击败的 conceptual baseline。
-
-如果 Hierarchical-A1 仅比 Base 好，却和 Projection 相同，则说明 PG module 的主要价值可能只是 output validity，而不是 representation learning。
+五个 architecture branches 是主实验矩阵；下列外部工作仍作为 published baselines，用于比较绝对精度，但不计入内部 architecture branch 数量。
 
 ---
 
-### 7.1.3 Shared-O3
+## 7.2 Published Baselines
 
-验证 pretrained features 在直接进入 downstream readout 前，是否需要：
-
-$$
-O(3)\ TP
-+
-O(3)\ EqMLP.
-$$
-
-它回答：
-
-> pretrained O(3) features 是否已经 task-ready？
-
----
-
-### 7.1.4 Hard-Routing-O3
-
-在不进入 PG representation space 的情况下加入 one-hot current-PG O(3) expert，保留为原始方案 baseline。
-
-用于专门测试：
-
-> hard routing-level point-group awareness 及其 symmetry-boundary discontinuity
-
-是否独立有效。
-
----
-
-### 7.1.5 Single-PG-Rep
-
-保留 shared O(3) expert，只运行 current-group PG branch，不激活父群分支，并进行：
-
-$$
-O(3)\rightarrow G
-\rightarrow
-PG\ TP/MLP.
-$$
-
-用于专门测：
-
-> representation-level point-group awareness
-
----
-
-### 7.1.6 Parent-Average-Control
-
-激活与主模型相同的 current / parent \(A_1\)-only branches，但使用固定平均或不满足父群极限条件的普通 normalized similarity weights。它用于检验改善是否只来自：
-
-- 更大的 active capacity；
-- 多分支 ensemble；
-- 普通平滑平均。
-
-该 control 不作为最终方法，因为它没有结构连续性的理论保证。
-
----
-
-### 7.1.7 Hierarchical-A1
-
-完整模型：
-
-$$
-\boxed{
-\text{Pretrained O3}
-\rightarrow
-\{\text{current + compatible parent }A_1\text{-only branches}\}
-\rightarrow
-\text{inverse subduction to common O3 space}
-\rightarrow
-\text{hierarchical weighted fusion}
-\rightarrow
-\text{one shared O3 TP readout}
-}
-$$
-
----
-
-### 7.1.8 Branch-only
-
-移除 shared O(3) experts，其余 current / parent \(A_1\)-only branches、continuous gates 与 common-space fusion 均与 Hierarchical-A1 相同。用于检验 shared transfer 对 long-tail PG 的作用。
-
----
-
-# 7.2 Published Baselines
-
-## 7.2.1 MatTen
+### 7.2.1 MatTen
 
 MatTen 是基于 e3nn 的 elasticity tensor equivariant GNN。
 
@@ -3390,7 +3422,7 @@ MatTen 是基于 e3nn 的 elasticity tensor equivariant GNN。
 
 ---
 
-## 7.2.2 GMTNet
+### 7.2.2 GMTNet
 
 GMTNet 面向：
 
@@ -3412,7 +3444,7 @@ GMTNet 是 symmetry-aware tensor prediction 的关键 published baseline。
 
 ---
 
-## 7.2.3 ETGNN
+### 7.2.3 ETGNN
 
 ETGNN 通过 edge-based tensor expansion 实现 tensor output equivariance。
 
@@ -3428,7 +3460,7 @@ ETGNN 通过 edge-based tensor expansion 实现 tensor output equivariance。
 
 ---
 
-## 7.2.4 AnisoNet
+### 7.2.4 AnisoNet
 
 AnisoNet 是 dielectric tensor 的直接 equivariant predictor。
 
@@ -3450,7 +3482,7 @@ $$
 
 ---
 
-## 7.2.5 DTNet
+### 7.2.5 DTNet
 
 DTNet 从 pretrained atomistic potential 中提取 latent equivariant information，并冻结 parent potential 进行 dielectric prediction。
 
@@ -3470,7 +3502,7 @@ $$
 
 ---
 
-## 7.2.6 GoeCTP
+### 7.2.6 GoeCTP
 
 GoeCTP 强调 canonicalization / polar decomposition，将 equivariance guarantee 部分外置，使得后续网络能够采用更普通、更高效的网络结构。
 
@@ -3480,7 +3512,7 @@ GoeCTP 强调 canonicalization / polar decomposition，将 equivariance guarante
 
 ---
 
-## 7.2.7 PGEqNN
+### 7.2.7 PGEqNN
 
 PGEqNN 是最直接的 point-group-aware baseline。
 
@@ -3494,7 +3526,7 @@ PGEqNN 是最直接的 point-group-aware baseline。
 本研究与其关键区别在于：
 
 1. 使用 **universally pretrained O(3) backbone**；
-2. 对 current group 与 compatible parents 运行 **轻量 \(A_1\)-only PG branches**；
+2. 对 current group 与 compatible parents 运行 **参数匹配的 `a1_only | full_pg` PG branches**；
 3. 强调 **parameter-efficient downstream specialization**；
 4. 强调 **label efficiency**；
 5. 将 hierarchy-level 与 representation-level PG awareness 解耦；
@@ -3506,12 +3538,24 @@ PGEqNN-Full 与 PGEqNN-\(A_1\)-only 均应作为 baseline。
 
 # 8. Benchmarks
 
-第一阶段只选用 global tensor benchmark：
+第一阶段选用两个 global tensor benchmark 和一个 atom-resolved tensor benchmark：
 
 1. global dielectric / elastic tensor：JARVIS tensor benchmark；
-2. global elastic tensor：MatTen elastic benchmark。
+2. global elastic tensor：MatTen elastic benchmark；
+3. atom-resolved Born effective charge：JARVIS-DFPT BEC benchmark。
 
-各 benchmark 分别使用锁定的数据版本、公开 protocol 与固定 split。point-group-controlled、anisotropy-conditioned、low-data 和 long-tail 实验均从相应 benchmark 的训练集派生。BEC 数据审计不属于第一阶段工作。
+每一个“dataset × target property”都是独立训练单元，分别建立配置、模型参数、optimizer、checkpoint 与评测结果，不进行跨性质或跨数据集联合训练。例如 JARVIS dielectric、JARVIS elastic、MatTen elastic 与 JARVIS-DFPT BEC 是四个相互独立的训练任务；即使 target property 相同，换用数据集也必须重新训练，不混合样本或复用 downstream checkpoint。
+
+各训练单元优先原样复用相应 published benchmark 的数据清洗、单位、train/validation/test split 与 sample IDs。若该 benchmark 没有可复用的官方 split，则使用固定随机种子按 **8:1:1** 生成并持久化 split manifest；划分在任何训练或调参之前完成，同一材料/重复结构不得跨 split 泄漏。point-group-controlled、anisotropy-conditioned、low-data 和 long-tail 实验均只从相应训练单元的 train split 派生。BEC 必须额外冻结 calculation-matched structure/site ordering、空间群操作诱导的 node/edge mappings 与 ASR policy。
+
+## 8.0 Smoke-test protocol
+
+Smoke test 只验证执行链路、形状、有限数值与梯度，不用于报告科学指标，分为两套：
+
+1. **32-point-group forward/backward smoke**：为 32 个 crystallographic point groups 各固定一个 synthetic 或 representative equilibrium PBC structure，共 32 个 fixture。每个结构至少完成一次目标张量 forward、标量 loss 构造与 backward，并检查输出 shape、finite loss 和非空有限梯度。五个 architecture switches 与两种 O(3) TP backend 必须在整套参数化测试中全部被覆盖；对 PG experts，`a1_only | full_pg` 都必须覆盖，且每个点群至少有一次 PG-expert forward/backward。
+2. **Per-training-unit train/test smoke**：对每个独立的 dataset × target-property 训练单元固定抽取 **5 个结构**。优先从既有 train/validation/test split 取 3/1/1 个；若使用 fallback split，则先在完整数据上生成 8:1:1 manifest，再按同样的 3/1/1 构造 smoke fixture。该 fixture 必须跑通 preprocessing、dataloader、至少一次 optimizer update、validation、checkpoint save/load 与 test inference。五样本结果不作为精度结论。
+
+两套 smoke 相互独立：前者保证全部 32 点群实现可执行，后者保证每个真实数据训练与测试 pipeline 可执行。
 
 ---
 
@@ -3605,23 +3649,23 @@ $$
 
 ---
 
-## 8.3 Future-work benchmark：Born Effective Charge（第一阶段不执行）
+## 8.3 Benchmark C：JARVIS-DFPT Born Effective Charge
 
 BEC benchmark 预测 relaxed equilibrium crystal 中每个原子的完整 \(3\times3\) Born effective charge，即每个样本的标签形状为 \(N\times3\times3\)。
 
 | 数据集 | 有效样本数 | Full \(N\times3\times3\) BEC | equilibrium structure | 用途 |
 | --- | ---: | :---: | --- | --- |
-| **JARVIS-DFPT** | **5015** | ✅ | ✅ 严格 relaxed | future extension |
+| **JARVIS-DFPT** | 冻结 raw index 为 **5000** 个 DFPT archives（论文名义值 5015） | ✅ | ✅ relaxed calculation structure | 第一阶段主 BEC benchmark |
 | **MP-Dielectric** | 待锁定 release 后审计 | 需从底层 DFPT task 核验 | relaxed calculation structure 与 BEC 必须逐原子对齐 | 候选跨数据库验证 |
 
-若后续恢复 BEC，JARVIS-DFPT 的 5015 条可作为预期规模；届时仍需固定 release、保存 sample IDs，并检查缺失值、单位、原子顺序和重复结构。MP 的公开 dielectric derived collection 不直接等价于完整 BEC 数据集；正式样本数应定义为同时满足以下条件的 task 数：
+主实验以已冻结的 JARVIS raw-file index 为样本全集来源，不用论文名义值补造缺失样本。数据准备必须保存 archive URL/checksum、JARVIS ID、calculation-matched final structure、完整 \(N\times3\times3\) BEC、site order、抽取错误与 ASR residual；最终有效样本数由下载、解析、收敛和质量审计共同确定。MP 的公开 dielectric derived collection 不直接等价于完整 BEC 数据集；其正式样本数应定义为同时满足以下条件的 task 数：
 
 1. `output.dielectric_properties.born_charges` 非空且形状为 \(N\times3\times3\)；
 2. calculation structure 为目标 relaxed equilibrium structure；
 3. BEC 的原子顺序可与 structure sites 一一对应；
 4. calculation 收敛且通过数值质量检查。
 
-BEC 主指标为 atom-wise Frobenius MAE / RMSE，并补充 element-macro、Wyckoff-orbit-macro、equivariance violation 与 acoustic-sum-rule residual。数据划分优先按 material / reduced composition 分组，避免同一材料的近重复结构跨 split 泄漏。
+BEC 主指标为 atom-wise Frobenius MAE / RMSE，并补充 element-macro、Wyckoff-orbit-macro、irrep-wise error、equivariance violation 与 acoustic-sum-rule residual。数据划分按 material / reduced composition 分组，避免同一材料的近重复结构跨 split 泄漏；split 生成只能使用结构与组成元数据，不能使用 test labels。必须同时报告 raw equivariant head、可选联合空间群投影后以及 ASR 投影后的指标，以区分网络内蕴等变性与后处理收益。
 
 ---
 
@@ -3651,35 +3695,21 @@ $$
 
 ---
 
-比较：
-
-$$
-\text{Branch-only}
-$$
-
-$$
-\text{Shared-only}
-$$
-
-$$
-\boxed{
-\text{Hierarchical-A1}
-}
-$$
+比较 `B+A+R`、`B+PGE+R` 与 `B+A+PGE+R`。
 
 核心预期：
 
 $$
-\text{Hierarchical-A1}
+\text{B+A+PGE+R}
 -
-\text{Branch-only}
+\text{B+PGE+R}
 $$
 
 在 low-data 时最大，并随 \(N_G\) 增加逐渐缩小。
 
 这将直接验证：
 
-> shared experts 是否真正缓解了 point-group data fragmentation。
+> shared O(3) adaptation 是否真正缓解了 point-group data fragmentation。
 
 ---
 
@@ -3953,8 +3983,8 @@ $$
 
 1. scratch O(3)；
 2. pretrained O(3)；
-3. pretrained + Shared-O3；
-4. pretrained + Hierarchical-A1。
+3. pretrained `B+A+R`；
+4. pretrained `B+A+PGE+R`。
 
 训练比例：
 
@@ -3986,26 +4016,14 @@ $$
 
 ---
 
-# 9.7 Shared vs Hierarchical Branches
+# 9.7 Adaptation 与 PG Expert 的互补性
 
-核心消融：
-
-$$
-\text{Shared only},
-$$
-
-$$
-\text{Branch-only},
-$$
-
-$$
-\text{Hierarchical-A1}.
-$$
+核心比较为 `B+A+R`、`B+PGE+R` 与 `B+A+PGE+R`。
 
 预期：
 
 - full-data/high-frequency PG：三者差距可能缩小；
-- low-data/rare PG：Hierarchical-A1 优势显著。
+- low-data/rare PG：`B+A+PGE+R` 相对 `B+PGE+R` 的优势更显著。
 
 可以进一步分析 feature norms：
 
@@ -4019,30 +4037,20 @@ $$
 
 ---
 
-# 9.8 Hierarchy-level vs Representation-level PG Awareness
+# 9.8 O(3) Expert vs PG Expert
 
-通过：
-
-$$
-\text{Shared-O3}
-\rightarrow
-\text{Hard-Routing-O3}
-\rightarrow
-\text{Single-PG-Rep}
-\rightarrow
-\text{Hierarchical-A1}
-$$
+在相同 adaptation、active groups、continuous gates 与 readout 下比较 `B+A+O3E+R` 和 `B+A+PGE+R`，并以 `B+A+R` 作为无 expert 参照。
 
 回答：
 
-1. one-hot PG identity 本身提供多少信息及多少 discontinuity？
-2. explicit PG irreps 提供多少额外信息？
-3. compatible parents 与 continuous gates 是否提供超出普通 ensemble 的收益？
-4. hierarchy-level 与 representation-level mechanisms 是否 complementary？
+1. symmetry-routed O(3) experts 本身提供多少信息？
+2. 在相同 routing 下，explicit PG irreps 提供多少额外信息？
+3. `a1_only` 与 `full_pg` 的表达力—参数量差异是什么？
+4. shared adaptation 与两类 experts 是否互补？
 
 ---
 
-# 9.9 主模型 \(A_1\)-only vs Full-PG Capacity Ablation
+# 9.9 `a1_only` vs `full_pg` 正式对照
 
 鉴于已有 point-group tensor work 的结果，必须比较：
 
@@ -4169,6 +4177,30 @@ $$
 
 理论上应接近 numerical precision / implementation tolerance。
 
+## 9.12.1 BEC joint equivariance and graph-automorphism test
+
+对每个 BEC test structure、每个缓存空间群操作 \(g=(R_g,t_g)\) 与两种 `pg_hidden_mode`，首先验证 cutoff PBC multigraph 的闭合性：
+
+$$
+E(gx)=P_g^E E(x),
+\qquad
+d_{P_g^E(e)}=R_gd_e.
+$$
+
+随后在关闭末端 hard projector 时验证网络的内蕴联合等变性：
+
+$$
+\epsilon_{\mathrm{BEC},g}
+=
+\frac{
+\left(\sum_i\left\|\hat Z_{\pi_g(i)}-R_g\hat Z_iR_g^\top\right\|_F^2\right)^{1/2}
+}{
+\left(\sum_i\|\hat Z_i\|_F^2\right)^{1/2}+\epsilon
+}.
+$$
+
+必须分别测试 node relabeling、proper/improper rotations、nonsymmorphic operations、跨胞边、多个 Wyckoff orbits 与非平凡 site stabilizers。验收顺序为：raw head 先达到数值容差，再验证可选联合 projector 将 violation 降至机器精度；不得只展示 projector 后结果来代替网络等变性测试。
+
 ---
 
 # 9.13 Canonicalization Robustness
@@ -4271,7 +4303,7 @@ labels 时最大，在 full-data 时缩小。
 
 ---
 
-## 10.2 预期 2：Shared-O3 优于直接 backbone readout
+## 10.2 预期 2：O(3) adaptation 优于直接 backbone readout
 
 Pretrained backbone features 虽然：
 
@@ -4294,21 +4326,21 @@ $$
 即预期：
 
 $$
-\text{Shared-O3}
+\text{B+A+R}
 >
-\text{O3-Base}.
+\text{B+R}.
 $$
 
 ---
 
-## 10.3 预期 3：Hierarchical \(A_1\)-only branches 改善 symmetry-boundary behavior
+## 10.3 预期 3：连续 expert routing 满足 symmetry-boundary limit
 
 预期：
 
 $$
-\text{Hierarchical-A1}
+\text{B+A+O3E+R 或 B+A+PGE+R}
 >
-\text{Hard-Routing-O3}
+\text{对应的无 expert 分支}
 $$
 
 这一优势应同时体现为：
@@ -4324,12 +4356,12 @@ $$
 
 ## 10.4 预期 4：PG Representation Gain 与 Anisotropy 相关
 
-不预期 Hierarchical-A1 在所有 point groups 上都大幅领先。
+不预期 `B+A+PGE+R` 在所有 point groups 上都大幅领先于 `B+A+O3E+R`。
 
 更可信的结果为：
 
-- \(O_h\) elastic：Hierarchical-A1 与 O(3) 接近；
-- high-anisotropy subsets：Hierarchical-A1 明显改善；
+- \(O_h\) elastic：PG expert 与 O(3) expert 接近；
+- high-anisotropy subsets：PG expert 明显改善；
 - dielectric \(\ell=0\)：差距较小；
 - dielectric \(\ell=2\)：差距明显；
 - elastic \(\ell=4\)：可能出现更强 PG benefit。
@@ -4349,14 +4381,14 @@ $$
 
 ---
 
-## 10.5 预期 5：Shared + Hierarchical Branches 在 Long-tail 下最好
+## 10.5 预期 5：Adaptation + PG Expert 在 Long-tail 下最好
 
 当 target PG labels 很少时：
 
 $$
-\text{Hierarchical-A1}
+\text{B+A+PGE+R}
 >
-\text{Branch-only}.
+\text{B+PGE+R}.
 $$
 
 随数据增加，PG branches 可以独立学习更多，二者差距减小。
@@ -4367,14 +4399,14 @@ $$
 
 ## 10.6 预期 6：Hard-constrained Readout 保证严格 Tensor Symmetry
 
-Hierarchical-A1 model 的 final output 应满足：
+`B+PGE+R` 与 `B+A+PGE+R` 的 final output 应满足：
 
 $$
 \delta_G
 \approx0.
 $$
 
-如果 Hierarchical-A1 在 readout 前 intermediate prediction 本身也更接近 fixed subspace，则可以进一步证明：
+如果 PG expert model 在 readout 前 intermediate prediction 本身也更接近 fixed subspace，则可以进一步证明：
 
 > internal representation 本身更加 symmetry-aware。
 
@@ -4382,9 +4414,9 @@ $$
 
 # 11. 哪些结果会削弱核心 Hypothesis？
 
-## Case A：O(3)+Projection ≈ Hierarchical-A1
+## Case A：`B+A+PGE+R` ≈ `B+A+O3E+R`
 
-说明 explicit PG representation 对 accuracy 无额外帮助，主要价值只是 output constraints。
+说明在相同 routing/gates 下，explicit PG representation 对 accuracy 无额外帮助；收益主要来自 O(3) expert capacity，而不是 finite-group representation。
 
 此时可转向研究：
 
@@ -4397,35 +4429,29 @@ $$
 
 ---
 
-## Case B：Hard-Routing-O3 ≈ Hierarchical-A1 且明显 > Shared-O3
+## Case B：两种 expert branches ≈ `B+A+R`
 
 说明：
 
-> PG identity 很重要，但 parent branches、continuous gates 与 finite-group TP/MLP 未提供额外收益。
+> 当前数据上 symmetry-routed experts 未提供超出 shared adaptation 的收益。
 
 此时可以简化模型并将贡献聚焦到：
 
-> hard symmetry-routed parameter-efficient adaptation，并明确承认其连续性限制。
+> pretrained backbone + shared O(3) adaptation 的参数高效 tensor transfer。
 
 ---
 
-## Case C：Single-PG-Rep > Hard-Routing-O3，但 Hierarchical-A1 ≈ Single-PG-Rep
+## Case C：`B+A+PGE+R` ≈ `B+PGE+R`
 
-说明 representation-level PG awareness 有用，但 current-plus-parent hierarchy 在该数据设置下没有带来额外收益。
+说明 PG expert 有用，但 shared O(3) adaptation 没有提供额外收益；需要检查 backbone features 是否已经 task-ready，或 adaptation 是否与 PG block功能重复。
 
 ---
 
-## Case D：Full-PG capacity ablation consistently > A1-only
+## Case D：Full-PG consistently > A1-only
 
-说明 strict \(A_1\)-only 压缩删除了有用的 \(\Gamma\otimes\Gamma'\to A_1\) 路径，需要在 5M budget 内改用 `full_to_a1` 或低秩 Full-PG。
+说明 strict \(A_1\)-only 压缩删除了有用的 \(\Gamma\otimes\Gamma'\to A_1\) 路径；在两种实现均满足 5M budget 时，应把 `full_pg` 作为精度优先配置，并保留 `a1_only` 作为效率优先配置。
 
-此时不应直接扩展为无约束 Full-PG，而应优先采用：
-
-$$
-\text{Full-to-}A_1
-$$
-
-作为折中架构，并重新进行 active-parameter matching。
+此时仍不得使用不满足 intertwiner 约束的 dense Full-PG；应采用严格 blockwise intertwiners、完整合法 CG paths 和必要的低秩 path heads，并重新进行 active-parameter/FLOPs matching。
 
 ---
 
@@ -4441,7 +4467,7 @@ $$
 
 ---
 
-## Case F：Hierarchical-A1 精度提高但 boundary jump 不下降
+## Case F：expert branches 精度提高但 boundary jump 不下降
 
 说明多分支收益可能只来自额外容量或 ensemble，而 symmetry-breaking gates、parent embedding 或 canonical frame transport 没有实现预期连续极限。此时不得声称模型解决了结构—表示不连续；必须依次检查：
 
@@ -4479,7 +4505,7 @@ rare PG 数据量很小。
 
 ### 应对
 
-- shared experts；
+- shared O(3) adaptation 与 O(3)-expert control；
 - 每个点群、每层使用独立的轻量 PG TP/MLP block 参数；只共享低维 `r_route` router；
 - first benchmark 先覆盖有足够数据的 PG；
 - minimum support threshold；
@@ -4496,15 +4522,9 @@ $$
 
 ---
 
-## 12.3 备选：分支内 K-conditioned O(3) adapter
+## 12.3 范围边界：不叠加 O(3) expert 与 PG expert
 
-主模型不在 \(A_1\)-only PG branch 内额外放置 O(3) expert；每个分支均直接从共享 O(3) task representation 开始 subduction。若后续实验表明 low-data、long-tail PG 或强各向异性设置需要更强的分支容量，可将下式作为**可选增强与消融项**：
-
-$$
-z_K=z_{\mathrm{shared}}+E_K^{O(3)}(h).
-$$
-
-其中 \(E_K^{O(3)}\) 是按点群 \(K\) 索引参数、但保持 O(3)-equivariance 的 adapter。启用它时，必须进行 parameter-matched ablation，以区分性能收益来自额外容量还是后续的 PG representation learning。
+五个正式分支中，`O3E` 与 `PGE` 是互斥的 expert representation choices：architecture 3 使用 routed O(3) experts，architectures 4/5 使用 PG experts。第一阶段不在同一分支内串联或并联两类 expert，以免产生未定义的第六种主架构并混淆 point-group representation gain 与额外容量。若后续确需研究混合 experts，应作为独立扩展重新定义融合顺序、参数匹配与验收标准，而不静默加入当前实验矩阵。
 
 ---
 
@@ -4519,7 +4539,7 @@ finite-group CG tables / repeated multiplicities 实现复杂。
 第一版限制：
 
 - \(\ell_{\max}\) 与 target task 对齐；
-- strict \(A_1\)-only hidden representation；
+- 只实现 `a1_only` 与严格 equivariant 的 `full_pg` 两种 hidden mode；
 - 2 个顺序的 PG TP + EqMLP blocks，各自使用独立参数；
 - `num_basis=8` 先共享压缩为 `path_channels=2`；
 - \(C_1\) bypass PG-TP；
@@ -4577,6 +4597,17 @@ $$
 - 降级 symmetry；
 - 或单独分析。
 
+对 BEC 不使用逐原子 global fixed-subspace 检查，而使用 calculation-matched site ordering 和联合约束：
+
+$$
+\max_{g,i}
+\frac{\left\|Z^*_{\pi_g(i)}-R_gZ^*_iR_g^\top\right\|_F}
+{\left(\sum_j\|Z^*_j\|_F^2\right)^{1/2}+\epsilon}
+<\tau_Z,
+$$
+
+并单独记录 \(\left\|\sum_iZ_i^*\right\|_F\) 的 ASR residual；不得用 symmetry cleaning 或 ASR projection覆盖原始标签质量问题。
+
 ---
 
 # 13. 开题阶段工作计划与里程碑
@@ -4614,7 +4645,10 @@ $$
 - real `O2Linear`、`O2TensorProduct` 与 `O2Gate`，包括 \(0e/0o\)、polar/pseudo 与 local-frame gauge tests；
 - dielectric Cartesian ↔ irrep transformation；
 - elastic Cartesian ↔ irrep transformation；
+- BEC Cartesian \(3\times3\) ↔ `0e+1e+2e` transformation；
 - Reynolds projector；
+- space-group-operation-to-node/edge permutation registry、BEC 联合 Reynolds projector 与 ASR projector；
+- cutoff PBC graph automorphism tests，覆盖 cell shifts、完整等距 shells 与 nonsymmorphic operations；
 - spglib canonicalization + frame tracking；
 - tensor de-canonicalization。
 
@@ -4645,6 +4679,7 @@ $$
 - PG CG / tensor products；
 - \(D^{(0,+)}\downarrow_K=A_1\) node-carrier 与 \(Y_{00}B_q(r)\downarrow_K=A_1\) edge-carrier；
 - 每个目标点群的 \(A_1^{\mathrm{node}}\otimes A_1^{\mathrm{edge}}\rightarrow A_1^{\mathrm{out}}\) path-presence test；
+- `full_pg` 的完整 irrep layouts、fusion multiplicities、CG intertwiners 与 non-trivial-path equivariance tests；
 - PG equivariance tests；
 - synthetic symmetry task。
 
@@ -4664,9 +4699,9 @@ $$
 - frozen backbone pipeline；
 - 检查并强制保留至少一个 shared \((0,+)\) node channel；
 - shared O(3) adaptation TP + EqMLP，并开放独立的 `full_o3 | o2_tp` backend；
-- 落实默认 natural-parity `multiplicity_by_l=[8,2,2,2,2]`、`r_route=8`、`shared_adaptation_layers=1`、`shared_adaptation_tp_backend=o2_tp`、unified `lmax=4` 与 `o2_mmax=2`，并自动从 global \((\ell,p)\) layout 派生 local \(m\)-block multiplicities；
-- O3-Base；
-- Shared-O3。
+- 落实 `a1_only=[8,2,2,2,2]`、`full_pg=[4,1,1,1,1]`、仅 BEC 增加的 `1x1e` carrier、`r_route=8`、`shared_adaptation_layers=1`、`shared_adaptation_tp_backend=o2_tp`、property-specific `lmax` 与 `o2_mmax=2`，并自动从 global \((\ell,p)\) layout 派生 local \(m\)-block multiplicities；
+- architecture 1 `B+R`；
+- architecture 2 `B+A+R`。
 
 **交付物：**
 
@@ -4674,22 +4709,25 @@ $$
 
 ---
 
-## Phase 3：Hierarchical \(A_1\)-only PG Branches
+## Phase 3：O(3)/PG Experts 与完整五分支
 
 实现：
 
 - compatible parent DAG paths 与 group-embedding metadata；
 - periodic parent-group operation residuals；
 - continuous edge gates 与 stick-breaking weights；
-- 每个激活群独立 subduction 后立即 restriction 到 provenance-labelled \(A_1\) blocks，并执行 \(A_1\otimes A_1\rightarrow A_1\) TP/MLP、norm 与 constrained global readout；
+- architecture 3 `B+A+O3E+R`，O(3) expert 开放 `full_o3 | o2_tp`；
+- `pg_hidden_mode=a1_only | full_pg` 两种完整 forward；前者只保留 provenance-labelled trivial blocks，后者保留全部 PG irreps 和合法 fusion paths；
+- architecture 4 `B+PGE+R` 与 architecture 5 `B+A+PGE+R`；
 - 串联两个参数独立的 PG blocks；径向使用 8 个固定 basis、2 个共享压缩后的 path channels；\(C_1\) 默认 bypass PG-TP；
-- 主设置采用 1 层 `o2_tp` post-fusion readout；identity 与 `full_o3` TP 作为 readout ablation；
+- dielectric / elastic 的 global pooling + fixed-subspace heads，以及 BEC 的 no-pooling node head、shared O(3) carrier residual、可选联合空间群投影与 ASR 投影；
+- 每个分支均使用 1 层 O(3) TP readout，并比较 `o2_tp | full_o3` 两种 backend；
 - inverse subduction 后的 common-space weighted fusion；
 - 融合后的 1 层共享 O(3)-equivariant TP readout，开放 `full_o3 | o2_tp` backend，并为默认 `o2_tp` 提供 PBC edge-axis aggregation 与 empty-edge equivariant fallback。
 
 **交付物：**
 
-> Hierarchical-A1 model（Full-PG 仅作 capacity ablation）
+> 五个 architecture branches；分支 4/5 均含 `a1_only | full_pg`，所有 O(3) TP 位置均含 `full_o3 | o2_tp`
 
 ---
 
@@ -4700,6 +4738,9 @@ $$
 - JARVIS tensor 中的 dielectric representative PG subsets；
 - JARVIS tensor 中的 elastic representative PG subsets；
 - MatTen elastic 中的 high-symmetry control 与 lower-symmetry PG subsets；
+- JARVIS-DFPT BEC 的 32 点群覆盖审计与代表性 PG subsets；
+- 按 §8.0 固定 32 个点群各一个 equilibrium PBC structure 的 fixture，并逐群跑通至少一次 forward/backward；整套参数化测试覆盖五个 architectures、`full_o3 | o2_tp` 与 PG `a1_only | full_pg`，BEC case 保留 atom axis 并验证 node/edge automorphism 与联合输出关系；
+- 对 JARVIS dielectric、JARVIS elastic、MatTen elastic 与 JARVIS-DFPT BEC 四个独立训练单元，各固定 5 个真实结构，跑通 preprocessing、train/validation、checkpoint 与 test pipeline；
 
 具体 PG 仅在训练集完成样本量与 embedding-stability 审计后冻结；优先考察 \(D_{3d}\) dielectric、\(O_h\) elastic 与 \(D_{2h}\) elastic，但不为凑齐类别改变 published test split。
 
@@ -4711,6 +4752,7 @@ $$
 
 - JARVIS tensor published benchmark；
 - MatTen elastic published benchmark；
+- JARVIS-DFPT BEC benchmark；
 - learning curves；
 - long-tail PG；
 - parameter matching；
@@ -4755,7 +4797,7 @@ $$
 
 ## Contribution 2：Continuity-aware Current-plus-parent Full Branches
 
-提出 current point group 与 compatible parent groups 各自运行 natural-parity \(A_1\)-only PG-specialized branch，并以当前结构相对父群 operations 的 normalized residual 构造满足父群极限条件的层级权重：
+提出 current point group 与 compatible parent groups 各自运行 mode-specific `a1_only | full_pg` PG-specialized branch，并以当前结构相对父群 operations 的 normalized residual 构造满足父群极限条件的层级权重。下式表示 global task 路径：
 
 $$
 \hat c_{\mathrm{out}}^{O(3)}(x)
@@ -4830,22 +4872,17 @@ spglib canonicalization -----> Gx, parent DAG, r_H(x), Qx
      |
 Pretrained O(3) backbone
      |
-Shared O(3) adaptation
-     |
-     +--------------------+--------------------+
-     |                    |                    |
-A1 branch K0         A1 branch K1         A1 branch Gx
-O3 -> K0             O3 -> K1             O3 -> Gx
-A1 PG TP blocks x2    A1 PG TP blocks x2    A1 PG TP blocks x2
-independent by depth  independent by depth  independent by depth
-A1 norm               A1 norm               A1 norm
-global pool + Fix_K readout in every branch
-     |                    |                    |
-     +------ inverse subduction to common O(3) space -----+
+     +--> [1] -------------------------------> O(3) readout
+     +--> [2] O(3) adaptation ---------------> O(3) readout
+     +--> [3] O(3) adaptation -> routed O3E -> O(3) readout
+     +--> [4] routed PGE --------------------> O(3) readout
+     +--> [5] O(3) adaptation -> routed PGE --> O(3) readout
                               |
-              hierarchical weighted average w_K(r)
+              O3E/PGE use the same parent DAG,
+              continuous gates and O(3)-space fusion
                               |
-                 one shared O(3) readout TP
+              PGE mode: a1_only or full_pg
+              O(3) TP backend: full_o3 or o2_tp
                               |
                      irrep -> Cartesian
                               |
@@ -4923,14 +4960,11 @@ JARVIS tensor / MatTen elastic published test sets。
 
 比较：
 
-- O3-Base；
-- Projection；
-- Shared；
-- Hard-Routing-O3；
-- Single-PG-Rep；
-- Parent-Average-Control；
-- Branch-only；
-- Hierarchical-A1。
+- `B+R`；
+- `B+A+R`；
+- `B+A+O3E+R`；
+- `B+PGE+R`；
+- `B+A+PGE+R`。
 
 ---
 
@@ -5105,15 +5139,15 @@ PGEqNN 更直接的问题是：
 - sample efficiency；
 - shared vs PG-specific transfer；
 - symmetry-breaking-coordinate gating；
-- current / compatible-parent lightweight \(A_1\)-only branches；
+- current / compatible-parent configurable `a1_only | full_pg` branches；
 - hierarchy-level vs representation-level awareness；
 - low-data / long-tail PG specialization。
 
 ---
 
-## Q6：为什么仍保留 Full PG TP？
+## Q6：为什么同时保留 Full PG TP 与 A1-only？
 
-它不再是主模型，而是检验压缩是否损失关键 non-trivial coupling 的 capacity ablation。
+两者都是必须可训练、可评测的正式实现：`a1_only` 是参数效率优先配置，`full_pg` 是表示完备性优先配置；二者的受控比较检验压缩是否损失关键 non-trivial coupling。
 
 虽然 final equilibrium tensor 一定位于：
 
@@ -5143,9 +5177,9 @@ $$
 
 ---
 
-## Q7：为什么第一阶段不加入 Born Effective Charge？
+## Q7：BEC 为什么需要不同的 pooling/head，却不需要显式输入原子置换？
 
-BEC 是 atom-resolved tensor，不能直接复用当前 strict \(A_1\)-only global branch；它至少需要 node-wise covariant carriers 或完整 PG-equivariant node representation。因此第一阶段主动排除 BEC，避免在 5M active-parameter budget 下同时解决另一类输出对称性问题。未来扩展的接口差别包括：
+BEC 是 atom-resolved tensor，不能复用 dielectric / elastic 的 global pooling 和 fixed-subspace head。第一阶段为它实现 node-wise equivariant head，并显式保留 shared O(3) node carriers：
 
 $$
 \text{BEC: no pooling}
@@ -5159,13 +5193,13 @@ $$
 - periodic image / cross-boundary edge permutation；
 - feature fiber 上的 \(\rho_K(R_g)\) 变换。
 
-在该前提下，Wyckoff-orbit equivariance 和 site-stabilizer constraint 才能由图网络联合等变性推出。该扩展需要独立的表示与参数预算设计，不是当前 global-only 模型的简单 pooling 开关。
+在该前提下，GNN 的通用 permutation-equivariance 与 feature-fiber PG/O(3)-equivariance 自动组合为 \(P_{\pi_g}\otimes\rho_Z(R_g)\) 联合等变性，因此默认 forward 不输入 \(\pi_g\)，也不依赖联合 projector。\(\pi_g\) 只用于 graph/equivariance audit 与非默认 hard-projection control；ASR 不需要 \(\pi_g\)。`a1_only` 和 `full_pg` 都能满足这一约束；二者的差异是中间表示的完备性，而不是 BEC 输出是否合法。
 
 ---
 
 # 17. 开题阶段最小可行实验（MVP）
 
-如果计算资源有限，可以先只做三个数据 setting。
+如果计算资源有限，先做三个 global tensor setting，并增加一个 BEC setting。
 
 ## Dataset
 
@@ -5193,20 +5227,23 @@ $$
 D_{2h}.
 $$
 
+### Atom-resolved case
+
+JARVIS-DFPT BEC：在训练集完成点群样本量审计后，选择一个包含多个非平凡 Wyckoff orbits 且 site stabilizers 可验证的代表性 PG；固定 test split，不按结果反向选择点群。
+
 ---
 
 ## Models
 
-只需要先训练：
+只训练五个固定 architecture branches：
 
-1. O(3)-Base；
-2. O(3)+Projection；
-3. Shared-O3；
-4. Hard-Routing-O3；
-5. Single-PG-Rep；
-6. Parent-Average-Control；
-7. Branch-only；
-8. Hierarchical-A1。
+1. `B+R`；
+2. `B+A+R`；
+3. `B+A+O3E+R`；
+4. `B+PGE+R`；
+5. `B+A+PGE+R`。
+
+分支 4/5 分别运行 `a1_only | full_pg`；所有存在的 O(3) adaptation/expert/readout TP 分别运行 `full_o3 | o2_tp`。MVP 可以先固定其余轴，只对当前研究问题对应的单一轴做配对比较。
 
 ---
 
@@ -5219,6 +5256,7 @@ $$
 - anisotropy-conditioned gain；
 - 10% / 100% labels；
 - symmetry violation；
+- BEC node-permutation--tensor-rotation violation 与 ASR residual；
 - active parameters。
 
 ---
@@ -5228,25 +5266,25 @@ $$
 如果观察到：
 
 $$
-\text{Hierarchical-A1}_{D_{3d}}
+\text{B+A+PGE+R}_{D_{3d}}
 >
-\text{O3}_{D_{3d}},
+\text{B+A+O3E+R}_{D_{3d}},
 $$
 
 同时：
 
 $$
-\text{Hierarchical-A1}_{O_h}
+\text{B+A+PGE+R}_{O_h}
 \approx
-\text{O3}_{O_h},
+\text{B+A+O3E+R}_{O_h},
 $$
 
 并且 low-data 下：
 
 $$
-\text{Hierarchical-A1}
+\text{B+A+PGE+R}
 >
-\text{Branch-only},
+\text{B+PGE+R},
 $$
 
 则核心 research thesis 已得到初步支持。
@@ -5258,19 +5296,17 @@ $$
 | Experiment | 主要比较 | 回答的问题 |
 |---|---|---|
 | Pretraining | scratch vs pretrained | universal pretraining 是否提高 label efficiency？ |
-| Shared adaptation | O3-Base vs Shared-O3 | pretrained features 是否需要 task adaptation？ |
+| Shared adaptation | `B+R` vs `B+A+R` | pretrained features 是否需要 task adaptation？ |
 | Shared adaptation TP backend | `full_o3` vs `o2_tp`（原生规模与参数匹配） | complete local-O(2) TP 在 adaptation 中的精度—效率收益是否独立于参数量？ |
-| Hard PG routing | Shared-O3 vs Hard-Routing-O3 | PG identity 本身是否有信息，并造成多大 boundary jump？ |
-| PG representation | Shared-O3 vs Single-PG-Rep | finite-group representation 是否有额外价值？ |
-| Parent ensemble control | Parent-Average-Control vs Hierarchical-A1 | 收益是否来自物理 gate 而非普通 ensemble？ |
-| Full combination | Hard-Routing-O3 / Single-PG-Rep vs Hierarchical-A1 | hierarchy-level 与 representation-level awareness 是否互补？ |
-| Output constraint | O3+Projection vs Hierarchical-A1 | internal specialization 是否超过后处理？ |
-| Long-tail | Branch-only vs Hierarchical-A1 | shared experts 是否缓解 PG data fragmentation？ |
-| Path continuity | Hard-Routing-O3 vs Parent-Average-Control vs Hierarchical-A1 | 父群极限是否连续？ |
-| Intermediate irreps | strict A1-only vs `full_to_a1` vs Full-PG | non-trivial intermediate irreps 是否值得其额外参数？ |
+| O(3) expert | `B+A+R` vs `B+A+O3E+R` | symmetry-routed O(3) specialization 是否有用？ |
+| PG representation | `B+A+O3E+R` vs `B+A+PGE+R` | 相同 routing 下 finite-group representation 是否有额外价值？ |
+| Adaptation + PG expert | `B+PGE+R` vs `B+A+PGE+R` | shared adaptation 与 PG specialization 是否互补？ |
+| Expert type without adaptation | `B+R` vs `B+PGE+R` | PG expert 是否能直接特化 backbone features？ |
+| Path continuity | 分支 3/4/5 各自的 symmetry-breaking paths | continuous gates 是否满足父群极限？ |
+| Intermediate irreps | `a1_only` vs `full_pg` | non-trivial intermediate irreps 是否值得其额外参数与计算？ |
 | PG-TP parameterization | static radial coefficients vs per-group full MLP vs shared router + low-rank PG head | 动态 path weighting 是否必要，以及共享低秩适配能否兼顾容量、参数量与 rare-PG 泛化？ |
-| Post-fusion O(3) readout | identity vs `full_o3` TP vs `o2_tp`（并做 backend 参数匹配） | 公共空间中的 nonlinear channel/copy mixing 是否有价值，O(2) 实现能否保持完整 O(3) 同时降低成本？ |
-| TP backend placement | adaptation/readout 的 \(2\times2\) `full_o3`/`o2_tp` factorial | O(2) TP 的收益来自哪个位置，二者是否存在交互？ |
+| O(3) readout backend | `full_o3` TP vs `o2_tp`（并做 backend 参数匹配） | O(2) 实现能否保持完整 O(3) 同时降低成本？ |
+| TP backend placement | adaptation/expert/readout 各位置的 `full_o3`/`o2_tp` factorial | O(2) TP 的收益来自哪个位置，三者是否存在交互？ |
 | Backbone training | frozen vs partial vs full | specialization 是否 parameter-efficient？ |
 | Anisotropy | low/med/high anisotropy | PG gain 是否随 anisotropy 增大？ |
 | Harmonic error | \(\ell=0,2,4\) | improvement 来自哪些 angular channels？ |
@@ -5488,9 +5524,9 @@ $$
 3. dielectric 是否要求至少 \(\ell_{\max}=2\)；
 4. elastic 是否要求 backbone / expert 支持 \(\ell_{\max}=4\)；
 5. 是否允许 expert 通过 TP 从低阶 channels 构造 \(\ell=4\)；
-6. `shared_adaptation_tp_backend` 与 `shared_readout_tp_backend` 均开放 `full_o3 | o2_tp`；需要冻结 O(2) restriction、real-weight、\(0e/0o\)、polar/pseudo、reference-axis、edge-reversal 与 gauge conventions；
-7. 第一阶段固定 `output_scope=global`；site-output/BEC 接口留待后续；
-8. PBC graph 在 \((R_g,t_g)\) 下的 site/edge permutation equivariance；BEC acoustic sum rule policy 留待后续扩展；
+6. `shared_adaptation_tp_backend`、`o3_expert_tp_backend` 与 `shared_readout_tp_backend` 均开放 `full_o3 | o2_tp`；需要冻结 O(2) restriction、real-weight、\(0e/0o\)、polar/pseudo、reference-axis、edge-reversal 与 gauge conventions；
+7. `output_scope` 由任务固定：dielectric / elastic 为 `global`，BEC 为 `node`；
+8. PBC graph 在 \((R_g,t_g)\) 下的 site/edge permutation equivariance，以及 BEC 联合 projector 与 acoustic sum rule 的执行/报告顺序；
 9. MP-Dielectric 的数据 release、底层 DFPT task 可访问性及 structure-site alignment；
 10. 32 crystallographic PG 的 irrep convention；
 11. subduction matrix convention；
@@ -5516,7 +5552,7 @@ $$
 31. spglib、pymatgen、MultiPie 与 e3nn/backbone 的版本锁定及 license/citation 记录；
 32. 是否保证 spglib 为唯一 canonicalization source，并完整缓存 `SymmetryRecord`；
 33. MultiPie 数据转换后的 registry checksum、gauge validation 与 checkpoint compatibility；
-34. `graph_backend` 使用 pretrained-backbone cutoff、CrystalNN reproduction 还是 fixed-radius ablation。
+34. 验证四类 backbone 的 graph extraction/reconstruction adapter 均优先复用 checkpoint graph specification，并在缺失时确定性退化到 6 Å cutoff；CrystalNN 只服务于 baseline reproduction。
 
 ---
 
@@ -5575,4 +5611,4 @@ $$
 
 即：
 
-利用大规模 O(3)-equivariant pretraining 学习跨材料、跨点群可迁移的化学与几何知识，再让当前点群与所有物理兼容父群分别运行 natural-parity \(A_1\)-only PG-specialized branch；各分支输出提升回公共 O(3) tensor space，并依据当前结构相对父群对称操作的连续 residuals 进行层级加权平均。第一阶段仅预测 global dielectric/elastic tensors，并将每样本非-backbone active parameters 严格控制在 5M 内。该框架在物理允许的 tensor subspace 中完成预测，同时把父群恢复极限下的结构—表示连续性作为显式架构条件与实验验收指标。
+利用大规模 O(3)-equivariant pretraining 学习跨材料、跨点群可迁移的化学与几何知识，并以 `B+R`、`B+A+R`、`B+A+O3E+R`、`B+PGE+R`、`B+A+PGE+R` 五个固定分支逐步辨析 adaptation、expert routing 与 finite-group representation 的贡献。O(3) TP 统一比较 `full_o3 | o2_tp`；PG expert 统一比较 `a1_only | full_pg`，并让当前点群与所有物理兼容父群依据连续 residuals 做公共 O(3) 空间中的层级融合。第一阶段分别训练 global dielectric、global elastic 与 atom-resolved BEC 模型，不进行跨性质或跨数据集联合训练：前两者使用 global pooling 和 fixed-subspace head，后者使用保留 O(3) carriers 的 node-wise \(0e\oplus1e\oplus2e\) head，并由 PBC graph covariance、GNN permutation equivariance 与 feature-fiber equivariance 内蕴保证 Wyckoff-orbit tensor relation。每个配置的单样本非-backbone active parameters 均严格控制在 5M 内。

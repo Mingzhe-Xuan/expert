@@ -1,5 +1,13 @@
 # Agent progress updates
 
+- 2026-09-11：完成 `GOAL.md` 与 `assets/docs/subgroup_chain.json`：Goal 将完整模型验收冻结为四真实 backbone、五分支/26 合法配置、A1/Full-PG、full-O3/O2、三类性质、四独立训练单元、严格 `<5M`、全部等变/单元测试及 Guqq Slurm 两级 smoke；subgroup asset 保留 32 群、80 cover edges、433 oriented instances 和 222 maximal chains，并由新增测试验证。
+
+- 2026-09-11：冻结 dataset × property 独立训练、官方 split/8:1:1 fallback、backbone graph/6 Å fallback 规则；定义 32 点群单结构 forward/backward 与每训练单元 5 结构 train/test 两级 smoke，并将 unnatural-parity carrier 改为逐 target 审计（仅 BEC 加 `1x1e`）。
+
+- 2026-09-11：在 proposal 中明确 BEC 默认 forward 不输入 \(\pi_g\)、不依赖联合空间群 projector；\(\pi_g\) 仅用于图/等变性审计和非默认 hard-projection control，ASR 作为无需 \(\pi_g\) 的独立物理约束。
+
+- 2026-09-11：修订 `proposal.md` 的正式任务范围：保留 `a1_only | full_pg` 两种 PG hidden 实现；将 JARVIS-DFPT BEC 纳入第一阶段 benchmark；增加 node-wise pooling/head 分流、BEC `1e` input carrier、PBC graph automorphism、联合等变性/可选投影/ASR 约束、32 点群 smoke tests 与参数预算重统计要求。
+
 - 2026-09-11：启动 GRACE、DPA4/SeZM、EquiformerV2 checkpoint 与 JARVIS-DFPT
   BEC 数据准备；建立资源审计和测试记录。
 - 2026-09-11：完成可追溯资源准备单元：新增 backbone/BEC manifests、可恢复并发
@@ -8,3 +16,9 @@
 - 2026-09-11：经用户明确授权，将资源准备提交 `e65c0e0` 推送到
   `origin/main`；随后确认 Guqq SSH 在密钥交换前由服务端关闭，完整 BEC Slurm
   作业尚未提交，并按连续三次失败规则记录网络诊断经验。
+
+- 2026-09-11：将 proposal 顶层架构收敛为五个固定分支：`B+R`、`B+A+R`、`B+A+O3E+R`、`B+PGE+R`、`B+A+PGE+R`；统一 PG expert 的 `a1_only | full_pg` 与 adaptation/O3E/readout 的 `full_o3 | o2_tp` 配置轴，并同步方法图、前向伪代码、参数口径、实验矩阵、phase/MVP 和总结。
+- 2026-09-11：按用户要求复测 Guqq 连接；verbose SSH 与 `ssh-keyscan` 均确认
+  TCP 22 可达但服务端在 SSH banner/key exchange 前主动断开，本地 alias、用户、
+  端口和 identity 配置正确。故障继续定位为服务端 sshd/pre-auth 网络策略问题，
+  `git pull` 和后续 Slurm 操作均未能执行。

@@ -348,10 +348,62 @@ def render_markdown(data: dict) -> str:
     return "\n".join(lines)
 
 
+def build_subgroup_chain_asset(data: dict) -> dict:
+    """Build the versioned runtime/source-of-truth subgroup-chain asset.
+
+    The full oriented subgroup instances and representative operation matrices
+    are retained deliberately: class symbols alone are insufficient to recover
+    an embedding.  This asset is still only a point-group candidate lattice;
+    material-specific parent selection requires a separate Hall-level registry.
+    """
+
+    point_groups = data["point_groups"]
+    return {
+        "schema_version": 1,
+        "metadata": {
+            **data["metadata"],
+            "source_markdown": "docs/ref/crystallographic_point_group_subgroups.md",
+            "source_json": "docs/ref/crystallographic_point_group_subgroups.json",
+            "proposal": "proposal.md",
+            "point_group_count": len(point_groups),
+            "class_cover_edge_count": len(data["class_cover_edges"]),
+            "oriented_subgroup_instance_count": sum(
+                len(record["subgroup_instances"]) for record in point_groups.values()
+            ),
+            "maximal_chain_class_sequence_count": sum(
+                len(record["maximal_chain_class_sequences"])
+                for record in point_groups.values()
+            ),
+            "interpretation_boundary": (
+                "Complete crystallographic point-group candidate lattice only. "
+                "A physical parent DAG additionally requires Hall setting, "
+                "basis/origin and common-cell transforms, translations, "
+                "species-preserving atom correspondence, Wyckoff splitting, "
+                "domain variant, and validation against the material family."
+            ),
+        },
+        "proposal_runtime_policy": {
+            "class_skeleton_roots": ["m-3m", "6/mmm"],
+            "candidate_edge_type": "maximal_subgroup_cover",
+            "candidate_traversal": "current_to_parent_reverse_edges",
+            "max_supergroup_index": 4,
+            "max_parent_depth": 2,
+            "active_set": "current_group_plus_all_physically_compatible_parents",
+            "deduplicate_group_reached_by_multiple_paths": True,
+            "hard_top_k": False,
+            "weighting": "continuous_parent_residual_gates_and_path_stick_breaking",
+            "requires_hall_level_parent_embedding_registry": True,
+        },
+        "point_groups": point_groups,
+        "class_cover_edges": data["class_cover_edges"],
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", type=Path, required=True)
     parser.add_argument("--markdown", type=Path, required=True)
+    parser.add_argument("--chain-json", type=Path)
     args = parser.parse_args()
 
     data = build_lattice()
@@ -359,6 +411,10 @@ def main() -> None:
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     args.json.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     args.markdown.write_text(render_markdown(data), encoding="utf-8")
+    if args.chain_json is not None:
+        args.chain_json.parent.mkdir(parents=True, exist_ok=True)
+        chain_asset = build_subgroup_chain_asset(data)
+        args.chain_json.write_text(json.dumps(chain_asset, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
