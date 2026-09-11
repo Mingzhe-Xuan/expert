@@ -1,5 +1,13 @@
 # Agent lessons
 
+## 2026-09-11 — Determine symmetry fixed-space rank in reference precision
+
+- A point-group Reynolds projector may have forbidden eigenvalues at float32 round-off scale.
+  Applying a tighter rank threshold directly in model precision can promote those residues to
+  basis vectors and silently reintroduce forbidden tensor components.
+- Treat the fixed-space basis as convention metadata: determine its rank and deterministic basis
+  in float64, then cast the completed basis to the model tensor's dtype/device for projection.
+
 ## 2026-09-11 — Preserve determinant when repairing O(3) operations
 
 - A polar/SVD cleanup used for numerical rotation matrices must not always force

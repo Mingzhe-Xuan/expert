@@ -15,3 +15,7 @@ PBC edges. `A1PointGroupExpert` processes only invariant coordinates;
 contain exactly two independent blocks (with an explicit C1 identity bypass). Continuous
 residual gates operate only on Hall-validated, deduplicated active sets before fusion in
 the common O(3) layout.
+
+`PointGroupTensorModel` is the frozen five-branch downstream dispatcher. It consumes a
+real `O3FeatureBatch`, conditionally executes only configured modules, routes only through
+validated Hall DAG nodes, fuses in the shared O(3) layout, and invokes one task readout.

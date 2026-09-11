@@ -1,5 +1,6 @@
 __pycache__/
 .pytest_cache/
+.test-tmp/
 *.py[cod]
 
 # Task-generated resources and evidence do not belong in ordinary Git history.

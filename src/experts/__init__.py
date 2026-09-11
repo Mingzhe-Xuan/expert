@@ -10,6 +10,7 @@ from .modules import (
     active_hall_numbers,
     hierarchical_fusion,
 )
+from .dispatcher import PointGroupTensorModel, default_hidden_layout
 
 __all__ = [
     "A1PointGroupExpert",
@@ -17,7 +18,9 @@ __all__ = [
     "FullPointGroupExpert",
     "O3Adaptation",
     "O3MessageBlock",
+    "PointGroupTensorModel",
     "RoutedO3Expert",
     "active_hall_numbers",
     "hierarchical_fusion",
+    "default_hidden_layout",
 ]

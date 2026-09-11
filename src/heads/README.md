@@ -13,3 +13,8 @@ prediction = TensorPrediction(raw, coefficients, task="bec", scope="node",
 `cartesian_to_irreps` and `irreps_to_cartesian` preserve the frozen repeated-copy
 ordering. `apply_bec_asr` is permutation-independent; `project_bec_joint_symmetry` is an
 explicit optional diagnostic that requires audited site permutations.
+
+`TensorReadout` contains exactly one configured tensor-product backend plus an equivariant
+empty-edge self fallback. Dielectric/elastic pool per crystal and enter the detected PG
+fixed space; BEC remains node-wise and returns raw plus independent ASR output without
+consulting audit permutations.

@@ -126,7 +126,10 @@ def project_to_point_group(
         raise ValueError(f"unsupported target task {task!r}")
     if coefficients.shape[-1] != layout.dimension:
         raise ValueError("coefficient width does not match the target layout")
-    basis = group.invariant_basis(layout, dtype=coefficients.dtype).to(coefficients.device)
+    # Fixed-space rank decisions are convention data, not model precision.  In
+    # float32, the 1e-9 deterministic range threshold can promote round-off
+    # residue to forbidden basis vectors (notably for cubic groups).
+    basis = group.invariant_basis(layout, dtype=torch.float64).to(coefficients)
     return (coefficients @ basis) @ basis.T
 
 

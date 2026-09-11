@@ -1,6 +1,7 @@
 """Task heads, Cartesian transforms, and tensor prediction contracts."""
 
 from .contracts import TARGET_LAYOUTS, TensorPrediction
+from .readout import TensorReadout
 from .transforms import (
     apply_bec_asr,
     cartesian_to_irreps,
@@ -15,6 +16,7 @@ from .transforms import (
 __all__ = [
     "TARGET_LAYOUTS",
     "TensorPrediction",
+    "TensorReadout",
     "apply_bec_asr",
     "cartesian_to_irreps",
     "decanonicalize_cartesian",

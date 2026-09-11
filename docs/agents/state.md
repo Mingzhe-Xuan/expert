@@ -22,15 +22,16 @@ projector 构造 finite-group CG paths；合并套件 75 passed、1 个旧 skip�
 bandlimited Hom paths 的 local-O(2) TP，支持 `mmax=2`/full-m、local O(2) gauge 和
 global improper O(3)。shared adaptation、routed O3E、A1/Full-PG 两 block experts、
 continuous Hall active-set gates 和公共 O(3) fusion 已接通；合并套件 103 passed、
-1 个旧 skip。Goal 尚未具备完成证据。
+1 个旧 skip。五分支 dispatcher 与 dielectric/elastic/BEC 三类 final readout 已接通，
+26 configs 均已完成本地 forward/loss/backward/checkpoint 和 active `<5M` 验证；global
+outputs 在 canonical frame 投影 PG fixed space，BEC 保留 node scope 并独立返回 raw/ASR。
+Goal 尚未具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
-1. 完成 Phase A 数学 registries：点群表示、subduction/inverse、CG/path/copy order
-   并补齐 round-trip/intertwining tests。
-2. 实现 canonicalization 与 Hall-level embedding operation validation。
-3. 实现 Phase B cutoff PBC graph constructor/collation/covariance audit，再进入真实
-   backbone adapters。
+1. 实现四个真实预训练 backbone adapters，并冻结各自真实中间 O(3) layout contract。
+2. 将 backbone adapter 接入统一 dispatcher，补真实 checkpoint 的最小 batch 前向/反传。
+3. 完成真实数据集与 32 点群两级 smoke entrypoints，再在 Guqq 经 Slurm 验证。
 
 ## 变更记录（Phase A 正式实现启动）
 
@@ -43,6 +44,9 @@ continuous Hall active-set gates 和公共 O(3) fusion 已接通；合并套件 
 - 2026-09-11：完成 deterministic Hall canonicalization 和 physical-parent validation；
   保留原 site order、生成 audit permutations，验证 affine closure/species mapping、
   orientation variants 与 DAG connectivity。目标联合 25 passed，完整套件 69 passed。
+- 2026-09-11：完成五分支 dispatcher 与三类 tensor readout；首轮测试发现并修复
+  float32 fixed-space 判秩污染 forbidden components。26 configs 已逐项通过
+  forward/loss/backward/checkpoint/active `<5M`，下一阶段进入四个真实 backbone adapters。
 - 2026-09-11：进入 Full-PG subduction/finite-group CG 实现；方案冻结为逐 O(3)
   provenance copy 的实 commutant decomposition、正交 inverse，以及 Hom-space Reynolds
   intertwiners，避免把 invariant/A1 projector 冒充 Full-PG。
@@ -61,6 +65,12 @@ continuous Hall active-set gates 和公共 O(3) fusion 已接通；合并套件 
 - 2026-09-11：完成 shared adaptation、routed O3E、A1/Full-PG PGE、continuous gate
   与 hierarchical fusion；32 群双 PGE mode、双 TP backend proper/improper、empty
   fallback、两 block 独立和 `<5M` 初审全绿。目标 16 passed，合并 103 passed。
+- 2026-09-11：进入五分支 dispatcher/三 readouts 实现；冻结 26-config conditional
+  module、mixed batches、global PG constraint、node-wise BEC raw+ASR、validated parent
+  routing、loss/backward/checkpoint 和 `<5M` 全矩阵测试。
+- 2026-09-11：退出 dispatcher/readout 阶段：三类输出、父 Hall 校验和 26-config
+  train/checkpoint 矩阵均通过；期间修复 float32 fixed-space 判秩缺陷。下一步实现并
+  验证四个真实预训练 backbone adapters。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

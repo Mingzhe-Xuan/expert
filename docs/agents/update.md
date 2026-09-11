@@ -30,6 +30,13 @@
   独立选择的 TP backend；A1 与 Full-PG experts 各含两个独立 blocks，C1 可显式
   bypass；continuous residual gates 对 Hall active set 去重归一，fusion 回公共 O(3)
   space。目标测试 16 passed，完整本地 103 passed、1 个旧 skip。
+- 2026-09-11：开始五分支 dispatcher 与 dielectric/elastic/BEC final readouts；将对
+  冻结 26 configs 逐项验证 conditional construction、forward/loss/backward、active
+  `<5M` 和 checkpoint，同时覆盖 mixed-size global/node scopes 与 PG constraints。
+- 2026-09-11：完成统一五分支 dispatcher 与三类 final readout；global heads 做
+  per-crystal pooling/PG fixed-space/decanonicalization，BEC 保留逐节点 raw 并独立给出
+  ASR。修复 float32 fixed-space 判秩污染；4 项目标测试覆盖全部 26 configs 的
+  forward/loss/backward/checkpoint 与 `<5M`，下一单元进入真实 backbone adapters。
 
 - 2026-09-11：启动 `GOAL.md` Phase A 正式实现；审计确认仓库尚无 `src/` 包，
   本实现单元将建立规定模块边界、核心 typed contracts、五分支配置校验与冻结的

@@ -1,5 +1,37 @@
 # Test plan and results
 
+## 2026-09-11 — Five-branch dispatcher and three tensor readouts
+
+计划检查：
+
+- 冻结 manifest 的 26 configs 全部可构造，且 `adaptation/o3e/pge` 缺失 placement
+  为 `None`、不实例化空模块；O3E/PGE 互斥，final readout 恰有一个 backend。
+- mixed-size `O3FeatureBatch + PeriodicGraph + SymmetryRecord` 对 dielectric/elastic
+  输出 `[B,3,3]`/`[B,3,3,3,3]`，先 permutation-invariant pooling 再 PG fixed-space。
+- BEC 输出 `[N,3,3]`、保留 node/site order，不 global pooling；默认 forward 不接受
+  `pi_g`/不执行 joint projector，同时返回 raw 与 independent ASR tensor。
+- 五分支按冻结顺序执行 A、O3E 或 A1/Full-PGE、公共 O(3) fusion、恰好一个 readout；
+  active parent 只来自 validated `ParentDAGSpec`，Hall/PG expert 参数去重。
+- 26 configs 的 forward、target coefficient loss、backward、active non-backbone `<5M`
+  与 checkpoint round-trip 全覆盖；mixed batch/empty edge/float32 另测。
+- 三类 final Cartesian outputs 做 proper/improper O(3) 与 PG forbidden-component tests；
+  运行完整 pytest、compile/diff，提交前补录结果。
+
+实际结果：
+
+- 首轮测试捕获 float32 下 PG invariant basis 以 `1e-9` 判秩时将数值残差误收为
+  forbidden basis 的缺陷；现固定以 float64 决定 fixed space 后转换至模型 dtype，
+  未降低约束断言。
+- `$env:PYTHONPATH='.'; uv run pytest tests/test_dispatcher_readout.py -q
+  -p no:cacheprovider --basetemp=.test-tmp/dispatcher`：4 passed；覆盖三 head scope/shape、
+  mixed batch/empty edge、PG fixed space、BEC raw+ASR/no-`pi_g`、proper/improper O(3)、
+  父 Hall fail-closed，以及全部 26 configs 的 forward/loss/backward/checkpoint/`<5M`。
+- `$env:PYTHONPATH='.'; $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; uv run python -m pytest
+  tests assets/model_code/tests -q -p no:cacheprovider --basetemp=.test-tmp/full`：
+  107 passed，1 个既有 opt-in skip，0 failed。
+- `uv run python -m compileall -q src tests/test_dispatcher_readout.py` 与
+  `git diff --check`：通过；后者仅报告 Windows LF→CRLF 提示。
+
 ## 2026-09-11 — Adaptation, O3E, dual-mode PGE, routing and fusion
 
 计划检查：
