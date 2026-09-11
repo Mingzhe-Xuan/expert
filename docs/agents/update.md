@@ -7,6 +7,12 @@
   和四资源 feature/parity/graph metadata；实现严格 resource registry、周期反演双调用
   Reynolds wrapper 与 O(3) interface projector。目标 5 passed，合并 112 passed、1 旧 skip；
   四个真实 checkpoint feature taps 仍是下一实现单元。
+- 2026-09-11：开始真实 MACE-MP medium-0b3 adapter；验收边界为严格 resource/runtime、
+  first-interaction parity layout、MACE graph reuse、mixed-batch node mapping、冻结 backbone
+  与仅 interface projector 可训练。真实 checkpoint 数值测试将通过 Guqq Slurm 执行。
+- 2026-09-11：完成 MACE adapter 候选与 `mace_adapter_smoke.sbatch`；本地目标 7 passed、
+  合并 114 passed、1 旧 skip。Guqq 首条仓库 `git pull` 等待 60 秒后中止，因此真实
+  MACE Slurm 尚未运行；下一步先推送候选，再做有界 pull/环境检查/作业提交。
 
 - 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
   canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整

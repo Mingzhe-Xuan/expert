@@ -77,6 +77,11 @@ Goal 尚未具备完成证据。
 - 2026-09-11：完成 backbone resource/parity/interface 基础层：manifest 现含四项冻结
   metadata 与 MACE 文件 SHA，资源校验 fail closed；SO(3) wrapper 在保留右手 cell 的
   周期反演对上执行两次 extractor 并产生显式 even/odd blocks。真实四 adapter 尚未完成。
+- 2026-09-11：进入真实 MACE adapter 单元；冻结官方 calculator、本地 checkpoint、
+  first-interaction `128x0e+128x1o` tap、实际 MACE edge geometry 与 mixed-batch contract。
+- 2026-09-11：MACE adapter 与 Slurm smoke 候选已完成本地 contract 验证；合并套件
+  114 passed、1 旧 skip。Guqq 仓库 `git pull` 本次 60 秒无响应，真实 checkpoint
+  forward/reflection/frozen-gradient 验收仍待同步后提交 Slurm，未误标完成。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

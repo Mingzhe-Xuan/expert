@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 
 import pytest
 import torch
@@ -11,15 +12,19 @@ from src.backbones import (
     BACKBONE_FAMILIES,
     BackboneResourceRegistry,
     InversionPairedReynolds,
+    MACEBackboneAdapter,
     O3InterfaceProjector,
     SO3FeatureBatch,
     SO3Layout,
     SO3Term,
     invert_periodic_graph,
+    irrep_layout_from_e3nn,
+    require_distribution_version,
 )
 from src.graphs import build_periodic_graph
 from src.irreps import IrrepLayout, IrrepTerm
 from src.symmetry.registry import _layout_irreps
+from src.cli.mace_smoke import FLOAT32_EQUIVARIANCE_TOLERANCE, SMOKE_LAYOUT, _silicon_graph
 from e3nn import o3
 
 
@@ -159,3 +164,37 @@ def test_o3_interface_projection_preserves_mapping_and_backpropagates() -> None:
     output.node_features.square().sum().backward()
     assert all(parameter.grad is not None and torch.isfinite(parameter.grad).all() for parameter in projector.parameters())
     assert all(parameter.grad is None for parameter in wrapper.extractor.parameters())
+
+
+def test_mace_runtime_layout_and_resource_gate_precede_model_loading() -> None:
+    require_distribution_version("mace-torch", "0.3.16")
+    with pytest.raises(RuntimeError, match="incompatible"):
+        require_distribution_version("mace-torch", "0.0.invalid")
+    layout = irrep_layout_from_e3nn(o3.Irreps("128x0e + 128x1o"), "tap")
+    assert layout.dimension == 512
+    assert tuple((term.multiplicity, term.degree, term.parity) for term in layout.terms) == (
+        (128, 0, "e"),
+        (128, 1, "o"),
+    )
+
+    unavailable = replace(
+        BackboneResourceRegistry()["mace"], status="blocked_for_test"
+    )
+
+    class UnavailableRegistry:
+        def __getitem__(self, family):
+            assert family == "mace"
+            return unavailable
+
+    with pytest.raises(FileNotFoundError, match="unavailable"):
+        MACEBackboneAdapter(
+            IrrepLayout((IrrepTerm(1, 0, "e", "target"),)),
+            registry=UnavailableRegistry(),
+        )
+
+
+def test_mace_slurm_smoke_contract_is_small_and_predeclares_tolerance() -> None:
+    graph = _silicon_graph("cpu")
+    assert graph.num_nodes == 2 and graph.num_edges > 0
+    assert graph.cutoff == 6.0 and SMOKE_LAYOUT.dimension == 10
+    assert FLOAT32_EQUIVARIANCE_TOLERANCE == 3.0e-4

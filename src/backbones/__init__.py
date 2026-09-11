@@ -8,6 +8,7 @@ from .parity import (
     SO3Term,
     invert_periodic_graph,
 )
+from .mace import MACEBackboneAdapter, irrep_layout_from_e3nn, require_distribution_version
 from .resources import BACKBONE_FAMILIES, BackboneResource, BackboneResourceRegistry
 
 __all__ = [
@@ -15,9 +16,12 @@ __all__ = [
     "BackboneResource",
     "BackboneResourceRegistry",
     "InversionPairedReynolds",
+    "MACEBackboneAdapter",
     "O3InterfaceProjector",
     "SO3FeatureBatch",
     "SO3Layout",
     "SO3Term",
     "invert_periodic_graph",
+    "irrep_layout_from_e3nn",
+    "require_distribution_version",
 ]

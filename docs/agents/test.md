@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-11 — Real MACE-MP medium-0b3 adapter
+
+计划检查：
+
+- 构造时验证 manifest、79,472,952-byte checkpoint SHA-256 与 `mace-torch==0.3.16`；
+  使用官方 `MACECalculator` 加载本地路径，不隐式下载或回退随机权重。
+- 对真实 ASE/PBC structure 调用 MACE graph/model，在 energy scalar readout 前截取
+  `products[0].linear.irreps_out == 128x0e + 128x1o` 的 first-interaction node state，
+  不接受 tap layout 或 feature width 漂移。
+- 输出统一 `O3FeatureBatch`，保留 mixed batch node order，并登记 MACE 实际 edge index、
+  Cartesian shifts/vectors/distances、cell/positions/species；interface projector 进入目标 layout。
+- checkpoint 参数全部 frozen 且 `train()` 后仍 eval/no-grad；projector loss backward 有限且
+  checkpoint gradients 恒为零。真实 identity/proper/improper/reflection 测试在 Guqq Slurm
+  使用同一 checkpoint 执行，本地仅做不加载大模型的 adapter API/fail-closed 单测。
+
+阶段性实际结果（真实 Slurm 尚待执行）：
+
+- `uv run python -m pytest tests/test_backbone_contracts.py -q`：7 passed；新增覆盖精确
+  MACE runtime、`128x0e+128x1o` layout 转换、resource gate 先于模型加载，以及固定
+  2-node/10-component/`3e-4` tolerance 的 Slurm smoke contract。
+- `uv run python -m pytest tests assets/model_code/tests -q`：114 passed，1 个既有 opt-in
+  skip，0 failed。真实 checkpoint 数值 smoke 尚未执行，不能据此结束 MACE 验收。
+
+
+
 ## 2026-09-11 — Four real pretrained backbone adapters
 
 计划检查：

@@ -17,3 +17,8 @@ on absent, gated, size-mismatched, or checksum-mismatched checkpoints.
 and its periodic inversion with the same checkpoint, and emits explicit even/odd O(3)
 blocks. `O3InterfaceProjector` is the trainable equivariant map into a downstream layout;
 its parameters count as non-backbone parameters.
+
+`MACEBackboneAdapter` loads only the manifest-pinned local MACE-MP-0b3 medium file,
+requires the frozen runtime version, and taps the first interaction state before the
+energy readout. It converts MACE sender/receiver edges to the downstream target-to-source
+vector convention without rebuilding or truncating the checkpoint graph.

@@ -72,3 +72,27 @@
   The first Guqq remote operation was `git pull`; it reached the remote shell
   but returned `not a git repository` because the login directory is not the
   project checkout. A subsequent no-op `true` command exited with status 0.
+
+## 2026-09-11 — Locate checkout and prepare real MACE Slurm smoke
+
+- Intended connection: `ssh Guqq` through the validated `vlab` jump after local commit
+  `b108a7f`; first remote operation remains `git pull`, followed by lightweight checkout,
+  environment and Slurm status discovery only.
+- Permission check: no model loading, inference, compilation or tests on the login node.
+  Once the repository and venv are known, the real MACE checkpoint feature test will be
+  submitted through Slurm; resource/checkpoint transfer may use `scp` if required.
+- Result: connection succeeded through `vlab`; the first home-directory `git pull` failed as
+  expected because `/home/xmz` is not a checkout. Lightweight discovery located the repository
+  at `/home/xmz/expert`; Slurm reports the `compute` partition.
+
+## 2026-09-11 — Inspect Guqq project environment for MACE smoke
+
+- Intended connection: first run `git pull` inside `/home/xmz/expert`, then inspect only Git
+  status, existing virtual environments, Python/package metadata, checkpoint paths and Slurm
+  status needed to construct the real MACE job.
+- Permission check: all actions are lightweight login-node management; no import-heavy model
+  load, inference, test suite, compilation or batch processing will run outside Slurm.
+- Result: SSH reached Guqq, but the required first command `git pull` inside `/home/xmz/expert`
+  produced no response for 60 seconds and was interrupted. No later inspection command ran and
+  no login-node compute was performed. Retry will use a bounded Git timeout after the candidate
+  adapter is pushed.
