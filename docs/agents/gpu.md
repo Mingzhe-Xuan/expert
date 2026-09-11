@@ -183,3 +183,19 @@
 - Permission check: path and metadata inspection plus environment discovery are lightweight login-
   node management. No dependency installation, checksum scan, Python import, test, extraction,
   checkpoint load, or model execution will occur; compute remains reserved for Slurm.
+- Result: pull succeeded to `f649033`. Ten existing venvs were found, including
+  `/home/xmz/symmetry-expert/.venv`; none is inside this checkout. The checkout contains manifests
+  but no ignored raw datasets/checkpoints. A bounded metadata search found unrelated GMTNet/high-order
+  model files but none of the four exact manifest filenames, and confirmed several very large cached
+  neighbor-list artifacts elsewhere on the same nearly-full filesystem. No files were changed and no
+  login-node compute ran.
+
+## 2026-09-12 — Match exact resources and inspect candidate venv metadata
+
+- Intended connection: first pull in `/home/xmz/expert`, inspect the candidate venv's `pyvenv.cfg`
+  and `pip show` metadata, and search only by the exact manifest-pinned dataset/checkpoint filenames
+  under `/home/xmz`. Also inspect the existing ignored BEC raw directory and Slurm/accounting command
+  availability needed to form batch submissions.
+- Permission check: reading small text metadata, package metadata, paths and file sizes is authorized
+  lightweight management. No hashing of large files, model import/restore, preprocessing, tests,
+  training, inference, evaluation, download, or compilation will run on the login node.
