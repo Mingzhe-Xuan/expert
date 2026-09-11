@@ -1,5 +1,8 @@
 # Agent progress updates
 
+- 2026-09-12：DPA4 安装三次均在强制 pull 阶段无输出终止，pip 未执行；按三次失败规则
+  暂停本轮 Guqq 重连。MACE/GRACE 已验证，DPA4/Equiformer 与 Slurm evidence 仍待完成。
+
 - 2026-09-12：完成 `requirements/guqq/grace.txt`：95 个唯一 exact pins 与 8 个关键版本
   断言；targeted 5、完整 149 tests 全绿，compile/diff 通过，准备 DPA4 安装。
 

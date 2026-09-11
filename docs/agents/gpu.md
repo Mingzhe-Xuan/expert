@@ -388,3 +388,6 @@
   pull failure.
 - Permission check: unchanged isolated package-management and metadata-check scope; no compilation,
   project/model execution, checkpoint loading, data processing, tests, or GPU workload.
+- Result: the final attempt again returned only the Vlab banner and no pull result before the
+  120-second bound ended. No pip command ran and the DPA4 venv remains unchanged. Further blind
+  connections are paused for this turn under the recorded outbound-network lesson.
