@@ -1,5 +1,8 @@
 # Agent progress updates
 
+- 2026-09-12：MACE/core 首次依赖解析在安装前因 `python-hostlist` 无 wheel 而安全停止；
+  同时识别 PyPI Torch 2.11 默认 CUDA 13 偏离冻结 CUDA 12.8，改用官方 cu128 wheel 索引。
+
 - 2026-09-12：Guqq 已按规定先 pull；MACE/core、GRACE、DPA4、EquiformerV2 四套独立
   Python 3.10.12 venv 均已创建并确认不继承 system site packages，进入逐套安装阶段。
 

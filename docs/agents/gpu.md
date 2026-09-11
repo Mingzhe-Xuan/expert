@@ -294,3 +294,17 @@
   `pip show`, and `pip freeze` so the remote command contains no nested executable code.
 - Permission check: same isolated venv package-management scope; no source changes, builds, project
   imports/tests, model loading, data work, training, inference, or evaluation will run.
+- Result: the server pulled to `c76cc01` and reported 52 GiB free. Packaging tools upgraded to
+  pip 26.2.1, setuptools 84.0.0, and wheel 0.48.0, but the main resolver stopped before installation
+  because `python-hostlist` has no binary distribution. Metadata also showed default PyPI Torch 2.11
+  selecting CUDA 13 packages, inconsistent with the frozen CUDA 12.8 DPA4 stack. No scientific or
+  backbone package was installed, and no compilation or project workload ran.
+
+## 2026-09-12 — Install MACE/core with official CUDA 12.8 Torch wheel
+
+- Intended connection: pull first; install Torch 2.11 from the official PyTorch CUDA 12.8 wheel
+  index, install the pure-Python `python-hostlist` packaging exception, then resolve the remaining
+  pinned MACE/core packages from wheels and report `pip check/show/freeze` plus disk capacity.
+- Permission check: isolated dependency installation and metadata diagnostics only. The only
+  non-wheel exception is a pure-Python packaging artifact; no native compilation, project import,
+  model loading, data processing, training, inference, evaluation, or tests will run.
