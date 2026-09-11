@@ -251,3 +251,12 @@
 - Result: the connection succeeded. The mandatory first remote action pulled the worktree from
   `1d9396d` to `742cdfb`; `/home/xmz/expert-envs/acceptance-py310` exists as an isolated environment
   with Python 3.10.12 and pip 22.0.2. No package was installed and no compute workload ran.
+
+## 2026-09-12 — Create remaining per-backbone Guqq venvs
+
+- Intended connection: pull `6b02c34` first, verify each recorded environment path, and create only
+  the three absent GRACE, DPA4, and EquiformerV2 Python 3.10 venvs. Print path, Python, pip, and
+  `pyvenv.cfg` isolation metadata for all four environments.
+- Permission check: idempotent isolated-environment creation and inspection are allowed lightweight
+  login-node management. This connection will not install packages, import project/model code, run
+  tests or compilation, process data, submit jobs, or execute training/inference/evaluation.
