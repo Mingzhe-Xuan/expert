@@ -260,3 +260,13 @@
 - Permission check: idempotent isolated-environment creation and inspection are allowed lightweight
   login-node management. This connection will not install packages, import project/model code, run
   tests or compilation, process data, submit jobs, or execute training/inference/evaluation.
+- Result: SSH reached Guqq, but Bash rejected an unquoted parenthesized `grep -E` expression while
+  parsing the command. Because the complete line failed parsing before execution, neither the pull
+  nor any environment creation or inspection ran; no remote state changed.
+
+## 2026-09-12 — Quote-safe retry of per-backbone venv creation
+
+- Intended connection: pull first, then repeat the same idempotent four-path check/create operation
+  using only quote-safe commands and print each complete `pyvenv.cfg` instead of a regular expression.
+- Permission check: this remains lightweight isolated-environment management only. No package install,
+  project/model import, test, compilation, data processing, or compute workload will run.
