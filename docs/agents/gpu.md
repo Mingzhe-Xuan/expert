@@ -367,3 +367,14 @@
 - Permission check: dependency installation and lightweight metadata checks only; native packages
   must come from wheels. No project/model execution, checkpoint load, compilation, data processing,
   training, inference, evaluation, or tests will run on the login node.
+- Result: the client received only the Vlab banner and no pull or pip output. There is no evidence
+  that the remote command ran, so the DPA4 environment is treated as unchanged. A trailing diagnostic
+  path also omitted the `4` in `dpa4`; it will be corrected before retry.
+
+## 2026-09-12 — Corrected DPA4 environment installation retry
+
+- Intended connection: pull first, use `/home/xmz/expert-envs/dpa4-py310` consistently, install
+  Torch 2.11.0+cu128 followed by `deepmd-kit[torch]==3.2.0` and the pinned scientific/test stack,
+  then run `pip check`, exact package listing, freeze fingerprint, and disk-capacity checks.
+- Permission check: unchanged isolated dependency-installation scope using wheels only; no source
+  edits, compilation, project/model execution, checkpoint loading, data work, tests, or GPU workload.
