@@ -8,8 +8,8 @@
 MACE/core 已完成 CUDA 12.8 精确依赖安装并通过 `pip check`。GRACE 安装连续三次被 Guqq
 四套隔离 runtime 均已在 Guqq 完成精确安装并通过 `pip check`；Equiformer 使用 scoped
 HTTP/1.1 pull 恢复网络，并修复 wheel-only resolver 的旧 Hydra/OmegaConf 回退。四套 runtime
-lock 已固化；现进入三份 benchmark 数据与 MACE/GRACE/DPA4 资源的校验上传。Equiformer
-gated checkpoint 与全部 Slurm 验收仍未完成。
+lock 已固化。资源同步连续三次因跳板/Guqq 出站网络中断，已按 `lessons.md` 暂停盲连；
+本地 10-file contract 完整。Equiformer gated checkpoint 与全部 Slurm 验收仍未完成。
 
 ## 并行 Goal 变更记录（Guqq per-backbone environments）
 
@@ -47,6 +47,9 @@ gated checkpoint 与全部 Slurm 验收仍未完成。
 - 2026-09-12：首个 tar stream 在 pull 成功后约 21 秒被跳板重置；不采信任何半成品。
   调整为先 pull 的 multiplex transport 加逐文件原子 scp；未被 manifest 引用的 GRACE
   `gmm_artifacts.npz` 不属于 loader contract，已从 11-file 初稿范围剔除。
+- 2026-09-12：资源同步第二、三次均未通过 mandatory pull，分别为 GnuTLS `-110` 与
+  GitHub 443 超时 133932 ms；已查阅 `lessons.md` 的出站网络经验并暂停本阶段重试。
+  三次均未形成可验收上传，下一步保留原子复制方案，等待外部网络状态变化。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

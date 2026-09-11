@@ -14,6 +14,10 @@
 调整说明：首个整包 tar stream 在 pull 后被跳板重置；改用一次先 pull 的 multiplex transport
 逐文件原子复制。额外 `gmm_artifacts.npz` 未被 manifest 或 adapter loader contract 引用，故不上传。
 
+实际结果：未通过，且未降低验收标准。第一次在 pull 成功后传输被重置；第二次 mandatory
+HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 ms 后超时。
+三次均未完成远端 10-file size/SHA-256 验证，因此不将任何可能的半文件计为已同步。
+
 ## 2026-09-12 — Reproducible Guqq EquiformerV2 environment lock
 
 计划检查：

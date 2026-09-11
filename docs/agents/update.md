@@ -3,6 +3,8 @@
 - 2026-09-12：开始 Guqq 资源同步单元；已复核三份 benchmark 数据和三套非门控骨干的
   10 个 contract 文件。首个 tar stream 在成功 pull 后被跳板重置；改为先 pull 的 multiplex
   transport 加逐文件原子 scp，且剔除未进入 GRACE loader contract 的额外 GMM artifact。
+- 2026-09-12：资源同步后两次 pull 分别以 GnuTLS `-110` 和 GitHub 443 超时失败；连续
+  三次未形成完整上传，已查阅 `lessons.md` 并暂停盲连。保留已验证本地资源和原子复制方案。
 
 - 2026-09-12：用 scoped HTTP/1.1 恢复 Guqq pull，拦截 wheel-only 导致的旧 Hydra 回退；
   完成 Equiformer venv（fairchem-core 1.10.0、Torch 2.4.1+cu121、e3nn 0.5.9），

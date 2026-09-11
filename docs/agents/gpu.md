@@ -17,6 +17,9 @@
 - Next connection purpose: make one spaced retry of the identical pull-first multiplex setup.
   If this third resource-sync attempt also fails, stop network retries and apply the documented
   three-failure rule; no login-node computation is authorized.
+- Third-attempt result: Guqq was reachable, but the mandatory scoped pull timed out connecting
+  to `github.com:443` after 133932 ms; `MASTER_READY` was never reached and no copy started.
+  Resource synchronization is paused under the three-failure rule.
 
 ## 2026-09-11 — Sync Phase A checkpoint and locate checkout
 
