@@ -283,3 +283,14 @@
 - Permission check: package installation and short environment diagnostics are allowed lightweight
   login-node operations. Binary wheels will be required where applicable; no project tests,
   compilation, data processing, model loading, training, inference, evaluation, or Slurm job will run.
+- Result: SSH reached Guqq, but PowerShell stripped the nested `python -c` quoting and Bash rejected
+  the resulting command during parse. The full command therefore did not execute: no pull, disk
+  check, installation, or environment mutation occurred.
+
+## 2026-09-12 — Quote-free MACE/core installation retry
+
+- Intended connection: pull first, check filesystem capacity, install the same exact binary-wheel
+  package set, then verify dependency consistency and versions exclusively with `pip check`,
+  `pip show`, and `pip freeze` so the remote command contains no nested executable code.
+- Permission check: same isolated venv package-management scope; no source changes, builds, project
+  imports/tests, model loading, data work, training, inference, or evaluation will run.
