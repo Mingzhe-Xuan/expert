@@ -1,5 +1,14 @@
 # Agent lessons
 
+## 2026-09-11 — Preserve determinant when repairing O(3) operations
+
+- A polar/SVD cleanup used for numerical rotation matrices must not always force
+  determinant `+1`. Doing so is valid for an oriented canonical frame, but corrupts an
+  O(3) point group by mapping reflections/inversion into proper rotations.
+- Keep two explicit policies: canonical frame repair may request `force_proper=True`;
+  symmetry-operation repair must preserve the determinant sign of its input. A group-order
+  assertion (e.g. `m-3m` has 48 unique operations) catches this error reliably.
+
 ## 2026-09-11 — e3nn 0.5 with PyTorch 2.6+ and float64 tensor transforms
 
 - PyTorch 2.6+ defaults `torch.load` to `weights_only=True`; e3nn 0.5 packaged Wigner

@@ -1,5 +1,16 @@
 # Agent progress updates
 
+- 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
+  canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整
+  `(W,t)` operations 与 species-preserving audit permutations。
+- 2026-09-11：canonicalization 已通过 6 项目标测试；测试曾捕获 improper 群操作
+  被误强制为 det=+1 的错误，修复后 `m-3m` 保留完整 48 操作。随后开始 Hall-level
+  physical parent embedding 的 affine group、species mapping、checksum 与 DAG 验证。
+- 2026-09-11：完成 explicit-Hall spglib canonicalization 与严格 ParentEmbedding/DAG
+  validation：frame/site/tensor round-trip、proper-input rotation covariance、完整
+  `(W,t)` species-preserving permutations、affine group、Wyckoff split mapping、domain
+  variants/checksum/cycle/connectivity 均有测试；完整本地结果 69 passed、1 个旧 skip。
+
 - 2026-09-11：启动 `GOAL.md` Phase A 正式实现；审计确认仓库尚无 `src/` 包，
   本实现单元将建立规定模块边界、核心 typed contracts、五分支配置校验与冻结的
   26-config manifest。测试范围已先写入 `docs/agents/test.md`。

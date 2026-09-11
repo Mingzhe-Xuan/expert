@@ -13,7 +13,10 @@ mixed-size collation 和 device/dtype transfer。合并本地套件 45 passed、
 opt-in skip。四个独立训练单元现已有合法 pairing、group-safe seeded split 和
 train-only copy-aware RMS/variance normalizer contract；训练层已增加逐 copy loss/raw
 metrics、optimizer update 和 metadata-first atomic checkpoint round-trip。合并本地
-套件 59 passed、1 个旧原型 opt-in skip；Goal 尚未具备完成证据。
+套件 59 passed、1 个旧原型 opt-in skip。现已加入显式 Hall-setting spglib
+canonicalization、site-order-preserving frame、完整 operation permutations，以及
+affine/species/checksum/DAG parent validation；合并套件 69 passed、1 个旧 skip。
+Goal 尚未具备完成证据。
 
 ## 当前计划（Phase A 正式实现启动）
 
@@ -24,6 +27,16 @@ metrics、optimizer update 和 metadata-first atomic checkpoint round-trip。合
    backbone adapters。
 
 ## 变更记录（Phase A 正式实现启动）
+
+- 2026-09-11：恢复被中断的续跑；工作树仍停在 clean commit `8c65da9`，无半成品
+  修改或本轮残留进程。进入 deterministic spglib canonicalization 单元，先登记
+  Hall setting、frame/site round-trip 与完整 operation-permutation 测试。
+- 2026-09-11：canonicalization 目标测试发现 improper operations 被正交化为 proper
+  的 determinant 错误，已在不放宽断言的前提下修复，6/6 通过。继续进入 Hall-level
+  physical parent embedding validation，并先登记 affine closure/species/DAG 测试。
+- 2026-09-11：完成 deterministic Hall canonicalization 和 physical-parent validation；
+  保留原 site order、生成 audit permutations，验证 affine closure/species mapping、
+  orientation variants 与 DAG connectivity。目标联合 25 passed，完整套件 69 passed。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

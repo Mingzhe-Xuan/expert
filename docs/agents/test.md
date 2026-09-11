@@ -1,5 +1,53 @@
 # Test plan and results
 
+## 2026-09-11 — Hall-level physical parent embedding validation
+
+计划检查：
+
+- `ParentEmbeddingSpec` 强制非空 parent/child settings、可逆 basis/supercell transforms、
+  完整 affine `(W,t)` operation group 的 identity/uniqueness/closure/inverse。
+- child→parent atom correspondence 覆盖全部 child sites、索引有效并逐 site 保持
+  species；允许 Wyckoff splitting 的多 child→单 parent，不误要求 bijection。
+- checksum 覆盖 Hall/settings/transforms/operations/species/correspondence/Wyckoff/domain
+  全字段，任何篡改 fail closed。
+- `ParentDAGSpec` 允许同一 Hall edge 的不同 orientation variants，但拒绝完全重复
+  embedding、cycle、断开的 current Hall 与未验证 edge。
+- 运行目标 pytest、完整本地 pytest、compile 和 diff 检查，提交前补录结果。
+
+实际结果：
+
+- 与 canonicalization/既有 Phase A contracts 联合执行：
+  `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_canonicalization.py
+  tests/test_parent_embeddings.py tests/test_phase_a_contracts.py -q`：25 passed。
+- affine identity/unique/inverse/closure、可逆 transforms、species-preserving 多对一
+  mapping、checksum tamper、orientation variants、duplicate/cycle/disconnected DAG
+  均有直接通过/拒绝断言。
+
+## 2026-09-11 — Deterministic spglib canonicalization
+
+计划检查：
+
+- 使用 spglib 2.6.0 默认最小 Hall setting 检测后，以检测到的 Hall number 再次显式
+  查询并冻结 setting；重复调用和 atom-order permutation 得到相同 SG/PG/Hall 元数据。
+- `std_rotation_matrix` 经正交审计后作为 input→canonical active rotation；positions、
+  cell 与 rank-2/rank-4 tensor 的 canonical→input round-trip 在 float64 tolerance 内。
+- 保留原始 site order；从完整 `(W,t)` operations 生成 species-preserving audit-only
+  permutations，并验证每项为 bijection 及周期坐标映射闭合。
+- fractional operations 转换到 canonical Cartesian frame 后正交、与 registry PG order
+  一致；无效 cell、spglib failure 或不闭合 site mapping fail closed。
+- 运行目标 pytest、完整本地 pytest、compile 和 diff 检查，提交前补录结果。
+
+实际结果：
+
+- 首轮目标测试捕获 operation polar repair 将 improper matrices 强制为 det=+1，导致
+  `m-3m` 从 48 个操作坍缩成 24 个；现已仅对 canonical frame 强制 proper，群操作
+  保留原 determinant，原断言随后 6/6 通过。
+- 与 parent/contracts 合并目标测试 25 passed；完整
+  `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  69 passed，0 failed，1 个既有 opt-in skip。
+- `python -m compileall -q src tests/test_canonicalization.py
+  tests/test_parent_embeddings.py` 与 `git diff --check`：通过；后者仅有 LF→CRLF 提示。
+
 ## 2026-09-11 — Copy-aware loss, metrics, and checkpoint round-trip
 
 计划检查：
