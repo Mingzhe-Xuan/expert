@@ -1,5 +1,8 @@
 # Agent progress updates
 
+- 2026-09-12：Equiformer runtime 三次尝试均被强制 pull 的出站网络故障拦截，pip 未执行；
+  本轮停止盲连。前三套环境及 locks 已验证，最后 runtime 与 Slurm evidence 尚待完成。
+
 - 2026-09-12：完成 `requirements/guqq/dpa4.txt`：80 个唯一 exact pins 与 7 个关键版本
   断言；targeted 7、完整 151 tests 全绿，compile/diff 通过，准备 Equiformer runtime。
 

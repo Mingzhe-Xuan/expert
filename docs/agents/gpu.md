@@ -432,3 +432,5 @@
   installation only on success; otherwise stop this network path for the turn.
 - Permission check: unchanged isolated package-management scope, with no compilation, checkpoint
   access, project/model execution, data processing, tests, or GPU workload.
+- Result: the third connection again returned no mandatory-pull result within 120 seconds and ended
+  before pip. The EquiformerV2 venv remains unchanged; blind retries are paused for this turn.
