@@ -130,3 +130,19 @@
 - Result: the client received only the vlab jump-host welcome line and then exited with status 1.
   No Guqq shell output was received, so there is no evidence that the required `git pull` or any
   later inspection command executed. No login-node compute ran; another blind retry is deferred.
+
+## 2026-09-12 — Sync end-to-end runner and inspect acceptance prerequisites
+
+- Intended connection: enter `/home/xmz/expert` through the configured jump host and execute
+  `timeout 30s git pull` as the first substantive remote operation, synchronizing commit
+  `0eb1d89` before any inspection.
+- Authorized purpose after the pull: inspect HEAD, Slurm availability, existing project virtual
+  environments, checkpoint/data presence, and filesystem capacity needed for the three acceptance
+  suites. These are lightweight login-node management checks only.
+- Permission check: no checkpoint loading, inference, tests, compilation, extraction, or batch
+  processing will run on the login node. Any such work will be submitted through `sbatch` after a
+  separate recorded submission step.
+- Result: the safely quoted bounded SSH call returned only `Welcome to Vlab` and completed without
+  any Guqq shell output. Consequently there is no evidence that the required first `git pull`, HEAD,
+  `sinfo`, or disk check executed. No remote compute ran; the repeated jump-host-to-Guqq failure
+  remains external while local fixture/runner implementation continues.
