@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 from ..data import TrainingUnit, load_structure_candidates
 from ..evaluation import select_point_group_fixtures, write_point_group_fixture_manifest
+from .reporting import run_recorded_case
 
 
 SOURCE_UNITS = (
@@ -35,8 +35,15 @@ def build(output: Path) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build 32 real-equilibrium PG fixtures")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--summary", type=Path, required=True)
+    parser.add_argument("--junit", type=Path, required=True)
     arguments = parser.parse_args()
-    print(json.dumps(build(arguments.output), indent=2, sort_keys=True))
+    run_recorded_case(
+        lambda: build(arguments.output),
+        output=arguments.summary,
+        junit=arguments.junit,
+        suite_name="build_point_group_fixtures",
+    )
 
 
 if __name__ == "__main__":

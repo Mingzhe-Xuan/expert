@@ -22,10 +22,15 @@ runs one entry from the frozen 20-run real-data coverage schedule. On Guqq it is
 only through `slurm/smoke_real_subsets.sbatch` and records checkpoint, metrics, Git commit,
 runtime, CUDA device, and Slurm identifiers.
 
-`python -m src.cli.build_point_group_fixtures --output results/point-groups/...json`
+`python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.
 It is batch data processing and must run through `slurm/build_point_group_fixtures.sbatch`
 on Guqq, never directly on the login node.
+
+`python -m src.cli.prepare_bec_job ... --summary ... --junit ...` owns the resumable full
+JARVIS-DFPT preparation plus final validation as one auditable job. It rejects extraction errors,
+invalid records, duplicates, and any record count short of the official index while preserving
+the gathered counts in its failure summary.
 
 `slurm/smoke_32_point_groups.sbatch` runs the frozen 58-row matrix: 32 mandatory
 per-group PGE rows plus the exhaustive 26 architecture rows. Each row uses a real

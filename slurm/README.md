@@ -16,6 +16,10 @@ The four standalone real-checkpoint adapter launchers follow the same evidence c
 Git revision, `pip freeze`, JSON execution metadata, JUnit, and scheduler-captured stdout/stderr.
 Their CLI wrappers persist failure artifacts before returning a nonzero exit code.
 
+The required 32-PG fixture builder and JARVIS-DFPT preparation jobs also emit job-level JSON and
+JUnit through the same wrapper, in addition to Git and environment fingerprints. The BEC job only
+passes when validation is clean and the extracted record count equals the official index count.
+
 Both mixed-backbone arrays use `select_backbone_venv.sh`. Their frozen schedules map array
 index modulo four to MACE, GRACE, DPA4, and EquiformerV2 respectively. The full core test suite,
 fixture builder, and BEC preparation use the MACE/core environment; standalone adapter jobs use

@@ -57,6 +57,11 @@ fingerprint contract 已完成并通过全量测试；Equiformer gated checkpoin
 - 2026-09-12：standalone adapter evidence contract 完成；成功/失败均持久化 JSON/JUnit，
   四个 sbatch 固化 Git/env artifacts，DPA4 symbol regression 修复。Targeted 17、完整 157 tests
   全绿，compile、四个 `bash -n` 与 diff checks 通过。下一步等待 Guqq 网络恢复后上传资源。
+- 2026-09-12：继续 DoD 审计，开始补齐 32-PG fixture builder 与完整 BEC preparation 两个
+  required data jobs 的 Git/env/summary/JUnit/Slurm-ID 证据 contract；先抽象无设备单 case runner。
+- 2026-09-12：两个 required data jobs 的证据 contract 完成；BEC 当前尝试 error log 可恢复，
+  全索引 record-count fail-closed。Targeted 27、完整 161 tests 全绿，scoped compile、两个
+  `bash -n` 与 diff checks 通过。资源与 Guqq Slurm 实跑仍等待网络恢复。
 
 ## 并行 Goal 状态（material-oriented target projection）
 

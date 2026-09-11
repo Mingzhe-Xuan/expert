@@ -13,14 +13,14 @@ cd "${SLURM_SUBMIT_DIR}"
 source "${EXPERT_MACE_VENV}/bin/activate"
 mkdir -p data/raw/jarvis_dfpt/archives data/processed
 
-python data/prepare_jarvis_bec.py \
+git rev-parse HEAD > "data/processed/jarvis-dfpt-bec-git-${SLURM_JOB_ID}.txt"
+python -m pip freeze > "data/processed/jarvis-dfpt-bec-environment-${SLURM_JOB_ID}.txt"
+python -m src.cli.prepare_bec_job \
   --index-zip data/raw/jarvis_dfpt/raw_file_index.zip \
-  --output data/processed/jarvis_dfpt_bec.jsonl \
+  --dataset-output data/processed/jarvis_dfpt_bec.jsonl \
   --archive-dir data/raw/jarvis_dfpt/archives \
   --errors data/processed/jarvis_dfpt_bec_errors.jsonl \
-  --workers "${SLURM_CPUS_PER_TASK}"
-
-python data/summarize_jarvis_bec.py \
-  data/processed/jarvis_dfpt_bec.jsonl \
-  --errors data/processed/jarvis_dfpt_bec_errors.jsonl \
-  --output data/processed/jarvis_dfpt_bec_summary.json
+  --dataset-summary data/processed/jarvis_dfpt_bec_summary.json \
+  --workers "${SLURM_CPUS_PER_TASK}" \
+  --summary "data/processed/jarvis-dfpt-bec-job-${SLURM_JOB_ID}.json" \
+  --junit "data/processed/jarvis-dfpt-bec-job-${SLURM_JOB_ID}.xml"

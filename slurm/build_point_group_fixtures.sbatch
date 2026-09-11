@@ -14,5 +14,9 @@ set -euo pipefail
 : "${EXPERT_MACE_VENV:?Set EXPERT_MACE_VENV to the recorded MACE/core environment}"
 source "${EXPERT_MACE_VENV}/bin/activate"
 mkdir -p logs/slurm results/point-groups
+git rev-parse HEAD > "results/point-groups/git-${SLURM_JOB_ID}.txt"
+python -m pip freeze > "results/point-groups/environment-${SLURM_JOB_ID}.txt"
 python -m src.cli.build_point_group_fixtures \
-  --output results/point-groups/crystallographic_point_groups.json
+  --output results/point-groups/crystallographic_point_groups.json \
+  --summary "results/point-groups/summary-${SLURM_JOB_ID}.json" \
+  --junit "results/point-groups/junit-${SLURM_JOB_ID}.xml"

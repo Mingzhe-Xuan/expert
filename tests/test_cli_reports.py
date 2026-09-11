@@ -8,7 +8,12 @@ import pytest
 
 from src.cli import dpa4_smoke
 from src.cli import reporting
-from src.cli.reporting import run_recorded_smoke, write_single_case_junit
+from src.cli.reporting import (
+    EvidenceFailure,
+    run_recorded_case,
+    run_recorded_smoke,
+    write_single_case_junit,
+)
 from src.cli.test_all import junit_counts
 
 
@@ -105,3 +110,25 @@ def test_recorded_smoke_persists_failure_before_reraising(
 
 def test_dpa4_smoke_imports_its_reported_source_layout() -> None:
     assert dpa4_smoke.DPA4_SO3_LAYOUT.dimension == 1600
+
+
+def test_recorded_case_preserves_structured_failure_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(reporting, "execution_metadata", lambda: {"slurm_job_id": "44"})
+    output = tmp_path / "structured-failure.json"
+
+    def fail() -> dict[str, object]:
+        raise EvidenceFailure("incomplete dataset", {"records": 4999})
+
+    with pytest.raises(EvidenceFailure, match="incomplete dataset"):
+        run_recorded_case(
+            fail,
+            output=output,
+            junit=tmp_path / "structured-failure.xml",
+            suite_name="data_job",
+        )
+    result = json.loads(output.read_text(encoding="utf-8"))
+    assert result["status"] == "failed"
+    assert result["records"] == 4999
+    assert result["execution"] == {"slurm_job_id": "44"}

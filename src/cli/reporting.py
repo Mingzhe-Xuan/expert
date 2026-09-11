@@ -12,6 +12,14 @@ import xml.etree.ElementTree as ET
 import torch
 
 
+class EvidenceFailure(RuntimeError):
+    """A failed case carrying structured evidence gathered before rejection."""
+
+    def __init__(self, message: str, evidence: dict[str, object]) -> None:
+        super().__init__(message)
+        self.evidence = evidence
+
+
 def execution_metadata() -> dict[str, object]:
     return {
         "git_commit": subprocess.run(
@@ -77,19 +85,37 @@ def run_recorded_smoke(
 ) -> dict[str, object]:
     """Run one smoke case while persisting success or failure evidence."""
 
+    return run_recorded_case(
+        lambda: run_case(device),
+        output=output,
+        junit=junit,
+        suite_name=suite_name,
+    )
+
+
+def run_recorded_case(
+    run_case: Callable[[], dict[str, object]],
+    *,
+    output: str | Path,
+    junit: str | Path,
+    suite_name: str,
+) -> dict[str, object]:
+    """Run one callable while persisting success or failure evidence."""
+
     started = time.perf_counter()
     error: Exception | None = None
     try:
-        result = run_case(device)
+        result = run_case()
         result["execution"] = execution_metadata()
     except Exception as caught:
         error = caught
-        result = {
+        result = dict(getattr(caught, "evidence", {}))
+        result.update({
             "status": "failed",
             "error_type": type(caught).__name__,
             "error": str(caught),
             "execution": execution_metadata(),
-        }
+        })
     target = Path(output)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")

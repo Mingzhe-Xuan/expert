@@ -225,7 +225,9 @@ def prepare_dataset(
     successes = 0
     failures = 0
     with output_path.open("a", encoding="utf-8", buffering=1) as output:
-        with error_path.open("a", encoding="utf-8", buffering=1) as errors:
+        # Errors describe the current resumable attempt. Resolved transient failures from
+        # an earlier attempt must not permanently invalidate a subsequently complete dataset.
+        with error_path.open("w", encoding="utf-8", buffering=1) as errors:
             with concurrent.futures.ThreadPoolExecutor(
                 max_workers=workers
             ) as executor:

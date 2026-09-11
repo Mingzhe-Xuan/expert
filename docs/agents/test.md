@@ -1,5 +1,31 @@
 # Test plan and results
 
+## 2026-09-12 — Required data-job Slurm evidence contract
+
+计划检查：
+
+- 将通用 success/failure evidence runner 扩展到无 device 的数据 job，同时保持 adapter wrapper
+  兼容；
+- 32-PG fixture builder 在成功与异常路径都写独立 summary/JUnit/execution metadata，sbatch
+  另存 Git revision 与 `pip freeze`；
+- JARVIS-DFPT BEC preparation 的 prepare + validation sequence 同样必须形成单一 job-level
+  summary/JUnit，任何阶段失败均返回非零且不伪装为完成；
+- 增加 runner、CLI/launcher contract 测试，运行 targeted、完整 pytest、compile、相关
+  sbatch `bash -n` 与 `git diff --check`。
+
+实际结果：
+
+- 32-PG builder 与 BEC prepare/validate 均通过共用 runner 持久化成功或失败 summary/JUnit；
+- 两个 sbatch 均保存 Git revision、`pip freeze`，artifact 名包含 Slurm job ID；
+- BEC wrapper 拒绝 extraction errors、invalid/duplicate records 与小于完整索引的 record count；
+  每次 resume 重建当前 attempt error log，已恢复的暂态错误不再永久污染最终验收；
+- targeted：27 passed；完整本地 suite：161 passed、0 failed、0 skipped，484 warnings，216.02s；
+- `compileall src tests`、两个 data 脚本 `py_compile`、两个 sbatch `bash -n`、CLI help 与
+  `git diff --check` 通过。
+
+诊断记录：一次过宽的 `compileall src data tests` 扫入 ignored `data/vendor/fairchem` 上游源码，
+命中其既存 future-import 问题；随后对本单元两个 data 脚本做精确 `py_compile` 并通过，未修改 vendor。
+
 ## 2026-09-12 — Standalone adapter Slurm evidence contract
 
 计划检查：

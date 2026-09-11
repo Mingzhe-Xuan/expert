@@ -8,19 +8,16 @@ import math
 from pathlib import Path
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("input", type=Path)
-    parser.add_argument("--errors", type=Path)
-    parser.add_argument("--output", type=Path, required=True)
-    args = parser.parse_args()
-
+def summarize_dataset(
+    input_path: Path, error_path: Path | None, output_path: Path
+) -> dict[str, object]:
+    """Validate an extracted JSONL dataset and persist its audit summary."""
     ids: set[str] = set()
     residuals: list[float] = []
     atom_counts: list[int] = []
     duplicate_ids: list[str] = []
     invalid_records: list[dict[str, object]] = []
-    with args.input.open("r", encoding="utf-8") as handle:
+    with input_path.open("r", encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, start=1):
             try:
                 record = json.loads(line)
@@ -56,8 +53,8 @@ def main() -> int:
                 )
 
     upstream_errors = 0
-    if args.errors and args.errors.exists():
-        with args.errors.open("r", encoding="utf-8") as handle:
+    if error_path and error_path.exists():
+        with error_path.open("r", encoding="utf-8") as handle:
             upstream_errors = sum(1 for line in handle if line.strip())
     sorted_residuals = sorted(residuals)
 
@@ -85,11 +82,21 @@ def main() -> int:
         },
         "valid": not duplicate_ids and not invalid_records and upstream_errors == 0,
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return summary
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input", type=Path)
+    parser.add_argument("--errors", type=Path)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    summary = summarize_dataset(args.input, args.errors, args.output)
     return int(not summary["valid"])
 
 

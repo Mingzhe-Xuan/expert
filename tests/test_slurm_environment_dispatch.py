@@ -106,3 +106,16 @@ def test_standalone_adapter_launchers_persist_complete_evidence() -> None:
         assert "--output" in text
         assert "--junit" in text
         assert "${SLURM_JOB_ID}" in text
+
+
+def test_required_data_job_launchers_persist_complete_evidence() -> None:
+    for path in (
+        ROOT / "slurm" / "build_point_group_fixtures.sbatch",
+        ROOT / "scripts" / "slurm" / "prepare_jarvis_bec.sbatch",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "git rev-parse HEAD" in text
+        assert "python -m pip freeze" in text
+        assert "--summary" in text
+        assert "--junit" in text
+        assert "${SLURM_JOB_ID}" in text
