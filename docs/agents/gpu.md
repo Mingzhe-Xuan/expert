@@ -12,6 +12,11 @@
   after about 21 seconds; the tar write failed and no remote file is accepted as verified.
 - Retry connection plan: establish one recorded multiplexed SSH transport whose first command
   is the same scoped pull, reuse it for atomic per-file copies, and then verify all contract files.
+- Retry result: the multiplexed transport reached Guqq, but its mandatory HTTP/1.1 pull ended
+  with GnuTLS recv error `-110` before `MASTER_READY`; no resource copy was started.
+- Next connection purpose: make one spaced retry of the identical pull-first multiplex setup.
+  If this third resource-sync attempt also fails, stop network retries and apply the documented
+  three-failure rule; no login-node computation is authorized.
 
 ## 2026-09-11 — Sync Phase A checkpoint and locate checkout
 
