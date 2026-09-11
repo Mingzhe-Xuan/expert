@@ -331,3 +331,13 @@
   recorded binary-wheel GRACE installation and package/fingerprint checks.
 - Permission check: unchanged isolated package-management scope, with no project/model execution,
   compilation, data processing, training, inference, evaluation, or tests.
+- Result: the second mandatory pull also failed before installation, this time timing out while
+  connecting to `github.com:443` after about 135 seconds. The GRACE venv again remained unchanged.
+
+## 2026-09-12 — Final bounded GRACE retry before network pause
+
+- Intended connection: make one final bounded mandatory-pull attempt and proceed with the recorded
+  GRACE installation only after a successful fast-forward. If GitHub fails again, stop blind retries
+  in accordance with the existing three-failure lesson.
+- Permission check: unchanged isolated dependency-installation and metadata-check scope; no compute,
+  project/model execution, compilation, data processing, training, inference, evaluation, or tests.
