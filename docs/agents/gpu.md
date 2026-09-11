@@ -158,3 +158,14 @@
 - Permission check: all listed commands are lightweight login-node management. No imports that load
   checkpoints, tests, compilation, inference, training, evaluation, or batch processing will run on
   the login node; those operations require later `sbatch` submission.
+- Result: the Guqq-side bash was reached, but PowerShell expanded a remote loop variable and left an
+  unmatched quote. Bash rejected the complete command during parsing before executing any item, so
+  the required `git pull` and all later inspections did not run. No login-node compute ran.
+
+## 2026-09-12 — Retry 32-PG sync with fixed commands only
+
+- Intended connection: retry `/home/xmz/expert` with an argument containing no remote variables or
+  loops; execute `timeout 30s git pull` first, then inspect the exact commit, clean/dirty state,
+  `sinfo`, `squeue`, disk capacity, candidate venv directories, and named manifest files.
+- Permission check: this remains lightweight login-node management only. Any test, import-heavy
+  resource validation, fixture scan, model execution, or data extraction must be submitted to Slurm.
