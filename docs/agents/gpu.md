@@ -236,3 +236,6 @@
   create command for `/home/xmz/expert-envs/acceptance-py310`, followed only by `python --version`.
 - Permission check: this is the same isolated, non-overwriting lightweight environment operation;
   no install, project import, tests, compilation, data processing, or model workload is authorized.
+- Result: the third environment attempt again returned only the Vlab welcome line and status 1,
+  without Guqq shell, pull, or Python output. Following the existing three-failure SSH lesson, blind
+  retries are paused. The venv remains unconfirmed and no login-node compute was run.
