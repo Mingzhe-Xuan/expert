@@ -13,6 +13,12 @@
 - 2026-09-11：完成 MACE adapter 候选与 `mace_adapter_smoke.sbatch`；本地目标 7 passed、
   合并 114 passed、1 旧 skip。Guqq 首条仓库 `git pull` 等待 60 秒后中止，因此真实
   MACE Slurm 尚未运行；下一步先推送候选，再做有界 pull/环境检查/作业提交。
+- 2026-09-11：开始 DPA4-Plus adapter；精确源码审计确认公开 sparse-edge builder、
+  `src=neighbor/dst=center` 方向、e3nn-compatible packed real `(l,m)` order，以及 descriptor
+  直接返回 scalar 前 final latent，避免依赖脆弱的 module forward hook。
+- 2026-09-11：完成 DPA4-Plus adapter 候选、共享 parity edge-geometry 透传与
+  `dpa4_adapter_smoke.sbatch`；目标测试 9 passed、合并 116 passed、1 旧 skip，compile/diff
+  检查通过。真实 checkpoint 的 DeePMD 3.2/GPU 数值验收仍需在 Guqq 经 Slurm 执行。
 
 - 2026-09-11：恢复续跑并确认工作树 clean；开始 deterministic spglib
   canonicalization，实现范围包括显式 Hall setting、input/canonical frame、完整

@@ -96,3 +96,25 @@
   produced no response for 60 seconds and was interrupted. No later inspection command ran and
   no login-node compute was performed. Retry will use a bounded Git timeout after the candidate
   adapter is pushed.
+
+## 2026-09-11 — Pull MACE candidate and inspect runtime
+
+- Intended connection: enter `/home/xmz/expert` and make bounded `git pull` the first remote
+  operation after pushing commit `804e391`; then inspect commit status, venv metadata, checkpoint
+  presence and Slurm GPU resources.
+- Permission check: inspection and dependency metadata only on the login node. The adapter import,
+  checkpoint load, feature extraction and equivariance/backward smoke will run only via Slurm.
+- Result: the jump host connected, but the Guqq leg closed before a remote shell was established;
+  therefore no command, including the planned first `git pull`, executed. No immediate blind retry;
+  local work continues with exact-version source/API audit.
+
+## 2026-09-11 — Bounded retry for MACE candidate sync
+
+- Intended connection: after a pause, retry the Guqq leg; inside `/home/xmz/expert`, run
+  `timeout 30s git pull` first, then only inspect HEAD, existing venv/package metadata,
+  checkpoint availability and exact Slurm GRES configuration.
+- Permission check: no checkpoint import or inference on the login node. A successful inspection
+  will be followed by a separate recorded connection that submits the smoke via `sbatch`.
+- Result: the jump host connected, but the Guqq leg again closed before a remote shell was
+  established. The required first `git pull` therefore did not execute, and no remote command or
+  login-node compute ran. Further implementation continues locally before another recorded retry.

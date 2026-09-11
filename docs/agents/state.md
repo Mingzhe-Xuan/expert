@@ -82,6 +82,13 @@ Goal 尚未具备完成证据。
 - 2026-09-11：MACE adapter 与 Slurm smoke 候选已完成本地 contract 验证；合并套件
   114 passed、1 旧 skip。Guqq 仓库 `git pull` 本次 60 秒无响应，真实 checkpoint
   forward/reflection/frozen-gradient 验收仍待同步后提交 Slurm，未误标完成。
+- 2026-09-11：进入真实 DPA4-Plus adapter；官方 3.2.0 源码确认
+  `forward_with_edges` 直接返回 `[N,25,1,64]` final equivariant latent，且 neighbor graph
+  方向与本项目一致。将基于公开返回值和 graph builder 接入双前向 parity wrapper。
+- 2026-09-11：DPA4-Plus adapter 与 Slurm smoke 候选完成本地验收：严格验证 checkpoint
+  和伴随 config，复用官方 sparse edges，显式转换 `64x(l=0..4)` copy-major layout，并以
+  双真实调用 Reynolds wrapper 补全 O(3) parity。目标 9 passed、合并 116 passed、1 旧
+  skip；Guqq 本轮在 shell 建立前断开，真实 runtime/layout/equivariance 仍待 Slurm。
 
 - 2026-09-11：读取 `GOAL.md`、原型、资源 manifest、Git 状态和既有代理记录；
   确认正式实现尚未开始。进入 Phase A，先完成包骨架、核心 contracts 和 26 配置

@@ -22,3 +22,9 @@ its parameters count as non-backbone parameters.
 requires the frozen runtime version, and taps the first interaction state before the
 energy readout. It converts MACE sender/receiver edges to the downstream target-to-source
 vector convention without rebuilding or truncating the checkpoint graph.
+
+`DPA4BackboneAdapter` loads the manifest-pinned DPA4-Plus checkpoint through DeePMD's
+official `Tester`, reuses its sparse neighbor schema, and taps the SeZM descriptor's
+final `[node, lm, 1, channel]` state. The adapter converts each degree block to e3nn's
+copy-major layout, obtains explicit even/odd O(3) carriers from two real checkpoint
+calls, and trains only the final interface projector.

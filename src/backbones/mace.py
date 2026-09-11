@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import importlib.metadata
-
 import torch
 from torch import nn
 from e3nn import o3
@@ -9,23 +7,12 @@ from e3nn import o3
 from ..graphs import PeriodicGraph
 from ..irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
 from .parity import O3InterfaceProjector
-from .resources import BackboneResourceRegistry
+from .resources import BackboneResourceRegistry, require_distribution_version
 
 
 MACE_DISTRIBUTION = "mace-torch"
 MACE_VERSION = "0.3.16"
 MACE_SOURCE_IRREPS = o3.Irreps("128x0e + 128x1o")
-
-
-def require_distribution_version(distribution: str, expected: str) -> None:
-    try:
-        actual = importlib.metadata.version(distribution)
-    except importlib.metadata.PackageNotFoundError as exc:
-        raise ImportError(f"required runtime {distribution}=={expected} is not installed") from exc
-    if actual != expected:
-        raise RuntimeError(
-            f"incompatible {distribution} runtime: expected {expected}, received {actual}"
-        )
 
 
 def irrep_layout_from_e3nn(irreps: o3.Irreps, prefix: str) -> IrrepLayout:

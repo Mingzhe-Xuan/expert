@@ -11,6 +11,8 @@ from torch import nn
 from src.backbones import (
     BACKBONE_FAMILIES,
     BackboneResourceRegistry,
+    DPA4BackboneAdapter,
+    DPA4_SO3_LAYOUT,
     InversionPairedReynolds,
     MACEBackboneAdapter,
     O3InterfaceProjector,
@@ -18,6 +20,7 @@ from src.backbones import (
     SO3Layout,
     SO3Term,
     invert_periodic_graph,
+    flatten_dpa4_latent,
     irrep_layout_from_e3nn,
     require_distribution_version,
 )
@@ -91,6 +94,8 @@ def test_resource_verification_rejects_size_checksum_and_path_escape(tmp_path) -
             sha256=digest,
             status="downloaded_and_checksum_verified",
         )
+        record.pop("config", None)
+        record.pop("config_sha256", None)
     manifest = tmp_path / "backbones.json"
     manifest.write_text(json.dumps(source), encoding="utf-8")
     registry = BackboneResourceRegistry(manifest, workspace_root=tmp_path)
@@ -103,6 +108,13 @@ def test_resource_verification_rejects_size_checksum_and_path_escape(tmp_path) -
     source["selected_backbones"]["mace"]["local_path"] = "../escape.model"
     manifest.write_text(json.dumps(source), encoding="utf-8")
     with pytest.raises(ValueError, match="escapes"):
+        BackboneResourceRegistry(manifest, workspace_root=tmp_path)
+
+    source["selected_backbones"]["mace"]["local_path"] = "checkpoint.bin"
+    source["selected_backbones"]["dpa4"]["config"] = "../../escape.json"
+    source["selected_backbones"]["dpa4"]["config_sha256"] = digest
+    manifest.write_text(json.dumps(source), encoding="utf-8")
+    with pytest.raises(ValueError, match="config path escapes"):
         BackboneResourceRegistry(manifest, workspace_root=tmp_path)
 
 
@@ -198,3 +210,38 @@ def test_mace_slurm_smoke_contract_is_small_and_predeclares_tolerance() -> None:
     assert graph.num_nodes == 2 and graph.num_edges > 0
     assert graph.cutoff == 6.0 and SMOKE_LAYOUT.dimension == 10
     assert FLOAT32_EQUIVARIANCE_TOLERANCE == 3.0e-4
+
+
+def test_dpa4_latent_flattening_is_copy_major_with_frozen_layout() -> None:
+    latent = torch.arange(2 * 25 * 64, dtype=torch.float32).reshape(2, 25, 1, 64)
+    flattened = flatten_dpa4_latent(latent)
+    assert flattened.shape == (2, 1600)
+    assert DPA4_SO3_LAYOUT.dimension == 1600
+    assert tuple((term.multiplicity, term.degree) for term in DPA4_SO3_LAYOUT.terms) == (
+        (64, 0), (64, 1), (64, 2), (64, 3), (64, 4)
+    )
+    # l=1 starts after the scalar block. Each channel/copy owns contiguous m=-1,0,1.
+    expected_l1_copy_7 = latent[:, 1:4, 0, 7]
+    assert torch.equal(flattened[:, 64 + 7 * 3 : 64 + 8 * 3], expected_l1_copy_7)
+    # l=4 begins after 64 * (1 + 3 + 5 + 7) coefficients.
+    l4_offset = 64 * 16
+    expected_l4_copy_63 = latent[:, 16:25, 0, 63]
+    assert torch.equal(flattened[:, l4_offset + 63 * 9 : l4_offset + 64 * 9], expected_l4_copy_63)
+
+
+def test_dpa4_resource_gate_precedes_deepmd_import_and_runtime_is_pinned() -> None:
+    registry = BackboneResourceRegistry()
+    assert registry["dpa4"].required_runtime == "deepmd-kit==3.2.0; torch==2.11.*; CUDA==12.8"
+    assert registry["dpa4"].config_path is not None
+    unavailable = replace(registry["dpa4"], status="blocked_for_test")
+
+    class UnavailableRegistry:
+        def __getitem__(self, family):
+            assert family == "dpa4"
+            return unavailable
+
+    with pytest.raises(FileNotFoundError, match="unavailable"):
+        DPA4BackboneAdapter(
+            IrrepLayout((IrrepTerm(1, 0, "e", "target"),)),
+            registry=UnavailableRegistry(),
+        )

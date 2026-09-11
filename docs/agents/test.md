@@ -1,5 +1,36 @@
 # Test plan and results
 
+## 2026-09-11 — Real DPA4-Plus SO(3) adapter
+
+计划检查：
+
+- 构造时验证 DPA4-Plus checkpoint/config size+SHA 与 `deepmd-kit==3.2.0`、PyTorch 2.11
+  runtime；用官方 `Tester/get_model` 恢复 checkpoint，不随机初始化或冻结成 `.pt2`。
+- 调用官方 `build_neighbor_list` 与 descriptor `forward_with_edges`，在 l=0 readout 前取
+  final equivariant latent `[N,25,1,64]`；过滤官方 guard edges并复用
+  `src=neighbor,dst=center,edge_vec=r_src-r_dst` 图约定。
+- 将 `[l,m,channel]` 逐阶变换为 e3nn multiplicity-major `64x(l=0..4)` SO(3) layout，
+  component-order 必须经官方 e3nn grid/Wigner convention 审计，不静默假定。
+- 使用周期反演 pair 的两次真实 DPA4 forward 生成 even/odd O(3) blocks，再投影到共享
+  hidden layout；测试两次调用、冻结梯度、proper/improper/reflection、mixed node mapping、
+  edge/cell-shift round-trip和 finite projector gradients。
+- 本地测试 runtime/resource/layout fail-closed；真实 checkpoint 数值 suite 仅经 Guqq Slurm，
+  预先固定 float32 tolerance，最终不得 skip/xfail。
+
+阶段性实际结果（真实 Slurm 尚待执行）：
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_backbone_contracts.py -q`：
+  9 passed；新增覆盖 DPA4 资源 gate、checkpoint/config 路径与 checksum contract、
+  `[N,25,1,64]` shape fail-closed、五个 degree block 及 copy-major 精确索引映射。
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests assets/model_code/tests -q`：
+  116 passed、1 个既有 opt-in skip、0 failed。
+- `python -m compileall -q src tests/test_backbone_contracts.py` 与 `git diff --check`：
+  通过；后者只有工作树 LF→CRLF 提示。
+- 已创建真实 2-node Si、proper/improper、冻结梯度与 interface backward 的
+  `dpa4_adapter_smoke.sbatch`，固定 float32 tolerance `1e-3`。Guqq 连接在远程 shell
+  建立前被关闭，故真实 checkpoint 数值结果仍未产生，不能据此结束 DPA4 验收。
+
+
 ## 2026-09-11 — Real MACE-MP medium-0b3 adapter
 
 计划检查：

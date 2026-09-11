@@ -51,7 +51,7 @@
       "local_path": "data/checkpoints/dpa4/DPA4-Plus-OMat24-v20260805.pt",
       "config": "DPA4-Plus-OMat24-v20260805.json",
       "config_sha256": "967513fbd54a46fbb98b4a55f376a4d3886dd190239392b3353e3f4835826ae8",
-      "required_runtime": "deepmd-kit[dpa4,torch] revision 173bfd5a26f90a756ee891777270ef117078d9be",
+      "required_runtime": "deepmd-kit==3.2.0; torch==2.11.*; CUDA==12.8",
       "pretraining_dataset": "OMat24",
       "feature_tap": "SeZM descriptor final equivariant node state before l=0 descriptor readout",
       "feature_layout": "64 channels x SO(3) coefficients l=0..4, m=-l..l",

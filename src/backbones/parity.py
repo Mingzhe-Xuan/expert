@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Mapping
 
 import torch
 from torch import nn
@@ -48,6 +50,7 @@ class SO3FeatureBatch:
     node_features: torch.Tensor
     node_layout: SO3Layout
     node_batch: torch.Tensor
+    edge_geometry: Mapping[str, torch.Tensor] | None = None
 
     def __post_init__(self) -> None:
         if self.node_features.ndim != 2 or self.node_features.shape[1] != self.node_layout.dimension:
@@ -56,6 +59,8 @@ class SO3FeatureBatch:
             raise ValueError("SO(3) node_batch must align with nodes")
         if self.node_batch.dtype != torch.long or self.node_batch.device != self.node_features.device:
             raise TypeError("SO(3) node_batch must be torch.long on the feature device")
+        geometry = {} if self.edge_geometry is None else dict(self.edge_geometry)
+        object.__setattr__(self, "edge_geometry", MappingProxyType(geometry))
 
 
 def invert_periodic_graph(graph: PeriodicGraph) -> PeriodicGraph:
@@ -129,12 +134,16 @@ class InversionPairedReynolds(nn.Module):
             node_features=features,
             node_layout=self.output_layout,
             node_batch=graph.node_batch,
-            edge_geometry={
-                "edge_index": graph.edge_index,
-                "cell_shifts": graph.cell_shifts,
-                "edge_vectors": graph.edge_vectors,
-                "edge_distances": graph.edge_distances,
-            },
+            edge_geometry=(
+                direct.edge_geometry
+                if direct.edge_geometry
+                else {
+                    "edge_index": graph.edge_index,
+                    "cell_shifts": graph.cell_shifts,
+                    "edge_vectors": graph.edge_vectors,
+                    "edge_distances": graph.edge_distances,
+                }
+            ),
         )
 
 

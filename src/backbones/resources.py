@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import importlib.metadata
 import json
 from pathlib import Path
 
@@ -31,6 +32,8 @@ class BackboneResource:
     status: str
     size_bytes: int | None = None
     sha256: str | None = None
+    config_path: Path | None = None
+    config_sha256: str | None = None
 
     @property
     def available(self) -> bool:
@@ -53,7 +56,24 @@ class BackboneResource:
                 digest.update(block)
         if digest.hexdigest() != self.sha256:
             raise ValueError(f"{self.family} checkpoint SHA-256 mismatch")
+        if self.config_path is not None:
+            if self.config_sha256 is None or not self.config_path.is_file():
+                raise FileNotFoundError(f"missing {self.family} checkpoint config")
+            config_digest = hashlib.sha256(self.config_path.read_bytes()).hexdigest()
+            if config_digest != self.config_sha256:
+                raise ValueError(f"{self.family} config SHA-256 mismatch")
         return self.local_path
+
+
+def require_distribution_version(distribution: str, expected: str) -> None:
+    try:
+        actual = importlib.metadata.version(distribution)
+    except importlib.metadata.PackageNotFoundError as exc:
+        raise ImportError(f"required runtime {distribution}=={expected} is not installed") from exc
+    if actual != expected:
+        raise RuntimeError(
+            f"incompatible {distribution} runtime: expected {expected}, received {actual}"
+        )
 
 
 class BackboneResourceRegistry:
@@ -92,6 +112,13 @@ class BackboneResourceRegistry:
             local_path = (workspace / str(raw["local_path"])).resolve()
             if workspace != local_path and workspace not in local_path.parents:
                 raise ValueError(f"{family} local_path escapes the workspace")
+            config_path = (
+                None
+                if raw.get("config") is None
+                else (local_path.parent / str(raw["config"])).resolve()
+            )
+            if config_path is not None and workspace != config_path and workspace not in config_path.parents:
+                raise ValueError(f"{family} config path escapes the workspace")
             parity = str(raw["parity_policy"])
             expected_parity = (
                 "inversion_paired_reynolds"
@@ -120,6 +147,12 @@ class BackboneResourceRegistry:
                 status=str(raw["status"]),
                 size_bytes=None if raw.get("size_bytes") is None else int(raw["size_bytes"]),
                 sha256=None if raw.get("sha256") is None else str(raw["sha256"]).lower(),
+                config_path=config_path,
+                config_sha256=(
+                    None
+                    if raw.get("config_sha256") is None
+                    else str(raw["config_sha256"]).lower()
+                ),
             )
         self.path = manifest_path
         self._resources = resources
