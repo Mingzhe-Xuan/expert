@@ -248,3 +248,6 @@
 - Permission check: source synchronization and isolated venv creation/inspection are lightweight
   management. No packages, project/model imports, tests, compilation, data work, or GPU computation
   will run on the login node.
+- Result: the connection succeeded. The mandatory first remote action pulled the worktree from
+  `1d9396d` to `742cdfb`; `/home/xmz/expert-envs/acceptance-py310` exists as an isolated environment
+  with Python 3.10.12 and pip 22.0.2. No package was installed and no compute workload ran.

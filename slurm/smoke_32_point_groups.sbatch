@@ -13,9 +13,10 @@
 
 set -euo pipefail
 
-: "${EXPERT_VENV:?Set EXPERT_VENV to the recorded project virtual environment}"
 : "${EXPERT_PG_FIXTURES:?Set EXPERT_PG_FIXTURES to the promoted 32-PG manifest}"
-source "${EXPERT_VENV}/bin/activate"
+source slurm/select_backbone_venv.sh
+select_backbone_venv "${SLURM_ARRAY_TASK_ID}"
+source "${EXPERT_SELECTED_VENV}/bin/activate"
 mkdir -p logs/slurm results/point-group-smoke
 git rev-parse HEAD > "results/point-group-smoke/git-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.txt"
 python -m pip freeze > "results/point-group-smoke/environment-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.txt"

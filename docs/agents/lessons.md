@@ -77,3 +77,10 @@
 - Slurm smoke commands are not self-auditing merely because they return nonzero on failure. Each
   command must write failure JSON and JUnit before re-raising, and the aggregate pytest wrapper must
   convert skip/xfail counts into a nonzero acceptance result.
+
+## 2026-09-12 — Frozen backbone runtimes require separate environments
+
+- MACE 0.3.16 pins e3nn 0.4.4, while fairchem-core 1.10 requires e3nn 0.5+ with Torch 2.4 and
+  DeepMD 3.2 requires e3nn 0.5.9+ with Torch 2.11. These constraints cannot be faithfully resolved
+  in one venv. Mixed-backbone Slurm arrays must select a recorded per-backbone environment from the
+  frozen schedule; dependency overrides or a shared environment would invalidate checkpoint evidence.

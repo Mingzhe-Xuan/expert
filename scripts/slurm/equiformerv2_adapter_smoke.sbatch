@@ -12,8 +12,8 @@
 
 set -euo pipefail
 
-: "${EXPERT_VENV:?Set EXPERT_VENV to the recorded fairchem-core 1.10.0 environment}"
-source "${EXPERT_VENV}/bin/activate"
+: "${EXPERT_EQUIFORMERV2_VENV:?Set EXPERT_EQUIFORMERV2_VENV to the recorded fairchem-core 1.10.0 environment}"
+source "${EXPERT_EQUIFORMERV2_VENV}/bin/activate"
 mkdir -p logs/slurm results/backbones
 python -m src.cli.equiformerv2_smoke \
   --device cuda \

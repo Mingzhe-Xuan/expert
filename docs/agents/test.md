@@ -1,5 +1,27 @@
 # Test plan and results
 
+## 2026-09-12 — Per-backbone Guqq environment dispatch
+
+计划检查：
+
+- 根据官方 `Requires-Dist` 冻结不可合并约束：MACE `e3nn==0.4.4`，Equiformer/fairchem
+  `e3nn>=0.5` + Torch 2.4，DPA4/DeepMD `e3nn>=0.5.9` + Torch 2.11，GRACE TensorFlow；
+- 两个 mixed-backbone array launchers 必须按 frozen schedule 的 `index % 4` 映射
+  `mace|grace|dpa4|equiformerv2`，分别要求 `EXPERT_*_VENV`，缺变量非零失败；
+- `test_all` 与 fixture builder 明确使用 MACE/core venv；四个 standalone adapter smoke
+  各自只接受对应变量，禁止以一个无法解析的通用 `EXPERT_VENV` 冒充全部 runtime；
+- 静态测试解析 schedule 并核对 58/20 rows 的 shell selector 映射、四变量完整性、无旧通用变量，
+  另执行 sbatch `bash -n`、完整 pytest、compile 与 diff checks。
+
+实际结果：
+
+- 官方 PyPI JSON metadata 确认四组冻结约束不可合并；未使用 `--no-deps` 或放宽版本绕过；
+- 58-row PG 与 20-row real-data schedules 每行均满足 `backbone == order[index % 4]`；
+  shell selector 对 0..7 映射正确，缺 DPA4 变量时非零失败并指名缺失变量；
+- 所有 mixed/standalone/core/BEC launchers 均无旧 `EXPERT_VENV`，且使用预期专用变量；
+- targeted：13 passed；完整本地 `tests/`：144 passed，0 failed，0 skipped（204.15 s）；
+  全部 sbatch/selector `bash -n`、compile 与 `git diff --check` 通过。
+
 ## 2026-09-12 — Material-operation-aware global tensor projection
 
 计划检查：

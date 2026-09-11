@@ -11,8 +11,8 @@
 
 set -euo pipefail
 
-: "${EXPERT_VENV:?Set EXPERT_VENV to the recorded project virtual environment}"
-source "${EXPERT_VENV}/bin/activate"
+: "${EXPERT_MACE_VENV:?Set EXPERT_MACE_VENV to the recorded MACE/core environment}"
+source "${EXPERT_MACE_VENV}/bin/activate"
 mkdir -p logs/slurm results/point-groups
 python -m src.cli.build_point_group_fixtures \
   --output results/point-groups/crystallographic_point_groups.json

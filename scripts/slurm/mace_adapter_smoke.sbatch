@@ -12,8 +12,8 @@
 
 set -euo pipefail
 
-: "${EXPERT_VENV:?Set EXPERT_VENV to the recorded project virtual environment}"
-source "${EXPERT_VENV}/bin/activate"
+: "${EXPERT_MACE_VENV:?Set EXPERT_MACE_VENV to the recorded MACE/core environment}"
+source "${EXPERT_MACE_VENV}/bin/activate"
 mkdir -p logs/slurm results/backbones
 python -m src.cli.mace_smoke \
   --device cuda \

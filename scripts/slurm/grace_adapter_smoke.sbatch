@@ -12,8 +12,8 @@
 
 set -euo pipefail
 
-: "${EXPERT_VENV:?Set EXPERT_VENV to the recorded GRACE-compatible environment}"
-source "${EXPERT_VENV}/bin/activate"
+: "${EXPERT_GRACE_VENV:?Set EXPERT_GRACE_VENV to the recorded GRACE environment}"
+source "${EXPERT_GRACE_VENV}/bin/activate"
 export TF_FORCE_GPU_ALLOW_GROWTH=true
 mkdir -p logs/slurm results/backbones
 python -m src.cli.grace_smoke \

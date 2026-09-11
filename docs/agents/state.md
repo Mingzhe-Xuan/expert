@@ -1,5 +1,19 @@
 # Agent state
 
+## 并行 Goal 状态（Guqq per-backbone environments）
+
+官方包元数据证明单一 venv 无法同时满足冻结的 MACE、GRACE、DPA4 与 Equiformer runtimes。
+所有 Slurm 入口现已使用四个显式 venv contract；两个 mixed arrays 按已冻结且验证的
+`index % 4` backbone schedule 选择环境，避免 resolver 冲突或运行时静默替换版本。
+
+## 并行 Goal 变更记录（Guqq per-backbone environments）
+
+- 2026-09-12：确认 MACE/e3nn 0.4.4、fairchem/Torch 2.4、DeepMD/Torch 2.11/e3nn 0.5.9
+  与 GRACE/TensorFlow 的不可合并边界；冻结四变量 Slurm selector 与静态映射测试。
+- 2026-09-12：四环境 selector、九个相关 launchers 与 fail-closed 测试完成；targeted 13、
+  完整 144 tests 全绿，全部 shell syntax/compile/diff checks 通过。下一步在 Guqq 建立三套
+  剩余 venv，并安装/记录四套精确环境。
+
 ## 并行 Goal 状态（material-oriented target projection）
 
 已将 dielectric/elastic global readout 从 point-group symbol 的 representative Hall projector

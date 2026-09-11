@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12：官方 PyPI metadata 审计确认四 backbone runtime 不能共用一个 venv；启动
+  `EXPERT_MACE_VENV|EXPERT_GRACE_VENV|EXPERT_DPA4_VENV|EXPERT_EQUIFORMERV2_VENV`
+  Slurm contract 与 frozen array-index selector 实现。
+- 2026-09-12：完成四 venv Slurm dispatch；58/20 rows 的 modulo-four mapping、缺变量失败、
+  standalone/core launchers 与 shell syntax 均通过，完整项目 144 passed、0 skip。
+
 - 2026-09-12：验收审计发现 global head 仍使用代表 Hall orientation，而非材料实际
   `SymmetryRecord.rotations`；启动 operation-aware Reynolds projector 修复与非代表 orientation
   回归测试，保持 BEC raw head 不依赖 symmetry projector。

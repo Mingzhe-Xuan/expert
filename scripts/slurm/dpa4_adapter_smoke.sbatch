@@ -12,8 +12,8 @@
 
 set -euo pipefail
 
-: "${EXPERT_VENV:?Set EXPERT_VENV to the recorded project virtual environment}"
-source "${EXPERT_VENV}/bin/activate"
+: "${EXPERT_DPA4_VENV:?Set EXPERT_DPA4_VENV to the recorded DPA4 environment}"
+source "${EXPERT_DPA4_VENV}/bin/activate"
 mkdir -p logs/slurm results/backbones
 python -m src.cli.dpa4_smoke \
   --device cuda \

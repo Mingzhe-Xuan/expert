@@ -9,6 +9,8 @@
 set -euo pipefail
 
 cd "${SLURM_SUBMIT_DIR}"
+: "${EXPERT_MACE_VENV:?Set EXPERT_MACE_VENV to the recorded MACE/core environment}"
+source "${EXPERT_MACE_VENV}/bin/activate"
 mkdir -p data/raw/jarvis_dfpt/archives data/processed
 
 python data/prepare_jarvis_bec.py \

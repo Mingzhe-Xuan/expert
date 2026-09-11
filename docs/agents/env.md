@@ -2,13 +2,16 @@
 
 ## 2026-09-12 — Acceptance environment plan
 
-- Path: `/home/xmz/expert-envs/acceptance-py310`
-- Creation command: `python3 -m venv /home/xmz/expert-envs/acceptance-py310`
+- MACE/core path: `/home/xmz/expert-envs/acceptance-py310` (created and verified after the
+  intermittent SSH retry; retained rather than needlessly replacing the empty task-specific venv).
+- Planned GRACE path: `/home/xmz/expert-envs/grace-py310`
+- Planned DPA4 path: `/home/xmz/expert-envs/dpa4-py310`
+- Planned EquiformerV2 path: `/home/xmz/expert-envs/equiformerv2-py310`
+- Creation command pattern: `python3 -m venv /home/xmz/expert-envs/<name>`
 - Isolation: `include-system-site-packages = false`; the path is task-specific and must be absent
   before creation, so no unrelated environment is overwritten.
 - Initial runtime expectation: Guqq `/usr/bin/python3` (Python 3.10.x), with pip supplied by `venv`.
-- Creation status: unconfirmed. Three post-plan connections ended at the Vlab jump without Guqq
-  shell output, so no claim is made that the directory exists.
+- Creation status: MACE/core exists with Python 3.10.12 and pip 22.0.2; the other three are pending.
 - Installation status: not started. Exact installed versions, CUDA/PyTorch build, scientific stack,
   four backbone runtimes, source revisions where wheels are unavailable, and `pip freeze` fingerprint
   must be appended here after installation and before any acceptance job is submitted.
@@ -20,3 +23,16 @@
   fairchem-core 2.3.0; it lacks TensorPotential and DeepMD. This is audit input, not the Guqq lock:
   Equiformer acceptance remains pinned to fairchem-core 1.10.0 and GRACE/DPA4 require their recorded
   runtimes before jobs may be submitted.
+
+### Frozen incompatibility boundary
+
+Official PyPI `Requires-Dist` metadata makes a single combined venv invalid:
+
+- MACE 0.3.16 requires `e3nn==0.4.4`;
+- fairchem-core 1.10.0 requires `e3nn>=0.5`, `torch~=2.4.0`, and NumPy 1.26.x;
+- DeepMD 3.2.0 `[torch]` requires `e3nn>=0.5.9` and `torch==2.11.0`;
+- TensorPotential 0.6.0 installs a TensorFlow CUDA stack independently.
+
+The Slurm contract therefore exposes `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,
+`EXPERT_DPA4_VENV`, and `EXPERT_EQUIFORMERV2_VENV`. Mixed arrays select the corresponding
+environment from the frozen backbone order; no dependency solver override may weaken these pins.
