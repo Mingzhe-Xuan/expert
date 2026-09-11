@@ -32,3 +32,7 @@
   `python -m compileall -q`。
 - EquiformerV2 下载返回 HTTP 401/GatedRepo；本机 `hf auth whoami` 为
   `Not logged in`，故未伪造完成状态。
+- Guqq 连通性诊断：TCP 22 成功；`ssh -G Guqq` 在批准环境中解析为用户 `xmz`
+  和指定 Ed25519 identity；`ssh -vv Guqq git pull` 在认证前返回
+  `kex_exchange_identification: Connection closed by remote host`，因此没有远端
+  命令得到执行，也没有绕过 Slurm 在登录节点运行批处理。
