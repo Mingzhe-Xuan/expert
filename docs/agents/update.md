@@ -4,6 +4,8 @@
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。
 - 2026-09-12：Guqq pull 已恢复并同步至 `6395e15`；远端现有 dielectric 文件大小不符
   manifest，未采信也未覆盖。登记同一持久 transport 下的逐文件临时上传、校验与原子替换。
+- 2026-09-12：SSH control-master 握手被跳板重置且未写文件；调整为许可内的逐文件
+  `.upload-part` SCP，之后在 pull-first 校验连接中统一核对 size/SHA 并原子替换。
 
 - 2026-09-12：开始 efficiency report aggregation 单元；将 58/20 smoke 内嵌记录汇总为
   同源、稳定排序且 fail-closed 的 JSON/Markdown 交付物。

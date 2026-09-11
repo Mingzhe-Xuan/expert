@@ -22,6 +22,18 @@
   temporary names, verify every remote byte size/SHA-256, and atomically rename only verified files.
 - EquiformerV2 remains excluded because gated access is unresolved. No source edit, training,
   inference, evaluation, compilation, preprocessing, or other compute is authorized.
+- Result: the jump host reset the SSH multiplex handshake (`mux_client_request_session`) before the
+  mandatory pull returned. No directory or resource write occurred.
+
+## 2026-09-12 — Atomic per-file SCP fallback and verification
+
+- Intended transfer: use the explicitly permitted `scp` path to copy each of the ten locally
+  size/SHA-256-verified contract files to an `.upload-part` name without replacing final paths.
+- Intended verification connection: first run HTTP/1.1 `git pull --ff-only`, then create only the
+  ignored target directories, verify every staged file with fixed `stat`/`sha256sum` values, and
+  atomically rename only matches. Any missing/mismatched item leaves final paths untouched.
+- This is resource transfer and lightweight checksum/file management only; no source edit, compile,
+  data conversion, model execution, evaluation, training, or unsubmitted compute is authorized.
 
 ## 2026-09-12 — Spaced resource-sync recovery check after local DoD work
 
