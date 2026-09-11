@@ -1,5 +1,13 @@
 # GPU / server activity
 
+## 2026-09-12 — Spaced resource-sync recovery check after local DoD work
+
+- Intended connection: one bounded multiplexed `ssh Guqq` transport after two completed local
+  implementation units and an elapsed retry interval.
+- Authorized purpose: first run scoped HTTP/1.1 `git pull`; only if that succeeds, prepare ignored
+  resource directories and expose `MASTER_READY` for atomic per-file copies and SHA-256 checks.
+- If the first pull still fails, stop for this goal turn. No login-node compute is authorized.
+
 ## 2026-09-12 — Synchronize verified benchmark/checkpoint resources
 
 - Intended connection: one `ssh Guqq` streaming session.
