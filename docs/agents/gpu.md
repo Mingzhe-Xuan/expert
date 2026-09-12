@@ -10,6 +10,19 @@
   files via `scp`; verify fixed sizes/SHA-256 before atomic promotion. EquiformerV2 is out of scope.
 - No model execution, testing, preprocessing, training, inference, evaluation, or compilation will
   run on the login node. Any compute subsequently authorized here will be submitted through Slurm.
+- Result: Guqq was reachable, but its GitHub HTTPS pull still ended with GnuTLS receive error `-110`;
+  the guarded staging-directory creation and all later commands did not execute.
+
+## 2026-09-12 — Git-bundle pull fallback for recovered Guqq
+
+- Intended transfer: create a local Git bundle from committed `main` and SCP it to a task-specific
+  file in `/home/xmz`; this is the allowed source-transfer fallback for unavailable server egress.
+- Intended connection: make `git pull --ff-only /home/xmz/expert-sync-a460182.bundle main` the first
+  remote operation, then create the ignored resource staging directory and inspect disk/Slurm state.
+- After that successful Git pull, transfer and verify only the ten non-Equiformer contract resources.
+  The EquiformerV2 checkpoint remains explicitly paused and excluded.
+- No direct server source edit, model execution, preprocessing, compilation, or login-node compute
+  is authorized; later compute remains Slurm-only.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 

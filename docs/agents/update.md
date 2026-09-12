@@ -2,6 +2,8 @@
 
 - 2026-09-12：用户确认 Guqq 网络恢复，继续资源与 Slurm 阶段；按指示暂停
   EquiformerV2 checkpoint 下载，只推进十文件非门控资源及不依赖 Eq 的验收任务。
+- 2026-09-12：Guqq 可达但服务器 GitHub HTTPS 仍报 GnuTLS `-110`；改用本地 committed
+  `main` Git bundle 经 SCP 传入，再以该 bundle 的 `git pull --ff-only` 作为首个远程操作。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。
