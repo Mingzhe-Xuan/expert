@@ -8,11 +8,19 @@ stopping/best checkpoint，以及原始物理坐标下 Fnorm/EwT25/10/5 和公�
 Guqq 上 408、409、410_[0-2] 仍是全量训练前的非 Eq 真实 backbone 最小运行探针，终态待收集；
 EquiformerV2 checkpoint 下载继续按用户要求暂停，正式 benchmark 尚未产出数值。
 
+提交前协议复核发现 production elastic manifest 当前筛选为 14,480，而 GMTNet A 级协议及
+官方第二阶段预处理实际要求 14,220。正式 elastic CLI 将先 fail closed；正在实现官方
+structural-symmetry zero screening、compact support mask 与 Slurm candidate-manifest 生成路径。
+
+上述协议修复现已完成本地实现并通过 202 项完整回归；`build_jarvis_elastic_manifest.sbatch`
+会在 compute partition 生成候选，不在服务器修改 Git 源码。下一步需先同步并运行该 CPU job，
+验证输出确为 14,220 后 scp 回本地提升 manifest；dielectric 不受此数据协议差异影响。
+
 ## 当前计划（JARVIS backbone + readout benchmark）
 
 1. pull-first 连接 Guqq，收集 408、409、410_[0-2] 的 scheduler、JSON、JUnit 和日志证据。
-2. 提交并同步已通过回归的正式 trainer；优先启动 MACE dielectric/elastic 两个完整实验，
-   以实际 feature-cache 体积和 epoch 时长决定 GRACE/DPA4 的串行资源安排。
+2. 通过 Slurm 重建 14,220 elastic candidate manifest，scp 回本地验证/提交；在此之前只允许
+   dielectric 进入训练门控，elastic 必须拒绝当前 14,480 split。
 3. 通过 Slurm 运行 MACE/GRACE/DPA4；按验证结果逐步调参，
    与 `docs/benchmarks/README.md` 的 A 级指标逐项比较。
 
@@ -28,6 +36,9 @@ EquiformerV2 checkpoint 下载继续按用户要求暂停，正式 benchmark 尚
 - 2026-09-12：实现与研究记录已提交并推送为 `1e4958a`。随后三次 pull-first Guqq 连接均只
   返回 Vlab banner 并以状态 1 结束，未取得 pull、408–410 探针或容量证据；按既有网络经验
   停止本轮盲连，训练提交门控保持关闭。下一次恢复时仍从同一只读证据收集步骤继续。
+- 2026-09-12：跨轮 Guqq 恢复仍在 Vlab 层以状态 1 退出。并行完成 GMTNet elastic 官方源码
+  审计与协议修复：当前 14,480 manifest 在正式 CLI 中 fail closed；新增 14,220 candidate
+  Slurm generator、逐记录 36-bit support mask 和 loader zero projection，完整 202 tests 通过。
 
 ## 当前状态（Dataset point-group balance）
 

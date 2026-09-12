@@ -14,6 +14,7 @@ from ..training import (
     BenchmarkConfig,
     extract_frozen_examples,
     load_frozen_feature_cache,
+    require_published_split_counts,
     save_frozen_feature_cache,
     train_cached_backbone_readout,
     write_smoke_report,
@@ -29,6 +30,7 @@ def _ordered_samples(dataset, split: str):
 def run_benchmark(arguments: argparse.Namespace) -> dict[str, object]:
     unit = TrainingUnit("jarvis_tensor", arguments.target)
     dataset = load_training_dataset(unit)
+    require_published_split_counts(unit, dataset.split_manifest)
     resource = BackboneResourceRegistry()[arguments.backbone]
     if resource.sha256 is None:
         raise ValueError("backbone resource lacks a frozen checkpoint SHA-256")

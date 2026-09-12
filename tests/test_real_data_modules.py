@@ -7,6 +7,7 @@ import pickle
 import pytest
 import torch
 
+from data.build_manifest import gmtnet_elastic_protocol_filter
 from src.data import (
     TensorSample,
     TrainingUnit,
@@ -121,6 +122,67 @@ def test_jarvis_dielectric_and_elastic_loaders_preserve_published_3_1_1(tmp_path
         elastic[0].target_cartesian,
         atol=1e-10,
     )
+
+
+def test_gmtnet_elastic_protocol_filters_structurally_forbidden_entries() -> None:
+    allowed = torch.zeros((6, 6), dtype=torch.float64)
+    allowed[:3, :3] = torch.tensor(
+        [[200.0, 100.0, 100.0], [100.0, 200.0, 100.0], [100.0, 100.0, 200.0]]
+    )
+    allowed[3, 3] = allowed[4, 4] = allowed[5, 5] = 50.0
+    record = {
+        "JARVIS_ID": "JVASP-cubic",
+        "atoms": {
+            "lattice_mat": (4.0 * torch.eye(3)).tolist(),
+            "coords": [[0.0, 0.0, 0.0]],
+            "elements": ["Si"],
+            "cartesian": False,
+        },
+        "elastic_total_kbar": (10.0 * allowed).tolist(),
+    }
+    accepted, bits, projected = gmtnet_elastic_protocol_filter(record)
+    support = torch.tensor(
+        [bool(bits & (1 << index)) for index in range(36)]
+    ).reshape(6, 6)
+    assert accepted
+    assert int(support.sum()) == 12
+    assert support[:3, :3].all()
+    assert support[3:, 3:].diag().all()
+    assert torch.allclose(torch.from_numpy(projected), allowed)
+
+    record["elastic_total_kbar"][0][3] = 0.1  # 0.01 GPa > official 1e-4 cutoff
+    accepted, _, _ = gmtnet_elastic_protocol_filter(record)
+    assert not accepted
+
+
+def test_elastic_loader_applies_manifest_support_mask(tmp_path) -> None:
+    ids = [f"JVASP-mask-{index}" for index in range(5)]
+    voigt_kbar = torch.full((6, 6), 10.0, dtype=torch.float64)
+    records = [
+        {
+            "JARVIS_ID": sample_id,
+            "atoms": _structure(),
+            "elastic_total_kbar": voigt_kbar.tolist(),
+        }
+        for sample_id in ids
+    ]
+    splits = _jarvis_splits(ids)
+    for rows in splits.values():
+        for row in rows:
+            row["elastic_support_mask_bits"] = 1  # retain C11 only
+    manifest = _write_manifest_resource(
+        tmp_path,
+        "masked-elastic",
+        records,
+        "pkl",
+        {"splits": splits, "elastic_protocol_version": 1},
+    )
+    dataset = load_training_dataset(
+        TrainingUnit("jarvis_tensor", "elastic"), manifest_path=manifest
+    )
+    tensor = dataset[0].target_cartesian
+    assert tensor[0, 0, 0, 0] == 1.0
+    assert tensor[1, 1, 1, 1] == 0.0
 
 
 def test_matten_loader_reads_column_oriented_structure_and_native_tensor(tmp_path) -> None:

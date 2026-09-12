@@ -28,6 +28,9 @@ the direct `B+R` readout on the complete published JARVIS split. It reports samp
 Fnorm and EwT 25/10/5 in the original physical frame. On Guqq it must be run through
 `slurm/train_jarvis_backbone_readout.sbatch`; the launcher intentionally rejects EquiformerV2 while
 its gated checkpoint download is paused.
+The CLI validates exact public split sizes before loading a backbone: `3770/471/471` for dielectric
+and `11376/1422/1422` for elastic. Consequently, the known 14,480-record first-stage elastic
+manifest is rejected until the official second-stage candidate is generated and promoted.
 
 `python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.

@@ -28,6 +28,24 @@ PUBLIC_TARGETS = {
     "dielectric": {"fnorm": 2.87, "ewt_25": 86.1, "ewt_10": 63.8, "ewt_5": 39.3},
     "elastic": {"fnorm": 67.38, "ewt_25": 70.6, "ewt_10": 32.2, "ewt_5": 14.4},
 }
+PUBLISHED_SPLIT_COUNTS = {
+    "dielectric": {"train": 3770, "validation": 471, "test": 471},
+    "elastic": {"train": 11376, "validation": 1422, "test": 1422},
+}
+
+
+def require_published_split_counts(unit: TrainingUnit, split_manifest) -> None:
+    if unit.dataset != "jarvis_tensor" or unit.target not in PUBLISHED_SPLIT_COUNTS:
+        raise ValueError("published split count gate only supports JARVIS tensor benchmarks")
+    actual = {
+        name: len(getattr(split_manifest, name))
+        for name in ("train", "validation", "test")
+    }
+    expected = PUBLISHED_SPLIT_COUNTS[unit.target]
+    if actual != expected:
+        raise ValueError(
+            f"{unit.target} split is not directly comparable: expected {expected}, received {actual}"
+        )
 
 
 @dataclass(frozen=True, slots=True)

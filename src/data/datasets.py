@@ -312,6 +312,11 @@ def _load_jarvis(
         raise ValueError("requested JARVIS IDs are outside the published split")
     samples = []
     seen = set()
+    split_rows = {
+        str(row["jarvis_id"]): row
+        for name in ("train", "validation", "test")
+        for row in manifest["splits"][name]
+    }
     for raw in records:
         sample_id = str(raw["JARVIS_ID"])
         if sample_id not in requested:
@@ -330,6 +335,15 @@ def _load_jarvis(
             voigt_gpa = torch.as_tensor(raw["elastic_total_kbar"], dtype=torch.float64) / 10.0
             if voigt_gpa.shape != (6, 6) or float(voigt_gpa.abs().max()) >= 1500.0:
                 raise ValueError(f"manifest-selected elastic sample {sample_id} fails its filter")
+            if int(manifest.get("elastic_protocol_version", 0)) == 1:
+                row = split_rows[sample_id]
+                if "elastic_support_mask_bits" not in row:
+                    raise ValueError("GMTNet elastic protocol row lacks its support mask")
+                bits = int(row["elastic_support_mask_bits"])
+                support = torch.tensor(
+                    [bool(bits & (1 << index)) for index in range(36)]
+                ).reshape(6, 6)
+                voigt_gpa = voigt_gpa * support
             target = voigt_stiffness_to_cartesian(voigt_gpa)
             target_unit = "GPa"
         samples.append(

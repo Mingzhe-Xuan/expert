@@ -832,3 +832,17 @@
   wait. There is no evidence of a Guqq pull or scheduler command. This makes three same-condition
   connection failures in the turn; retries stop, the capacity/probe gate stays closed, and no full
   MACE job was submitted.
+
+## 2026-09-12 — Cross-turn benchmark submission resume
+
+- Intended connection: after the required turn-level pause, perform a bounded HTTP/1.1 pull to
+  `e2b6fa5`, then collect jobs 408/409/410_[0-2], JSON/JUnit/log evidence, and filesystem capacity.
+  If and only if MACE probes pass and capacity is safe, submit full MACE JARVIS dielectric and
+  elastic training through `train_jarvis_backbone_readout.sbatch`.
+- Permission check: allowed lightweight pull/status/result inspection plus Slurm submission of the
+  explicitly requested training. No login-node compute, no EquiformerV2 resource access, and no
+  overwrite of unrelated environments, data, or results.
+- Result: the connection again emitted only the Vlab banner and exited status 1 without pull,
+  scheduler, capacity, or artifact output. No job was submitted. Local protocol auditing then found
+  the elastic 14,480/14,220 mismatch, so the next successful connection must first sync the corrected
+  code and submit the CPU candidate-manifest job before elastic training can be validly launched.

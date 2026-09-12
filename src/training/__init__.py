@@ -8,6 +8,7 @@ from .benchmark import (
     collate_frozen_examples,
     extract_frozen_examples,
     load_frozen_feature_cache,
+    require_published_split_counts,
     save_frozen_feature_cache,
     train_cached_backbone_readout,
 )
@@ -40,6 +41,7 @@ __all__ = [
     "default_convention_metadata",
     "extract_frozen_examples",
     "load_frozen_feature_cache",
+    "require_published_split_counts",
     "load_checkpoint",
     "physical_coefficient_metrics",
     "prepare_tensor_batch",

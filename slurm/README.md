@@ -26,6 +26,11 @@ features are cached under ignored `results/benchmark-cache/` so readout hyperpar
 not rerun the checkpoint. The job emits Git/environment fingerprints, a best checkpoint, JSON,
 JUnit, and scheduler logs. The launcher permits MACE/GRACE/DPA4 only while EqV2 access is paused.
 
+`build_jarvis_elastic_manifest.sbatch` reproduces GMTNet's second-stage structural-symmetry screen
+inside Slurm and writes a candidate 14,220-record manifest under ignored `results/dataset-protocol/`.
+The candidate must be copied back, inspected, tested, and committed locally; the server job never
+edits the Git-managed production manifest.
+
 Both mixed-backbone arrays use `select_backbone_venv.sh`. Their frozen schedules map array
 index modulo four to MACE, GRACE, DPA4, and EquiformerV2 respectively. The full core test suite,
 fixture builder, and BEC preparation use the MACE/core environment; standalone adapter jobs use

@@ -1089,3 +1089,33 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - 完整项目：`199 passed, 0 failed`，耗时 245.76 秒；仅有既存 TorchScript/profiler warnings。
 - `python -m compileall -q src`、`python -m src.cli.benchmark_train --help`、
   `bash -n slurm/train_jarvis_backbone_readout.sbatch`、`git diff --check`：通过。
+# 2026-09-12 — GMTNet 14,220-sample elastic protocol correction
+
+## 测试范围与预期
+
+- 从冻结的 GMTNet `GMTNet_elast/data.py` 复现第二阶段 structural-symmetry zero screening：
+  `lattice @ R_frac @ lattice^-1`、官方 73-d irrep probe、`2x0e+2x2e+1x4e` Cartesian
+  support mask、forbidden entry `<1e-4 GPa`，并把禁止分量置零。
+- cubic synthetic record 必须得到仅含正常块与三个 shear diagonal 的 6x6 support；合法 label
+  保留，给 forbidden `C14` 注入超过阈值的值必须拒绝。
+- manifest generator 支持把候选输出写到 `results/`，不得要求在 Guqq 修改 Git-managed
+  `data/manifests/`；每条 elastic split row 保存 compact 36-bit support mask 供 loader 精确复现 label。
+- production benchmark CLI 对 published split counts fail closed：dielectric `3770/471/471`，
+  elastic `11376/1422/1422`。当前 14,480 manifest 必须被拒绝，直到 Slurm 生成并本地提升
+  14,220 candidate。
+- loader 对带 protocol-v2 support mask 的 elastic label 应用同一 zero projection，且旧的小型
+  schema fixture 保持兼容。运行 targeted/full pytest、compile、CLI help、shell/diff checks。
+
+## 实际结果
+
+- 官方 source commit `7a606a4` 审计确认：初筛为 `max(abs(elastic_total_kbar/10))<1500`；
+  预处理再从结构对称操作生成 Cartesian support mask，要求 forbidden entries `<1e-4 GPa`，
+  通过后清零禁止分量；最后用 Python `random.seed(32)` 做 8:1:1 split。
+- cubic protocol、loader support-mask 与 exact split gate 定向测试：`13 passed`；完整项目：
+  `202 passed, 0 failed`，耗时 244.16 秒，仅有既存 TorchScript/profiler warnings。
+- 一次过宽的 `compileall data src` 同时扫描了 vendored fairchem 源码，发现其上游若干文件本身
+  的 future-import 顺序问题；该范围不属于本实现。随后对全部修改 Python 文件执行
+  `py_compile`：通过；两个 Slurm launcher `bash -n` 与 `git diff --check`：通过。
+- production 14,220 manifest 的全量计数尚未本地运行；按权限约束，该批处理只通过新增 Slurm
+  入口生成 candidate，再 scp 回本地验收。因此当前 14,480 production manifest 保持原样，
+  benchmark CLI 会明确拒绝，而不会生成不可比 elastic 跑分。

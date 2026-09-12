@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -17,6 +18,7 @@ from src.training import (
     collate_frozen_examples,
     load_frozen_feature_cache,
     prepare_tensor_batch,
+    require_published_split_counts,
     save_frozen_feature_cache,
     train_cached_backbone_readout,
 )
@@ -156,3 +158,16 @@ def test_frozen_feature_cache_round_trip_is_metadata_gated(tmp_path) -> None:
             expected_split="test",
             expected_sample_ids=["cached-0", "cached-1"],
         )
+
+
+def test_published_split_gate_rejects_current_14480_elastic_manifest() -> None:
+    unit = TrainingUnit("jarvis_tensor", "elastic")
+    valid = SimpleNamespace(
+        train=tuple(range(11376)), validation=tuple(range(1422)), test=tuple(range(1422))
+    )
+    require_published_split_counts(unit, valid)
+    invalid = SimpleNamespace(
+        train=tuple(range(11584)), validation=tuple(range(1448)), test=tuple(range(1448))
+    )
+    with pytest.raises(ValueError, match="not directly comparable"):
+        require_published_split_counts(unit, invalid)

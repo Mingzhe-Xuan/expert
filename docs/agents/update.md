@@ -324,3 +324,14 @@
 - Committed and pushed as `1e4958a`. Three subsequent pull-first Guqq attempts failed at the Vlab
   jump-host boundary, so probe/capacity gates could not be verified and no full training job was
   submitted; EquiformerV2 remained untouched.
+# 2026-09-12 — Correct GMTNet elastic benchmark population
+
+- Audited frozen official GMTNet source and found the existing 14,480-record manifest represented
+  only its first magnitude screen, while the reported benchmark uses a second structural-symmetry
+  forbidden-component screen before the seed-32 split and contains 14,220 records.
+- Reproduced the official O(3)-probe support-mask algorithm, persisted compact per-record masks,
+  applied the same zero projection in the loader, and made full benchmark training reject any split
+  other than 11,376/1,422/1,422 for elastic (3,770/471/471 for dielectric).
+- Added a CPU Slurm candidate-manifest job so server-side batch processing never edits tracked source.
+  Verification: targeted 13 passed, full suite 202 passed, relevant compile/shell/diff checks passed.
+  Full candidate generation awaits Guqq connectivity; no incomparable elastic job was submitted.
