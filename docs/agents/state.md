@@ -25,6 +25,9 @@ EquiformerV2 checkpoint 下载继续按用户要求暂停，正式 benchmark 尚
   pre-interface tap，缓存严格绑定 checkpoint SHA/split IDs；readout edge basis 按 target 扩展到
   elastic `l=4`；完整项目 199 passed，compile、CLI help、shell syntax 与 diff 检查通过。
   下一阶段为提交同步并在 Guqq 先跑 MACE 两个 JARVIS 单元。
+- 2026-09-12：实现与研究记录已提交并推送为 `1e4958a`。随后三次 pull-first Guqq 连接均只
+  返回 Vlab banner 并以状态 1 结束，未取得 pull、408–410 探针或容量证据；按既有网络经验
+  停止本轮盲连，训练提交门控保持关闭。下一次恢复时仍从同一只读证据收集步骤继续。
 
 ## 当前状态（Dataset point-group balance）
 

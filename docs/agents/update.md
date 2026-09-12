@@ -321,3 +321,6 @@
   path for the MACE l<=1 source tap. Added a non-Eq-only Slurm launcher while EqV2 is paused.
 - Verification: benchmark targeted tests 5 passed; complete suite 199 passed; compile, CLI help,
   Slurm shell syntax, and diff checks passed. No full benchmark score has been claimed yet.
+- Committed and pushed as `1e4958a`. Three subsequent pull-first Guqq attempts failed at the Vlab
+  jump-host boundary, so probe/capacity gates could not be verified and no full training job was
+  submitted; EquiformerV2 remained untouched.

@@ -805,3 +805,30 @@
   exited with status 1 and produced no Guqq pull, scheduler, or artifact output. No remote state is
   inferred and no task or resource operation occurred. Local benchmark-runner work can still proceed
   independently while the submitted probe jobs remain untouched.
+
+## 2026-09-12 — Sync benchmark runner and gate first full MACE submissions
+
+- Intended connection: perform the mandatory HTTP/1.1 pull to commit `1e4958a`, inspect filesystem
+  capacity and the exact terminal evidence for jobs 408, 409, and 410_[0-2]. Only if the MACE
+  standalone and real-subset probe are both `COMPLETED 0:0` with passed JSON/JUnit artifacts, submit
+  the two full published-split MACE `B+R` jobs for JARVIS dielectric and elastic.
+- Permission check: pull/status/log inspection are lightweight login-node operations; both full
+  training workloads, if gated successfully, will be submitted through Slurm. Outputs stay under
+  ignored `results/` and `logs/`; no EquiformerV2 checkpoint or download is touched. Before
+  submission, available capacity must safely cover the MACE feature caches and result artifacts.
+- Result: only the Vlab banner arrived; the bounded command exited status 1 without any Guqq pull,
+  capacity, scheduler, or artifact output. The MACE submission gate therefore remained closed and
+  no job was submitted.
+
+## 2026-09-12 — Final bounded benchmark synchronization retry
+
+- Intended connection: use the locally verified `Guqq` alias (`xmz@211.86.155.221` through `vlab`)
+  for one final bounded pull-first attempt. If pull succeeds, collect the same probe/capacity evidence
+  and submit MACE dielectric/elastic only when every documented gate is satisfied; otherwise stop
+  connection retries for this turn and leave all jobs untouched.
+- Permission check: identical to the preceding recorded connection. Any computation must enter Slurm;
+  the login node is limited to Git, scheduler, filesystem-capacity, log inspection, and `sbatch`.
+- Result: the final retry again returned only the Vlab banner and exited status 1 after the bounded
+  wait. There is no evidence of a Guqq pull or scheduler command. This makes three same-condition
+  connection failures in the turn; retries stop, the capacity/probe gate stays closed, and no full
+  MACE job was submitted.
