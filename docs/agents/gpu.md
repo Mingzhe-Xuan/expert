@@ -1,5 +1,16 @@
 # GPU / server activity
 
+## 2026-09-12 — User-confirmed network recovery; resume non-Equiformer resources
+
+- User direction: Guqq network is restored; resume the Goal while pausing all EquiformerV2
+  checkpoint download/access work.
+- Intended connection: first run HTTP/1.1 `git pull --ff-only` in `/home/xmz/expert`, then create a
+  task-specific ignored staging directory and inspect disk/Slurm state using lightweight commands.
+- On success, transfer only the ten already verified JARVIS/MatTen, MACE, GRACE, and DPA4 contract
+  files via `scp`; verify fixed sizes/SHA-256 before atomic promotion. EquiformerV2 is out of scope.
+- No model execution, testing, preprocessing, training, inference, evaluation, or compilation will
+  run on the login node. Any compute subsequently authorized here will be submitted through Slurm.
+
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
 - Intended connection: after completing and pushing runtime sampling plus JSON/Markdown aggregation,

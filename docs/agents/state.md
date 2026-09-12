@@ -1,5 +1,21 @@
 # Agent state
 
+## 当前状态（Guqq network recovery）
+
+用户确认 Guqq 网络恢复，Goal 从外部网络阻塞中继续；EquiformerV2 checkpoint 下载按用户
+要求暂停，不尝试访问 gated 资源。当前恢复非 Equiformer 的十文件资源同步与 Slurm 验收。
+
+## 当前计划（Guqq network recovery）
+
+1. pull-first 连接并创建隔离 staging，逐文件 SCP、固定 size/SHA-256 校验后原子提升。
+2. 只提交不依赖 EquiformerV2 checkpoint 的数据准备、测试和 backbone smoke Slurm jobs。
+3. 监控至终态，保存 JSON/JUnit/Git/env/Slurm 证据并用 strict `sacct` audit 核验。
+
+## 变更记录（Guqq network recovery）
+
+- 2026-09-12：收到网络恢复通知并恢复 Goal；明确暂停 EquiformerV2 checkpoint 下载，
+  先完成 JARVIS/MatTen 与 MACE/GRACE/DPA4 资源同步及可独立验收工作。
+
 ## 当前状态（Efficiency report aggregation）
 
 已完成逐次 smoke 的 runtime efficiency 采样及跨 58-row PG 与 20-row real-subset
