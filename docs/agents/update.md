@@ -1,5 +1,10 @@
 # Agent progress updates
 
+- 2026-09-13: the spaced second resumed-Goal recovery check was again closed by the Vlab SSH endpoint
+  before Guqq command output. The mandatory pull and all guarded status/submission commands did not
+  run. This is recovery turn 2 for the same external condition; no job or metric is claimed, and the
+  Goal remains active pending the strict third-turn blocked audit.
+
 - 2026-09-13: pushed the tested prerequisite repairs as `b8b9583` and began the pull-first Guqq
   resubmission gate. Three bounded connections produced one GitHub GnuTLS `-110` failure followed by
   two Vlab SSH endpoint closures. Because all scheduler commands were guarded behind the mandatory
