@@ -42,6 +42,8 @@
 - 2026-09-12：`364` 已 `COMPLETED 0:0`；366 已在依赖解除后启动，随即取消剩余工作。
   三项修复及回归测试已完成，本地 targeted 42、完整 182 tests 全绿；下一步只重提
   GRACE/DPA4 standalone 与 real 0–2 最小探针，通过后才恢复更大 arrays。
+- 2026-09-12：修复提交 `6e7043f` 已同步 Guqq；最小 Slurm 探针为 402 GRACE、403 DPA4、
+  404 real 0–2，初始均 pending。只有五项全部 `0:0` 且 JSON/JUnit passed 后才恢复 arrays。
 
 ## 当前状态（Efficiency report aggregation）
 

@@ -142,6 +142,15 @@
   and DPA4 schema-device fixes. Inspect queue state only; broader arrays wait for these probes.
 - EquiformerV2 and BEC remain excluded. All model execution occurs in Slurm jobs; no project/model
   code will run on the login node.
+- Result: Guqq pulled fix commit `6e7043f`; submitted jobs 402 (GRACE standalone), 403 (DPA4
+  standalone), and 404 (real indices 0–2). All three allocations were initially pending.
+
+## 2026-09-12 — Monitor minimal runtime-fix probes
+
+- Intended connection: pull first, inspect jobs 402–404 with `squeue`/`scontrol`, and read their
+  task-owned JSON/JUnit plus bounded stderr only after terminal state. Do not submit broader arrays
+  unless all five cases complete with exit code `0:0` and passed summaries.
+- EquiformerV2 and BEC remain excluded; no login-node project/model execution is authorized.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
