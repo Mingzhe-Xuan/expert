@@ -1222,3 +1222,14 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   staged and active Slurm jobs remain untouched.
 - Actual: `git diff --check` passed. `rg` confirmed matching 39:46, 575/3,770, 7.0 GiB, and monitor
   closure evidence across GPU/state/update/test. The staged-path audit runs before commit.
+
+## 2026-09-12 — Pull-first recovery failure handoff
+
+- Scope: document only the three mandatory-pull failures and preserve the last verified Slurm
+  snapshot; do not infer current job state or modify code, data, checkpoints, or results.
+- Expected: all documented paths exist; `git diff --check` passes; GPU/state/update records agree on
+  GnuTLS `-110`, the 133-second port-443 timeout, and the bounded 90-second attempt; EquiformerV2
+  remains paused and only the four agent documentation files are staged.
+- Actual: all four referenced agent-document paths exist and `git diff --check` passed. `rg`
+  confirmed the three failure modes, unchanged jobs 415/414, and paused EquiformerV2 scope. The
+  staged-path audit runs before commit.

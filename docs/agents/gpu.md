@@ -1135,3 +1135,33 @@
   traceback or candidate file (the generator writes at completion). Job 414 advanced from 325 to
   575/3,770; free space remained between 7.2 and 7.0 GiB. The SSH monitor was closed deliberately;
   neither Slurm job was modified or cancelled.
+
+## 2026-09-12 — Resume after long-monitor checkpoint
+
+- Intended connection: pull `921d5b5` first, inspect exact states and bounded artifacts for 415/414,
+  and check free space. If 415 completed successfully, validate its candidate manifest metadata,
+  split counts, raw-source fields, and digest before transfer; otherwise leave both jobs unchanged.
+- Permission check: scheduler/log/JSON/checksum/storage inspection is lightweight. Any validation
+  that scans the candidate is allowed only after job completion and remains a short read-only check;
+  no cleanup, source edit, new submission, login-node model work, or EquiformerV2 access occurs.
+- Result: SSH connected, but the mandatory first `git pull --ff-only` failed with GnuTLS error
+  `(-110)` before any scheduler or artifact inspection ran. No remote state was changed.
+
+## 2026-09-12 — Retry pull-first benchmark status check
+
+- Intended connection: retry the mandatory `git pull --ff-only` after the transient GitHub TLS
+  termination, then inspect jobs 415/414 and bounded logs/artifacts only if the pull succeeds.
+- Permission check: pull plus scheduler/log/storage inspection is within the permitted lightweight
+  login-node operations. No source edit, cleanup, compute, submission, or EquiformerV2 access occurs.
+- Result: the retry also stopped at the mandatory pull, timing out while connecting to GitHub port
+  443 after 133 seconds. No scheduler query or remote mutation ran.
+
+## 2026-09-12 — Final bounded retry after GitHub timeout
+
+- Intended connection: make one final pull-first retry with Git's connect timeout bounded; only on
+  success inspect jobs 415/414, their short log tails, result files, and disk space.
+- Permission check: this is the same permitted lightweight workflow. No task compute, source edit,
+  cleanup, submission, cancellation, or EquiformerV2 access occurs.
+- Result: SSH reached Guqq, but the mandatory pull produced no Git output and was terminated by the
+  explicit 90-second bound. Consequently no scheduler/artifact query ran and jobs 415/414 were not
+  modified. This is the third consecutive outbound-pull failure in this recovery attempt.

@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-12: resumed the benchmark monitor after the user reported network recovery. SSH reached
+  Guqq three times, but the mandatory first pull failed with GnuTLS `-110`, then a 133-second GitHub
+  port-443 timeout, then the explicit 90-second bound. `set -e` prevented all later scheduler and
+  artifact reads, so jobs 415/414 were neither queried nor changed. The existing outbound-network
+  lesson applies; stop blind retries and retain the last verified Slurm evidence. EquiformerV2 was
+  not accessed.
+
 - 2026-09-12：开始四个本地训练单元的 `frequency × PG` 描述性统计；冻结使用
   manifest split 与模型相同 spglib 容差，并将 current-PG 样本平衡和 parent-DAG 实际路由
   负载分开解释。
