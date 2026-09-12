@@ -1165,3 +1165,40 @@
 - Result: SSH reached Guqq, but the mandatory pull produced no Git output and was terminated by the
   explicit 90-second bound. Consequently no scheduler/artifact query ran and jobs 415/414 were not
   modified. This is the third consecutive outbound-pull failure in this recovery attempt.
+
+## 2026-09-12 — Spaced pull-first recovery check
+
+- Intended connection: after the documented retry interval, run `git pull --ff-only` as the first
+  Guqq repository operation; on success only, collect scheduler states, bounded logs, candidate and
+  benchmark artifacts, and free-space evidence for jobs 415/414.
+- Permission check: pull and read-only scheduler/log/file/storage inspection are permitted lightweight
+  login-node operations. No compute, cleanup, source edit, job mutation, or EquiformerV2 access occurs.
+- Result: pull succeeded and fast-forwarded Guqq from `7d12d4f` to `4563521`. Job 415 was RUNNING at
+  56:22 with no traceback or completion artifact; job 414 was RUNNING at 1:23:39 and had reached
+  feature 725/3,770. Free space was 7.0 GiB. Neither job was changed.
+
+## 2026-09-12 — Monitor protocol job 415 to a bounded terminal handoff
+
+- Intended connection: pull first, then keep one SSH session open and poll lightweight scheduler
+  state every 55 seconds until job 415 leaves the queue or the local monitoring bound is reached.
+  Report job 414's latest feature line and free space alongside it; inspect bounded terminal logs and
+  candidate file metadata only after 415 leaves the queue.
+- Permission check: this performs only scheduler/log/storage reads and sub-minute waits on the login
+  node. It does not run project code, edit sources, submit/cancel jobs, clean files, or access
+  EquiformerV2.
+- First result: pull succeeded, but the installed Slurm CLI rejected the nested `squeue -o` format
+  argument at the first sample, so the monitor exited before waiting. No job or artifact changed.
+
+## 2026-09-12 — Retry bounded 415 monitor with default Slurm output
+
+- Intended connection: pull first, then repeat the bounded 55-second polling loop using default
+  `squeue` output for compatibility; inspect terminal logs and candidate metadata if 415 exits.
+- Permission check: identical read-only scheduler/log/storage scope; no compute, mutation, source
+  edit, cleanup, submission, cancellation, or EquiformerV2 access occurs.
+- Result: pull was current at `4563521`. Twelve samples followed job 415 from 58:21 to 1:09:22;
+  it remained RUNNING with no traceback or completion-only candidate. Job 414 advanced from feature
+  750 to 825/3,770. Free space moved from 7.0 to 6.8 GiB; neither job was changed.
+- 2026-09-12 — Side-thread read-only memory inspection: connect to Guqq, run the mandatory
+  `git pull --ff-only` first, then inspect login-node RAM/swap, node221 scheduler memory, and
+  Slurm RSS/VM statistics for jobs 414 and 415. No cleanup, job mutation, compute workload,
+  source edit, artifact access, or EquiformerV2 activity is authorized.

@@ -1233,3 +1233,13 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: all four referenced agent-document paths exist and `git diff --check` passed. `rg`
   confirmed the three failure modes, unchanged jobs 415/414, and paused EquiformerV2 scope. The
   staged-path audit runs before commit.
+
+## 2026-09-12 — Recovered active-job monitoring handoff
+
+- Scope: update only pull recovery, synchronized Git identity, bounded job progress, and storage
+  evidence; do not represent either running job as complete.
+- Expected: `git diff --check` passes; GPU/state/update agree on `4563521`, 415 at 1:09:22, MACE at
+  825/3,770, and 6.8 GiB; only four agent docs are staged and EquiformerV2 stays paused.
+- Actual: all four paths exist and `git diff --check` passed. `rg` confirmed matching `4563521`,
+  1:09:22, 825/3,770, 6.8 GiB, and paused EquiformerV2 evidence. The final staged-path audit runs
+  before commit.

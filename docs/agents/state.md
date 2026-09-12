@@ -2,17 +2,15 @@
 
 ## Current snapshot — JARVIS backbone + readout benchmark (2026-09-12 network recheck)
 
-Guqq SSH itself is reachable, but three consecutive mandatory pull-first checks failed at the
-Guqq-to-GitHub HTTPS step: GnuTLS `-110`, a 133-second port-443 timeout, and a bounded 90-second
-timeout. Because each command used `set -e`, no scheduler or artifact inspection followed and no
-remote state changed. The last verified evidence therefore remains: protocol job 415 was RUNNING at
-39:46 without a traceback or completion-only candidate, while MACE dielectric job 414 had reached
-feature extraction 575/3,770 with about 7.0 GiB free. Both Slurm jobs were left untouched.
+Guqq pull-first access recovered and fast-forwarded the server from `7d12d4f` to `4563521`. Protocol
+job 415 remains RUNNING at 1:09:22 with no traceback or completion-only candidate. MACE dielectric
+job 414 remains RUNNING and has reached frozen feature extraction 825/3,770. Free space is 6.8 GiB;
+both jobs remain untouched and no terminal metric is claimed.
 
-The Goal remains active rather than complete. After a meaningful network interval, resume with one
-mandatory `git pull --ff-only`; if it succeeds, validate and return job 415's exact 14,220-record
-manifest, then continue/assess job 414 and the remaining non-EquiformerV2 benchmarks. The paused
-EquiformerV2 checkpoint download remains out of scope.
+The Goal remains active rather than complete. Continue bounded monitoring until 415 emits the exact
+14,220-record manifest, validate and return it locally, then unlock elastic training. Job 414 must
+finish and emit its JSON/JUnit/checkpoint evidence before its four metrics are compared with the
+published table. Remaining MACE/GRACE/DPA4 runs stay capacity-gated and EquiformerV2 remains paused.
 
 ## 当前状态（JARVIS backbone + readout benchmark）
 
