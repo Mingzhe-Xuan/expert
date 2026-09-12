@@ -4,8 +4,8 @@
 
 计划检查：
 
-- 确认状态记录与首回合三次连接及第二回合间隔重试证据一致，不误报 `git pull`、Slurm
-  submission 或指标；
+- 确认状态记录与三个连续 Goal 回合的连接证据一致，不误报成功的 `git pull`、Slurm
+  submission 或指标，并仅在第三回合后标记 blocked；
 - 确认修复提交、网络错误、后续 gate 与 EquiformerV2 暂停范围均明确；
 - 对本次纯文档更新执行 Markdown 关键字段检查及 `git diff --check`。
 

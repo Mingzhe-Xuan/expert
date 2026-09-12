@@ -22,12 +22,13 @@ conversion recomputes distances from backbone vectors and removes boundary/out-o
 the unchanged strict cutoff. Targeted checks passed 31 and 30 tests, the complete project suite
 passed 208 tests, and compile/shell/diff checks passed.
 
-Two consecutive resumed Goal turns have not passed the mandatory synchronization gate. The first
+Three consecutive resumed Goal turns have not passed the mandatory synchronization gate. The first
 turn produced one Guqq-side `git pull` GnuTLS `-110` failure followed by two Vlab endpoint closures;
-the spaced second-turn retry was again closed by Vlab before remote command output. Every submission
-remained behind `&&`, so no diagnostic, manifest, or training job was created and no benchmark metric
-is available. The next meaningful action remains a pull-first synchronization to current `main`,
-followed by Slurm job submission; EquiformerV2 stays paused.
+the spaced second-turn retry was again closed by Vlab; the third turn reached Guqq but its mandatory
+HTTP/1.1 pull again failed with GnuTLS `-110`. Every submission remained behind `&&`, so no diagnostic,
+manifest, or training job was created and no benchmark metric is available. The benchmark Goal is
+formally blocked pending an external network-state change. Recovery starts with a pull-first sync to
+current `main`, followed by Slurm submission; EquiformerV2 stays paused.
 
 ## 当前状态（JARVIS backbone + readout benchmark）
 

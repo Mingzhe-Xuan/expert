@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-13: the third consecutive resumed-Goal recovery audit reached Guqq, but the mandatory
+  HTTP/1.1 GitHub pull failed with GnuTLS `-110`. All later status and Slurm commands remained gated
+  and did not execute. Because the same pre-synchronization external blocker has now repeated for
+  three Goal turns and all remaining acceptance work requires Guqq/Slurm, the benchmark Goal is
+  formally blocked with no score claim; EquiformerV2 remains paused.
+
 - 2026-09-13: the spaced second resumed-Goal recovery check was again closed by the Vlab SSH endpoint
   before Guqq command output. The mandatory pull and all guarded status/submission commands did not
   run. This is recovery turn 2 for the same external condition; no job or metric is claimed, and the
