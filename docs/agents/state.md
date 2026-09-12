@@ -18,6 +18,9 @@
 - 2026-09-12：增量 Git bundle pull 成功，Guqq 同步至 `9bcd5cf` 并创建 staging；四个
   小文件上传成功，但 17.85 MB GRACE shard 被跳板中断。调整为 8 MiB 分块、重组后完整
   size/SHA 校验、通过才原子提升；远端仅余 13 GiB，完整 BEC job 需另行容量门控。
+- 2026-09-12：DPA4、JARVIS elastic、MatTen elastic 及前六个 MACE 分块已传至隔离
+  staging；`mace_medium.part.006` 连续三次被跳板重置，已查阅并补充网络经验，改为只把
+  该块细分为 4 MiB 唯一命名子块。任何远端分块在整文件 size/SHA 通过前均不采信。
 
 ## 当前状态（Efficiency report aggregation）
 

@@ -104,3 +104,14 @@
   the runtime generation expected by the frozen backbone release.
 - Pin Hydra 1.3.2 and OmegaConf 2.3.0 explicitly, allow only their pure-Python antlr4 packaging
   exception, then retain wheel-only policy for native dependencies and finish with `pip check`.
+
+## 2026-09-12 — Vlab jump-host resets during SCP payloads
+
+- A successful SSH handshake and several successful chunks do not guarantee that a later SCP
+  payload will finish: the jump path can reset mid-transfer and leave a partial remote filename.
+- After the same 8 MiB chunk fails three consecutive times, stop blind retries and subdivide only
+  that chunk under a distinct prefix. This preserves already completed chunks while shortening the
+  failure window without confusing a partial file with accepted input.
+- Treat staging files as untrusted until reconstruction into a new temporary path passes both the
+  frozen byte count and SHA-256. Only then atomically rename it to the manifest path; incomplete or
+  superseded chunks may be removed only after the verified promotion succeeds.

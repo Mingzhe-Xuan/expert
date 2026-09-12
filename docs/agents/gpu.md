@@ -47,6 +47,12 @@
   chunks only into new temporary files, validate all ten fixed byte sizes/SHA-256 values, and atomically
   move matches into manifest paths. Remove task-specific staging only after all ten checks pass.
 - EquiformerV2 remains paused; no login-node compute or source editing is authorized.
+- Progress: DPA4 (5 chunks), JARVIS elastic (3), MatTen elastic (3), and the first six MACE chunks
+  transferred successfully. `mace_medium.part.006` then failed three consecutive times with a
+  jump-host reset and may exist remotely only as a partial staging file; it is not accepted.
+- Adjustment: following the repeated-failure rule, subdivide that single chunk into distinct 4 MiB
+  pieces and retry after recording the transport lesson. Final acceptance still requires whole-file
+  byte-count/SHA-256 verification and atomic promotion; EquiformerV2 remains excluded.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
