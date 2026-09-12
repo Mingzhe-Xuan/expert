@@ -1012,3 +1012,5 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - `git diff --check`：通过，仅有工作树既有 LF→CRLF 提示。
 - `uv run ruff check ...`：未执行，当前 uv 环境没有 `ruff` executable；ruff 不属于冻结测试
   计划，且完整 Python 测试已覆盖所有修改模块的导入与执行，因此不以缺失工具替代或降低测试。
+- Guqq second-stage GPU 验收：408、409、410_[0-2] 已成功提交；其后连续三次监控连接未
+  到达可验证的 pull/queue 输出，故五项 terminal/JSON/JUnit 结果仍为 pending，不伪报通过。

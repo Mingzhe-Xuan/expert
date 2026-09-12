@@ -41,6 +41,9 @@
   matrix 的 CPU/CUDA 边界；404_2 则独立失败于 O(2) CG。Slurm 407 在 e3nn 0.5.9 下复现
   992/1000 组合失败，定位为 Wigner generator 默认 float32 污染。现已实现显式 float64
   generator、CPU-first smoke matrix 及 GRACE 字符串 dtype；targeted 51、full 194 tests 全绿。
+- 2026-09-12：`5472bb2` 已推送并同步 Guqq，提交 408 GRACE、409 DPA4 与 410 real 0–2。
+  后续三次监控连接均只返回跳板欢迎信息；已查阅既有网络 lesson 并停止盲重连，等待跨轮
+  间隔后再收集终态。Eq checkpoint 与 Eq index 始终未访问。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。

@@ -752,3 +752,42 @@
   992/1000 degree/parity combinations rejected by the strict intertwining audit, ruling out an
   isolated high-degree path and identifying default-dtype leakage in e3nn 0.5.9's generated
   Wigner-D matrices as the compatibility boundary.
+
+## 2026-09-12 — Submit second-stage non-Eq runtime probes
+
+- Intended connection: perform the mandatory HTTP/1.1 pull to `5472bb2` first, then submit only the
+  GRACE and DPA4 standalone scripts plus real-subset array indices `0-2`, using the four recorded
+  venv path variables required by the array selector.
+- Permission check: all three GPU workloads run through Slurm and are limited to the already planned
+  minimal compatibility probes. Index 3 is excluded; no EquiformerV2 checkpoint will be downloaded,
+  verified, loaded, or otherwise accessed, and no broader array will be submitted yet.
+- Submission result: the pull fast-forwarded Guqq to `5472bb2`; jobs `408` (GRACE), `409` (DPA4),
+  and array `410_[0-2]` (real MACE/GRACE/DPA4 rows) were submitted. No Eq index was included.
+
+## 2026-09-12 — Monitor second-stage non-Eq runtime probes
+
+- Intended connection: perform the mandatory HTTP/1.1 pull first, then inspect only jobs 408-410
+  with `squeue`/`scontrol` and bounded JSON/JUnit/stdout/stderr evidence after terminal completion.
+- Permission check: lightweight scheduler and result inspection only. No new submission, broader
+  array, checkpoint operation, or EquiformerV2 activity is authorized by this connection.
+- Result: the connection returned only the jump-host welcome banner and no mandatory-pull or scheduler
+  output within the bounded call; no state was inferred and no additional work was submitted.
+
+## 2026-09-12 — Retry bounded monitoring of jobs 408-410
+
+- Intended connection: run a 45-second bounded HTTP/1.1 pull first, then use plain `squeue` for jobs
+  408-410; emit an explicit pull timeout status rather than waiting indefinitely.
+- Permission check: read-only scheduler inspection after pull only; no submission, checkpoint/data
+  work, or EquiformerV2 activity.
+- Result: the retry again returned only the jump-host welcome banner and no Guqq pull or queue output;
+  no remote state was inferred and no task was submitted.
+
+## 2026-09-12 — Final bounded monitoring attempt for jobs 408-410
+
+- Intended connection: make one final BatchMode/ConnectTimeout-bounded connection, run the mandatory
+  30-second HTTP/1.1 pull first, and print plain queue state only if it succeeds.
+- Permission check: read-only pull/queue inspection. On another empty/failed result, stop blind
+  monitoring retries and leave the already submitted Slurm jobs untouched; no Eq activity.
+- Result: the third monitoring connection again returned only the jump-host welcome banner and no
+  Guqq pull/queue output. Per the recorded three-failure network rule, blind monitoring retries stop;
+  jobs 408-410 remain untouched and their terminal states are not yet claimed.
