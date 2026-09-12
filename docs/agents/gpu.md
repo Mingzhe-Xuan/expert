@@ -23,6 +23,17 @@
   The EquiformerV2 checkpoint remains explicitly paused and excluded.
 - No direct server source edit, model execution, preprocessing, compilation, or login-node compute
   is authorized; later compute remains Slurm-only.
+- Result: the locally verified complete-history bundle was 23,194,573 bytes; SCP was closed by the
+  jump host after about one minute, so no remote bundle is accepted as complete and no pull ran.
+
+## 2026-09-12 — Incremental Git bundle retry
+
+- Intended transfer: generate a prerequisite-aware bundle containing only committed objects after
+  the server's verified `6395e15`, verify it locally, and SCP it to a new task-specific filename.
+- Intended connection: first pull that incremental bundle with `git pull --ff-only ... main`; Git's
+  object/prerequisite validation must pass before staging-directory creation or resource work.
+- EquiformerV2 remains paused. Scope otherwise remains lightweight Git/file management followed by
+  the previously authorized non-Equiformer resource transfer; compute remains Slurm-only.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
