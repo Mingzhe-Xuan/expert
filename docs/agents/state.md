@@ -62,6 +62,9 @@ elastic candidate 与 MACE dielectric；elastic 训练仍等待 14,220 manifest 
   scheduler/Slurm 命令无执行证据。连续三回合相同传输阻塞再次满足 external-blocked 阈值。
 - 2026-09-12：用户确认网络恢复；重新激活 benchmark Goal。下一步先提交该状态，再执行
   pull-first 远端检查和严格门控的 Slurm 提交；EquiformerV2 继续暂停。
+- 2026-09-12：最新恢复后的首回合中，non-PTY pull-first 等待 90 秒、PTY pull-first 等待
+  60 秒均只返回 Vlab banner，未得到 Guqq 输出。该 fresh audit 目前计为第 1 回合，Goal 保持
+  active；未绕过 pull gate，也未提交作业。
 
 ## 当前状态（Dataset point-group balance）
 

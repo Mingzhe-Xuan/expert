@@ -380,3 +380,6 @@
   remains pull-first and will collect exact probe/capacity evidence before any Slurm submission.
 - EquiformerV2 remains paused. Elastic training remains gated on generating, returning, validating,
   and committing the exact 14,220-record protocol manifest.
+- The first recovery turn tried both non-PTY and PTY pull-first sessions. Each stopped at the Vlab
+  banner without Guqq output and was boundedly terminated; no job was submitted. This starts a fresh
+  blocked audit at attempt 1 while the Goal remains active.

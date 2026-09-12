@@ -946,3 +946,11 @@
 - Permission check: Git/status/capacity inspection is lightweight; candidate generation, backbone
   extraction, training, and evaluation use Slurm only. No server source edits, unrelated artifact
   mutation, or EquiformerV2 resource access is permitted.
+- First result: the non-PTY pull-first connection returned only the Vlab banner and no Guqq output
+  for 90 seconds, then was terminated locally. No pull completion, scheduler evidence, or submission
+  is claimed.
+- Follow-up intent: try one bounded PTY pull-first session to exclude a non-PTY/remote startup-path
+  difference. The same inspection and Slurm-only gates remain unchanged.
+- Follow-up result: the PTY connection likewise returned only `Welcome to Vlab` and no Guqq output
+  for 60 seconds before local termination. No remote state or Slurm submission is claimed. This is
+  recovery-attempt 1 after the user's latest resume; the Goal remains active under a fresh audit.

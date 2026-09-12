@@ -1179,3 +1179,12 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   EquiformerV2 paused, and stage only four agent documentation files.
 - Actual: `git diff --check` passed. `rg` confirmed the recovery, 14,220-manifest gate, and paused
   EquiformerV2 scope across GPU/state/update/test. The final staged-path audit runs before commit.
+
+## 2026-09-12 — Latest recovery attempt 1 handoff
+
+- Scope: record the bounded non-PTY and PTY pull-first results without changing code, data,
+  configuration, or model artifacts.
+- Expected: records make no Guqq/job/metric claim, retain the pull-first and Slurm-only gates, and
+  stage only four agent documentation files.
+- Actual: `git diff --check` passed. `rg` confirmed matching non-PTY, PTY, fresh-audit, and
+  recovery-attempt-1 records across GPU/state/update/test. The staged-path audit runs before commit.
