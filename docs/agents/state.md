@@ -30,6 +30,9 @@
 - 2026-09-12：已提交 Slurm `360` full tests、`361/362/363` 三 backbone smokes、`364`
   fixture builder 与 `365` 的 12 个 non-Eq/non-BEC real rows。下一步以 `afterok:364`
   提交 44 个非 Eq PG rows，并持续审计至终态。
+- 2026-09-12：44-row non-Eq PG array `366` 已以 `afterok:364` 提交。Guqq 禁用了 Slurm
+  accounting storage，`sacct` 不可用；改用 `scontrol`（记录仍在时）及任务自带 stdout、
+  stderr、JSON、JUnit 交叉验收，并把 accounting 缺口保留为明确限制。
 
 ## 当前状态（Efficiency report aggregation）
 

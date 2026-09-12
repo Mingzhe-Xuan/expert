@@ -20,6 +20,9 @@
 - 2026-09-12：Guqq 已提交 jobs `360`–`365`：full tests、MACE/GRACE/DPA4 standalone、
   fixture builder 及 12 个 non-Eq/non-BEC real rows；Eq 和未完成 BEC rows 均未提交。
   下一步提交依赖 `afterok:364` 的 44-row 非 Eq PG array 并监控全部终态。
+- 2026-09-12：已提交 non-Eq PG array `366`（44 rows，`afterok:364`）。集群明确返回
+  `Slurm accounting storage is disabled`，因此 strict `sacct` audit 无法执行；后续使用
+  `scontrol` 与 stdout/stderr、JSON/JUnit 证据交叉监控，并显式保留此验收限制。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。

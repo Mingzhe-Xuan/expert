@@ -92,6 +92,19 @@
   before the real fixture manifest is accepted. Inspect `squeue`/`sacct` only after submission.
 - Continue monitoring jobs 360–365 and the new dependent array to terminal states. Do not submit
   EquiformerV2 indices, its standalone launcher, or the capacity-gated full BEC preparation job.
+- Result: submitted array `366` with 44 non-Equiformer indices and `afterok:364`. At inspection,
+  jobs 361 and 364 were running, 362/363/365/366 were pending, and job 360 had left `squeue`.
+  `sacct` returned `Slurm accounting storage is disabled`, so the repository's sacct-only strict
+  audit cannot run on this cluster configuration.
+
+## 2026-09-12 — Monitor Slurm jobs without accounting storage
+
+- Intended connection: pull first, inspect jobs 360–366 using `squeue` and `scontrol show job`
+  where scheduler records remain, and inspect only the task-owned stdout/stderr plus JSON/JUnit
+  evidence paths. Do not run project/model code on the login node.
+- A job is not accepted merely because it disappears from `squeue`: require successful scheduler
+  state when available and its recorded JSON/JUnit evidence. Preserve the unavailable-`sacct`
+  limitation explicitly rather than fabricating the repository's strict accounting audit.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
