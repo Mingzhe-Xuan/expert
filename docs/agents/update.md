@@ -392,3 +392,6 @@
 - Pushed and synchronized `20ebc15`, then submitted replacement protocol job 415. It remained healthy
   beyond the former import failure; MACE dielectric job 414 reached train feature 250/3,770. Free
   space was 7.2 GiB and no EquiformerV2 resource was accessed.
+- A single pull-first monitor followed 415 through 39:46 runtime with no traceback. During the same
+  window, MACE job 414 advanced from feature 325 to 575/3,770 and free space remained near 7.0 GiB.
+  Closing the monitor did not modify either Slurm job.

@@ -1082,3 +1082,56 @@
 - Permission check: read-only scheduler, JSON, checksum, log, and storage checks are lightweight.
   No login-node batch processing, source edit, cleanup, new submission, or EquiformerV2 access is
   permitted.
+
+## 2026-09-12 — Resume monitoring jobs 415 and 414
+
+- Intended connection: pull latest documentation first, then inspect jobs 415/414, bounded logs,
+  candidate/cache sizes, and free space. If 415 is complete, validate its manifest metadata and
+  digest read-only; otherwise preserve both jobs and report exact progress.
+- Permission check: scheduler/log/JSON/checksum/storage inspection is lightweight. No login-node
+  compute, cleanup, source edit, new submission, or EquiformerV2 access is permitted.
+
+## 2026-09-12 — Follow-up monitor for protocol 415 and MACE 414
+
+- Intended connection: pull first and recheck both active jobs, bounded logs, candidate files, MACE
+  extraction progress, and free space. If 415 completed, run only lightweight manifest metadata and
+  checksum validation before transfer; otherwise leave both jobs untouched.
+- Permission check: read-only scheduler/log/file metadata/checksum inspection is lightweight. No
+  login-node batch processing, cleanup, source edit, new submission, or EquiformerV2 access occurs.
+
+## 2026-09-12 — Second follow-up monitor for jobs 415 and 414
+
+- Intended connection: pull first, collect exact states, bounded log tails, candidate/cache file
+  metadata, MACE progress, and free space. Validate/transfer only after a completed candidate exists;
+  otherwise leave both Slurm jobs untouched.
+- Permission check: read-only scheduler/log/checksum/storage inspection is lightweight. No
+  login-node compute, cleanup, source edit, new submission, or EquiformerV2 access is permitted.
+
+## 2026-09-12 — Resource-progress monitor for jobs 415 and 414
+
+- Intended connection: pull first, inspect exact states, bounded logs, `sstat` CPU/RSS for both job
+  steps, output metadata, and free space. This distinguishes productive long-running work from a
+  stalled process without modifying either job.
+- Permission check: read-only scheduler/resource/log/storage inspection is lightweight. No
+  login-node compute, cleanup, source edit, submission, or EquiformerV2 access is permitted.
+
+## 2026-09-12 — Third follow-up monitor for jobs 415 and 414
+
+- Intended connection: pull first and inspect exact states, bounded logs, candidate/cache metadata,
+  latest MACE progress, and free space. If 415 is complete, validate the candidate and prepare its
+  transfer; otherwise leave both jobs unchanged.
+- Permission check: read-only scheduler/log/file/checksum/storage inspection is lightweight. No
+  login-node compute, cleanup, source edit, submission, or EquiformerV2 access is permitted.
+
+## 2026-09-12 — Persistent bounded monitor until protocol 415 leaves queue
+
+- Intended connection: pull first, then keep one SSH session open and poll `squeue` every 55 seconds
+  only while job 415 remains present. Each poll reports 415/414 state, the latest MACE progress line,
+  and free space; after 415 leaves the queue, print its retained `scontrol` record and bounded logs.
+- Permission check: the loop performs only lightweight scheduler/log/storage reads and sub-minute
+  waits on the login node. It does not execute project code, modify files, submit/cancel jobs, clean
+  artifacts, or access EquiformerV2.
+- Result: the session monitored 415 from 10:25 through 39:46 runtime. It remained RUNNING without a
+  traceback or candidate file (the generator writes at completion). Job 414 advanced from 325 to
+  575/3,770; free space remained between 7.2 and 7.0 GiB. The SSH monitor was closed deliberately;
+  neither Slurm job was modified or cancelled.

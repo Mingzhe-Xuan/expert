@@ -1213,3 +1213,12 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   agent docs are staged and no running job is represented as complete.
 - Actual: `git diff --check` passed. `rg` confirmed matching job 415, MACE 250/3,770, running-state,
   and 7.2 GiB evidence across GPU/state/update/test. The staged-path audit runs before commit.
+
+## 2026-09-12 — Long-running Slurm monitor handoff
+
+- Scope: document only the observed 415 runtime, 414 feature progress, storage range, and deliberate
+  monitor-session closure; do not represent either active job as complete.
+- Expected: `git diff --check` passes; GPU/state/update evidence agrees; only four agent docs are
+  staged and active Slurm jobs remain untouched.
+- Actual: `git diff --check` passed. `rg` confirmed matching 39:46, 575/3,770, 7.0 GiB, and monitor
+  closure evidence across GPU/state/update/test. The staged-path audit runs before commit.

@@ -29,6 +29,9 @@ Slurm 413 protocol candidate 因 PyTorch 2.6 safe-load 与 e3nn 0.4.4 packaged c
 dielectric job 414 正常运行，最新持久进度为 train extraction 250/3,770。磁盘余量 7.2 GiB；
 下一步先验收 415 的 14,220 manifest，再回传本地提交并解锁 elastic 训练。
 
+最新连续监控中，415 已稳定运行至 39:46，尚未写出 completion-only candidate；414 已推进
+至 575/3,770。磁盘余量保持约 7.0 GiB，两个 Slurm 作业均未被干预。
+
 ## 当前计划（JARVIS backbone + readout benchmark）
 
 1. pull-first 连接 Guqq，收集 408、409、410_[0-2] 的 scheduler、JSON、JUnit 和日志证据。
@@ -82,6 +85,8 @@ dielectric job 414 正常运行，最新持久进度为 train extraction 250/3,7
   重提 413 的替代 job，414 保持运行。
 - 2026-09-12：`20ebc15` 已在 Guqq fast-forward；415 已运行超过原 3 秒失败点且无 traceback，
   414 正常推进到 250/3,770。当前转入 Slurm 长作业监控与 artifact 验收阶段。
+- 2026-09-12：单次 pull-first 长连接以 55 秒周期监控 415 至 39:46；其间 414 从 325 推进到
+  575/3,770，空间保持 7.0 GiB。主动关闭的仅是监控 SSH，两个 Slurm 作业继续运行。
 
 ## 当前状态（Dataset point-group balance）
 
