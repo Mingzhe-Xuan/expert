@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12：开始四个本地训练单元的 `frequency × PG` 描述性统计；冻结使用
+  manifest split 与模型相同 spglib 容差，并将 current-PG 样本平衡和 parent-DAG 实际路由
+  负载分开解释。
+- 2026-09-12：完成 29,478 条正式 split/本地成功结构的 32-PG 频数统计，发布 Markdown
+  与机器可读 JSON；三个完整 train split 均严重不平衡，BEC 因仅 10 条本地样本不可判定。
+
 - 2026-09-12：用户确认 Guqq 网络恢复，继续资源与 Slurm 阶段；按指示暂停
   EquiformerV2 checkpoint 下载，只推进十文件非门控资源及不依赖 Eq 的验收任务。
 - 2026-09-12：Guqq 可达但服务器 GitHub HTTPS 仍报 GnuTLS `-110`；改用本地 committed
@@ -146,6 +152,13 @@
   58-row real-checkpoint smoke、periodic graph/BEC joint audit 和完整 Slurm evidence wrappers；
   targeted 11 passed，完整本地套件 129 passed、0 skip，compile/sbatch syntax/diff checks 通过。
   未生成 synthetic acceptance asset；真实 fixture 与 GPU/Slurm 证据仍待 Guqq。
+
+- 2026-09-12：开始 JARVIS tensor、MatTen elastic 与 JARVIS-DFPT BEC 的 published
+  score 审计；将只从 primary sources 提取数值，下载公开来源到 `docs/`，并按数据与
+  split 可比性生成表格。
+- 2026-09-12：完成 `docs/benchmarks/README.md` 跑分汇总与 `SOURCES.md` 来源清单；
+  下载 MatTen、CEITNet、JARVIS-DFPT 原文和 ALIGNN 官方 README 快照，区分原始报告、
+  后续统一重跑与不同 target/split。链接、表格、PDF、checksum 和 whitespace 检查通过。
 
 - 2026-09-11：开始 MACE/GRACE/DPA4/EquiformerV2 正式 adapters；测试计划冻结为
   manifest/checksum/runtime fail-closed、scalar readout 前真实 tap、统一 `O3FeatureBatch`、
@@ -297,3 +310,14 @@
   `ProxyJump vlab`，并通过 `ssh -G` 静态解析、vlab BatchMode 登录及 Guqq
   BatchMode 端到端状态 0 验收。首次 Guqq 远程操作按规范执行 `git pull`，但因
   默认登录目录不是 Git 仓库返回状态 1；SSH 免密链路本身已确认正常。
+# 2026-09-12 — Full JARVIS backbone + direct-readout benchmark runner
+
+- Added full published-split training for JARVIS dielectric and elastic with deterministic
+  minibatches, train-only copy-aware normalization, AdamW, validation scheduling/early stopping,
+  strict best-checkpoint restore, and original-frame Fnorm/EwT25/10/5 reporting.
+- Added one-time frozen pre-interface feature extraction for all four adapters and tensor-only,
+  atomic caches gated by backbone checkpoint SHA, training unit, split, exact sample IDs, and layout.
+- Expanded readout edge harmonics to each target's maximum degree, restoring a legal elastic l=4
+  path for the MACE l<=1 source tap. Added a non-Eq-only Slurm launcher while EqV2 is paused.
+- Verification: benchmark targeted tests 5 passed; complete suite 199 passed; compile, CLI help,
+  Slurm shell syntax, and diff checks passed. No full benchmark score has been claimed yet.

@@ -1,5 +1,50 @@
 # Agent state
 
+## 当前状态（JARVIS backbone + readout benchmark）
+
+正式 benchmark 训练入口已完成本地实现与完整回归：支持完整 published split、冻结 source
+feature 一次提取与 checksum/split-gated cache、direct `B+R` 多 epoch 训练、validation early
+stopping/best checkpoint，以及原始物理坐标下 Fnorm/EwT25/10/5 和公开目标逐项比较。
+Guqq 上 408、409、410_[0-2] 仍是全量训练前的非 Eq 真实 backbone 最小运行探针，终态待收集；
+EquiformerV2 checkpoint 下载继续按用户要求暂停，正式 benchmark 尚未产出数值。
+
+## 当前计划（JARVIS backbone + readout benchmark）
+
+1. pull-first 连接 Guqq，收集 408、409、410_[0-2] 的 scheduler、JSON、JUnit 和日志证据。
+2. 提交并同步已通过回归的正式 trainer；优先启动 MACE dielectric/elastic 两个完整实验，
+   以实际 feature-cache 体积和 epoch 时长决定 GRACE/DPA4 的串行资源安排。
+3. 通过 Slurm 运行 MACE/GRACE/DPA4；按验证结果逐步调参，
+   与 `docs/benchmarks/README.md` 的 A 级指标逐项比较。
+
+## 变更记录（JARVIS backbone + readout benchmark）
+
+- 2026-09-12 16:36 +08:00：恢复持久 Goal 并完成初始审计。确认公开对照表和完整 split 已冻结，
+  但现有训练入口仅为五结构 smoke，不能产生 benchmark 验收指标；先收集非 Eq runtime 探针，
+  再进入正式 trainer 实现，Eq checkpoint 保持暂停。
+- 2026-09-12：完成正式 backbone + direct readout trainer 基础：四 adapter 暴露 frozen
+  pre-interface tap，缓存严格绑定 checkpoint SHA/split IDs；readout edge basis 按 target 扩展到
+  elastic `l=4`；完整项目 199 passed，compile、CLI help、shell syntax 与 diff 检查通过。
+  下一阶段为提交同步并在 Guqq 先跑 MACE 两个 JARVIS 单元。
+
+## 当前状态（Dataset point-group balance）
+
+已完成本地四个训练单元的 crystallographic point-group 描述性统计与 current-PG expert
+训练负载审计。三个完整训练集均严重不平衡；完整 JARVIS-DFPT BEC 尚未落盘，因此只报告
+10 条成功提取样本，不据此判断正式训练平衡性。
+
+## 当前计划（Dataset point-group balance）
+
+1. 将 `docs/analysis/dataset_pg_balance.md` 与机器可读 JSON 作为当前基线。
+2. 完成 BEC 全量提取并冻结 split 后重跑同一统计。
+3. material-specific parent DAG 可用后，补充实际 active-expert frequency，而非只看 current PG。
+
+## 变更记录（Dataset point-group balance）
+
+- 2026-09-12：开始本地数据集 PG 描述性统计；已确认 dielectric、elastic、MatTen 为完整
+  本地冻结资源，JARVIS-DFPT manifest 仍为 full extraction pending，本地仅有 10 条成功样本。
+- 2026-09-12：完成 29,478 条正式 split/本地成功结构的 PG 重判、频数守恒与不均衡审计；
+  三个完整 train split 均为严重不平衡。报告、JSON 和可复现生成器已完成校验。
+
 ## 当前状态（Guqq network recovery）
 
 用户确认 Guqq 网络恢复，Goal 从外部网络阻塞中继续；EquiformerV2 checkpoint 下载按用户
@@ -167,8 +212,31 @@ fingerprint contract 已完成并通过全量测试；Equiformer gated checkpoin
 - 2026-09-12：operation-aware projector 与 readout 已完成；targeted 12/15 tests 及完整
   133-test suite 全绿，compile/diff checks 通过。下一步回到 Guqq 环境与资源准备。
 
+## 当前状态（Published benchmark 跑分审计）
+
+已完成 JARVIS tensor dielectric/elastic、MatTen elastic 与 JARVIS-DFPT BEC
+四个 benchmark 的公开模型结果审计。汇总表按 A/B/C 三级区分直接可比、论文内可比
+和不可直接比较结果；新增 MatTen、CEITNet、JARVIS-DFPT 原文及 ALIGNN 官方表快照，
+并记录全部本地来源的 URL、SHA-256 和访问状态。
+
+## 当前计划（Published benchmark 跑分审计）
+
+1. 后续得到本项目正式跑分后，优先追加到相同 split 的 A 级表。
+2. 若 OpenReview/RSC 端点恢复，补归档 IrredNet PDF 与 MatTen ESI 并校验 checksum。
+3. BEC 正式比较前，在冻结 split 上重跑 ETGNN，避免把未发布 split IDs 的 0.045 e
+   直接当作同 test set 排名。
+
+## 变更记录（Published benchmark 跑分审计）
+
+- 2026-09-12：开始公开 benchmark 跑分审计；冻结四个训练单元和 primary-source-only
+  证据标准，先登记文档验收检查，再开展网络检索与来源归档。
+- 2026-09-12：完成公开跑分表和来源归档；识别 GMTNet/GoeCTP/IrredNet 的不同重跑
+  family、MatTen 的 derived-modulus 指标边界，以及 ETGNN BEC 0.045 e 的 split-ID 缺口。
+  本地链接、表格列、PDF magic/Poppler 解析、SHA-256 与 `git diff --check` 均通过。
+
 ## 并行 Goal 状态（32-PG equilibrium fixtures）
 
+在不覆盖 published benchmark 审计改动的前提下，进入 32 点群真实平衡结构 fixture 管线。
 已完成 source iterator、deterministic selector、versioned validator、58-row real-checkpoint
 smoke runner，以及三个 Goal 必需 Slurm entry points 的完整证据输出。实际 32-record asset
 仍必须由 Guqq Slurm 生成并经 scp 回本地，prototype synthetic structures 不能充当最终验收证据。
@@ -182,7 +250,7 @@ smoke runner，以及三个 Goal 必需 Slurm entry points 的完整证据输出
   JUnit、JSON、Git/environment/Slurm metadata，且全量 pytest 的 skip/xfail 会非零失败。本地 129 tests
   全绿；下一步必须在 Guqq 生成真实 fixture 并运行全部 Slurm jobs。
 
-## 当前状态（Phase A 正式实现启动）
+## 历史状态（Phase A 正式实现启动）
 
 已建立正式 `src/` 包的 12 个一级模块边界和 README，落地六项核心 typed
 contracts、三类 target layouts、checkpoint convention fail-closed 校验、五分支

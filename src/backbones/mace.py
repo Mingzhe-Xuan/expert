@@ -129,7 +129,9 @@ class MACEBackboneAdapter(nn.Module):
             "edge_distances": torch.linalg.vector_norm(mace_vectors, dim=-1),
         }
 
-    def forward(self, graph: PeriodicGraph) -> O3FeatureBatch:
+    def forward_source(self, graph: PeriodicGraph) -> O3FeatureBatch:
+        """Return the frozen checkpoint tap before the trainable interface."""
+
         encoded = [self._encode_one(graph, index) for index in range(graph.num_graphs)]
         node_offsets = []
         offset = 0
@@ -157,13 +159,15 @@ class MACEBackboneAdapter(nn.Module):
             "edge_vectors": torch.cat([item["edge_vectors"] for item in encoded]),
             "edge_distances": torch.cat([item["edge_distances"] for item in encoded]),
         }
-        source = O3FeatureBatch(
+        return O3FeatureBatch(
             node_features=torch.cat([item["features"] for item in encoded]),
             node_layout=self.source_layout,
             node_batch=node_batch,
             edge_geometry=edge_geometry,
         )
-        return self.interface(source)
+
+    def forward(self, graph: PeriodicGraph) -> O3FeatureBatch:
+        return self.interface(self.forward_source(graph))
 
     @property
     def trainable_interface_parameter_count(self) -> int:

@@ -20,6 +20,12 @@ The required 32-PG fixture builder and JARVIS-DFPT preparation jobs also emit jo
 JUnit through the same wrapper, in addition to Git and environment fingerprints. The BEC job only
 passes when validation is clean and the extracted record count equals the official index count.
 
+`train_jarvis_backbone_readout.sbatch` runs one full published-split JARVIS dielectric or elastic
+experiment selected by `EXPERT_BENCHMARK_BACKBONE` and `EXPERT_BENCHMARK_TARGET`. Frozen source
+features are cached under ignored `results/benchmark-cache/` so readout hyperparameter retries do
+not rerun the checkpoint. The job emits Git/environment fingerprints, a best checkpoint, JSON,
+JUnit, and scheduler logs. The launcher permits MACE/GRACE/DPA4 only while EqV2 access is paused.
+
 Both mixed-backbone arrays use `select_backbone_venv.sh`. Their frozen schedules map array
 index modulo four to MACE, GRACE, DPA4, and EquiformerV2 respectively. The full core test suite,
 fixture builder, and BEC preparation use the MACE/core environment; standalone adapter jobs use

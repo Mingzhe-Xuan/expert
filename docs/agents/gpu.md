@@ -791,3 +791,17 @@
 - Result: the third monitoring connection again returned only the jump-host welcome banner and no
   Guqq pull/queue output. Per the recorded three-failure network rule, blind monitoring retries stop;
   jobs 408-410 remain untouched and their terminal states are not yet claimed.
+
+## 2026-09-12 16:36 +08:00 — Resume collection of non-Eq runtime probes
+
+- Intended connection: after the documented pause, perform the mandatory HTTP/1.1 `git pull` first,
+  then inspect only Slurm jobs 408, 409, and 410_[0-2] plus their bounded JSON/JUnit/stdout/stderr
+  artifacts. These probes gate implementation and submission of the requested full JARVIS
+  dielectric/elastic backbone + readout benchmark runs.
+- Permission check: Git synchronization and read-only scheduler/result inspection are allowed
+  lightweight login-node operations. No new job, training, inference, evaluation, data processing,
+  checkpoint download, or EquiformerV2 resource access will occur in this connection.
+- Result: the connection again returned only the Vlab jump-host banner; the bounded remote command
+  exited with status 1 and produced no Guqq pull, scheduler, or artifact output. No remote state is
+  inferred and no task or resource operation occurred. Local benchmark-runner work can still proceed
+  independently while the submitted probe jobs remain untouched.

@@ -50,7 +50,12 @@ class TensorReadout(nn.Module):
         self.backend = backend
         self.scope = "node" if task == "bec" else "global"
         self.cutoff = cutoff
-        self.edge_layout = _readout_edge_layout()
+        # A direct backbone→readout model must retain a legal path to every
+        # requested output degree.  This matters especially for MACE (l<=1)
+        # on elastic tensors, whose target contract includes l=4.
+        self.edge_layout = _readout_edge_layout(
+            max(term.degree for term in self.target_layout.terms)
+        )
         self.tensor_product = build_tensor_product(
             backend, hidden_layout, self.edge_layout, self.target_layout, mmax=mmax
         )

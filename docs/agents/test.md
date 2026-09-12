@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-12 — Dataset point-group balance
+
+计划检查：
+
+- 统计输入严格来自四个冻结 manifest；JARVIS/MatTen 样本集合与 split IDs 完全一致，
+  不把过滤前记录、integer-rounding unused record 或 extraction error 当作训练样本；
+- PG 检测使用 `spglib==2.6.0`、`symprec=1e-5`、`angle_tolerance=-1`，输出只允许 32 个
+  crystallographic point-group Hermann–Mauguin symbols，且每个 split 行和等于 manifest 计数；
+- 报告每数据集的 `split × PG` frequency、非零覆盖、最大/最小非零频数、max/min、CV、
+  normalized entropy 与 effective PG count；
+- 对正式训练平衡结论只使用 train split；BEC 仅 10 条本地样本时明确标为不可判定；
+- 校验生成的 JSON/Markdown 可解析、频数守恒、本地链接有效，并执行 `git diff --check`。
+
+实际结果：
+
+- 使用 `spglib==2.6.0` 完成 4,712 dielectric、14,480 JARVIS elastic、10,276 MatTen
+  正式 split 样本及 10 条 BEC 本地成功样本的 PG 检测；全部分类到冻结的 32-PG registry；
+- split 频数严格守恒：dielectric `3770/471/471`，JARVIS elastic
+  `11584/1448/1448`，MatTen `8230/1025/1021`，BEC snapshot `10`；
+- dielectric train 覆盖 30/32，JARVIS/MatTen elastic 均覆盖 32/32；对应 max/min-nonzero
+  为 83.8、2571、2792，均判为严重不平衡；BEC 因正式 split 缺失不作训练结论；
+- JSON parse、32-symbol key coverage、Markdown 连续表列数、本地链接、render idempotence、
+  `python -m py_compile tools/dataset_pg_statistics.py` 与 `git diff --check` 均通过；
+  spglib 对少量结构输出 exact-position refinement warning，但没有返回分类失败。
+
 ## 2026-09-12 — Efficiency report aggregation
 
 计划检查：
@@ -299,7 +324,6 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - `python -m compileall -q src tests`、四个相关 sbatch 的 `bash -n` 与 `git diff --check` 均通过；
 - 本地未生成 synthetic acceptance asset，也未运行真实 checkpoint smoke。最终 32-record fixture、58 个
   GPU rows、四个 real-subset training units 与 scheduler `sacct` 证据仍必须在 Guqq 经 Slurm 完成。
-
 ## 2026-09-12 — End-to-end model and five-structure smoke runner
 
 计划检查：
@@ -985,6 +1009,30 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   SSH banner/进入 key exchange 前关闭连接；`ssh-keyscan -T 10` 同样未收到
   banner 或 host key。`ssh -G Guqq` 仍解析为 `xmz@211.86.155.221:22` 和预期
   Ed25519 identity，因此排除仓库路径、远程 Git 命令和客户端密钥认证阶段。
+# 2026-09-12 — Published benchmark score audit
+
+## 测试范围与预期结果
+
+- 每条跑分必须能追溯到原论文、官方补充材料或官方仓库中的具体表格/页面；不得以搜索摘要或二手综述作为数值来源。
+- 每条记录必须包含 benchmark、任务、模型、指标、数值、数据/split 口径和可比性等级；缺失信息显式标为未报告。
+- 下载文件必须可读取、非 HTML 错误页，并记录 SHA-256、来源 URL 和获取日期。
+- Markdown 内部相对链接全部存在，表格列数一致；不同单位、split 或样本清洗口径不得混入同一直接排名。
+- JARVIS-DFPT BEC 若没有 calculation-matched full-tensor 同口径公开分数，应明确记录证据缺口，不用其他 BEC 数据集数字填充。
+
+## 实际结果
+
+- Primary-source traceability：通过。所有数值均指向本地原文/官方快照或明确标注的
+  OpenReview 原始 submission；未使用二手综述数值。
+- Schema/comparability：通过。四个训练单元均有独立表；每条记录包含 target、指标或
+  表级口径，并以 A/B/C 区分 direct、within-paper 和 non-comparable。
+- Download integrity：通过。新增 3 个 PDF 均具有 `%PDF-` magic 且 Poppler 可解析；
+  ALIGNN Markdown 快照可读；8 个归档来源均记录 SHA-256。最大新增文件 4,646,488 bytes，
+  小于 10 MiB。
+- Markdown checks：通过。`docs/benchmarks/README.md` 与 `SOURCES.md` 的全部本地链接
+  存在，连续 table 的 pipe count 一致，`git diff --check` 无 whitespace error。
+- Evidence gaps：按预期显式记录。IrredNet PDF endpoint 返回 HTTP 403，MatTen ESI
+  原 URL 返回 HTTP 404；未保存 challenge/error page。BEC 没有伪造同 split 对照，
+  ETGNN 0.045 e 标为 B，CFID/ALIGNN scalar/unspecified target 标为 C。
 
 # 2026-09-12 — Guqq second-stage runtime compatibility fixes
 
@@ -1014,3 +1062,30 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   计划，且完整 Python 测试已覆盖所有修改模块的导入与执行，因此不以缺失工具替代或降低测试。
 - Guqq second-stage GPU 验收：408、409、410_[0-2] 已成功提交；其后连续三次监控连接未
   到达可验证的 pull/queue 输出，故五项 terminal/JSON/JUnit 结果仍为 pending，不伪报通过。
+# 2026-09-12 — JARVIS full benchmark trainer foundation
+
+## 测试范围与预期
+
+- 新增与 GMTNet/CEITNet 表一致的逐样本 Cartesian Frobenius distance 和
+  EwT 25%/10%/5% 指标；batch 聚合必须按 sample 平均而不是按 tensor component 平均，
+  相对误差对零范数 target 必须有确定且有限/可解释的处理。
+- dielectric 与 elastic 的指标都在原始物理坐标和单位中计算；elastic 保留 GPa。
+- direct `B+R` readout 的 edge spherical-harmonic layout 必须覆盖 target 的最高阶：
+  dielectric 至少到 `l=2`，elastic 至少到 `l=4`，从而 MACE 的 `l<=1` tap 对 elastic
+  `l=4` 输出存在合法 tensor-product path。
+- MACE、GRACE、DPA4 和 EquiformerV2 adapters 暴露只包含冻结 checkpoint 输出、尚未经过
+  trainable interface 的 `forward_source` contract；普通 `forward` 仍严格等于
+  `interface(forward_source(graph))`，避免 full benchmark 每 epoch 重算冻结 backbone。
+- 运行 targeted pytest、完整 pytest、compile 检查和 diff 检查；任何失败均不得提交。
+
+## 实际结果
+
+- 首次命令引用了不存在的拆分 adapter 测试文件，pytest 未收集测试；第二次未带项目既有
+  `PYTHONPATH`，同样在 collection 前退出；随后按仓库本地运行约束修正命令。
+- 指标定向测试首次发现测试样本的 10% 相对误差手算期望错误（实际两条均不低于 10%）；
+  保持严格 `< threshold` 实现不变，修正测试数据期望后 `5 passed`。
+- targeted backbone/dispatcher/end-to-end：修正期望前为 `27 passed, 1 failed`，唯一失败即
+  上述测试期望；实现相关其余用例全部通过。
+- 完整项目：`199 passed, 0 failed`，耗时 245.76 秒；仅有既存 TorchScript/profiler warnings。
+- `python -m compileall -q src`、`python -m src.cli.benchmark_train --help`、
+  `bash -n slurm/train_jarvis_backbone_readout.sbatch`、`git diff --check`：通过。

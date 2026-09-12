@@ -22,6 +22,13 @@ runs one entry from the frozen 20-run real-data coverage schedule. On Guqq it is
 only through `slurm/smoke_real_subsets.sbatch` and records checkpoint, metrics, Git commit,
 runtime, CUDA device, and Slurm identifiers.
 
+`python -m src.cli.benchmark_train --backbone mace --target dielectric ...` materializes the
+frozen pre-interface backbone tap once, caches it with checkpoint/split metadata gates, and trains
+the direct `B+R` readout on the complete published JARVIS split. It reports sample-mean Cartesian
+Fnorm and EwT 25/10/5 in the original physical frame. On Guqq it must be run through
+`slurm/train_jarvis_backbone_readout.sbatch`; the launcher intentionally rejects EquiformerV2 while
+its gated checkpoint download is paused.
+
 `python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.
 It is batch data processing and must run through `slurm/build_point_group_fixtures.sbatch`

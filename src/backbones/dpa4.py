@@ -214,7 +214,12 @@ class DPA4BackboneAdapter(nn.Module):
         return self
 
     def forward(self, graph: PeriodicGraph) -> O3FeatureBatch:
-        return self.interface(self.parity(graph))
+        return self.interface(self.forward_source(graph))
+
+    def forward_source(self, graph: PeriodicGraph) -> O3FeatureBatch:
+        """Return parity-completed frozen features before the trainable interface."""
+
+        return self.parity(graph)
 
     @property
     def trainable_interface_parameter_count(self) -> int:
