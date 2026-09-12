@@ -1149,3 +1149,12 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: `git diff --check` passed. `rg` confirmed the protocol-candidate launcher and the new
   recovery records. The final staged-path audit includes only the four agent documentation files;
   unrelated bytecode remains unstaged.
+
+## 2026-09-12 — Post-block recovery-attempt 2 record
+
+- Scope: record the second bounded connectivity result without changing code, configuration, data,
+  or model artifacts.
+- Expected: `git diff --check` passes; the GPU log records intent before connection and distinguishes
+  missing Guqq evidence from an asserted remote failure; only four agent docs are staged.
+- Actual: `git diff --check` passed and `rg` found the matching attempt-2 evidence in GPU, state,
+  update, and test records. The final staged-path audit is run immediately before commit.

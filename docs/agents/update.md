@@ -355,3 +355,11 @@
   error, a bounded pull-first SSH attempt remained at the Vlab banner for 60 seconds and was stopped;
   no Guqq command, scheduler query, or Slurm submission ran.
 - The benchmark remains externally blocked. EquiformerV2 access stayed excluded.
+
+# 2026-09-12 — Post-block recovery attempt 2
+
+- A loop-free, fixed-argument pull-first SSH command again stopped after the Vlab banner. It produced
+  no Guqq output for 60 seconds and was terminated; no remote mutation or Slurm submission is
+  claimed.
+- This is the second consecutive same-condition turn in the fresh recovery audit. Benchmark metrics
+  remain unavailable and EquiformerV2 remains excluded.

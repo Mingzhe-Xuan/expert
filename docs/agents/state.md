@@ -55,6 +55,9 @@ pull-first，再收集 408–410、检查容量并提交 elastic candidate job�
 - 2026-09-12：Goal 自动续跑后的 fresh recovery audit 第一次检查仍只到达 Vlab；修正本地
   quoting 后等待 60 秒也没有任何 Guqq pull 输出，终止时两个 SSH 层由远端关闭。没有进行
   登录节点计算或 Slurm 提交，外部阻塞状态保持不变。
+- 2026-09-12：fresh recovery audit 第二回合使用无循环的固定参数命令，仍在 60 秒内仅返回
+  Vlab banner，未获得任何 Guqq pull 或 Slurm/容量输出后终止。该恢复审计已连续两回合同类
+  失败；训练指标和远端作业终态仍未知。
 
 ## 当前状态（Dataset point-group balance）
 

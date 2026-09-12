@@ -903,3 +903,17 @@
   for 60 seconds, and was terminated. The remote host then closed both SSH layers. No capacity,
   scheduler, job-state, or submission evidence was obtained. This is recovery-attempt 1 in the fresh
   post-block audit; the existing external blocker remains in force.
+
+## 2026-09-12 — Post-block recovery audit, attempt 2
+
+- Intended connection: after a full continuation boundary, retry one bounded pull-first Guqq check
+  without a remote shell loop. On success, inspect fixed jobs 408, 409, and 410_[0-2], storage, and
+  Slurm availability; submit the CPU elastic protocol candidate only if all prerequisite evidence
+  and capacity gates pass.
+- Permission check: lightweight pull/read-only management plus a Slurm submission is authorized.
+  Compute stays on Slurm; no server source edit, login-node workload, unrelated artifact mutation,
+  or EquiformerV2 resource access is permitted.
+- Result: the fixed-command connection returned only `Welcome to Vlab`; after 60 seconds without any
+  Guqq `git pull` output it was terminated locally. No repository, scheduler, capacity, job-state, or
+  submission command is known to have run. This is the second consecutive same-condition turn in
+  the fresh post-block audit.
