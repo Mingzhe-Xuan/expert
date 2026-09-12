@@ -27,6 +27,9 @@
 - 2026-09-12：十个非 Eq 文件已在 Guqq 全部通过固定 size/SHA 并原子提升，服务器同步至
   `7288f36`，余量约 12 GiB。进入 Slurm 提交阶段：排除全部 Eq indices；完整 BEC 因
   input/output 容量安全边界不足继续门控，不提交。
+- 2026-09-12：已提交 Slurm `360` full tests、`361/362/363` 三 backbone smokes、`364`
+  fixture builder 与 `365` 的 12 个 non-Eq/non-BEC real rows。下一步以 `afterok:364`
+  提交 44 个非 Eq PG rows，并持续审计至终态。
 
 ## 当前状态（Efficiency report aggregation）
 

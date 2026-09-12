@@ -80,6 +80,18 @@
   (`index % 4 == 3`) and its standalone launcher are explicitly excluded. Full JARVIS-DFPT BEC
   preparation remains unsubmitted because 12 GiB free is below its 10.7 GB input-plus-output safety
   margin. All computation will execute through Slurm, never on the login node.
+- Result: pull advanced Guqq to `a889830`; the three environment executables and `compute` partition
+  were available. Submitted `360` (full tests), `361` (MACE), `362` (GRACE), `363` (DPA4), `364`
+  (32-PG fixture builder), and `365` (real subset indices `0-2,4-6,8-10,12-14`). BEC rows 15-19
+  were omitted because the processed manifest is not finalized; Eq rows remain excluded.
+
+## 2026-09-12 — Submit dependent non-Equiformer 32-PG array and monitor
+
+- Intended connection: pull the latest prerequisite-aware bundle first, then submit the 32-PG
+  indices whose modulo-four backbone is MACE, GRACE, or DPA4, with `afterok:364` so no row can run
+  before the real fixture manifest is accepted. Inspect `squeue`/`sacct` only after submission.
+- Continue monitoring jobs 360–365 and the new dependent array to terminal states. Do not submit
+  EquiformerV2 indices, its standalone launcher, or the capacity-gated full BEC preparation job.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
