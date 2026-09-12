@@ -2,21 +2,14 @@
 
 ## Current snapshot — JARVIS backbone + readout benchmark (2026-09-12 network recheck)
 
-Guqq pull-first access recovered and fast-forwarded the server from `7d12d4f` to `4563521`. Protocol
-job 415 remains RUNNING at 1:09:22 with no traceback or completion-only candidate. MACE dielectric
-job 414 remains RUNNING and has reached frozen feature extraction 825/3,770. Free space is 6.8 GiB;
-both jobs remain untouched and no terminal metric is claimed.
+The user-confirmed recovery is verified: Guqq pull-first access succeeds and the server is current at
+`ec1a58a`. Protocol job 415 remains RUNNING at 2:50:44 with sustained CPU activity, about 10.4 GiB
+RSS under its 16 GiB request, no traceback, and no completion-only candidate. MACE dielectric job 414
+remains RUNNING and has reached frozen feature extraction 1,775/3,770. Free space is stable at 16 GiB.
+Both jobs remain untouched and no terminal metric is claimed.
 
-A subsequent attempt to pull the documentation checkpoint `0170f3a` timed out at the mandatory
-GitHub pull after 120 seconds, before any scheduler query. Therefore it does not supersede the last
-verified job evidence above and it did not alter either Slurm workload.
-
-The same mandatory-pull transport condition has now recurred across three consecutive Goal turns.
-The existing network lesson has been applied and further blind retries are stopped. Since manifest
-promotion, job validation, and every remaining benchmark run require Guqq/Slurm, the Goal is
-externally blocked rather than complete. Jobs 415/414 were never cancelled and may continue running.
-
-When the Goal is resumed after a confirmed transport change, continue bounded monitoring until 415 emits the exact
+The benchmark Goal is resumed from its external blocker and remains incomplete. Continue bounded
+monitoring until 415 emits the exact
 14,220-record manifest, validate and return it locally, then unlock elastic training. Job 414 must
 finish and emit its JSON/JUnit/checkpoint evidence before its four metrics are compared with the
 published table. Remaining MACE/GRACE/DPA4 runs stay capacity-gated and EquiformerV2 remains paused.

@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12: after the user confirmed recovery, two pull-first sessions succeeded at `ec1a58a`.
+  Protocol job 415 was monitored from 2:11:49 through 2:50:44; its Python process sustained about
+  114% CPU and reached roughly 10.4 GiB RSS under a 16 GiB request, with no traceback or candidate.
+  MACE dielectric advanced from feature 1,375 to 1,775/3,770 and free space held at 16 GiB. The Goal
+  is resumed; both jobs remain active and unchanged, and EquiformerV2 remains paused.
+
 - 2026-09-12: a third consecutive Goal turn hit the same Guqq-to-GitHub mandatory-pull timeout before
   any scheduler read. The candidate algorithm was inspected locally and still requires exact
   per-structure symmetry screening; without terminal evidence, do not restart or replace healthy

@@ -1263,3 +1263,13 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: all five referenced documentation paths exist and `git diff --check` passed. `rg`
   confirmed the third-turn blocker, untouched jobs 415/414, and paused EquiformerV2 scope. The
   concurrently extended GPU log remains unstaged.
+
+## 2026-09-12 — User-confirmed recovery and active-job handoff
+
+- Scope: document only verified pull recovery, active scheduler/process evidence, feature progress,
+  and storage; do not claim completion or metrics.
+- Expected: state/update agree on `ec1a58a`, 415 at 2:50:44 with live CPU/RSS evidence, MACE at
+  1,775/3,770, 16 GiB free, and paused EquiformerV2; documentation checks pass.
+- Actual: `git diff --check` passed and `rg` confirmed matching Git, runtime, CPU/RSS, feature, disk,
+  resumed-Goal, and paused-EquiformerV2 evidence across state/update/test. The shared GPU log remains
+  unstaged; the final staged-path audit covers only these three owned documents.
