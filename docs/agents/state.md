@@ -11,7 +11,12 @@ A subsequent attempt to pull the documentation checkpoint `0170f3a` timed out at
 GitHub pull after 120 seconds, before any scheduler query. Therefore it does not supersede the last
 verified job evidence above and it did not alter either Slurm workload.
 
-The Goal remains active rather than complete. Continue bounded monitoring until 415 emits the exact
+The same mandatory-pull transport condition has now recurred across three consecutive Goal turns.
+The existing network lesson has been applied and further blind retries are stopped. Since manifest
+promotion, job validation, and every remaining benchmark run require Guqq/Slurm, the Goal is
+externally blocked rather than complete. Jobs 415/414 were never cancelled and may continue running.
+
+When the Goal is resumed after a confirmed transport change, continue bounded monitoring until 415 emits the exact
 14,220-record manifest, validate and return it locally, then unlock elastic training. Job 414 must
 finish and emit its JSON/JUnit/checkpoint evidence before its four metrics are compared with the
 published table. Remaining MACE/GRACE/DPA4 runs stay capacity-gated and EquiformerV2 remains paused.

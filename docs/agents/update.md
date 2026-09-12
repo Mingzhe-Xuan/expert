@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-12: a third consecutive Goal turn hit the same Guqq-to-GitHub mandatory-pull timeout before
+  any scheduler read. The candidate algorithm was inspected locally and still requires exact
+  per-structure symmetry screening; without terminal evidence, do not restart or replace healthy
+  jobs. All remaining acceptance work requires Guqq/Slurm, so the Goal is externally blocked after
+  the required threshold. Jobs 415/414 remain untouched and EquiformerV2 remains paused.
+
 - 2026-09-12: a follow-up terminal-monitor connection reached Guqq but timed out at the mandatory
   pull after 120 seconds, before its scheduler loop. No job state was inferred or changed; retain the
   preceding verified 415/414 progress and retry only after another interval.

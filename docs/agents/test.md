@@ -1253,3 +1253,13 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: `git diff --check` passed and `rg` confirmed the 120-second pre-scheduler timeout. A
   concurrent memory-inspection entry appeared in `gpu.md`, so that shared file is preserved but left
   unstaged; the final staged-path audit covers only state/update/test.
+
+## 2026-09-12 — Third-turn external-blocker handoff
+
+- Scope: document the repeated pull gate and exact last verified job state without changing code,
+  datasets, jobs, or benchmark claims.
+- Expected: state/update retain 415/414 as active and unmodified, explain why remaining work requires
+  Guqq/Slurm, keep EquiformerV2 paused, and pass documentation whitespace/path checks.
+- Actual: all five referenced documentation paths exist and `git diff --check` passed. `rg`
+  confirmed the third-turn blocker, untouched jobs 415/414, and paused EquiformerV2 scope. The
+  concurrently extended GPU log remains unstaged.
