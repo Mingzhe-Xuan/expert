@@ -338,3 +338,5 @@
 - Audited the official evaluation loop and corrected elastic Fnorm/EwT to contract predictions to
   the released 6x6 Voigt order before flattening, using the published `norm(label)+1e-5` denominator.
   The final regression state is 203 passed; another Guqq sync attempt failed at the same jump host.
+- Pushed the protocol and metric fixes as `f209a1a` and `13c4485`. The final bounded connection was
+  explicitly closed by the Vlab SSH endpoint, so no remote pull or job submission occurred.

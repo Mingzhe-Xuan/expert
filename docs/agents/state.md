@@ -42,6 +42,8 @@ structural-symmetry zero screening、compact support mask 与 Slurm candidate-ma
 - 2026-09-12：进一步从 GMTNet official test loop 确认 elastic Fnorm/EwT 使用 6x6 Voigt
   flatten 且相对误差分母加 `1e-5`；修复 runner 的 Cartesian shear 重复计数后完整 203 tests
   通过。第二次同步仍停在 Vlab，candidate job 未提交。
+- 2026-09-12：协议与指标修复分别推送为 `f209a1a`、`13c4485`；本轮第三次连接明确由
+  Vlab `202.38.75.226:22` 主动关闭。未发生 pull、容量检查或 Slurm 提交，远端状态不变。
 
 ## 当前状态（Dataset point-group balance）
 

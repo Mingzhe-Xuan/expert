@@ -860,3 +860,16 @@
 - Result: only the Vlab banner was returned and the bounded command exited status 1; no pull,
   scheduler/capacity output, or Slurm job ID exists. Candidate generation and training were not
   submitted. The repository work continued locally with an additional exact metric-contract audit.
+
+## 2026-09-12 — Final sync retry after exact metric correction
+
+- Intended connection: pull final local commit `13c4485`, inspect capacity and the existing MACE
+  probes, then submit only the CPU elastic candidate-manifest job. If that succeeds and probe
+  evidence is available, also submit the full MACE dielectric run; the elastic training job remains
+  gated on local promotion of the 14,220 candidate.
+- Permission check: same pull/read-only management and Slurm-only compute scope as above. No tracked
+  server source edits, no login-node computation, and no EquiformerV2 activity.
+- Result: the connection failed immediately with `Connection closed by 202.38.75.226 port 22` and
+  `Connection closed by UNKNOWN port 65535`, explicitly locating this attempt at the jump-host SSH
+  boundary. No pull, capacity query, scheduler command, or submission ran. This is the third
+  same-condition attempt in the continuation turn; retries stop and remote state remains unchanged.
