@@ -151,6 +151,19 @@
   task-owned JSON/JUnit plus bounded stderr only after terminal state. Do not submit broader arrays
   unless all five cases complete with exit code `0:0` and passed summaries.
 - EquiformerV2 and BEC remain excluded; no login-node project/model execution is authorized.
+- Result: real row 0 completed `0:0` with passed JSON/JUnit, validating the dtype-aware frame fix.
+  GRACE jobs 402 and real row 1 failed after the CPU fallback successfully bypassed PTX, exposing
+  `GeometricalDataBuilder`'s required string `float_dtype` API. DPA4 job 403 still failed with a
+  mixed-device error; real row 2 was still running at inspection.
+
+## 2026-09-12 — Pinpoint remaining DPA4 device mismatch
+
+- Intended connection: pull first, inspect the terminal state and JSON/JUnit for real row 2, then
+  read only bounded stderr tails for jobs 403 and 404_2 to capture the exact failing source line.
+  Do not submit replacement work or run model code on the login node.
+- The GRACE follow-up is already bounded to changing `float_dtype=np.float64` to the runtime's
+  accepted `"float64"` contract. DPA4 will not be changed again until its traceback identifies the
+  remaining tensor boundary.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 

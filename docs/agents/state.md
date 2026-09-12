@@ -44,6 +44,9 @@
   GRACE/DPA4 standalone 与 real 0–2 最小探针，通过后才恢复更大 arrays。
 - 2026-09-12：修复提交 `6e7043f` 已同步 Guqq；最小 Slurm 探针为 402 GRACE、403 DPA4、
   404 real 0–2，初始均 pending。只有五项全部 `0:0` 且 JSON/JUnit passed 后才恢复 arrays。
+- 2026-09-12：real row 0 已 `COMPLETED 0:0`，确认 frame 修复；GRACE 已绕过 PTX 后暴露
+  `float_dtype` 必须为字符串的 API 错误；DPA4 仍有 device mismatch，待读取 403/404_2
+  精确 traceback 后再修。大数组继续暂停。
 
 ## 当前状态（Efficiency report aggregation）
 

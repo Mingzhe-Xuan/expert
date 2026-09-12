@@ -34,6 +34,9 @@
   TF-CPU fallback；targeted 42、完整 182 tests、compile/shell/diff checks 全部通过。
 - 2026-09-12：`6e7043f` 已同步 Guqq，并提交最小修复探针 402（GRACE）、403（DPA4）、
   404（real 0–2）。初始均 pending；五项全部通过前不恢复大数组。
+- 2026-09-12：real 0 已 `COMPLETED 0:0`，frame 修复成立；GRACE CPU fallback 越过 PTX
+  后发现 `float_dtype` 字符串契约，DPA4 尚余一处 device mismatch。先读取精确 traceback，
+  不重提或扩大数组。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。
