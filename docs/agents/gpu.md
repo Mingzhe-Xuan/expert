@@ -118,6 +118,19 @@
 - The same real-smoke task has failed more than three times, so the existing separate-runtime lesson
   was consulted before diagnosis. No failed job will be blindly resubmitted; any source fix must be
   made and tested locally, committed/pushed, and synchronized by a later pull-first connection.
+- Result: real-row JSON consistently reports `canonical frame matrices are not inverses` for
+  nontrivial float32 frames. DPA4 reports mixed CPU/CUDA tensors after its neighbor-list builder.
+  GRACE stderr shows TensorFlow 2.20 lacks CUDA kernels for RTX 5090 compute capability 12.0 and its
+  PTX JIT fails with `CUDA_ERROR_INVALID_PTX`; these are three distinct, reproducible causes.
+
+## 2026-09-12 — Cancel known-bad pending smoke work before local fixes
+
+- Intended connection: pull first, inspect current `squeue`, then cancel only unfinished tasks of
+  array 365 and dependency-pending array 366 because the diagnosed code/runtime paths would make
+  them fail or waste GPU time. Preserve completed/failed evidence files and leave fixture builder
+  364 untouched so its independent result remains usable.
+- No source edit or project/model execution will occur on the login node. Fixes will be implemented
+  and tested locally before any replacement Slurm submission; EquiformerV2 remains excluded.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 

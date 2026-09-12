@@ -58,6 +58,17 @@
 按预期立即非零退出，十个 `mv` 均未执行。改用 committed manifests 原值后，Guqq 十文件
 的固定大小和完整 SHA-256 全部通过，随后一次性原子提升；`git diff --check` 通过。
 
+## 2026-09-12 — Guqq runtime smoke failure fixes
+
+计划检查：
+
+- float32 非恒等 canonical frame 与其转置在 dtype-aware 数值阈值内通过，明显非逆矩阵仍失败；
+- DPA4 neighbor schema 的 index/vector/mask 在进入 descriptor 和几何运算前统一到模型设备；
+- GRACE launcher 显式选择 TensorFlow CPU fallback，adapter 在任何 TensorFlow op 前应用，
+  同时保持 PyTorch interface/device 输出在请求的 CUDA device，并在结果中披露 backend；
+- 运行 canonicalization、backbone contracts、CLI/Slurm launcher targeted tests，随后运行完整
+  `pytest -q tests`、compile、shell syntax 与 `git diff --check`，全部通过才提交源码修复。
+
 ## 2026-09-12 — Strict Slurm terminal-state audit
 
 计划检查：

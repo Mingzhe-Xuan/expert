@@ -36,6 +36,9 @@
 - 2026-09-12：`360` full tests、`361` MACE standalone 已 `COMPLETED 0:0`；GRACE `362`、
   DPA4 `363` 与 real rows 0/1/2/4/5/6/8/9 已失败。连续失败超过三次后已查阅 runtime
   lessons，进入只读日志诊断，禁止盲重提；fixture `364` 尚在运行，PG array `366` 等待依赖。
+- 2026-09-12：失败根因冻结为 float32 frame 阈值、DPA4 schema device、TensorFlow 2.20
+  对 RTX 5090 sm_120 无 CUDA kernel 三项。先取消 365 未完成子任务与 366，保留 364；再在
+  本地实现 dtype-aware 校验、DPA device 归一及显式可审计的 GRACE TF-CPU fallback。
 
 ## 当前状态（Efficiency report aggregation）
 
