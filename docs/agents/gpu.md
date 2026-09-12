@@ -954,3 +954,69 @@
 - Follow-up result: the PTY connection likewise returned only `Welcome to Vlab` and no Guqq output
   for 60 seconds before local termination. No remote state or Slurm submission is claimed. This is
   recovery-attempt 1 after the user's latest resume; the Goal remains active under a fresh audit.
+
+## 2026-09-12 — Latest recovery audit, attempt 2
+
+- Intended connection: after a continuation boundary, run one minimal non-PTY pull-first Guqq
+  command, then inspect HEAD, storage, `sinfo`, `squeue`, and fixed probe jobs 408/409/410. Submit the
+  CPU elastic protocol candidate only if all gates pass; consider MACE dielectric only after probe
+  evidence is complete.
+- Permission check: inspection is lightweight and all compute remains Slurm-only. No server source
+  edit, unrelated artifact mutation, or EquiformerV2 access is permitted.
+- Initial result: Guqq successfully pulled to `c918a4e`; `/` has 7.3 GiB available, the compute node
+  is idle, and jobs 408/409/410 have expired from the controller (`Invalid job id specified`). No job
+  was submitted in this connection.
+
+## 2026-09-12 — Inspect persisted probes and scoped storage after recovery
+
+- Intended connection: pull first, then locate only persisted JSON/JUnit/log evidence for jobs
+  408/409/410 and measure the scoped dataset, checkpoint, cache, result, and environment directories.
+  This determines whether the 7.3 GiB free-space gate safely permits the protocol candidate and any
+  feature cache. No compute or submission is part of this connection.
+- Permission check: read-only artifact discovery and directory-size inspection are lightweight. No
+  server source edit, cleanup, model execution, Slurm submission, or EquiformerV2 access is permitted.
+- First result: Windows SSH argument reconstruction removed the remote regex quotes, so bash rejected
+  the full command at parse time before `git pull` or any other operation. No remote mutation occurred.
+- Follow-up intent: repeat the same pull-first read-only inspection using fixed `grep -e` arguments
+  without parentheses or nested quoting.
+- Follow-up result: pull succeeded and HEAD is `c918a4e`. Persisted JSON/JUnit/log evidence exists for
+  408, 409, and all 410_0-2 rows. Scoped sizes are 209 MiB checkpoints, 50 MiB raw data, 112 MiB
+  results, and under 1 MiB logs; the large isolated runtimes are retained and not cleanup targets.
+
+## 2026-09-12 — Read persisted probe evidence after controller expiry
+
+- Intended connection: pull first, then read the fixed small JSON reports and bounded log tails for
+  408/409/410_0-2. Use those artifacts, rather than expired controller state, to decide whether the
+  runtime gate passes and whether MACE dielectric can be submitted after the protocol candidate.
+- Permission check: read-only report/log inspection is lightweight. No compute, source edit, cleanup,
+  submission, or EquiformerV2 access occurs in this connection.
+- Result: GRACE 408 and DPA4 409 standalone reports passed; MACE B+R dielectric row 410_0 passed.
+  Rows 410_1 and 410_2 failed in the older adaptation/expert path with dtype/device errors, not in
+  the frozen source-cache plus direct-readout path used by the full benchmark. No job was submitted.
+
+## 2026-09-12 — Submit elastic protocol candidate and MACE dielectric benchmark
+
+- Intended connection: pull first, recheck free space and idle capacity, then submit the CPU elastic
+  protocol candidate with the recorded MACE/core environment and the full MACE JARVIS dielectric
+  backbone-plus-readout job. Record exact job IDs and immediate scheduler state.
+- Permission check: both workloads use committed Slurm launchers. Outputs stay under ignored
+  `results/` and `logs/`; no login-node compute or server source edit occurs. The measured 7.3 GiB
+  free space is sufficient for the roughly 50 MiB input, compact candidate manifest, and one MACE
+  feature cache with checkpoints, but additional backbone runs remain gated on measured post-job
+  usage. EquiformerV2 is excluded.
+- Submission result: pull was current at `c918a4e`, free space remained 7.3 GiB, and node221 was
+  idle. Submitted job `413` (CPU elastic protocol candidate) and job `414` (MACE dielectric full
+  benchmark). At the immediate check, 413 was pending with reason `None` and 414 was pending on
+  `Priority`.
+
+## 2026-09-12 — Monitor protocol 413 and MACE dielectric 414
+
+- Intended connection: pull first, then inspect `squeue`/`scontrol`, bounded stdout/stderr tails, and
+  scoped result sizes for jobs 413 and 414. Do not infer completion from disappearance; require the
+  launchers' output artifacts and terminal evidence before promotion or metric claims.
+- Permission check: read-only scheduler/log/result monitoring is lightweight. No login-node compute,
+  cleanup, new submission, server source edit, or EquiformerV2 access is permitted.
+- Result: job 413 failed after 3 seconds because pinned e3nn 0.4.4 loaded its packaged Wigner
+  `constants.pt` under PyTorch 2.6's new weights-only default. Job 414 was running and had begun the
+  3,770-record training-split feature extraction. Cache/result footprints were still negligible and
+  free space remained 7.3 GiB.

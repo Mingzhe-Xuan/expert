@@ -57,6 +57,11 @@ def split_gmtnet(records: list[tuple]) -> dict:
 @functools.lru_cache(maxsize=1)
 def _elastic_protocol_objects():
     import torch
+
+    # e3nn<=0.5 packages trusted Wigner constants containing builtin slice
+    # objects. PyTorch 2.6 defaults torch.load to weights_only=True, so admit
+    # only that container type rather than disabling safe loading process-wide.
+    torch.serialization.add_safe_globals([slice])
     from e3nn import o3
     from e3nn.io import CartesianTensor
 

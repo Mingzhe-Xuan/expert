@@ -20,6 +20,11 @@ structural-symmetry zero screening、compact support mask 与 Slurm candidate-ma
 状态记录，再严格 pull-first 收集 408–410、容量和 scheduler 证据。只有门控通过才提交
 elastic candidate 与 MACE dielectric；elastic 训练仍等待 14,220 manifest 本地提升。
 
+网络现已真实恢复：408/409 standalone 与 410_0 MACE B+R probe 均有 passed 持久证据；
+Slurm 413 protocol candidate 因 PyTorch 2.6 safe-load 与 e3nn 0.4.4 packaged constants 的兼容
+边界失败，414 MACE dielectric 正在提取正式 split 特征。当前先以仅 allowlist `slice` 的局部
+修复恢复 413，不使用进程级 unrestricted pickle 开关。
+
 ## 当前计划（JARVIS backbone + readout benchmark）
 
 1. pull-first 连接 Guqq，收集 408、409、410_[0-2] 的 scheduler、JSON、JUnit 和日志证据。
@@ -65,6 +70,12 @@ elastic candidate 与 MACE dielectric；elastic 训练仍等待 14,220 manifest 
 - 2026-09-12：最新恢复后的首回合中，non-PTY pull-first 等待 90 秒、PTY pull-first 等待
   60 秒均只返回 Vlab banner，未得到 Guqq 输出。该 fresh audit 目前计为第 1 回合，Goal 保持
   active；未绕过 pull gate，也未提交作业。
+- 2026-09-12：Guqq pull 恢复，收集到 408/409/410 持久证据并提交 413/414。413 在 3 秒内
+  失败于 e3nn 0.4.4 `constants.pt` 的 PyTorch 2.6 safe-load，414 正在运行；进入局部 safe-global
+  兼容修复单元，测试后再提交替代 protocol job。
+- 2026-09-12：protocol safe-load 修复仅 allowlist builtin `slice`；fresh-process targeted 8 项、
+  项目完整 204 项测试全绿，py_compile、launcher shell syntax 与 diff check 通过。准备提交并
+  重提 413 的替代 job，414 保持运行。
 
 ## 当前状态（Dataset point-group balance）
 

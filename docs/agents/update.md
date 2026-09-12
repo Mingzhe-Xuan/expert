@@ -383,3 +383,9 @@
 - The first recovery turn tried both non-PTY and PTY pull-first sessions. Each stopped at the Vlab
   banner without Guqq output and was boundedly terminated; no job was submitted. This starts a fresh
   blocked audit at attempt 1 while the Goal remains active.
+- Guqq subsequently recovered. Persisted evidence proves GRACE 408, DPA4 409, and MACE B+R 410_0
+  passed. Jobs 413 (elastic protocol) and 414 (MACE dielectric) were submitted; 414 is extracting
+  features, while 413 exposed an e3nn 0.4.4/PyTorch 2.6 safe-load compatibility boundary.
+- Implemented a narrow compatibility fix that allowlists only builtin `slice` before the standalone
+  e3nn import. Fresh-process targeted tests passed 8/8; the project suite passed 204/204. Relevant
+  compile, launcher syntax, and diff checks also passed.

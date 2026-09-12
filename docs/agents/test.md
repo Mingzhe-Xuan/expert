@@ -1188,3 +1188,19 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   stage only four agent documentation files.
 - Actual: `git diff --check` passed. `rg` confirmed matching non-PTY, PTY, fresh-audit, and
   recovery-attempt-1 records across GPU/state/update/test. The staged-path audit runs before commit.
+
+## 2026-09-12 — Elastic protocol e3nn safe-load compatibility
+
+- Scope: make the standalone `data/build_manifest.py` path compatible with PyTorch 2.6+ and pinned
+  e3nn 0.4.4 without disabling weights-only safety process-wide.
+- Expected: before importing e3nn, allowlist only builtin `slice`, matching the established symmetry
+  registry policy; the protocol filter regression still accepts/project labels exactly as before.
+- Planned checks: targeted real-data protocol tests, relevant `py_compile`, Slurm shell syntax,
+  full pytest suite, and `git diff --check` before commit.
+- Actual: the fresh-process targeted module passed 8 tests. `python -m py_compile` for the changed
+  source/test, `bash -n` for the protocol launcher, and `git diff --check` passed. The first unscoped
+  full command incorrectly collected vendored JARVIS/MatTen/fairchem tests and produced 53 external
+  fixture/dependency collection errors; it was not treated as project evidence. The corrected
+  `python -m pytest tests -q` run passed 204 tests with 0 failures (598 warnings) in 643.07 seconds.
+  The exact workspace-local `Test/` artifact created by the overbroad vendor collection was verified
+  and removed; unrelated pre-existing bytecode changes remain untouched.

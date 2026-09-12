@@ -3,6 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import pickle
+from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 import torch
@@ -17,6 +20,9 @@ from src.data import (
     voigt_stiffness_to_cartesian,
 )
 from src.heads import irreps_to_cartesian
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _structure(elements=("Si", "O")):
@@ -153,6 +159,24 @@ def test_gmtnet_elastic_protocol_filters_structurally_forbidden_entries() -> Non
     record["elastic_total_kbar"][0][3] = 0.1  # 0.01 GPa > official 1e-4 cutoff
     accepted, _, _ = gmtnet_elastic_protocol_filter(record)
     assert not accepted
+
+
+def test_elastic_protocol_objects_import_in_a_fresh_process() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from data.build_manifest import _elastic_protocol_objects; "
+            "_elastic_protocol_objects()",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    assert completed.returncode == 0, completed.stderr
 
 
 def test_elastic_loader_applies_manifest_support_mask(tmp_path) -> None:
