@@ -7,6 +7,10 @@ job 415 remains RUNNING at 1:09:22 with no traceback or completion-only candidat
 job 414 remains RUNNING and has reached frozen feature extraction 825/3,770. Free space is 6.8 GiB;
 both jobs remain untouched and no terminal metric is claimed.
 
+A subsequent attempt to pull the documentation checkpoint `0170f3a` timed out at the mandatory
+GitHub pull after 120 seconds, before any scheduler query. Therefore it does not supersede the last
+verified job evidence above and it did not alter either Slurm workload.
+
 The Goal remains active rather than complete. Continue bounded monitoring until 415 emits the exact
 14,220-record manifest, validate and return it locally, then unlock elastic training. Job 414 must
 finish and emit its JSON/JUnit/checkpoint evidence before its four metrics are compared with the

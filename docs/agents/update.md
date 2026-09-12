@@ -1,5 +1,9 @@
 # Agent progress updates
 
+- 2026-09-12: a follow-up terminal-monitor connection reached Guqq but timed out at the mandatory
+  pull after 120 seconds, before its scheduler loop. No job state was inferred or changed; retain the
+  preceding verified 415/414 progress and retry only after another interval.
+
 - 2026-09-12: the spaced pull-first check recovered and synchronized Guqq to `4563521`. A bounded
   twelve-sample monitor followed protocol job 415 from 58:21 to 1:09:22 without a traceback or
   candidate; MACE dielectric job 414 advanced from feature 750 to 825/3,770. Free space decreased

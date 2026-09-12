@@ -1243,3 +1243,13 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: all four paths exist and `git diff --check` passed. `rg` confirmed matching `4563521`,
   1:09:22, 825/3,770, 6.8 GiB, and paused EquiformerV2 evidence. The final staged-path audit runs
   before commit.
+
+## 2026-09-12 — Follow-up monitor transport handoff
+
+- Scope: record the bounded mandatory-pull timeout without changing or inferring remote job state.
+- Expected: GPU/state/update agree that no scheduler loop ran; prior verified progress remains
+  authoritative and `git diff --check` passes. If concurrent content appears in the shared GPU log,
+  preserve it and stage only the independently owned state/update/test files.
+- Actual: `git diff --check` passed and `rg` confirmed the 120-second pre-scheduler timeout. A
+  concurrent memory-inspection entry appeared in `gpu.md`, so that shared file is preserved but left
+  unstaged; the final staged-path audit covers only state/update/test.
