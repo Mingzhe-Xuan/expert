@@ -348,3 +348,10 @@
 - All remaining acceptance work requires Slurm, so the active benchmark Goal is formally blocked
   rather than represented as complete. Resume from `main` after connectivity returns: pull first,
   collect 408–410, verify capacity, submit the elastic protocol candidate, then launch training.
+
+# 2026-09-12 — Post-block recovery attempt 1
+
+- The automatic Goal continuation triggered a fresh recovery audit. After correcting a local quoting
+  error, a bounded pull-first SSH attempt remained at the Vlab banner for 60 seconds and was stopped;
+  no Guqq command, scheduler query, or Slurm submission ran.
+- The benchmark remains externally blocked. EquiformerV2 access stayed excluded.

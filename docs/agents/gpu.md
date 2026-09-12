@@ -887,3 +887,19 @@
   status 1 without Guqq pull, capacity, scheduler, or submission output. No remote mutation occurred.
   Because all remaining manifest generation, backbone extraction, training, and evaluation require
   Slurm, the benchmark Goal is now externally blocked at the Vlab→Guqq SSH boundary.
+
+## 2026-09-12 — Automatic post-block recovery audit
+
+- Intended connection: the persistent Goal automatically resumed after the formal blocked handoff.
+  Perform one bounded pull-first connection to Guqq, then inspect only jobs 408/409/410, filesystem
+  capacity, and scheduler availability. If and only if the remote evidence is complete and capacity
+  is safe, submit the CPU elastic protocol-candidate job; do not submit training speculatively.
+- Permission check: Git pull, scheduler/capacity inspection, and Slurm submission are within scope.
+  Any manifest construction or model work must run through Slurm. No login-node compute, tracked
+  source edit, unrelated artifact mutation, or EquiformerV2 checkpoint access is permitted.
+- Result: the first command reached the Vlab shell but failed before Guqq because PowerShell expanded
+  the remote loop quoting; it made no remote mutation and was not treated as connectivity evidence.
+  The corrected bounded command again returned only `Welcome to Vlab`, produced no Guqq pull output
+  for 60 seconds, and was terminated. The remote host then closed both SSH layers. No capacity,
+  scheduler, job-state, or submission evidence was obtained. This is recovery-attempt 1 in the fresh
+  post-block audit; the existing external blocker remains in force.

@@ -52,6 +52,9 @@ pull-first，再收集 408–410、检查容量并提交 elastic candidate job�
 - 2026-09-12：第三个连续 Goal 回合的 bounded pull-first 连接仍只返回 Vlab banner 后状态 1
   退出。由于剩余工作全部要求 Slurm 且无合法替代路径，阶段正式转为 external blocked；
   未把本地测试、入口实现或不可比数据误当作 benchmark 完成证据。
+- 2026-09-12：Goal 自动续跑后的 fresh recovery audit 第一次检查仍只到达 Vlab；修正本地
+  quoting 后等待 60 秒也没有任何 Guqq pull 输出，终止时两个 SSH 层由远端关闭。没有进行
+  登录节点计算或 Slurm 提交，外部阻塞状态保持不变。
 
 ## 当前状态（Dataset point-group balance）
 

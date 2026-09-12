@@ -1139,3 +1139,13 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: `git diff --check` passed. `rg` confirmed the launcher, commits, and jobs referenced by the
   handoff exist in the tracked Slurm/docs state. The staged-path audit is performed immediately
   before commit and excludes the unrelated bytecode changes.
+
+## 2026-09-12 — Post-block recovery-attempt record
+
+- Scope: document the bounded recovery attempt without changing source, data, configuration, or
+  model artifacts.
+- Expected: the record distinguishes the local quoting error from the corrected connectivity result,
+  retains the Slurm-only boundary, and does not claim job state or benchmark metrics without evidence.
+- Actual: `git diff --check` passed. `rg` confirmed the protocol-candidate launcher and the new
+  recovery records. The final staged-path audit includes only the four agent documentation files;
+  unrelated bytecode remains unstaged.
