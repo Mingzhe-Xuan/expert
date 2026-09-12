@@ -21,6 +21,9 @@
 - 2026-09-12：DPA4、JARVIS elastic、MatTen elastic 及前六个 MACE 分块已传至隔离
   staging；`mace_medium.part.006` 连续三次被跳板重置，已查阅并补充网络经验，改为只把
   该块细分为 4 MiB 唯一命名子块。任何远端分块在整文件 size/SHA 通过前均不采信。
+- 2026-09-12：全部非 Eq 分块已传完且 Guqq pull 至 `2b3f3a4`；首次整体验证因从缩略
+  进度记录抄入了错误的数据集 SHA 而在首文件立即失败，guard 保证十个最终路径均未提升。
+  已改为直接读取 committed manifests 的完整 SHA，并在下一 pull-first 连接重新整体验证。
 
 ## 当前状态（Efficiency report aggregation）
 

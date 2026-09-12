@@ -53,6 +53,19 @@
 - Adjustment: following the repeated-failure rule, subdivide that single chunk into distinct 4 MiB
   pieces and retry after recording the transport lesson. Final acceptance still requires whole-file
   byte-count/SHA-256 verification and atomic promotion; EquiformerV2 remains excluded.
+- Result: all remaining non-Equiformer chunks reached staging. The verification connection first
+  pulled the validated incremental bundle and advanced Guqq to `2b3f3a4`; reconstruction then
+  stopped at the first SHA check because three dataset digests had been copied from abbreviated
+  notes instead of their exact manifests. `set -e` prevented every final-path rename.
+
+## 2026-09-12 — Correct manifest-driven atomic promotion
+
+- Intended connection: first pull a new prerequisite-aware bundle containing this correction, then
+  verify the already reconstructed ten temporary files against exact hashes read directly from the
+  committed manifests. Only if every byte count and digest passes may all ten temporary files be
+  atomically moved to their final non-Equiformer paths.
+- EquiformerV2 remains paused and excluded. This is lightweight file verification/management only;
+  no model loading, data processing, tests, compilation, or other login-node compute will run.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 

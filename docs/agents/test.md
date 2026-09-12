@@ -49,6 +49,15 @@
 - targeted：16 passed；完整本地 suite：170 passed、0 failed、0 skipped，496 warnings，219.24s；
 - `python -m compileall -q src tests` 与 `git diff --check` 通过。
 
+## 2026-09-12 — Non-Equiformer resource atomic promotion
+
+计划检查：十个非 Eq contract 文件必须先在隔离 staging 重组，逐个匹配 committed manifest
+的固定 byte count 与 SHA-256；只有全部通过后才允许原子提升，任一失败不得修改最终路径。
+
+实际结果：本地十文件 size/SHA 复算完成；首轮远端验证因缩略记录中的 dataset SHA 转抄错误
+按预期立即非零退出，十个 `mv` 均未执行。修正值已直接对照三个 dataset manifests；文档
+`git diff --check` 通过，最终远端全量复验结果待下一 pull-first 连接补录。
+
 ## 2026-09-12 — Strict Slurm terminal-state audit
 
 计划检查：

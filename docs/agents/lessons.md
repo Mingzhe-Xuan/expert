@@ -115,3 +115,7 @@
 - Treat staging files as untrusted until reconstruction into a new temporary path passes both the
   frozen byte count and SHA-256. Only then atomically rename it to the manifest path; incomplete or
   superseded chunks may be removed only after the verified promotion succeeds.
+- Never promote from a digest copied out of an abbreviated progress summary. Read exact values from
+  the committed machine-readable manifest (and independently recompute them locally) when building
+  the final server-side check. A guarded all-files-before-any-rename sequence kept this transcription
+  error from publishing even one unverified resource.

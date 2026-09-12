@@ -11,6 +11,9 @@
 - 2026-09-12：已传完 DPA4、JARVIS elastic、MatTen elastic 和 MACE 前六个 8 MiB 分块；
   MACE 第七块连续三次被跳板重置，按规范停止盲重试并补充经验，改为该块的 4 MiB
   唯一命名子块。远端部分文件继续视为不可信 staging，整文件哈希通过后才原子提升。
+- 2026-09-12：非 Eq 分块已全部传至 staging，bundle pull 成功；整体验证在首个 dataset
+  SHA 即因缩略记录转抄错误而 fail closed，未提升任何最终文件。现改用 committed manifest
+  原值与本地独立哈希双重核对，再执行 all-verify-before-any-rename。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。
