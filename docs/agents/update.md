@@ -389,3 +389,6 @@
 - Implemented a narrow compatibility fix that allowlists only builtin `slice` before the standalone
   e3nn import. Fresh-process targeted tests passed 8/8; the project suite passed 204/204. Relevant
   compile, launcher syntax, and diff checks also passed.
+- Pushed and synchronized `20ebc15`, then submitted replacement protocol job 415. It remained healthy
+  beyond the former import failure; MACE dielectric job 414 reached train feature 250/3,770. Free
+  space was 7.2 GiB and no EquiformerV2 resource was accessed.

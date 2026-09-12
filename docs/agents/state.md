@@ -25,6 +25,10 @@ Slurm 413 protocol candidate 因 PyTorch 2.6 safe-load 与 e3nn 0.4.4 packaged c
 边界失败，414 MACE dielectric 正在提取正式 split 特征。当前先以仅 allowlist `slice` 的局部
 修复恢复 413，不使用进程级 unrestricted pickle 开关。
 
+修复提交 `20ebc15` 已同步 Guqq，替代 protocol job 415 正常运行并越过原失败点；MACE
+dielectric job 414 正常运行，最新持久进度为 train extraction 250/3,770。磁盘余量 7.2 GiB；
+下一步先验收 415 的 14,220 manifest，再回传本地提交并解锁 elastic 训练。
+
 ## 当前计划（JARVIS backbone + readout benchmark）
 
 1. pull-first 连接 Guqq，收集 408、409、410_[0-2] 的 scheduler、JSON、JUnit 和日志证据。
@@ -76,6 +80,8 @@ Slurm 413 protocol candidate 因 PyTorch 2.6 safe-load 与 e3nn 0.4.4 packaged c
 - 2026-09-12：protocol safe-load 修复仅 allowlist builtin `slice`；fresh-process targeted 8 项、
   项目完整 204 项测试全绿，py_compile、launcher shell syntax 与 diff check 通过。准备提交并
   重提 413 的替代 job，414 保持运行。
+- 2026-09-12：`20ebc15` 已在 Guqq fast-forward；415 已运行超过原 3 秒失败点且无 traceback，
+  414 正常推进到 250/3,770。当前转入 Slurm 长作业监控与 artifact 验收阶段。
 
 ## 当前状态（Dataset point-group balance）
 

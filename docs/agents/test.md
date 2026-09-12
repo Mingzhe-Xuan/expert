@@ -1204,3 +1204,12 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   `python -m pytest tests -q` run passed 204 tests with 0 failures (598 warnings) in 643.07 seconds.
   The exact workspace-local `Test/` artifact created by the overbroad vendor collection was verified
   and removed; unrelated pre-existing bytecode changes remain untouched.
+
+## 2026-09-12 — Active Slurm handoff after safe-load fix
+
+- Scope: document jobs 414/415 and their evidence-backed recovery points without changing code,
+  configuration, datasets, checkpoints, or model results.
+- Expected: `git diff --check` passes; recorded IDs/progress/storage match GPU evidence; only the four
+  agent docs are staged and no running job is represented as complete.
+- Actual: `git diff --check` passed. `rg` confirmed matching job 415, MACE 250/3,770, running-state,
+  and 7.2 GiB evidence across GPU/state/update/test. The staged-path audit runs before commit.

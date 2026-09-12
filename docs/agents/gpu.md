@@ -1020,3 +1020,65 @@
   `constants.pt` under PyTorch 2.6's new weights-only default. Job 414 was running and had begun the
   3,770-record training-split feature extraction. Cache/result footprints were still negligible and
   free space remained 7.3 GiB.
+
+## 2026-09-12 — Sync safe-load fix and replace protocol job 413
+
+- Intended connection: pull tested commit `20ebc15` first, confirm job 414 and storage remain healthy,
+  then submit one replacement for failed protocol job 413 with the same recorded MACE/core runtime.
+  Record the new job ID and immediate state.
+- Permission check: pull and monitoring are lightweight; candidate generation runs through the
+  committed Slurm launcher. No login-node compute, cleanup, server source edit, duplicate training
+  submission, or EquiformerV2 access is permitted.
+- First result: Guqq was reachable, but its outbound GitHub pull failed with GnuTLS `-110` before
+  monitoring or submission. Job 415 was not created and job 414 was not changed by this connection.
+- Follow-up intent: retry the identical pull-first sequence once after the bounded interval. If the
+  same server-outbound TLS failure repeats, stop direct pulls and prepare the previously validated
+  minimal incremental-bundle recovery path.
+- Follow-up result: the second pull remained silent for 90 seconds and was terminated before any
+  monitoring or submission. A 5,519-byte incremental bundle containing only `20ebc15` over required
+  base `c918a4e` passed `git bundle verify`; an initial range-only bundle command produced no file and
+  was corrected to use the named `main` ref.
+
+## 2026-09-12 — Stage verified incremental bundle for protocol fix
+
+- Intended connection: transfer only the locally verified 5,519-byte bundle to a uniquely named
+  upload-staging file. In the subsequent command session, attempt mandatory pull first; if GitHub TLS
+  still fails, fetch the verified bundle and fast-forward the server checkout before any monitoring
+  or Slurm submission.
+- Permission check: SCP of a task-scoped verified Git bundle is explicitly allowed and does not edit
+  tracked server source by itself. No compute, cleanup, result mutation, or EquiformerV2 access is
+  part of the transfer.
+- Transfer result: the 5,519-byte bundle reached
+  `/home/xmz/expert-upload-20ebc15.bundle.part` successfully.
+
+## 2026-09-12 — Pull verified bundle fallback and submit replacement protocol job
+
+- Intended connection: attempt the mandatory GitHub pull first. If it fails, use `git pull --ff-only`
+  against the staged verified bundle, require HEAD `20ebc15`, inspect job 414 and free space, then
+  submit exactly one replacement protocol candidate and record its ID/state.
+- Permission check: both synchronization paths are fast-forward Git pulls of the locally committed
+  code. Monitoring is lightweight and the candidate uses Slurm. No login-node compute, server-side
+  source editing, cleanup, duplicate training, or EquiformerV2 access is permitted.
+- Result: the GitHub pull itself recovered and fast-forwarded Guqq to `20ebc15`, so the bundle
+  fallback was not consumed. Job 414 remained healthy and running at 27 minutes with 7.3 GiB free.
+  Submitted replacement protocol job `415`, initially pending with reason `None`.
+
+## 2026-09-12 — Verify replacement protocol 415 startup and MACE extraction progress
+
+- Intended connection: pull first, inspect 415 terminal/running state and bounded logs to confirm the
+  safe-load fix passes the former 3-second failure, and read only the latest progress lines and size
+  for job 414/cache. No new job is submitted in this check.
+- Permission check: scheduler/log/storage monitoring is lightweight. No login-node compute, cleanup,
+  source edit, submission, or EquiformerV2 access is permitted.
+- Result: job 415 was running at 53 seconds, proving it passed job 413's 3-second e3nn import failure.
+  Job 414 was healthy at extraction record 250/3,770. Candidate/cache outputs remained small and
+  filesystem availability was 7.2 GiB.
+
+## 2026-09-12 — Continue monitoring protocol candidate 415
+
+- Intended connection: pull first, inspect 415 and bounded logs/output sizes; if complete, verify the
+  generated manifest count, split counts, source hashes, and file digest without modifying it. Also
+  sample only the latest 414 progress and free space.
+- Permission check: read-only scheduler, JSON, checksum, log, and storage checks are lightweight.
+  No login-node batch processing, source edit, cleanup, new submission, or EquiformerV2 access is
+  permitted.
