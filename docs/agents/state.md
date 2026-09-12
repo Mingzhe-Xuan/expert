@@ -1,6 +1,6 @@
 # Agent state
 
-## Current snapshot — JARVIS backbone + readout benchmark (2026-09-12 network recheck)
+## Current snapshot — JARVIS backbone + readout benchmark (2026-09-13 resubmission gate)
 
 The user-confirmed recovery is verified and Guqq is current at `f76fb91`. Terminal evidence now shows
 both prerequisite jobs failed without metrics: protocol job 415 reached the four-hour Slurm limit and
@@ -16,11 +16,17 @@ native-backbone cutoff roundoff without admitting physically out-of-range edges.
 full regression tests, synchronize and resubmit one protocol candidate and one MACE dielectric run.
 Only validated 14,220-record data may unlock elastic training; no score claim precedes terminal metrics.
 
-Both fixes are now implemented and locally verified. The protocol launcher uses eight ordered worker
-processes, 48 GiB, and progress every 250 records; native graph conversion recomputes distances from
-backbone vectors and removes boundary/out-of-range edges under the unchanged strict cutoff. Targeted
-checks passed 31 and 30 tests, the complete project suite passed 208 tests, and compile/shell/diff
-checks passed. Next action is commit/push, pull-first Guqq synchronization, and two Slurm replacements.
+Both fixes are implemented, locally verified, committed, and pushed as `b8b9583`. The protocol
+launcher uses eight ordered worker processes, 48 GiB, and progress every 250 records; native graph
+conversion recomputes distances from backbone vectors and removes boundary/out-of-range edges under
+the unchanged strict cutoff. Targeted checks passed 31 and 30 tests, the complete project suite
+passed 208 tests, and compile/shell/diff checks passed.
+
+The first resubmission turn did not pass the mandatory synchronization gate. Attempt one reached
+Guqq but `git pull` failed with GnuTLS `-110`; attempts two and three were closed by the Vlab endpoint
+before remote commands ran. Every submission remained behind `&&`, so no diagnostic, manifest, or
+training job was created and no benchmark metric is available. The next meaningful action remains a
+pull-first synchronization to `b8b9583`, followed by Slurm job submission; EquiformerV2 stays paused.
 
 ## 当前状态（JARVIS backbone + readout benchmark）
 

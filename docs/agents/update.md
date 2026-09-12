@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-13: pushed the tested prerequisite repairs as `b8b9583` and began the pull-first Guqq
+  resubmission gate. Three bounded connections produced one GitHub GnuTLS `-110` failure followed by
+  two Vlab SSH endpoint closures. Because all scheduler commands were guarded behind the mandatory
+  pull, no MACE diagnostic, elastic manifest replacement, or training job was submitted. The existing
+  outbound-network lesson was consulted; further blind retries are paused and EquiformerV2 remains
+  untouched.
+
 - 2026-09-13: completed both repairs. Elastic manifest generation now uses deterministic ordered
   `ProcessPoolExecutor` workers with progress and strict CLI validation; its Slurm job requests 8 CPU,
   48 GiB and passes all CPUs to the generator. Native backbone graph conversion recomputes vector

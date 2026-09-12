@@ -1,5 +1,19 @@
 # Test plan and results
 
+## 2026-09-13 — Guqq resubmission status documentation
+
+计划检查：
+
+- 确认状态记录与实际三次连接证据一致，不误报 `git pull`、Slurm submission 或指标；
+- 确认修复提交、网络错误、后续 gate 与 EquiformerV2 暂停范围均明确；
+- 对本次纯文档更新执行 Markdown 关键字段检查及 `git diff --check`。
+
+实际结果：
+
+- `git diff --check -- docs/agents/state.md docs/agents/update.md docs/agents/gpu.md` 通过；
+- `rg` 检查确认 `b8b9583`、GnuTLS、Slurm 和 EquiformerV2 状态均已记录；
+- 未修改代码或配置，因此本次不重复运行已在修复提交前通过的 208 项测试。
+
 ## 2026-09-12 — Dataset point-group balance
 
 计划检查：
