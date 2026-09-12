@@ -334,7 +334,7 @@ def _evaluate(
     target_coefficients = torch.cat(targets)
     return (
         total_loss / len(examples),
-        tensor_benchmark_metrics(predicted_cartesian, target_cartesian),
+        tensor_benchmark_metrics(predicted_cartesian, target_cartesian, task=unit.target),
         physical_coefficient_metrics(
             predicted_coefficients, target_coefficients, TARGET_LAYOUTS[unit.target]
         ),

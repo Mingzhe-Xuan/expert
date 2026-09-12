@@ -846,3 +846,17 @@
   scheduler, capacity, or artifact output. No job was submitted. Local protocol auditing then found
   the elastic 14,480/14,220 mismatch, so the next successful connection must first sync the corrected
   code and submit the CPU candidate-manifest job before elastic training can be validly launched.
+
+## 2026-09-12 — Sync elastic protocol correction and submit candidate generation
+
+- Intended connection: after completing and pushing the locally verified protocol fix as `f209a1a`,
+  perform the mandatory bounded HTTP/1.1 pull, inspect capacity and jobs 408/409/410_[0-2], then
+  submit `build_jarvis_elastic_manifest.sbatch` to the CPU compute partition. If MACE probes and
+  capacity also pass, submit dielectric training only; elastic training must wait for the candidate
+  manifest to complete, return locally, and be promoted through Git.
+- Permission check: pull/status/log/capacity checks are lightweight; manifest generation and any
+  training run through Slurm. The server job writes only ignored results/logs and does not modify
+  tracked source. No EquiformerV2 access or download is permitted.
+- Result: only the Vlab banner was returned and the bounded command exited status 1; no pull,
+  scheduler/capacity output, or Slurm job ID exists. Candidate generation and training were not
+  submitted. The repository work continued locally with an additional exact metric-contract audit.

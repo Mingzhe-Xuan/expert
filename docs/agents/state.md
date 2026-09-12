@@ -12,7 +12,7 @@ EquiformerV2 checkpoint 下载继续按用户要求暂停，正式 benchmark 尚
 官方第二阶段预处理实际要求 14,220。正式 elastic CLI 将先 fail closed；正在实现官方
 structural-symmetry zero screening、compact support mask 与 Slurm candidate-manifest 生成路径。
 
-上述协议修复现已完成本地实现并通过 202 项完整回归；`build_jarvis_elastic_manifest.sbatch`
+上述协议修复与 exact Voigt metric 现已完成本地实现并通过 203 项完整回归；`build_jarvis_elastic_manifest.sbatch`
 会在 compute partition 生成候选，不在服务器修改 Git 源码。下一步需先同步并运行该 CPU job，
 验证输出确为 14,220 后 scp 回本地提升 manifest；dielectric 不受此数据协议差异影响。
 
@@ -39,6 +39,9 @@ structural-symmetry zero screening、compact support mask 与 Slurm candidate-ma
 - 2026-09-12：跨轮 Guqq 恢复仍在 Vlab 层以状态 1 退出。并行完成 GMTNet elastic 官方源码
   审计与协议修复：当前 14,480 manifest 在正式 CLI 中 fail closed；新增 14,220 candidate
   Slurm generator、逐记录 36-bit support mask 和 loader zero projection，完整 202 tests 通过。
+- 2026-09-12：进一步从 GMTNet official test loop 确认 elastic Fnorm/EwT 使用 6x6 Voigt
+  flatten 且相对误差分母加 `1e-5`；修复 runner 的 Cartesian shear 重复计数后完整 203 tests
+  通过。第二次同步仍停在 Vlab，candidate job 未提交。
 
 ## 当前状态（Dataset point-group balance）
 

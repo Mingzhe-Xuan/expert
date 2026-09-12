@@ -49,6 +49,16 @@ def test_tensor_benchmark_metrics_define_zero_target_behavior() -> None:
     assert math.isfinite(float(report["fnorm"]))
 
 
+def test_elastic_benchmark_fnorm_uses_voigt_without_shear_duplication() -> None:
+    target = torch.zeros((1, 3, 3, 3, 3))
+    prediction = target.clone()
+    for i, j in ((1, 2), (2, 1)):
+        for k, ell in ((1, 2), (2, 1)):
+            prediction[0, i, j, k, ell] = 1.0
+    report = tensor_benchmark_metrics(prediction, target, task="elastic")
+    assert report["fnorm"] == pytest.approx(1.0)
+
+
 def test_readout_edge_layout_reaches_target_maximum_degree() -> None:
     config = ArchitectureConfig("B+R", "none", "none", "full_o3", "none")
     hidden = default_hidden_layout(config)

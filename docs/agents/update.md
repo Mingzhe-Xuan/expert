@@ -335,3 +335,6 @@
 - Added a CPU Slurm candidate-manifest job so server-side batch processing never edits tracked source.
   Verification: targeted 13 passed, full suite 202 passed, relevant compile/shell/diff checks passed.
   Full candidate generation awaits Guqq connectivity; no incomparable elastic job was submitted.
+- Audited the official evaluation loop and corrected elastic Fnorm/EwT to contract predictions to
+  the released 6x6 Voigt order before flattening, using the published `norm(label)+1e-5` denominator.
+  The final regression state is 203 passed; another Guqq sync attempt failed at the same jump host.

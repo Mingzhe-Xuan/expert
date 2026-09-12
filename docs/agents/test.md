@@ -1103,6 +1103,9 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - production benchmark CLI 对 published split counts fail closed：dielectric `3770/471/471`，
   elastic `11376/1422/1422`。当前 14,480 manifest 必须被拒绝，直到 Slurm 生成并本地提升
   14,220 candidate。
+- GMTNet 官方 test loop 显示 elastic prediction/label 以 36-component Voigt flatten 求 Fnorm，
+  EwT 分母为 `||label||_F + 1e-5`；runner 必须按该口径收缩 `3x3x3x3`，不得因 Cartesian
+  minor/major symmetry 展开而重复计算 shear 分量。
 - loader 对带 protocol-v2 support mask 的 elastic label 应用同一 zero projection，且旧的小型
   schema fixture 保持兼容。运行 targeted/full pytest、compile、CLI help、shell/diff checks。
 
@@ -1111,11 +1114,16 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - 官方 source commit `7a606a4` 审计确认：初筛为 `max(abs(elastic_total_kbar/10))<1500`；
   预处理再从结构对称操作生成 Cartesian support mask，要求 forbidden entries `<1e-4 GPa`，
   通过后清零禁止分量；最后用 Python `random.seed(32)` 做 8:1:1 split。
-- cubic protocol、loader support-mask 与 exact split gate 定向测试：`13 passed`；完整项目：
-  `202 passed, 0 failed`，耗时 244.16 秒，仅有既存 TorchScript/profiler warnings。
+- cubic protocol、loader support-mask、exact split gate 与 Voigt metric 定向测试：`14 passed`；
+  完整项目最终为 `203 passed, 0 failed`，耗时 245.86 秒，仅有既存 TorchScript/profiler
+  warnings。此前未含 Voigt metric case 的完整阶段结果为 202 passed。
 - 一次过宽的 `compileall data src` 同时扫描了 vendored fairchem 源码，发现其上游若干文件本身
   的 future-import 顺序问题；该范围不属于本实现。随后对全部修改 Python 文件执行
   `py_compile`：通过；两个 Slurm launcher `bash -n` 与 `git diff --check`：通过。
 - production 14,220 manifest 的全量计数尚未本地运行；按权限约束，该批处理只通过新增 Slurm
   入口生成 candidate，再 scp 回本地验收。因此当前 14,480 production manifest 保持原样，
   benchmark CLI 会明确拒绝，而不会生成不可比 elastic 跑分。
+- GMTNet official test-loop audit further confirmed that elastic Fnorm/EwT flatten the 6x6 model
+  label, with `relative = ||error||_F / (||label||_F + 1e-5)`. The runner now contracts expanded
+  Cartesian tensors back to the released JARVIS Voigt order before metrics; a regression proves one
+  shear-coordinate error is counted once (Fnorm 1), not four times through Cartesian symmetry.
