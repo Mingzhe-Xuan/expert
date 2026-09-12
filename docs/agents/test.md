@@ -55,8 +55,8 @@
 的固定 byte count 与 SHA-256；只有全部通过后才允许原子提升，任一失败不得修改最终路径。
 
 实际结果：本地十文件 size/SHA 复算完成；首轮远端验证因缩略记录中的 dataset SHA 转抄错误
-按预期立即非零退出，十个 `mv` 均未执行。修正值已直接对照三个 dataset manifests；文档
-`git diff --check` 通过，最终远端全量复验结果待下一 pull-first 连接补录。
+按预期立即非零退出，十个 `mv` 均未执行。改用 committed manifests 原值后，Guqq 十文件
+的固定大小和完整 SHA-256 全部通过，随后一次性原子提升；`git diff --check` 通过。
 
 ## 2026-09-12 — Strict Slurm terminal-state audit
 

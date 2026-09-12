@@ -66,6 +66,20 @@
   atomically moved to their final non-Equiformer paths.
 - EquiformerV2 remains paused and excluded. This is lightweight file verification/management only;
   no model loading, data processing, tests, compilation, or other login-node compute will run.
+- Result: the incremental bundle pull advanced Guqq to `7288f36`; all ten temporary files matched
+  their committed byte counts and exact SHA-256 values, then all ten were atomically promoted.
+  Guqq reported 12 GiB free afterward. No EquiformerV2 resource was downloaded or accessed.
+
+## 2026-09-12 — Submit non-Equiformer Slurm acceptance jobs
+
+- Intended connection: first pull the latest prerequisite-aware bundle, confirm the three recorded
+  MACE/GRACE/DPA4 environments and scheduler availability with lightweight checks, then submit the
+  full test job, 32-PG fixture builder, three standalone backbone smokes, and only array indices
+  whose frozen backbone is MACE, GRACE, or DPA4.
+- The 32-PG smoke array will depend on successful fixture generation. EquiformerV2 indices
+  (`index % 4 == 3`) and its standalone launcher are explicitly excluded. Full JARVIS-DFPT BEC
+  preparation remains unsubmitted because 12 GiB free is below its 10.7 GB input-plus-output safety
+  margin. All computation will execute through Slurm, never on the login node.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 

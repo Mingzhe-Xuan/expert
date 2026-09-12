@@ -14,6 +14,9 @@
 - 2026-09-12：非 Eq 分块已全部传至 staging，bundle pull 成功；整体验证在首个 dataset
   SHA 即因缩略记录转抄错误而 fail closed，未提升任何最终文件。现改用 committed manifest
   原值与本地独立哈希双重核对，再执行 all-verify-before-any-rename。
+- 2026-09-12：十个非 Eq 数据/checkpoint 文件已全部通过 manifest size/SHA 并在 Guqq
+  原子提升；下一阶段提交 full tests、fixture builder、三 standalone smokes 及排除
+  `index % 4 == 3` 的两组 Slurm arrays。完整 BEC 仍因 12 GiB 余量不足不提交。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。

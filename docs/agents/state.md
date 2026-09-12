@@ -24,6 +24,9 @@
 - 2026-09-12：全部非 Eq 分块已传完且 Guqq pull 至 `2b3f3a4`；首次整体验证因从缩略
   进度记录抄入了错误的数据集 SHA 而在首文件立即失败，guard 保证十个最终路径均未提升。
   已改为直接读取 committed manifests 的完整 SHA，并在下一 pull-first 连接重新整体验证。
+- 2026-09-12：十个非 Eq 文件已在 Guqq 全部通过固定 size/SHA 并原子提升，服务器同步至
+  `7288f36`，余量约 12 GiB。进入 Slurm 提交阶段：排除全部 Eq indices；完整 BEC 因
+  input/output 容量安全边界不足继续门控，不提交。
 
 ## 当前状态（Efficiency report aggregation）
 
