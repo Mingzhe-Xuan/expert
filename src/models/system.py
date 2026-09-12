@@ -54,12 +54,24 @@ def periodic_graph_from_backbone(features: O3FeatureBatch, *, cutoff: float) -> 
     missing = [name for name in required if name not in geometry]
     if missing:
         raise ValueError(f"backbone edge geometry lacks {missing}")
+    edge_vectors = geometry["edge_vectors"]
+    edge_distances = edge_vectors.norm(dim=-1)
+    strict = edge_distances < cutoff
+    if bool(strict.all()):
+        edge_index = geometry["edge_index"]
+        cell_shifts = geometry["cell_shifts"]
+        edge_vectors = geometry["edge_vectors"]
+    else:
+        edge_index = geometry["edge_index"][:, strict]
+        cell_shifts = geometry["cell_shifts"][strict]
+        edge_vectors = edge_vectors[strict]
+        edge_distances = edge_distances[strict]
     graph = PeriodicGraph(
         positions=geometry["positions"], cell=geometry["cell"],
         atomic_numbers=geometry["atomic_numbers"].long(), node_batch=features.node_batch,
-        edge_index=geometry["edge_index"].long(), cell_shifts=geometry["cell_shifts"].long(),
-        edge_vectors=geometry["edge_vectors"], edge_distances=geometry["edge_distances"],
-        cutoff=cutoff, boundary_convention="backbone_native_strict_distance_lt_cutoff",
+        edge_index=edge_index.long(), cell_shifts=cell_shifts.long(),
+        edge_vectors=edge_vectors, edge_distances=edge_distances,
+        cutoff=cutoff, boundary_convention="backbone_native_filtered_distance_lt_cutoff",
     )
     if graph.num_nodes != features.node_features.shape[0]:
         raise ValueError("backbone graph node count disagrees with tapped features")

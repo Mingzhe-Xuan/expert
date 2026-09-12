@@ -10,7 +10,7 @@ import sys
 import pytest
 import torch
 
-from data.build_manifest import gmtnet_elastic_protocol_filter
+from data.build_manifest import gmtnet_elastic_protocol_filter, screen_elastic_records
 from src.data import (
     TensorSample,
     TrainingUnit,
@@ -177,6 +177,67 @@ def test_elastic_protocol_objects_import_in_a_fresh_process() -> None:
         errors="replace",
     )
     assert completed.returncode == 0, completed.stderr
+
+
+def test_elastic_protocol_parallel_orchestration_is_ordered_and_observable(
+    monkeypatch, capsys
+) -> None:
+    class InlinePool:
+        def __init__(self, *, max_workers):
+            assert max_workers == 3
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def map(self, function, values, *, chunksize):
+            assert chunksize == 16
+            return map(function, values)
+
+    def fake_filter(record):
+        index = int(record["index"])
+        if index == 4:
+            raise RuntimeError("worker failure")
+        return index % 2 == 0, 1 << index, torch.zeros((6, 6)).numpy()
+
+    monkeypatch.setattr("data.build_manifest.ProcessPoolExecutor", InlinePool)
+    monkeypatch.setattr("data.build_manifest.gmtnet_elastic_protocol_filter", fake_filter)
+    screened = [(index + 10, {"index": index}) for index in range(4)]
+    sequential = screen_elastic_records(screened, workers=1)
+    parallel = screen_elastic_records(screened, workers=3, progress_every=2)
+    assert parallel == sequential
+    assert [(raw_index, bits) for raw_index, _, bits in parallel] == [(10, 1), (12, 4)]
+    progress = [json.loads(line) for line in capsys.readouterr().err.splitlines()]
+    assert progress == [
+        {"accepted": 1, "completed": 2, "event": "elastic_protocol_screen", "total": 4},
+        {"accepted": 2, "completed": 4, "event": "elastic_protocol_screen", "total": 4},
+    ]
+    with pytest.raises(RuntimeError, match="worker failure"):
+        screen_elastic_records([(14, {"index": 4})], workers=3)
+    with pytest.raises(ValueError, match="workers"):
+        screen_elastic_records([], workers=0)
+    with pytest.raises(ValueError, match="progress"):
+        screen_elastic_records([], progress_every=-1)
+
+
+@pytest.mark.parametrize(
+    "argument, message",
+    [("--workers", "positive"), ("--progress-every", "cannot be negative")],
+)
+def test_elastic_manifest_cli_rejects_invalid_parallel_options(argument, message) -> None:
+    completed = subprocess.run(
+        [sys.executable, "data/build_manifest.py", "--only", "dielectric", argument, "-1"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    assert completed.returncode == 2
+    assert message in completed.stderr
 
 
 def test_elastic_loader_applies_manifest_support_mask(tmp_path) -> None:

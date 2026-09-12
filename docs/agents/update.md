@@ -1,5 +1,18 @@
 # Agent progress updates
 
+- 2026-09-13: completed both repairs. Elastic manifest generation now uses deterministic ordered
+  `ProcessPoolExecutor` workers with progress and strict CLI validation; its Slurm job requests 8 CPU,
+  48 GiB and passes all CPUs to the generator. Native backbone graph conversion recomputes vector
+  lengths and filters every edge failing strict `< cutoff`, preserving zero-copy topology when no
+  filtering is needed. Targeted runs passed 31 and 30 tests; the full suite passed 208 tests with
+  0 failures in 521.21 seconds. `py_compile`, both launcher `bash -n`, and diff checks passed.
+
+- 2026-09-13: terminal audit after network recovery found job 415 cancelled by its four-hour time
+  limit with no candidate, and job 414 failed after feature 2,275/3,770 because a native MACE edge
+  violated the strict cutoff check at a numerical boundary. Failed JSON/JUnit/log evidence is retained;
+  no metrics exist. Entered two repair units: deterministic multi-worker protocol generation with
+  progress, and tolerance-safe native graph cutoff conversion. EquiformerV2 remains paused.
+
 - 2026-09-12: after the user confirmed recovery, two pull-first sessions succeeded at `ec1a58a`.
   Protocol job 415 was monitored from 2:11:49 through 2:50:44; its Python process sustained about
   114% CPU and reached roughly 10.4 GiB RSS under a 16 GiB request, with no traceback or candidate.

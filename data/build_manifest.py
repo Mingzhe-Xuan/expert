@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor
 import functools
 import hashlib
 import json
 import pickle
 import random
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -125,7 +127,62 @@ def gmtnet_elastic_protocol_filter(record: dict) -> tuple[bool, int, np.ndarray]
     return accepted, bits, projected
 
 
-def jarvis_manifest(filename: str, task: str) -> dict:
+def _screen_elastic_record(item: tuple[int, dict]) -> tuple[int, dict, int] | None:
+    raw_index, record = item
+    accepted, support_bits, _ = gmtnet_elastic_protocol_filter(record)
+    if not accepted:
+        return None
+    return raw_index, record, support_bits
+
+
+def screen_elastic_records(
+    screened: list[tuple[int, dict]],
+    *,
+    workers: int = 1,
+    progress_every: int = 0,
+) -> list[tuple[int, dict, int]]:
+    """Apply the exact screen in stable input order, optionally across processes."""
+
+    if workers < 1:
+        raise ValueError("elastic protocol workers must be positive")
+    if progress_every < 0:
+        raise ValueError("elastic protocol progress interval cannot be negative")
+
+    def collect(results) -> list[tuple[int, dict, int]]:
+        accepted = []
+        total = len(screened)
+        for completed, result in enumerate(results, start=1):
+            if result is not None:
+                accepted.append(result)
+            if progress_every and (completed % progress_every == 0 or completed == total):
+                print(
+                    json.dumps(
+                        {
+                            "accepted": len(accepted),
+                            "completed": completed,
+                            "event": "elastic_protocol_screen",
+                            "total": total,
+                        },
+                        sort_keys=True,
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
+        return accepted
+
+    if workers == 1:
+        return collect(map(_screen_elastic_record, screened))
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        return collect(executor.map(_screen_elastic_record, screened, chunksize=16))
+
+
+def jarvis_manifest(
+    filename: str,
+    task: str,
+    *,
+    workers: int = 1,
+    progress_every: int = 0,
+) -> dict:
     path = ROOT / "raw" / "jarvis_gmtnet" / filename
     with path.open("rb") as stream:
         raw = pickle.load(stream)
@@ -143,11 +200,9 @@ def jarvis_manifest(filename: str, task: str) -> dict:
             if x.get("elastic_total_kbar")
             and np.max(np.abs(np.asarray(x["elastic_total_kbar"]) / 10.0)) < 1500
         ]
-        records = []
-        for raw_index, record in screened:
-            accepted, support_bits, _ = gmtnet_elastic_protocol_filter(record)
-            if accepted:
-                records.append((raw_index, record, support_bits))
+        records = screen_elastic_records(
+            screened, workers=workers, progress_every=progress_every
+        )
         criterion = (
             "GMTNet official two-stage filter: elastic_total_kbar present; GPa max(abs)<1500; "
             "structure-derived forbidden entries <1e-4 GPa; forbidden entries zeroed"
@@ -204,7 +259,23 @@ def main() -> None:
     parser.add_argument(
         "--only", choices=("all", "dielectric", "elastic", "matten"), default="all"
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="processes used by the exact elastic symmetry screen",
+    )
+    parser.add_argument(
+        "--progress-every",
+        type=int,
+        default=0,
+        help="emit elastic screening progress every N records (0 disables)",
+    )
     arguments = parser.parse_args()
+    if arguments.workers < 1:
+        parser.error("--workers must be positive")
+    if arguments.progress_every < 0:
+        parser.error("--progress-every cannot be negative")
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
     outputs = {}
     if arguments.only in {"all", "dielectric"}:
@@ -212,7 +283,12 @@ def main() -> None:
             "jarvis_diele_piezo.pkl", "dielectric"
         )
     if arguments.only in {"all", "elastic"}:
-        outputs["jarvis_elastic.json"] = jarvis_manifest("jarvis_elastic.pkl", "elastic")
+        outputs["jarvis_elastic.json"] = jarvis_manifest(
+            "jarvis_elastic.pkl",
+            "elastic",
+            workers=arguments.workers,
+            progress_every=arguments.progress_every,
+        )
     if arguments.only in {"all", "matten"}:
         outputs["matten_elastic.json"] = matten_manifest()
     for filename, content in outputs.items():

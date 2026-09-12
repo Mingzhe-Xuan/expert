@@ -2,17 +2,25 @@
 
 ## Current snapshot — JARVIS backbone + readout benchmark (2026-09-12 network recheck)
 
-The user-confirmed recovery is verified: Guqq pull-first access succeeds and the server is current at
-`ec1a58a`. Protocol job 415 remains RUNNING at 2:50:44 with sustained CPU activity, about 10.4 GiB
-RSS under its 16 GiB request, no traceback, and no completion-only candidate. MACE dielectric job 414
-remains RUNNING and has reached frozen feature extraction 1,775/3,770. Free space is stable at 16 GiB.
-Both jobs remain untouched and no terminal metric is claimed.
+The user-confirmed recovery is verified and Guqq is current at `f76fb91`. Terminal evidence now shows
+both prerequisite jobs failed without metrics: protocol job 415 reached the four-hour Slurm limit and
+was cancelled before writing a candidate; MACE dielectric job 414 reached feature 2,275/3,770, then
+failed because a native MACE edge at the numerical cutoff boundary violated the project's strict
+graph contract. Its failed JSON/JUnit are retained. Free disk remains 16 GiB and EquiformerV2 remains
+paused.
 
-The benchmark Goal is resumed from its external blocker and remains incomplete. Continue bounded
-monitoring until 415 emits the exact
-14,220-record manifest, validate and return it locally, then unlock elastic training. Job 414 must
-finish and emit its JSON/JUnit/checkpoint evidence before its four metrics are compared with the
-published table. Remaining MACE/GRACE/DPA4 runs stay capacity-gated and EquiformerV2 remains paused.
+The benchmark Goal remains active and incomplete. The current implementation phase has two modules:
+`data/build_manifest.py` will expose deterministic multi-worker elastic filtering with progress so
+the exact protocol fits its Slurm allocation, while `src/models/system.py`/graph contracts will handle
+native-backbone cutoff roundoff without admitting physically out-of-range edges. After targeted and
+full regression tests, synchronize and resubmit one protocol candidate and one MACE dielectric run.
+Only validated 14,220-record data may unlock elastic training; no score claim precedes terminal metrics.
+
+Both fixes are now implemented and locally verified. The protocol launcher uses eight ordered worker
+processes, 48 GiB, and progress every 250 records; native graph conversion recomputes distances from
+backbone vectors and removes boundary/out-of-range edges under the unchanged strict cutoff. Targeted
+checks passed 31 and 30 tests, the complete project suite passed 208 tests, and compile/shell/diff
+checks passed. Next action is commit/push, pull-first Guqq synchronization, and two Slurm replacements.
 
 ## 当前状态（JARVIS backbone + readout benchmark）
 

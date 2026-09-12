@@ -1273,3 +1273,22 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: `git diff --check` passed and `rg` confirmed matching Git, runtime, CPU/RSS, feature, disk,
   resumed-Goal, and paused-EquiformerV2 evidence across state/update/test. The shared GPU log remains
   unstaged; the final staged-path audit covers only these three owned documents.
+
+## 2026-09-13 — Elastic protocol throughput and native-cutoff repair plan
+
+- Scope: add deterministic multi-worker execution and bounded progress reporting to the exact GMTNet
+  elastic screen; fix only floating-point boundary disagreement when converting a real backbone's
+  native graph into the strict project graph contract.
+- Expected: one-worker and multi-worker elastic results preserve input order and exact accepted masks;
+  worker failures propagate; CLI validates worker count and emits progress without changing manifest
+  schema. Native edges genuinely beyond cutoff remain rejected, while roundoff-scale overshoot is
+  handled deterministically with recomputed project geometry. Existing graph invariants remain strict.
+- Planned checks: focused manifest/graph/system/benchmark tests, fresh-process compatibility test,
+  relevant `py_compile`, both Slurm launcher syntax checks, complete `tests/` suite, and `git diff
+  --check` before commit. Guqq numerical reproduction and both replacement runs execute only via Slurm.
+- Actual: the first `uv run pytest` selected an unrelated Anaconda interpreter and failed collection;
+  the second plain invocation was intercepted by a broken user `langsmith` plugin. Neither entered
+  project tests. With external plugin autoload disabled, the focused suite passed 31 tests. The
+  manifest/Slurm/system integration selection passed 30 tests. `py_compile`, both launcher `bash -n`,
+  and `git diff --check` passed. The complete `tests/` suite passed 208 tests with 0 failures and 598
+  warnings in 521.21 seconds.

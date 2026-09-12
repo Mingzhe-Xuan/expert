@@ -38,9 +38,11 @@ For elastic, direct comparison with the 14,220-sample GMTNet table additionally
 requires the official second-stage structural-symmetry screen from
 `GMTNet_elast/data.py`; the initial magnitude screen alone leaves 14,480 records
 and is not benchmark-equivalent. `data/build_manifest.py --only elastic
---output-dir ...` reproduces the structure-derived forbidden-component mask,
+--workers 8 --progress-every 250 --output-dir ...` reproduces the structure-derived forbidden-component mask,
 rejects labels whose forbidden entries reach `1e-4 GPa`, and stores each accepted
-6x6 support mask as a compact 36-bit integer. On Guqq this batch operation must
+6x6 support mask as a compact 36-bit integer. Multi-process results retain input
+order, so the seed-32 split is byte-deterministic relative to one-worker execution.
+On Guqq this batch operation must
 use `slurm/build_jarvis_elastic_manifest.sbatch` and write a candidate under
 ignored `results/`; production manifests are promoted only from local Git.
 

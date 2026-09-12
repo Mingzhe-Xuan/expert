@@ -119,6 +119,34 @@ def test_backbone_graph_view_requires_and_reuses_returned_geometry() -> None:
         raise AssertionError("missing backbone geometry was accepted")
 
 
+def test_backbone_graph_view_filters_native_cutoff_boundary_from_vectors() -> None:
+    layout = default_hidden_layout(_config())
+    vectors = torch.tensor(
+        [[0.5, 0.0, 0.0], [1.0, 0.0, 0.0], [1.000001, 0.0, 0.0]]
+    )
+    features = O3FeatureBatch(
+        torch.zeros((2, layout.dimension)),
+        layout,
+        torch.zeros(2, dtype=torch.long),
+        edge_geometry={
+            "positions": torch.tensor([[0.0, 0.0, 0.0], [0.5, 0.0, 0.0]]),
+            "cell": (10.0 * torch.eye(3)).unsqueeze(0),
+            "atomic_numbers": torch.tensor([14, 14]),
+            "edge_index": torch.tensor([[0, 0, 0], [1, 1, 1]]),
+            "cell_shifts": torch.zeros((3, 3), dtype=torch.long),
+            "edge_vectors": vectors,
+            # The adapter-reported values deliberately disagree: physical vectors
+            # define the strict project boundary after native graph conversion.
+            "edge_distances": torch.tensor([0.5, 0.5, 0.5]),
+        },
+    )
+    graph = periodic_graph_from_backbone(features, cutoff=1.0)
+    assert graph.num_edges == 1
+    assert torch.equal(graph.edge_vectors, vectors[:1])
+    assert torch.equal(graph.edge_distances, torch.tensor([0.5]))
+    assert graph.boundary_convention == "backbone_native_filtered_distance_lt_cutoff"
+
+
 def test_five_structure_runner_updates_checkpoints_and_serializes_metrics(tmp_path) -> None:
     checkpoint = tmp_path / "smoke.pt"
     report = run_five_structure_smoke(
