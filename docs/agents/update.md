@@ -373,3 +373,10 @@
 - This is the third consecutive same-condition recovery turn. All remaining benchmark work requires
   Slurm behind the mandatory pull gate, so the Goal is formally blocked again without any metric
   claim. EquiformerV2 remained untouched.
+
+# 2026-09-12 — User-confirmed Guqq recovery
+
+- The benchmark Goal is reactivated after the user confirmed network recovery. The next connection
+  remains pull-first and will collect exact probe/capacity evidence before any Slurm submission.
+- EquiformerV2 remains paused. Elastic training remains gated on generating, returning, validating,
+  and committing the exact 14,220-record protocol manifest.

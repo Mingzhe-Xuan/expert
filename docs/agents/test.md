@@ -1170,3 +1170,12 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
 - Actual: `git diff --check` passed. `rg` confirmed matching `Broken pipe`, unknown-pull, guarded
   command, and third-turn evidence across GPU/state/update/lessons/test. The staged-path audit is run
   immediately before commit.
+
+## 2026-09-12 — User-confirmed recovery state record
+
+- Scope: update only the active benchmark state, connection intent, and progress history before the
+  next Guqq connection.
+- Expected: `git diff --check` passes; records retain the pull-first/Slurm-only gates, keep
+  EquiformerV2 paused, and stage only four agent documentation files.
+- Actual: `git diff --check` passed. `rg` confirmed the recovery, 14,220-manifest gate, and paused
+  EquiformerV2 scope across GPU/state/update/test. The final staged-path audit runs before commit.

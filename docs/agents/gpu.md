@@ -933,3 +933,16 @@
   output. The command was terminated after the bounded wait. Pull completion is unknown; all later
   capacity, scheduler, and job commands were guarded by `&&`, so none is evidenced as executed and
   no Slurm submission occurred. This is the third consecutive same-condition recovery turn.
+
+## 2026-09-12 — User-confirmed network recovery after renewed blocker
+
+- User direction: Guqq networking is restored; resume the JARVIS dielectric/elastic backbone plus
+  readout benchmark. EquiformerV2 checkpoint access remains paused under the earlier instruction.
+- Intended connection: after this recovery record is committed, connect pull-first, verify the
+  server HEAD, collect jobs 408/409/410 and their artifacts where available, inspect filesystem and
+  Slurm capacity, then submit the CPU elastic protocol-candidate job. Submit MACE dielectric only if
+  the existing runtime probes and storage gate pass; elastic training remains gated on promotion of
+  the exact 14,220 manifest.
+- Permission check: Git/status/capacity inspection is lightweight; candidate generation, backbone
+  extraction, training, and evaluation use Slurm only. No server source edits, unrelated artifact
+  mutation, or EquiformerV2 resource access is permitted.
