@@ -11,7 +11,7 @@ from ..backbones import MACEBackboneAdapter
 from ..graphs import build_periodic_graph
 from ..irreps import IrrepLayout, IrrepTerm
 from ..symmetry.registry import _layout_irreps
-from .reporting import run_recorded_smoke
+from .reporting import representation_matrix_for_features, run_recorded_smoke
 
 
 SMOKE_LAYOUT = IrrepLayout(
@@ -50,7 +50,9 @@ def run(device: str) -> dict[str, object]:
             graph.cutoff,
         )
         actual = adapter(transformed_graph).node_features
-        expected = baseline.node_features @ representation.D_from_matrix(rotation).T
+        expected = baseline.node_features @ representation_matrix_for_features(
+            representation, rotation, baseline.node_features
+        ).T
         error = float((actual - expected).abs().max().detach().cpu())
         errors[name] = error
         if error >= FLOAT32_EQUIVARIANCE_TOLERANCE:

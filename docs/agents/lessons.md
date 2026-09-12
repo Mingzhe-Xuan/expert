@@ -131,3 +131,11 @@
 - TensorFlow 2.20 cannot execute GRACE kernels on Guqq's RTX 5090 compute capability 12.0; its PTX
   fallback fails before checkpoint inference. Use an explicit, reported TensorFlow-CPU fallback for
   this frozen runtime while keeping the trainable PyTorch interface on the requested CUDA device.
+- e3nn 0.5.9 constructs SO(3) generators using the process-wide default dtype before multiplying
+  them by caller-provided angles. Passing float64 rotations alone therefore does not guarantee a
+  float64 representation when the default is float32; Reynolds projectors can turn that error into
+  spurious finite-group paths. For convention-defining O(2) CG construction, generate the real-basis
+  Lie algebra explicitly in float64 and test the sampled group law across pinned runtime generations.
+- e3nn representation checks should construct `D_from_matrix` from a CPU rotation and only then cast
+  the finished matrix to the feature device/dtype. This avoids older/newer e3nn internal CPU constants
+  colliding with CUDA inputs while preserving a device-matched comparison.

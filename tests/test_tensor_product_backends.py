@@ -10,6 +10,10 @@ from src.tensor_products import (
     build_tensor_product,
     edge_frames,
 )
+from src.tensor_products.backends import (
+    _sample_o2_representations,
+    _stable_irrep_matrix,
+)
 from e3nn import o3
 
 
@@ -27,6 +31,46 @@ def _representation(layout: IrrepLayout, rotation: torch.Tensor) -> torch.Tensor
         [(term.multiplicity, (term.degree, 1 if term.parity == "e" else -1)) for term in layout.terms]
     )
     return irreps.D_from_matrix(rotation)
+
+
+@pytest.mark.parametrize("degree", range(5))
+@pytest.mark.parametrize("parity", ["e", "o"])
+def test_stable_irrep_matrix_matches_e3nn_float64_convention(
+    degree: int, parity: str
+) -> None:
+    angle = torch.tensor(0.37, dtype=torch.float64)
+    rotation = o3.matrix_z(angle)
+    reflection = torch.diag(torch.tensor([1.0, -1.0, 1.0], dtype=torch.float64))
+    irrep = o3.Irrep(degree, 1 if parity == "e" else -1)
+    for operation in (rotation, rotation @ reflection):
+        assert torch.allclose(
+            _stable_irrep_matrix(degree, parity, operation),
+            irrep.D_from_matrix(operation),
+            atol=2.0e-10,
+            rtol=2.0e-10,
+        )
+
+
+def test_sampled_o2_representations_obey_dihedral_group_law() -> None:
+    basis = torch.eye(7, dtype=torch.float64)
+    order = 11
+    representation = _sample_o2_representations(3, "o", basis, order)
+    rotations = representation[0::2]
+    reflections = representation[1::2]
+    for left in range(order):
+        for right in range(order):
+            assert torch.allclose(
+                rotations[left] @ rotations[right],
+                rotations[(left + right) % order],
+                atol=2.0e-10,
+                rtol=2.0e-10,
+            )
+            assert torch.allclose(
+                reflections[left] @ reflections[right],
+                rotations[(left - right) % order],
+                atol=2.0e-10,
+                rtol=2.0e-10,
+            )
 
 
 @pytest.mark.parametrize("backend", ["full_o3", "o2_tp"])

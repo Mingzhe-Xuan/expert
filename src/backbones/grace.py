@@ -22,6 +22,7 @@ GRACE_VERSION = "0.6.0"
 GRACE_CHECKPOINT_METADATA_VERSION = "0.5.10"
 GRACE_TAP = "AA"
 GRACE_TF_DEVICE_ENV = "EXPERT_GRACE_TF_DEVICE"
+GRACE_GEOMETRY_FLOAT_DTYPE = "float64"
 GRACE_CHANNELS = 32
 GRACE_AA_GROUPS = (
     *((0, 1, f"({degree},{degree})") for degree in range(5)),
@@ -219,7 +220,7 @@ class GRACEBackboneAdapter(nn.Module):
         self.data_builder = GeometricalDataBuilder(
             elements_map=element_map,
             cutoff=float(cutoff),
-            float_dtype=np.float64,
+            float_dtype=GRACE_GEOMETRY_FLOAT_DTYPE,
         )
         self.constants = constants
         self.tf = tf

@@ -3,13 +3,15 @@
 ## 当前状态（Guqq network recovery）
 
 用户确认 Guqq 网络恢复，Goal 从外部网络阻塞中继续；EquiformerV2 checkpoint 下载按用户
-要求暂停，不尝试访问 gated 资源。当前恢复非 Equiformer 的十文件资源同步与 Slurm 验收。
+要求暂停，不尝试访问 gated 资源。十个非 Eq 资源已完成校验和提升；当前仅推进 GRACE、
+DPA4 与非 Eq real-row 的最小 Slurm 兼容性修复探针。
 
 ## 当前计划（Guqq network recovery）
 
-1. pull-first 连接并创建隔离 staging，逐文件 SCP、固定 size/SHA-256 校验后原子提升。
-2. 只提交不依赖 EquiformerV2 checkpoint 的数据准备、测试和 backbone smoke Slurm jobs。
-3. 监控至终态，保存 JSON/JUnit/Git/env/Slurm 证据并用 strict `sacct` audit 核验。
+1. 修复 GRACE 字符串 dtype 与 smoke e3nn CPU/device 边界，并用目标及完整本地测试验收。
+2. 通过 Guqq DPA4 隔离环境的 Slurm 诊断复现 e3nn 0.5.9 O(2) CG 数值失败，冻结根因后修复。
+3. 只重提 GRACE/DPA4 standalone 与 real 0–2；五项全绿后再恢复非 Eq arrays，并保存
+   JSON/JUnit/Git/env/Slurm 证据。`sacct` 因集群未配置 accounting storage 保留为限制。
 
 ## 变更记录（Guqq network recovery）
 
@@ -47,6 +49,9 @@
 - 2026-09-12：real row 0 已 `COMPLETED 0:0`，确认 frame 修复；GRACE 已绕过 PTX 后暴露
   `float_dtype` 必须为字符串的 API 错误；DPA4 仍有 device mismatch，待读取 403/404_2
   精确 traceback 后再修。大数组继续暂停。
+- 2026-09-12：traceback 已将两条 DPA 路径分离：standalone 403 已完成 adapter forward，
+  失败于 e3nn 0.5.9 用 CUDA rotation 构造验证矩阵；real 404_2 则在 adapter 构造前失败于
+  O(2) finite-group CG intertwining。先修确定的 API/device 边界，再以 Slurm 复现 CG 数值差异。
 
 ## 当前状态（Efficiency report aggregation）
 

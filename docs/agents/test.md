@@ -985,3 +985,30 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   SSH banner/进入 key exchange 前关闭连接；`ssh-keyscan -T 10` 同样未收到
   banner 或 host key。`ssh -G Guqq` 仍解析为 `xmz@211.86.155.221:22` 和预期
   Ed25519 identity，因此排除仓库路径、远程 Git 命令和客户端密钥认证阶段。
+
+# 2026-09-12 — Guqq second-stage runtime compatibility fixes
+
+## 测试范围与预期结果
+
+- GRACE `GeometricalDataBuilder` 必须使用 TensorPotential 0.6.0 接受的字符串 dtype，且现有
+  TensorFlow CPU fallback 与审计字段保持不变。
+- smoke 的 e3nn 表示矩阵必须先由 CPU rotation 构造，再显式转换到 feature 的 device/dtype；
+  用 fake representation 验证该边界，防止 e3nn 0.5.9 CPU 常量与 CUDA rotation 混用。
+- O(2) 有限群路径构造须在 e3nn 0.4.4 与 0.5.9 上保持相同 path count/checksum，并满足既有
+  intertwining 阈值；先用 Guqq 的隔离 DPA4 环境通过 Slurm 诊断精确数值差异，再决定修复，
+  不通过放宽验收阈值掩盖误差。
+- 本地运行新增目标测试、相关 subduction/tensor-product/backbone 测试及完整测试；Guqq 仅重提
+  GRACE/DPA4 standalone 和 real 0–2 最小 Slurm 探针，五项全绿前不恢复较大数组。
+- EquiformerV2 checkpoint 继续暂停：不下载、不校验、不加载，也不提交依赖它的作业。
+
+## 实际结果
+
+- Guqq CPU-only Slurm diagnostic `407`：`COMPLETED 0:0`；Torch 2.11/e3nn 0.5.9 下旧实现
+  有 992/1000 degree/parity 组合触发 strict intertwining failure，确认不是单一路径尾差。
+- 新实现以显式 float64 real-basis generators 计算 O(3) 矩阵，不修改全局默认 dtype；新增测试
+  验证 degree 0–4、e/o parity 与 e3nn 0.4.4 convention 一致，并验证 sampled dihedral group law。
+- 目标回归：`51 passed, 67 warnings`；完整本地回归：`194 passed, 496 warnings`，耗时
+  247.42 s；均无 skip/xfail/failure。
+- `git diff --check`：通过，仅有工作树既有 LF→CRLF 提示。
+- `uv run ruff check ...`：未执行，当前 uv 环境没有 `ruff` executable；ruff 不属于冻结测试
+  计划，且完整 Python 测试已覆盖所有修改模块的导入与执行，因此不以缺失工具替代或降低测试。

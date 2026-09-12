@@ -316,7 +316,12 @@ def test_grace_manifest_corrects_scalar_rho_tap_and_resource_gate_precedes_runti
 
 
 def test_grace_tensorflow_cpu_fallback_is_applied_before_runtime_ops(monkeypatch) -> None:
-    from src.backbones.grace import _configure_tensorflow_device
+    from src.backbones.grace import (
+        GRACE_GEOMETRY_FLOAT_DTYPE,
+        _configure_tensorflow_device,
+    )
+
+    assert GRACE_GEOMETRY_FLOAT_DTYPE == "float64"
 
     calls = []
 

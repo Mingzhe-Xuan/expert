@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import functools
 import hashlib
 import json
 import math
@@ -65,11 +66,10 @@ def _m_band_basis(
     dimension = 2 * degree + 1
     if mmax >= degree:
         return torch.eye(dimension, dtype=dtype)
-    irrep = o3.Irrep(degree, 1 if parity == "e" else -1)
     angle = torch.tensor(1.0e-5, dtype=dtype)
     generator = (
-        irrep.D_from_matrix(o3.matrix_z(angle))
-        - irrep.D_from_matrix(o3.matrix_z(-angle))
+        _stable_irrep_matrix(degree, parity, o3.matrix_z(angle))
+        - _stable_irrep_matrix(degree, parity, o3.matrix_z(-angle))
     ) / (2 * angle)
     values, vectors = torch.linalg.eigh(-generator @ generator)
     keep = values <= (mmax + 0.25) ** 2
@@ -89,10 +89,67 @@ def _m_band_basis(
     return torch.stack(columns, dim=1)
 
 
+@functools.lru_cache(maxsize=None)
+def _float64_so3_generators(degree: int) -> torch.Tensor:
+    """Construct e3nn's real-basis generators without default-dtype leakage."""
+
+    lower = torch.arange(-degree, degree, dtype=torch.float64)
+    raising = torch.diag(
+        -torch.sqrt(degree * (degree + 1) - lower * (lower + 1)), diagonal=-1
+    )
+    upper = torch.arange(-degree + 1, degree + 1, dtype=torch.float64)
+    lowering = torch.diag(
+        torch.sqrt(degree * (degree + 1) - upper * (upper - 1)), diagonal=1
+    )
+    orders = torch.arange(-degree, degree + 1, dtype=torch.float64)
+    complex_generators = torch.stack(
+        (
+            0.5 * (raising + lowering),
+            torch.diag(1j * orders),
+            -0.5j * (raising - lowering),
+        )
+    )
+    change = torch.zeros(
+        (2 * degree + 1, 2 * degree + 1), dtype=torch.complex128
+    )
+    for order in range(-degree, 0):
+        change[degree + order, degree + abs(order)] = 1 / math.sqrt(2)
+        change[degree + order, degree - abs(order)] = -1j / math.sqrt(2)
+    change[degree, degree] = 1
+    for order in range(1, degree + 1):
+        sign = (-1) ** order
+        change[degree + order, degree + order] = sign / math.sqrt(2)
+        change[degree + order, degree - order] = 1j * sign / math.sqrt(2)
+    change *= (-1j) ** degree
+    generators = torch.conj(change.T) @ complex_generators @ change
+    if not bool((generators.imag.abs() < 1.0e-12).all()):
+        raise RuntimeError("real-basis SO(3) generators acquired an imaginary component")
+    return generators.real
+
+
+def _stable_irrep_matrix(
+    degree: int, parity: str, operation: torch.Tensor
+) -> torch.Tensor:
+    """Evaluate an O(3) irrep in float64 independently of e3nn's default dtype."""
+
+    operation = operation.to(dtype=torch.float64, device="cpu")
+    determinant = torch.linalg.det(operation).sign()
+    proper = determinant * operation
+    alpha, beta, gamma = o3.matrix_to_angles(proper)
+    generators = _float64_so3_generators(degree)
+    matrix = (
+        torch.matrix_exp(alpha * generators[1])
+        @ torch.matrix_exp(beta * generators[0])
+        @ torch.matrix_exp(gamma * generators[1])
+    )
+    if float(determinant) < 0:
+        matrix = matrix * (1 if parity == "e" else -1)
+    return matrix
+
+
 def _sample_o2_representations(
     degree: int, parity: str, basis: torch.Tensor, cyclic_order: int
 ) -> torch.Tensor:
-    irrep = o3.Irrep(degree, 1 if parity == "e" else -1)
     reflection = torch.diag(torch.tensor([1.0, -1.0, 1.0], dtype=basis.dtype))
     matrices = []
     for index in range(cyclic_order):
@@ -100,7 +157,7 @@ def _sample_o2_representations(
             torch.tensor(2 * math.pi * index / cyclic_order, dtype=basis.dtype)
         )
         for operation in (rotation, rotation @ reflection):
-            full = irrep.D_from_matrix(operation)
+            full = _stable_irrep_matrix(degree, parity, operation)
             matrices.append(basis.T @ full @ basis)
     return torch.stack(matrices)
 

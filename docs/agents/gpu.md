@@ -721,3 +721,34 @@
   spglib 2.6.0, and ASE 3.26.0. `pip check` was clean; freeze SHA-256 is
   `acf2cb6c7f575339e392ec45337b8015313dc8e7d0ec3f73e08a97f5d60efa76`; 15 GiB remained.
   No checkpoint or project/model/data workload ran.
+
+## 2026-09-12 — Diagnose e3nn 0.5.9 finite-group CG failure
+
+- Intended connection: perform the mandatory HTTP/1.1 `git pull` first, then submit one bounded,
+  CPU-only Slurm diagnostic in the existing DPA4 environment to identify the exact degree/parity
+  triple and residual responsible for real job 404_2's O(2) finite-group intertwining failure.
+- Permission check: queue inspection and a short numerical diagnostic are in scope; the diagnostic
+  runs through Slurm, not the login node. It will not load any backbone or checkpoint, process a
+  dataset, access EquiformerV2 resources, train, infer, or evaluate a model.
+- Submission result: the mandatory pull succeeded at `b076c04`; CPU-only diagnostic job `407` was
+  submitted to the `compute` partition without loading any checkpoint or dataset.
+
+## 2026-09-12 — Collect e3nn 0.5.9 CG diagnostic evidence
+
+- Intended connection: perform the mandatory HTTP/1.1 pull first, then inspect only job `407` state
+  and its bounded stdout/stderr after terminal completion to capture failing degree/parity triples.
+- Permission check: lightweight queue and log inspection only; no new compute, resource access,
+  checkpoint loading, data processing, or EquiformerV2 activity.
+- Result: the mandatory pull succeeded, but nested quoting split the custom `squeue` format and
+  `squeue` rejected `%M`; command chaining stopped before any job state or log was read.
+
+## 2026-09-12 — Retry collection of job 407 evidence
+
+- Intended connection: perform the mandatory HTTP/1.1 pull first, then avoid custom queue formats;
+  read `scontrol show job 407` and bounded stdout/stderr only.
+- Permission check: lightweight state/log inspection only, with no submission, model/data workload,
+  checkpoint access, or EquiformerV2 activity.
+- Result: job `407` was `COMPLETED 0:0` in 2m33s under Torch 2.11/e3nn 0.5.9. The sweep found
+  992/1000 degree/parity combinations rejected by the strict intertwining audit, ruling out an
+  isolated high-degree path and identifying default-dtype leakage in e3nn 0.5.9's generated
+  Wigner-D matrices as the compatibility boundary.

@@ -12,6 +12,17 @@ import xml.etree.ElementTree as ET
 import torch
 
 
+def representation_matrix_for_features(
+    representation: object,
+    rotation: torch.Tensor,
+    features: torch.Tensor,
+) -> torch.Tensor:
+    """Build an e3nn representation on CPU, then match the feature tensor."""
+
+    matrix = representation.D_from_matrix(rotation.detach().cpu())
+    return matrix.to(device=features.device, dtype=features.dtype)
+
+
 class EvidenceFailure(RuntimeError):
     """A failed case carrying structured evidence gathered before rejection."""
 

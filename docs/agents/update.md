@@ -37,6 +37,10 @@
 - 2026-09-12：real 0 已 `COMPLETED 0:0`，frame 修复成立；GRACE CPU fallback 越过 PTX
   后发现 `float_dtype` 字符串契约，DPA4 尚余一处 device mismatch。先读取精确 traceback，
   不重提或扩大数组。
+- 2026-09-12：403 traceback 确认 DPA4 adapter forward 已通过，余错位于 e3nn validation
+  matrix 的 CPU/CUDA 边界；404_2 则独立失败于 O(2) CG。Slurm 407 在 e3nn 0.5.9 下复现
+  992/1000 组合失败，定位为 Wigner generator 默认 float32 污染。现已实现显式 float64
+  generator、CPU-first smoke matrix 及 GRACE 字符串 dtype；targeted 51、full 194 tests 全绿。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。

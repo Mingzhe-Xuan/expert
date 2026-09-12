@@ -5,11 +5,13 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 import pytest
+import torch
 
 from src.cli import dpa4_smoke
 from src.cli import reporting
 from src.cli.reporting import (
     EvidenceFailure,
+    representation_matrix_for_features,
     run_recorded_case,
     run_recorded_smoke,
     write_single_case_junit,
@@ -110,6 +112,19 @@ def test_recorded_smoke_persists_failure_before_reraising(
 
 def test_dpa4_smoke_imports_its_reported_source_layout() -> None:
     assert dpa4_smoke.DPA4_SO3_LAYOUT.dimension == 1600
+
+
+def test_representation_matrix_is_built_on_cpu_then_matches_features() -> None:
+    class CPURepresentation:
+        def D_from_matrix(self, rotation: torch.Tensor) -> torch.Tensor:
+            assert rotation.device.type == "cpu"
+            return torch.eye(3, dtype=torch.float64)
+
+    features = torch.zeros((2, 3), dtype=torch.float32)
+    rotation = torch.eye(3, dtype=torch.float64)
+    matrix = representation_matrix_for_features(CPURepresentation(), rotation, features)
+    assert matrix.device == features.device
+    assert matrix.dtype == features.dtype
 
 
 def test_recorded_case_preserves_structured_failure_evidence(
