@@ -69,6 +69,11 @@
 - 运行 canonicalization、backbone contracts、CLI/Slurm launcher targeted tests，随后运行完整
   `pytest -q tests`、compile、shell syntax 与 `git diff --check`，全部通过才提交源码修复。
 
+实际结果：targeted 42 passed、55 warnings；完整项目 182 passed、496 warnings（205.36s）。
+`python -m compileall -q src tests`、两个修改后 shell launcher 的 `bash -n` 与
+`git diff --check` 全部通过。前两次启动分别因未显式设置 `PYTHONPATH=.` 和受限 uv cache
+未进入测试收集；按既有记录改用本地 Python、禁用第三方 plugin/cache 后在原范围全绿。
+
 ## 2026-09-12 — Strict Slurm terminal-state audit
 
 计划检查：

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 import torch
 
@@ -78,6 +80,28 @@ def test_canonical_frame_round_trip_and_proper_rotation_covariance() -> None:
     assert torch.allclose(
         rotated.canonical_positions, result.canonical_positions.detach(), atol=2e-10, rtol=2e-10
     )
+
+
+def test_float32_canonical_frame_uses_dtype_aware_inverse_tolerance() -> None:
+    positions, cell, species = _p1_structure()
+    rotation = o3.rand_matrix(dtype=torch.float32)
+    result = canonicalize_structure(
+        positions.float() @ rotation.T,
+        cell.float() @ rotation.T,
+        species,
+    )
+    identity = torch.eye(3, dtype=torch.float32)
+    assert torch.allclose(
+        result.canonical_to_input @ result.input_to_canonical,
+        identity,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+    with pytest.raises(ValueError, match="canonical frame matrices are not inverses"):
+        replace(
+            result,
+            canonical_to_input=result.canonical_to_input + 1.0e-3,
+        )
 
 
 @pytest.mark.parametrize("task,shape", [("dielectric", (2, 3, 3)), ("elastic", (2, 3, 3, 3, 3))])

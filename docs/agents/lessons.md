@@ -119,3 +119,15 @@
   the committed machine-readable manifest (and independently recompute them locally) when building
   the final server-side check. A guarded all-files-before-any-rename sequence kept this transcription
   error from publishing even one unverified resource.
+
+## 2026-09-12 — GPU smoke paths must respect dtype, device, and runtime kernel boundaries
+
+- An orthogonal frame produced in float64 and cast to float32 cannot be validated with a fixed
+  `1e-8` inverse tolerance. Scale the structural invariant check from the tensor dtype epsilon while
+  retaining a strict floor for float64, and test that a materially perturbed inverse still fails.
+- Third-party neighbor-list builders may return host tensors even when their model is on CUDA.
+  Normalize indices, vectors, and masks to the model device (and their contract dtypes) before both
+  descriptor calls and geometry arithmetic.
+- TensorFlow 2.20 cannot execute GRACE kernels on Guqq's RTX 5090 compute capability 12.0; its PTX
+  fallback fails before checkpoint inference. Use an explicit, reported TensorFlow-CPU fallback for
+  this frozen runtime while keeping the trainable PyTorch interface on the requested CUDA device.

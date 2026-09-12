@@ -97,6 +97,15 @@ def test_slurm_launchers_use_only_explicit_environment_contracts() -> None:
     assert all("EXPERT_VENV" not in path.read_text(encoding="utf-8") for path in all_launchers)
 
 
+def test_grace_slurm_paths_select_auditable_tensorflow_cpu_fallback() -> None:
+    standalone = (ROOT / "scripts" / "slurm" / "grace_adapter_smoke.sbatch").read_text(
+        encoding="utf-8"
+    )
+    selector = SELECTOR.read_text(encoding="utf-8")
+    assert "EXPERT_GRACE_TF_DEVICE=cpu" in standalone
+    assert 'EXPERT_GRACE_TF_DEVICE="${EXPERT_GRACE_TF_DEVICE:-cpu}"' in selector
+
+
 def test_standalone_adapter_launchers_persist_complete_evidence() -> None:
     for family in FAMILIES:
         path = ROOT / "scripts" / "slurm" / f"{family}_adapter_smoke.sbatch"

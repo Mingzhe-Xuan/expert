@@ -15,6 +15,7 @@ set -euo pipefail
 : "${EXPERT_GRACE_VENV:?Set EXPERT_GRACE_VENV to the recorded GRACE environment}"
 source "${EXPERT_GRACE_VENV}/bin/activate"
 export TF_FORCE_GPU_ALLOW_GROWTH=true
+export EXPERT_GRACE_TF_DEVICE=cpu
 mkdir -p logs/slurm results/backbones
 git rev-parse HEAD > "results/backbones/grace-git-${SLURM_JOB_ID}.txt"
 python -m pip freeze > "results/backbones/grace-environment-${SLURM_JOB_ID}.txt"

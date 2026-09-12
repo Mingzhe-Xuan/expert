@@ -57,6 +57,21 @@ def _schema_tensor(schema: Any, name: str) -> torch.Tensor:
     return value
 
 
+def _neighbor_schema_on_device(
+    schema: Any,
+    *,
+    device: torch.device,
+    dtype: torch.dtype,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Normalize DeePMD's host/device-dependent neighbor-list schema."""
+
+    return (
+        _schema_tensor(schema, "edge_index").to(device=device, dtype=torch.long),
+        _schema_tensor(schema, "edge_vec").to(device=device, dtype=dtype),
+        _schema_tensor(schema, "edge_mask").to(device=device, dtype=torch.bool),
+    )
+
+
 class _DPA4SO3Extractor(nn.Module):
     """Frozen official DeePMD model exposing SeZM's final SO(3) node state."""
 
@@ -96,9 +111,11 @@ class _DPA4SO3Extractor(nn.Module):
         schema = self.model.build_neighbor_list(
             positions.unsqueeze(0), atype, cell.reshape(1, 9)
         )
-        edge_index_all = _schema_tensor(schema, "edge_index")
-        edge_vectors_all = _schema_tensor(schema, "edge_vec")
-        edge_mask = _schema_tensor(schema, "edge_mask").to(torch.bool)
+        edge_index_all, edge_vectors_all, edge_mask = _neighbor_schema_on_device(
+            schema,
+            device=parameter.device,
+            dtype=parameter.dtype,
+        )
         with torch.no_grad():
             _, latent = self.descriptor.forward_with_edges(
                 extended_coord=positions.unsqueeze(0),

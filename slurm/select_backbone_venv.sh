@@ -14,6 +14,7 @@ select_backbone_venv() {
     1)
       : "${EXPERT_GRACE_VENV:?Set EXPERT_GRACE_VENV to the recorded GRACE environment}"
       EXPERT_SELECTED_VENV="${EXPERT_GRACE_VENV}"
+      export EXPERT_GRACE_TF_DEVICE="${EXPERT_GRACE_TF_DEVICE:-cpu}"
       ;;
     2)
       : "${EXPERT_DPA4_VENV:?Set EXPERT_DPA4_VENV to the recorded DPA4 environment}"

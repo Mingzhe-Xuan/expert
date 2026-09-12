@@ -29,6 +29,9 @@
 - 2026-09-12：诊断确认 real float32 frame 逆矩阵阈值过严、DPA4 neighbor schema 混用
   CPU/CUDA，以及 TensorFlow 2.20 不支持 RTX 5090 sm_120 CUDA kernel。先取消待运行的
   365/366 工作，再本地修复并以 targeted/full tests 验证后重提。
+- 2026-09-12：364 fixture builder 已 `COMPLETED 0:0`；366 在依赖解除后已启动，现已取消
+  余下任务。完成 dtype-aware frame tolerance、DPA4 schema device 归一和显式 GRACE
+  TF-CPU fallback；targeted 42、完整 182 tests、compile/shell/diff checks 全部通过。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import os
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ GRACE_DISTRIBUTION = "tensorpotential"
 GRACE_VERSION = "0.6.0"
 GRACE_CHECKPOINT_METADATA_VERSION = "0.5.10"
 GRACE_TAP = "AA"
+GRACE_TF_DEVICE_ENV = "EXPERT_GRACE_TF_DEVICE"
 GRACE_CHANNELS = 32
 GRACE_AA_GROUPS = (
     *((0, 1, f"({degree},{degree})") for degree in range(5)),
@@ -121,6 +123,21 @@ def _artifact_paths(resource: Any) -> dict[str, Path]:
     return paths
 
 
+def _configure_tensorflow_device(tf: Any) -> str:
+    requested = os.environ.get(GRACE_TF_DEVICE_ENV, "auto").strip().lower()
+    if requested == "auto":
+        return requested
+    if requested != "cpu":
+        raise ValueError(f"{GRACE_TF_DEVICE_ENV} must be 'auto' or 'cpu'")
+    try:
+        tf.config.set_visible_devices([], "GPU")
+    except RuntimeError as exc:
+        raise RuntimeError(
+            f"{GRACE_TF_DEVICE_ENV}=cpu must be applied before TensorFlow device initialization"
+        ) from exc
+    return requested
+
+
 class GRACEBackboneAdapter(nn.Module):
     """Frozen GRACE AA feature tap with an explicit TensorPotential-to-e3nn basis map."""
 
@@ -137,6 +154,7 @@ class GRACEBackboneAdapter(nn.Module):
         require_distribution_version(GRACE_DISTRIBUTION, GRACE_VERSION)
         paths = _artifact_paths(resource)
         try:
+            import tensorpotential  # noqa: F401
             import tensorflow as tf
             import yaml
             from tensorpotential import constants
@@ -146,6 +164,7 @@ class GRACEBackboneAdapter(nn.Module):
             from tensorpotential.tpmodel import ComputeFunction, extract_cutoff_and_elements
         except ImportError as exc:
             raise ImportError("GRACE adapter requires the pinned TensorPotential runtime") from exc
+        tensorflow_device = _configure_tensorflow_device(tf)
 
         metadata = yaml.safe_load(paths["model.yaml"].read_text(encoding="utf-8"))
         if metadata.get("metadata", {}).get("tensorpotential_version") != GRACE_CHECKPOINT_METADATA_VERSION:
@@ -204,6 +223,7 @@ class GRACEBackboneAdapter(nn.Module):
         )
         self.constants = constants
         self.tf = tf
+        self.tensorflow_device = tensorflow_device
         self.resource = resource
         self.tp = model
         self.tp_to_e3nn = _derive_tp_to_e3nn_matrices()

@@ -131,6 +131,17 @@
   364 untouched so its independent result remains usable.
 - No source edit or project/model execution will occur on the login node. Fixes will be implemented
   and tested locally before any replacement Slurm submission; EquiformerV2 remains excluded.
+- Result: fixture builder 364 had completed `0:0` before the connection; array 365 had already left
+  the queue. Array 366 had begun after its dependency cleared, so `scancel 366` stopped its running
+  and remaining tasks. Existing task evidence was preserved.
+
+## 2026-09-12 — Validate runtime fixes with minimal Slurm probes
+
+- Intended connection: pull the tested fix commit first, then submit new GRACE and DPA4 standalone
+  jobs plus only real-smoke indices 0–2, which minimally cover the float32 frame, GRACE CPU fallback,
+  and DPA4 schema-device fixes. Inspect queue state only; broader arrays wait for these probes.
+- EquiformerV2 and BEC remain excluded. All model execution occurs in Slurm jobs; no project/model
+  code will run on the login node.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 

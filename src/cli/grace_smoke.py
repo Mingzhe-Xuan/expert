@@ -71,6 +71,7 @@ def run(device: str) -> dict[str, object]:
         "backbone": "grace",
         "checkpoint_sha256": adapter.resource.sha256,
         "runtime": f"tensorpotential=={importlib.metadata.version('tensorpotential')}",
+        "tensorflow_device": adapter.tensorflow_device,
         "source_layout_dimension": GRACE_SOURCE_LAYOUT.dimension,
         "target_layout": list(SMOKE_LAYOUT.to_spec()),
         "nodes": int(baseline.node_features.shape[0]),

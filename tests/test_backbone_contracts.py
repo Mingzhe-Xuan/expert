@@ -236,6 +236,25 @@ def test_dpa4_latent_flattening_is_copy_major_with_frozen_layout() -> None:
     assert torch.equal(flattened[:, l4_offset + 63 * 9 : l4_offset + 64 * 9], expected_l4_copy_63)
 
 
+def test_dpa4_neighbor_schema_is_normalized_to_model_device_and_dtype() -> None:
+    from src.backbones.dpa4 import _neighbor_schema_on_device
+
+    schema = {
+        "edge_index": torch.tensor([[0], [1]], dtype=torch.int32),
+        "edge_vec": torch.ones((1, 3), dtype=torch.float64),
+        "edge_mask": torch.tensor([1], dtype=torch.int8),
+    }
+    edge_index, edge_vectors, edge_mask = _neighbor_schema_on_device(
+        schema,
+        device=torch.device("cpu"),
+        dtype=torch.float32,
+    )
+    assert edge_index.dtype == torch.long
+    assert edge_vectors.dtype == torch.float32
+    assert edge_mask.dtype == torch.bool
+    assert edge_index.device == edge_vectors.device == edge_mask.device
+
+
 def test_dpa4_resource_gate_precedes_deepmd_import_and_runtime_is_pinned() -> None:
     registry = BackboneResourceRegistry()
     assert registry["dpa4"].required_runtime == "deepmd-kit==3.2.0; torch==2.11.*; CUDA==12.8"
@@ -294,6 +313,28 @@ def test_grace_manifest_corrects_scalar_rho_tap_and_resource_gate_precedes_runti
             IrrepLayout((IrrepTerm(1, 0, "e", "target"),)),
             registry=UnavailableRegistry(),
         )
+
+
+def test_grace_tensorflow_cpu_fallback_is_applied_before_runtime_ops(monkeypatch) -> None:
+    from src.backbones.grace import _configure_tensorflow_device
+
+    calls = []
+
+    class Config:
+        @staticmethod
+        def set_visible_devices(devices, device_type):
+            calls.append((devices, device_type))
+
+    class TensorFlow:
+        config = Config()
+
+    monkeypatch.setenv("EXPERT_GRACE_TF_DEVICE", "cpu")
+    assert _configure_tensorflow_device(TensorFlow()) == "cpu"
+    assert calls == [([], "GPU")]
+
+    monkeypatch.setenv("EXPERT_GRACE_TF_DEVICE", "cuda")
+    with pytest.raises(ValueError, match="must be 'auto' or 'cpu'"):
+        _configure_tensorflow_device(TensorFlow())
 
 
 def test_equiformerv2_embedding_flattening_is_copy_major_with_frozen_layout() -> None:

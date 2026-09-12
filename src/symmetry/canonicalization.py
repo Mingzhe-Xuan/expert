@@ -103,11 +103,15 @@ class CanonicalizationResult:
         identity = torch.eye(
             3, dtype=self.input_to_canonical.dtype, device=self.input_to_canonical.device
         )
+        frame_tolerance = max(
+            1.0e-8,
+            8.0 * torch.finfo(self.input_to_canonical.dtype).eps,
+        )
         if not torch.allclose(
             self.canonical_to_input @ self.input_to_canonical,
             identity,
-            atol=1.0e-8,
-            rtol=1.0e-8,
+            atol=frame_tolerance,
+            rtol=frame_tolerance,
         ):
             raise ValueError("canonical frame matrices are not inverses")
         if not self.hall_symbol or not self.spglib_version:

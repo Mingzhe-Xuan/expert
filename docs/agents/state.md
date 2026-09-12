@@ -39,6 +39,9 @@
 - 2026-09-12：失败根因冻结为 float32 frame 阈值、DPA4 schema device、TensorFlow 2.20
   对 RTX 5090 sm_120 无 CUDA kernel 三项。先取消 365 未完成子任务与 366，保留 364；再在
   本地实现 dtype-aware 校验、DPA device 归一及显式可审计的 GRACE TF-CPU fallback。
+- 2026-09-12：`364` 已 `COMPLETED 0:0`；366 已在依赖解除后启动，随即取消剩余工作。
+  三项修复及回归测试已完成，本地 targeted 42、完整 182 tests 全绿；下一步只重提
+  GRACE/DPA4 standalone 与 real 0–2 最小探针，通过后才恢复更大 arrays。
 
 ## 当前状态（Efficiency report aggregation）
 
