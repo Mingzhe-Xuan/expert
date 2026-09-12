@@ -23,6 +23,9 @@
 - 2026-09-12：已提交 non-Eq PG array `366`（44 rows，`afterok:364`）。集群明确返回
   `Slurm accounting storage is disabled`，因此 strict `sacct` audit 无法执行；后续使用
   `scontrol` 与 stdout/stderr、JSON/JUnit 证据交叉监控，并显式保留此验收限制。
+- 2026-09-12：`360/361` 已 `COMPLETED 0:0`；`362/363` 和多个 real rows 非零失败，
+  row 10 通过，`364` 仍运行、`366` 等待依赖。因同类 real smoke 连续失败超过三次，
+  已查阅 separate-runtime 经验并转入 JSON/JUnit/日志诊断，不盲目重提。
 
 - 2026-09-12：完成两项本地 DoD 补缺并推送后，登记一次有界 Guqq 资源同步恢复检查；
   仍以 HTTP/1.1 `git pull --ff-only` 为首个远程操作，失败即停止且不写资源。

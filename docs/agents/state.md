@@ -33,6 +33,9 @@
 - 2026-09-12：44-row non-Eq PG array `366` 已以 `afterok:364` 提交。Guqq 禁用了 Slurm
   accounting storage，`sacct` 不可用；改用 `scontrol`（记录仍在时）及任务自带 stdout、
   stderr、JSON、JUnit 交叉验收，并把 accounting 缺口保留为明确限制。
+- 2026-09-12：`360` full tests、`361` MACE standalone 已 `COMPLETED 0:0`；GRACE `362`、
+  DPA4 `363` 与 real rows 0/1/2/4/5/6/8/9 已失败。连续失败超过三次后已查阅 runtime
+  lessons，进入只读日志诊断，禁止盲重提；fixture `364` 尚在运行，PG array `366` 等待依赖。
 
 ## 当前状态（Efficiency report aggregation）
 

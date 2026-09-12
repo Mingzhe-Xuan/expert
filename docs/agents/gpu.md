@@ -105,6 +105,19 @@
 - A job is not accepted merely because it disappears from `squeue`: require successful scheduler
   state when available and its recorded JSON/JUnit evidence. Preserve the unavailable-`sacct`
   limitation explicitly rather than fabricating the repository's strict accounting audit.
+- Result: `scontrol` retained usable terminal evidence. Jobs 360 (full tests) and 361 (MACE
+  standalone) completed `0:0`; jobs 362 (GRACE) and 363 (DPA4) failed `1:0`. Within real array 365,
+  row 10 completed while rows 0,1,2,4,5,6,8,9 had already failed; row 12 was running and 13–14
+  pending. Job 364 remained running and array 366 remained dependency-pending.
+
+## 2026-09-12 — Diagnose non-Equiformer Slurm smoke failures
+
+- Intended connection: pull first, then read the task-owned failure JSON/JUnit and bounded tails of
+  stderr/stdout for jobs 362/363 and representative failed rows of array 365. Use `scontrol`/`squeue`
+  only for scheduler state; do not execute project or model code on the login node.
+- The same real-smoke task has failed more than three times, so the existing separate-runtime lesson
+  was consulted before diagnosis. No failed job will be blindly resubmitted; any source fix must be
+  made and tested locally, committed/pushed, and synchronized by a later pull-first connection.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
