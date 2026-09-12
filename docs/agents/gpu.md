@@ -917,3 +917,19 @@
   Guqq `git pull` output it was terminated locally. No repository, scheduler, capacity, job-state, or
   submission command is known to have run. This is the second consecutive same-condition turn in
   the fresh post-block audit.
+
+## 2026-09-12 — Post-block recovery audit, attempt 3
+
+- Intended connection: inspect the effective local SSH route without connecting, then perform one
+  final bounded pull-first Guqq check. On success, collect fixed jobs 408/409/410, storage, and Slurm
+  availability and submit only the CPU elastic protocol candidate if every gate passes. If the same
+  Vlab→Guqq boundary repeats, this establishes three consecutive turns in the fresh blocked audit.
+- Permission check: local SSH configuration inspection and remote pull/read-only management are
+  lightweight. Any candidate generation or training must use Slurm. No server source edit,
+  login-node workload, unrelated artifact mutation, or EquiformerV2 access is permitted.
+- Result: host-side `ssh -G` confirmed `xmz@211.86.155.221:22` through `ProxyJump vlab`. Verbose SSH
+  then proved successful public-key authentication to both Vlab and Guqq and acceptance of the
+  remote command, but the channel reported `Broken pipe` before the mandatory `git pull` emitted any
+  output. The command was terminated after the bounded wait. Pull completion is unknown; all later
+  capacity, scheduler, and job commands were guarded by `&&`, so none is evidenced as executed and
+  no Slurm submission occurred. This is the third consecutive same-condition recovery turn.

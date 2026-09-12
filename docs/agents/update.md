@@ -363,3 +363,13 @@
   claimed.
 - This is the second consecutive same-condition turn in the fresh recovery audit. Benchmark metrics
   remain unavailable and EquiformerV2 remains excluded.
+
+# 2026-09-12 — Post-block recovery attempt 3 and renewed blocker
+
+- Effective host configuration confirmed the intended Vlab proxy jump. Verbose evidence showed that
+  both SSH authentications and Guqq command acceptance succeeded, followed by `Broken pipe` before
+  mandatory pull output. Pull completion remains unknown and the guarded later commands have no
+  execution evidence.
+- This is the third consecutive same-condition recovery turn. All remaining benchmark work requires
+  Slurm behind the mandatory pull gate, so the Goal is formally blocked again without any metric
+  claim. EquiformerV2 remained untouched.

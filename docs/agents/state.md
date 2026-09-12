@@ -58,6 +58,9 @@ pull-first，再收集 408–410、检查容量并提交 elastic candidate job�
 - 2026-09-12：fresh recovery audit 第二回合使用无循环的固定参数命令，仍在 60 秒内仅返回
   Vlab banner，未获得任何 Guqq pull 或 Slurm/容量输出后终止。该恢复审计已连续两回合同类
   失败；训练指标和远端作业终态仍未知。
+- 2026-09-12：fresh recovery audit 第三回合的 `ssh -vv` 证明 Vlab 与 Guqq 均认证成功且
+  Guqq 接受了命令，但在强制 `git pull` 返回前通道 `Broken pipe`；pull 终态未知，`&&` 后的
+  scheduler/Slurm 命令无执行证据。连续三回合相同传输阻塞再次满足 external-blocked 阈值。
 
 ## 当前状态（Dataset point-group balance）
 

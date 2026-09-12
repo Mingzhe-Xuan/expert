@@ -95,6 +95,12 @@
 - When default Guqq HTTPS pulls repeatedly fail with GnuTLS `-110` or silent timeouts, a scoped
   `git -c http.version=HTTP/1.1 pull --ff-only` can recover without changing persistent Git config.
   GitHub SSH is not a fallback on this host because it has no accepted GitHub public key.
+- A Vlab banner alone is ambiguous. Use one bounded `ssh -vv` diagnostic after spaced failures to
+  distinguish jump authentication, target authentication, command acceptance, and command-channel
+  transport. If both hosts authenticate and Guqq accepts the command but the channel breaks before
+  pull output, record pull completion as unknown. Keep every later command behind `&&`; do not bypass
+  the mandatory pull with a separate scheduler or submission connection. A later recovery starts
+  with another idempotent `pull --ff-only`.
 
 ## 2026-09-12 — Wheel-only resolution can silently select obsolete pure-Python dependencies
 

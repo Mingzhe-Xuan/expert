@@ -1158,3 +1158,15 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   missing Guqq evidence from an asserted remote failure; only four agent docs are staged.
 - Actual: `git diff --check` passed and `rg` found the matching attempt-2 evidence in GPU, state,
   update, and test records. The final staged-path audit is run immediately before commit.
+
+## 2026-09-12 — Post-block recovery-attempt 3 handoff
+
+- Scope: preserve the verbose two-hop SSH evidence, renewed blocker decision, and reusable network
+  lesson; no code, configuration, dataset, checkpoint, or model artifact is changed.
+- Expected: documentation distinguishes authentication success from command-channel failure, treats
+  pull completion as unknown, preserves the `&&` gate, and makes no scheduler or metric claim.
+- Expected checks: `git diff --check`; matching evidence across GPU/state/update/lessons; staged paths
+  contain only the five agent documentation files.
+- Actual: `git diff --check` passed. `rg` confirmed matching `Broken pipe`, unknown-pull, guarded
+  command, and third-turn evidence across GPU/state/update/lessons/test. The staged-path audit is run
+  immediately before commit.
