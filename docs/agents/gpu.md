@@ -34,6 +34,19 @@
   object/prerequisite validation must pass before staging-directory creation or resource work.
 - EquiformerV2 remains paused. Scope otherwise remains lightweight Git/file management followed by
   the previously authorized non-Equiformer resource transfer; compute remains Slurm-only.
+- Result: the 6,898-byte incremental bundle transferred and passed `git pull`; Guqq advanced to
+  `9bcd5cf`, created `/home/xmz/expert-upload-9bcd5cf`, reported 13 GiB free and one available GPU.
+  Four small contract files totaling about 6.75 MB reached staging. The 17.85 MB GRACE shard SCP was
+  closed by the jump host and is not accepted as complete.
+
+## 2026-09-12 — Eight-MiB chunked resource transfer
+
+- Intended transfer: split every remaining file larger than 8 MiB into deterministic local chunks,
+  SCP chunks individually to the isolated staging directory, and ignore the incomplete direct shard.
+- Intended verification connection: first pull the latest prerequisite-aware Git bundle, concatenate
+  chunks only into new temporary files, validate all ten fixed byte sizes/SHA-256 values, and atomically
+  move matches into manifest paths. Remove task-specific staging only after all ten checks pass.
+- EquiformerV2 remains paused; no login-node compute or source editing is authorized.
 
 ## 2026-09-12 — Post-report bounded resource-sync recovery
 
