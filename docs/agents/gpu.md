@@ -873,3 +873,17 @@
   `Connection closed by UNKNOWN port 65535`, explicitly locating this attempt at the jump-host SSH
   boundary. No pull, capacity query, scheduler command, or submission ran. This is the third
   same-condition attempt in the continuation turn; retries stop and remote state remains unchanged.
+
+## 2026-09-12 — Third-goal-turn Guqq recovery audit
+
+- Intended connection: after another full turn-level pause, perform one bounded pull-first Guqq
+  attempt to sync `b37c474`/latest main, inspect jobs 408/409/410 and capacity, and submit only the
+  CPU elastic protocol candidate when safe. A successful connection would then reopen the MACE
+  dielectric training gate; a repeat of the same Vlab closure establishes the third consecutive
+  Goal-turn blocker.
+- Permission check: lightweight Git/scheduler/capacity inspection and Slurm submission only. No
+  login-node compute, tracked source edit, unrelated result mutation, or EquiformerV2 access.
+- Result: the third consecutive Goal-turn attempt again returned only `Welcome to Vlab`, then exited
+  status 1 without Guqq pull, capacity, scheduler, or submission output. No remote mutation occurred.
+  Because all remaining manifest generation, backbone extraction, training, and evaluation require
+  Slurm, the benchmark Goal is now externally blocked at the Vlab→Guqq SSH boundary.

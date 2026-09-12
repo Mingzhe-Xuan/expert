@@ -1127,3 +1127,15 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   label, with `relative = ||error||_F / (||label||_F + 1e-5)`. The runner now contracts expanded
   Cartesian tensors back to the released JARVIS Voigt order before metrics; a regression proves one
   shear-coordinate error is counted once (Fnorm 1), not four times through Cartesian symmetry.
+
+## 2026-09-12 — Benchmark external-blocker state handoff
+
+- Scope: verify the third-consecutive-Goal-turn SSH blocker record and the documented recovery path
+  before committing the state-only handoff; no source, configuration, dataset, or model artifact is
+  changed by this unit.
+- Expected: `git diff --check` passes; every path/commit/job reference in the new state records is
+  internally consistent; only `docs/agents/gpu.md`, `docs/agents/state.md`,
+  `docs/agents/update.md`, and this test log are staged.
+- Actual: `git diff --check` passed. `rg` confirmed the launcher, commits, and jobs referenced by the
+  handoff exist in the tracked Slurm/docs state. The staged-path audit is performed immediately
+  before commit and excludes the unrelated bytecode changes.

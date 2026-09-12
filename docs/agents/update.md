@@ -340,3 +340,11 @@
   The final regression state is 203 passed; another Guqq sync attempt failed at the same jump host.
 - Pushed the protocol and metric fixes as `f209a1a` and `13c4485`. The final bounded connection was
   explicitly closed by the Vlab SSH endpoint, so no remote pull or job submission occurred.
+
+# 2026-09-12 — Benchmark Goal externally blocked after third goal turn
+
+- A third consecutive Goal-turn pull-first attempt again stopped at the Vlab→Guqq SSH boundary with
+  no Guqq command output. No manifest, extraction, training, or evaluation job was submitted.
+- All remaining acceptance work requires Slurm, so the active benchmark Goal is formally blocked
+  rather than represented as complete. Resume from `main` after connectivity returns: pull first,
+  collect 408–410, verify capacity, submit the elastic protocol candidate, then launch training.

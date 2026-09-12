@@ -16,6 +16,11 @@ structural-symmetry zero screening、compact support mask 与 Slurm candidate-ma
 会在 compute partition 生成候选，不在服务器修改 Git 源码。下一步需先同步并运行该 CPU job，
 验证输出确为 14,220 后 scp 回本地提升 manifest；dielectric 不受此数据协议差异影响。
 
+当前阶段状态为外部阻塞：Vlab→Guqq SSH 边界已在连续三个 Goal 回合重复失败，所有剩余
+candidate generation、真实 backbone feature extraction、训练和评测均必须经 Slurm，不能在
+本地或登录节点替代执行。恢复点为 GitHub `main` 的 `b37c474` 之后提交；首次成功连接仍须
+pull-first，再收集 408–410、检查容量并提交 elastic candidate job。
+
 ## 当前计划（JARVIS backbone + readout benchmark）
 
 1. pull-first 连接 Guqq，收集 408、409、410_[0-2] 的 scheduler、JSON、JUnit 和日志证据。
@@ -44,6 +49,9 @@ structural-symmetry zero screening、compact support mask 与 Slurm candidate-ma
   通过。第二次同步仍停在 Vlab，candidate job 未提交。
 - 2026-09-12：协议与指标修复分别推送为 `f209a1a`、`13c4485`；本轮第三次连接明确由
   Vlab `202.38.75.226:22` 主动关闭。未发生 pull、容量检查或 Slurm 提交，远端状态不变。
+- 2026-09-12：第三个连续 Goal 回合的 bounded pull-first 连接仍只返回 Vlab banner 后状态 1
+  退出。由于剩余工作全部要求 Slurm 且无合法替代路径，阶段正式转为 external blocked；
+  未把本地测试、入口实现或不可比数据误当作 benchmark 完成证据。
 
 ## 当前状态（Dataset point-group balance）
 
