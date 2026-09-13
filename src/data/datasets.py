@@ -22,6 +22,9 @@ DEFAULT_DATA_MANIFESTS = MappingProxyType(
         ("dtnet", "dielectric"): DATA_ROOT / "manifests" / "dtnet_dielectric.json",
         ("matten", "elastic"): DATA_ROOT / "manifests" / "matten_elastic.json",
         ("jarvis_dfpt", "bec"): DATA_ROOT / "manifests" / "jarvis_dfpt_bec.json",
+        ("curated_reduced_total", "dielectric"): DATA_ROOT
+        / "manifests"
+        / "curated_tensors_reduced_gt_5pct.json",
     }
 )
 _VOIGT_PAIRS = ((0, 0), (1, 1), (2, 2), (1, 2), (0, 2), (0, 1))
@@ -582,6 +585,118 @@ def _load_dtnet(
     return IndependentTensorDataset(unit, samples, split)
 
 
+def _load_curated_reduced_total(
+    unit: TrainingUnit,
+    manifest_path: Path,
+    manifest: Mapping[str, Any],
+    sample_ids: set[str] | None,
+) -> IndependentTensorDataset:
+    if int(manifest.get("schema_version", 0)) != 1:
+        raise ValueError("unsupported reduced curated manifest schema")
+    artifact = manifest.get("artifacts", {}).get("dielectric_total")
+    if not isinstance(artifact, Mapping):
+        raise ValueError("reduced curated manifest lacks dielectric_total")
+    path = _resource_path(manifest_path, str(artifact["path"]).removeprefix("data/"))
+    _verify_resource(path, size_bytes=artifact["size_bytes"], sha256=artifact["sha256"])
+    expected_groups = tuple(str(value) for value in artifact["available_point_groups"])
+    if len(expected_groups) != 7 or len(set(expected_groups)) != len(expected_groups):
+        raise ValueError("reduced dielectric_total must declare seven unique point groups")
+
+    rows: list[Mapping[str, Any]] = []
+    seen: set[str] = set()
+    split_ids: dict[str, list[str]] = {"train": [], "validation": [], "test": []}
+    sample_to_group: dict[str, str] = {}
+    point_group_counts = {group: 0 for group in expected_groups}
+    with path.open("r", encoding="utf-8") as stream:
+        for line_number, line in enumerate(stream, start=1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            sample_id = str(row.get("record_id", ""))
+            if not sample_id or sample_id in seen:
+                raise ValueError(f"invalid or duplicate reduced record ID at line {line_number}")
+            seen.add(sample_id)
+            if int(row.get("schema_version", 0)) != 1:
+                raise ValueError(f"reduced row {sample_id} has an unsupported schema")
+            if row.get("property_subtype") != "dielectric_total" or row.get("unit") != "dimensionless":
+                raise ValueError(f"reduced row {sample_id} has the wrong property contract")
+            split_name = str(row.get("split"))
+            if split_name not in split_ids:
+                raise ValueError(f"reduced row {sample_id} has an invalid split")
+            point_group = str(row.get("point_group", ""))
+            reduction = row.get("reduction", {})
+            if point_group not in point_group_counts or tuple(
+                reduction.get("property_available_point_groups", ())
+            ) != expected_groups:
+                raise ValueError(f"reduced row {sample_id} violates point-group eligibility")
+            if not float(reduction.get("point_group_frequency", 0.0)) > float(
+                manifest["criterion"]["threshold"]
+            ):
+                raise ValueError(f"reduced row {sample_id} violates the strict frequency threshold")
+            duplicate_group = str(row.get("duplicate_group", ""))
+            if not duplicate_group:
+                raise ValueError(f"reduced row {sample_id} lacks duplicate_group")
+            split_ids[split_name].append(sample_id)
+            sample_to_group[sample_id] = duplicate_group
+            point_group_counts[point_group] += 1
+            rows.append(row)
+
+    if len(rows) != int(artifact["records"]):
+        raise ValueError("reduced dielectric_total row count differs from its manifest")
+    if {name: len(ids) for name, ids in split_ids.items()} != {
+        name: int(value) for name, value in artifact["split_counts"].items()
+    }:
+        raise ValueError("reduced dielectric_total split counts differ from its manifest")
+    if point_group_counts != {
+        str(name): int(value) for name, value in artifact["point_group_counts"].items()
+    }:
+        raise ValueError("reduced dielectric_total point-group counts differ from its manifest")
+    split = SplitManifest(
+        seed=20260911,
+        source="curated_group_8_1_1",
+        train=tuple(split_ids["train"]),
+        validation=tuple(split_ids["validation"]),
+        test=tuple(split_ids["test"]),
+        sample_to_group=sample_to_group,
+    )
+    requested = seen if sample_ids is None else sample_ids
+    if not requested <= seen:
+        raise ValueError("requested IDs are absent from reduced dielectric_total")
+    samples = []
+    for row in rows:
+        sample_id = str(row["record_id"])
+        if sample_id not in requested:
+            continue
+        target = torch.as_tensor(row["tensor"], dtype=torch.float64)
+        if target.shape != (3, 3) or not torch.allclose(
+            target, target.T, atol=1.0e-10, rtol=0.0
+        ):
+            raise ValueError(f"reduced row {sample_id} target must be symmetric 3x3")
+        samples.append(
+            _make_sample(
+                sample_id,
+                unit,
+                (
+                    torch.as_tensor(row["lattice_angstrom"], dtype=torch.float64),
+                    torch.as_tensor(row["fractional_coordinates"], dtype=torch.float64),
+                    torch.as_tensor(row["atomic_numbers"], dtype=torch.long),
+                ),
+                target,
+                "dimensionless",
+                {
+                    "resource": path.name,
+                    "manifest_sha256": str(artifact["sha256"]),
+                    "point_group": str(row["point_group"]),
+                    "space_group": int(row["space_group"]),
+                    "duplicate_group": str(row["duplicate_group"]),
+                    "property_subtype": "dielectric_total",
+                    "provenance": dict(row.get("provenance", {})),
+                },
+            )
+        )
+    return IndependentTensorDataset(unit, samples, split)
+
+
 def load_training_dataset(
     unit: TrainingUnit,
     *,
@@ -605,6 +720,8 @@ def load_training_dataset(
         return _load_dtnet(unit, resolved, manifest, requested)
     if unit.dataset == "matten":
         return _load_matten(unit, resolved, manifest, requested)
+    if unit.dataset == "curated_reduced_total":
+        return _load_curated_reduced_total(unit, resolved, manifest, requested)
     return _load_bec(unit, resolved, manifest, requested)
 
 
@@ -632,6 +749,21 @@ def load_five_structure_smoke(
         ids = tuple(
             f"matten-{value}"
             for value in (*indices["train"][:3], indices["val"][0], indices["test"][0])
+        )
+    elif unit.dataset == "curated_reduced_total":
+        artifact = manifest["artifacts"]["dielectric_total"]
+        resource = _resource_path(resolved, str(artifact["path"]).removeprefix("data/"))
+        _verify_resource(resource, size_bytes=artifact["size_bytes"], sha256=artifact["sha256"])
+        split_ids = {"train": [], "validation": [], "test": []}
+        with resource.open("r", encoding="utf-8") as stream:
+            for line in stream:
+                if line.strip():
+                    row = json.loads(line)
+                    split_ids[str(row["split"])].append(str(row["record_id"]))
+        ids = (
+            *split_ids["train"][:3],
+            split_ids["validation"][0],
+            split_ids["test"][0],
         )
     else:
         output = manifest["processed_output"]

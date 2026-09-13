@@ -61,6 +61,7 @@ def tensor_benchmark_metrics(
     relative = distance / (target_norm + relative_epsilon)
     report: dict[str, float | int] = {
         "sample_count": int(prediction.shape[0]),
+        "rmse": float(torch.sqrt(torch.mean(difference.square()))),
         "fnorm": float(distance.mean()),
     }
     for threshold in parsed:

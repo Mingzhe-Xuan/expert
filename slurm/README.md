@@ -1,5 +1,12 @@
 # Slurm entry points
 
+`train_reduced_dpa4_full_pg.sbatch` and `train_reduced_gmtnet.sbatch` form the paired custom
+dielectric-total benchmark. They consume the same manifest-frozen 5,001/637/677 split and export
+per-ID test predictions for the common evaluator. The DPA4 job fixes `B+A+PGE+R/full_pg/full_o3`
+with seven current-point-group experts. The GMTNet job verifies the official checkout commit before
+using its model and records the dedicated environment. Preprocessing caches and all run artifacts
+remain under ignored `results/reduced-benchmark/`.
+
 These non-interactive jobs are the only supported path for full tests, model inference,
 training smoke runs, and batch data processing on Guqq. Activate the recorded project
 backbone-specific virtual environments through `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,

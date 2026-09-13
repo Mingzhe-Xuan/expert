@@ -397,3 +397,18 @@ def test_tensor_sample_rejects_global_target_for_bec() -> None:
             target_unit="elementary_charge",
             source={},
         )
+
+
+def test_reduced_dielectric_total_real_manifest_contract() -> None:
+    unit = TrainingUnit("curated_reduced_total", "dielectric")
+    dataset = load_training_dataset(unit)
+    assert len(dataset) == 6315
+    assert {
+        name: len(getattr(dataset.split_manifest, name))
+        for name in ("train", "validation", "test")
+    } == {"train": 5001, "validation": 637, "test": 677}
+    assert dataset.split_manifest.source == "curated_group_8_1_1"
+    assert {sample.source["point_group"] for sample in dataset} == {
+        "2/m", "mm2", "mmm", "4/mmm", "-3m", "-43m", "m-3m"
+    }
+    assert all(sample.source["property_subtype"] == "dielectric_total" for sample in dataset)

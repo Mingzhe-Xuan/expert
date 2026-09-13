@@ -1,5 +1,35 @@
 # Test plan and results
 
+## 2026-09-13 — reduced dielectric total DPA4-vs-GMTNet benchmark
+
+Planned checks:
+
+- loader rejects manifest hash/size/count mismatches, duplicate IDs, malformed structures/tensors,
+  unsupported point groups, split drift, or duplicate-group leakage, and reproduces 5,001/637/677;
+- metric tests match the GMTNet paper semantics: component RMSE, mean per-sample Frobenius error,
+  and the fraction with `Fnorm(error) / (Fnorm(label) + 1e-5)` below 25%, 10%, and 5%;
+- cached DPA4 training preserves source-layout/provenance checks, includes the trainable interface,
+  instantiates all seven point-group experts, records the exact architecture, and reloads checkpoints;
+- GMTNet adaptation uses the official pinned implementation and the identical structure, target,
+  split-ID, and test-ID contract; both models export per-record predictions to the same evaluator;
+- local fixture end-to-end checks finish without GPU; real extraction/training/evaluation runs only
+  under Slurm and each result records commit, environment, seed, checkpoint, and dataset hashes.
+
+Expected result: two independently reproducible test reports over the same 677 IDs and a validated
+RMSE/Fnorm/EwT comparison table. Published GMTNet numbers are context only, not acceptance evidence.
+
+Implementation-stage result: 27 focused tests passed, covering the new component RMSE, legacy and
+full-PG cached training/checkpoint reload, cache metadata, training-unit contracts, all real-data
+loaders including the exact 6,315-row reduced manifest, and synthetic 677-ID comparison output.
+Python compilation, both Slurm launcher syntax checks, module import and whitespace checks passed.
+Standalone Ruff is unavailable in the local environment; no standard was weakened, and the focused
+tests plus compilation remain the current pre-commit gates. Real Slurm smoke/full runs remain pending.
+
+Pre-commit regression result: explicit `pytest tests` completed with 228 passed and zero failures or
+skips in 267.98 seconds. An initial unscoped `pytest` invocation entered a vendored MatTen test tree
+and hit that checkout's incompatible local `torch_spline_conv` DLL; the repository acceptance command
+intentionally scopes collection to `tests/`, and the complete project suite then passed unchanged.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

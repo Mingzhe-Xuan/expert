@@ -1,5 +1,29 @@
 # Agent state
 
+## Current snapshot — reduced dielectric total DPA4-vs-GMTNet benchmark (2026-09-13)
+
+In progress: train and test two tensor models on the exact same reduced dielectric-total records and
+frozen train/validation/test assignments (5,001/637/677): (1) DPA4 with `B+A+PGE+R`, `full_pg`,
+`full_o3` adaptation/readout and one expert for each of the seven retained point groups; and (2) the
+official GMTNet dielectric model. The primary acceptance artifact is one table reporting component
+RMSE, sample-mean Frobenius error (Fnorm), and EwT at 25%, 10%, and 5% on the common 677-row test set.
+
+### Current plan
+
+1. [x] Freeze the common target/split protocol and audit GMTNet paper/code metric semantics.
+2. [x] Add a validated reduced-dataset loader, architecture-aware cached DPA4 trainer, official
+   GMTNet dataset adapter/runner, and prediction-based unified evaluator.
+3. [ ] Run fixture, metric-parity, checkpoint/provenance, CLI, and end-to-end protocol checks locally;
+   commit and push only task-owned source/docs.
+4. [ ] Pull on Guqq and submit exact-model smoke, DPA4 feature-cache, and both full training/testing
+   runs via Slurm; retrieve predictions and reports.
+5. [ ] Verify identical test IDs/targets and produce the requested comparison table with run metadata.
+
+Module boundaries: `src/data/` owns manifest-gated dataset loading; `src/training/` owns the DPA4
+frozen-feature architecture trainer; a dedicated GMTNet baseline module owns official-code input and
+execution adaptation; `src/evaluation/` alone computes common metrics from saved predictions;
+`src/cli/` and `slurm/` provide reproducible entry points and cluster launchers.
+
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
 Completed a dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is

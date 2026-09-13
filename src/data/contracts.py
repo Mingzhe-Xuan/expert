@@ -12,6 +12,7 @@ LEGAL_TRAINING_UNITS = (
     ("dtnet", "dielectric"),
     ("matten", "elastic"),
     ("jarvis_dfpt", "bec"),
+    ("curated_reduced_total", "dielectric"),
 )
 
 
@@ -39,8 +40,10 @@ class SplitManifest:
     sample_to_group: Mapping[str, str]
 
     def __post_init__(self) -> None:
-        if self.source not in {"published", "seeded_8_1_1"}:
-            raise ValueError("split source must be published or seeded_8_1_1")
+        if self.source not in {"published", "seeded_8_1_1", "curated_group_8_1_1"}:
+            raise ValueError(
+                "split source must be published, seeded_8_1_1, or curated_group_8_1_1"
+            )
         splits = (self.train, self.validation, self.test)
         if any(not split for split in splits):
             raise ValueError("train, validation, and test splits must all be non-empty")

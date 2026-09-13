@@ -1,5 +1,18 @@
 # Guqq environments
 
+## 2026-09-13 — GMTNet reduced-benchmark environment plan
+
+- Planned path: `/home/xmz/expert-envs/gmtnet-py310`, created with
+  `python3 -m venv /home/xmz/expert-envs/gmtnet-py310` before installing packages.
+- The environment is independent from the four backbone environments because official GMTNet adds
+  PyTorch-Geometric compiled extensions, pymatgen, JARVIS tools and pandas and must not perturb their
+  frozen dependency locks.
+- Official source path: `/home/xmz/expert-data/vendor/GMTNet`, pinned and runtime-verified at commit
+  `7a606a459ee48a320ed38450e391811fb43d5e19`; source remains outside this repository.
+- Required runtime families: CUDA PyTorch, e3nn, torch-geometric/torch-scatter, pymatgen, jarvis-tools,
+  pandas, spglib and NumPy. Exact installed versions and `pip freeze` SHA-256 will be appended after
+  installation and before the first GMTNet Slurm smoke.
+
 ## 2026-09-12 — Acceptance environment plan
 
 - MACE/core path: `/home/xmz/expert-envs/acceptance-py310` (created and verified after the

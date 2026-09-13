@@ -10,7 +10,7 @@ from src.heads import TARGET_LAYOUTS
 from src.training import CoefficientNormalizer
 
 
-def test_five_independent_training_units_are_legal() -> None:
+def test_independent_training_units_are_legal() -> None:
     units = [TrainingUnit(dataset, target) for dataset, target in LEGAL_TRAINING_UNITS]
     assert [unit.namespace for unit in units] == [
         "jarvis_tensor__dielectric",
@@ -18,6 +18,7 @@ def test_five_independent_training_units_are_legal() -> None:
         "dtnet__dielectric",
         "matten__elastic",
         "jarvis_dfpt__bec",
+        "curated_reduced_total__dielectric",
     ]
     with pytest.raises(ValueError):
         TrainingUnit("jarvis_tensor", "bec")

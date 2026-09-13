@@ -33,6 +33,7 @@ def test_tensor_benchmark_metrics_use_sample_frobenius_distances() -> None:
     report = tensor_benchmark_metrics(prediction, target)
 
     assert report["sample_count"] == 2
+    assert report["rmse"] == pytest.approx(math.sqrt(1.04 / 18.0))
     assert report["fnorm"] == pytest.approx(0.6)
     assert report["ewt_25"] == pytest.approx(50.0)
     assert report["ewt_10"] == pytest.approx(0.0)
@@ -128,7 +129,7 @@ def test_cached_feature_collation_and_training_emit_public_metrics(tmp_path) -> 
     assert report["status"] == "passed"
     assert report["split_counts"] == {"train": 3, "validation": 2, "test": 2}
     assert set(report["test_metrics"]) == {
-        "sample_count", "fnorm", "ewt_25", "ewt_10", "ewt_5"
+        "sample_count", "rmse", "fnorm", "ewt_25", "ewt_10", "ewt_5"
     }
     assert set(report["exceeds_public_target"]) == {
         "fnorm", "ewt_25", "ewt_10", "ewt_5"
@@ -168,6 +169,30 @@ def test_frozen_feature_cache_round_trip_is_metadata_gated(tmp_path) -> None:
             expected_split="test",
             expected_sample_ids=["cached-0", "cached-1"],
         )
+
+
+def test_cached_training_supports_full_pg_architecture_with_interface(tmp_path) -> None:
+    unit, layout, examples = _cached_examples()
+    architecture = ArchitectureConfig(
+        "B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg"
+    )
+    groups = tuple(dict.fromkeys(row.symmetry.current_point_group for row in examples))
+    report = train_cached_backbone_readout(
+        backbone_family="analytic",
+        unit=unit,
+        source_layout=layout,
+        train_examples=examples[:3],
+        validation_examples=examples[3:5],
+        test_examples=examples[5:],
+        checkpoint_path=tmp_path / "full-pg.pt",
+        config=BenchmarkConfig(max_epochs=1, batch_size=2, patience=1),
+        architecture=architecture,
+        expert_point_groups=groups,
+        device="cpu",
+    )
+    assert report["architecture"] == architecture.to_dict()
+    assert report["expert_point_groups"] == list(groups)
+    assert report["routing"] == "current_point_group_only"
 
 
 def test_published_split_gate_rejects_current_14480_elastic_manifest() -> None:

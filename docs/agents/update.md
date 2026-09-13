@@ -1,5 +1,20 @@
 # Agent progress updates
 
+- 2026-09-13: started the explicit reduced dielectric-total DPA4-vs-GMTNet acceptance benchmark.
+  Froze the common 5,001/637/677 group-preserving split and target tensor, selected the exact DPA4
+  `B+A+PGE+R/full_pg/full_o3` configuration with seven current-point-group experts, and defined the
+  primary output as component RMSE plus paper-compatible Fnorm and EwT 25/10/5 from saved predictions.
+  Began auditing the official GMTNet implementation before defining its adapter and Slurm protocol.
+
+- 2026-09-13: froze metric semantics from the GMTNet paper and official commit `7a606a4`: mean
+  per-sample Frobenius distance and relative EwT 25/10/5, plus component RMSE. Implemented the
+  manifest/hash/split/duplicate-group-gated reduced loader; architecture-aware DPA4 cached training
+  with a trainable equivariant source interface and seven full-PG experts; pinned-official GMTNet
+  preprocessing/training without WandB/path placeholders; per-ID prediction export; and a comparator
+  that requires the same 677 IDs and frame-equivalent targets. Corrected the cached evaluator to
+  compare canonical-frame predictions against canonical-frame targets and bumped cache schema to 2.
+  Focused tests passed 27; next is final code review/commit and Guqq environment plus Slurm smoke.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
