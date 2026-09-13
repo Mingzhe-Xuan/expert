@@ -101,6 +101,12 @@
   failures or skips; five removed cases exclusively tested the retired static assignment helper.
   Next is commit/push, Guqq sync, and the uncached five-partition Slurm smoke.
 
+- 2026-09-13: pushed dynamic scheduler `0b5ce27`; Guqq pulled it after the required recovery wait.
+  Real job 450 completed five uncached partitions with two workers, demonstrated cross-worker dynamic
+  claiming, passed exact merge/reload/testing, and wrote a zero-failure JUnit plus seven predictions.
+  Submitted full DPA4 job 451 with 64 partitions/two workers/three-day walltime and comparison job
+  452 held by `afterok:443:451` against the completed GMTNet full run.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

@@ -128,6 +128,13 @@ compilation and whitespace checks passed. The complete isolated project suite pa
 zero failures/skips in 313.50 seconds; the count decreased only because five static-assignment tests
 were removed with the obsolete Python helper. Real five-partition smoke remains the remote gate.
 
+Dynamic-claim real result: Slurm job 450 used five previously unused cache partitions and two
+workers. All five prepare summaries were published exactly once; live evidence showed partition 2
+was claimed immediately after partition 0 completed while partition 1 was still unfinished. The
+strict final merge/training/reload path wrote 7 predictions and a JUnit with one test and zero
+failures/errors/skips. Bounded log inspection found no traceback, error or failure marker. Full job
+451 and dependency-gated common comparator 452 were then submitted.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

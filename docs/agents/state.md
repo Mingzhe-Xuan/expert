@@ -85,9 +85,12 @@ remote pull succeeded, task-owned infeasible job 446 was cancelled at 02:08:29 t
 now-invalid comparison dependency 447. Real smoke job 448 passed all seven cache partitions, strict
 merge, training, checkpoint reload and test export with exit `0:0` in 00:13:45. Its exact timestamps
 and two-worker diagnostic job 449 then showed that fixed round-robin partition ownership still
-leaves workers idle behind an unusually slow partition. The follow-up changes only the launcher to
-atomically and dynamically claim each unclaimed partition; a fresh-partition smoke must pass before
-the replacement full run and comparator are submitted.
+leaves workers idle behind an unusually slow partition. Commit `0b5ce27` changed only the launcher
+assignment to atomic dynamic claims and passed 239 local tests. Fresh five-partition job 450 then
+published all caches, strict merge, seven predictions and a zero-failure JUnit; its live claim order
+proved a worker took partition 2 while partition 1 remained incomplete. Full DPA4 job 451 is now
+running with 64 partitions, two workers and a three-day limit. Comparator 452 is dependency-gated on
+completed GMTNet 443 and DPA4 451.
 
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
