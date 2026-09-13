@@ -14,6 +14,12 @@
   with zero failures. Next step is commit/push followed by pull-first Guqq synchronization and full
   Slurm curation.
 
+- 2026-09-13: Guqq pull-first synchronization succeeded at `94591b6`; GMTNet and MatTen resources
+  are present, while DTNet raw/processed resources are not yet on the server. Adjusted the curation
+  launcher so its Slurm allocation performs the official hash-gated DTNet download/conversion into
+  ignored data paths and writes only a candidate preparation manifest under `results/` before the
+  full audit. No batch processing was run on the login node.
+
 - 2026-09-13: completed DTNet dataset integration. Downloaded and verified the 37,774,263-byte
   official raw JSON, generated a deterministic 16,576,244-byte normalized JSONL plus tracked
   provenance/split/quality manifest, and registered `dtnet × dielectric` with total-tensor symmetric

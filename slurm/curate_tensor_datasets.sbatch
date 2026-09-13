@@ -17,6 +17,11 @@ candidate="results/tensor-curation/candidate-${SLURM_JOB_ID}"
 mkdir -p logs/slurm "${candidate}" data/processed/curated_tensors
 git rev-parse HEAD > "${candidate}/git.txt"
 python -m pip freeze > "${candidate}/environment.txt"
+if [[ ! -f data/raw/dtnet/mp_dielectric.json || ! -f data/processed/dtnet/dielectric.jsonl ]]; then
+  python data/prepare_dtnet_dielectric.py \
+    --download \
+    --manifest "${candidate}/dtnet_preparation.json"
+fi
 python data/curate_tensor_datasets.py \
   --workers "${SLURM_CPUS_PER_TASK}" \
   --output-dir data/processed/curated_tensors \

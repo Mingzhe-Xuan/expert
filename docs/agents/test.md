@@ -43,6 +43,10 @@ Implementation-stage results:
   isolated the repository suite. One accidentally duplicated full-suite process was stopped, while
   the retained run completed successfully. Full real-data batch acceptance remains pending Slurm.
 
+Launcher adjustment check: `bash -n slurm/curate_tensor_datasets.sbatch` must pass; the missing-DTNet
+branch invokes the already tested hash-gated converter inside Slurm and writes its candidate manifest
+under ignored `results/`, never over the tracked source manifest.
+
 ## 2026-09-13 — DTNet dielectric dataset integration
 
 计划检查：

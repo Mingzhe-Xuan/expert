@@ -27,6 +27,12 @@ analysis will run through Slurm after local fixture tests and Git synchronizatio
 3. Commit/push, connect to Guqq under the pull-first rule, submit the full curation through Slurm,
    retrieve and verify compact results/manifests, and assess residual point-group imbalance.
 
+Commit `94591b6` is pushed and Guqq successfully fast-forwarded to it. The three GMTNet/MatTen raw
+resources are present, but the newly integrated DTNet raw and processed files are absent remotely.
+The Slurm launcher is being adjusted to perform DTNet's hash-gated download and normalization inside
+the allocation before curation; this keeps batch conversion off the login node and leaves the
+tracked production manifest untouched.
+
 ## Current snapshot — DTNet dielectric dataset integration (2026-09-13)
 
 Completed a new data-integration unit from the official `pfnet-research/dielectric-pred` release.
