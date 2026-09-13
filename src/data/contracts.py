@@ -9,6 +9,7 @@ from typing import Mapping, Sequence
 LEGAL_TRAINING_UNITS = (
     ("jarvis_tensor", "dielectric"),
     ("jarvis_tensor", "elastic"),
+    ("dtnet", "dielectric"),
     ("matten", "elastic"),
     ("jarvis_dfpt", "bec"),
 )

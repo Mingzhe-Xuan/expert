@@ -1,5 +1,29 @@
 # Agent state
 
+## Current snapshot — DTNet dielectric dataset integration (2026-09-13)
+
+Completed a new data-integration unit from the official `pfnet-research/dielectric-pred` release.
+The 37,774,263-byte raw file is stored under ignored `data/raw/dtnet/`; its SHA-256 is
+`7dae31b2f95b60060bf2bab1ce91751f7a48cb18f4e3b6459e44a899337759e0`. The deterministic
+16,576,244-byte normalized JSONL is under ignored `data/processed/dtnet/`, with SHA-256
+`af49608cdee0f16bbed0464b9eb9f7ebb54a6f9fb16a81066282f597ebcaab76`. A tracked manifest pins
+provenance, both resources, conversion convention, complete quality statistics, and exact split IDs.
+
+`data/prepare_dtnet_dielectric.py` provides hash-gated atomic download/conversion; `src/data` now
+accepts `TrainingUnit("dtnet", "dielectric")`, verifies the processed resource and complete split,
+loads the symmetric total tensor into the six-dimensional `0e+2e` target, and exposes 3/1/1 smoke and
+structure candidates. Full real-data validation loaded 6,648 records and 6,648 candidates. Focused
+integration tests passed 26, and the final complete project suite passed 217 with zero failures.
+
+Upstream audit found 6,648 records and the public seed-3 split recipe yields 5,318/665/665. Although
+all ionic tensors are symmetric to numerical precision, electronic and total have respectively 2,133
+and 2,131 records with antisymmetric residual above `1e-8`, with a maximum near 2.6925. DTNet's official readout explicitly
+symmetrizes its prediction. The repository's `0e+2e` target will therefore use the mathematically
+auditable symmetric part `(T + T^T)/2`, while the processed record retains each raw tensor and its
+antisymmetric residual. This replaces the initial plan to reject nonsymmetric upstream labels. The
+paper's five experimental random splits are not all published, so the manifest explicitly claims
+only the public seed-3 split.
+
 ## Current snapshot — JARVIS backbone + readout benchmark (2026-09-13 resubmission gate)
 
 The user-confirmed recovery is verified and Guqq is current at `f76fb91`. Terminal evidence now shows

@@ -1,5 +1,44 @@
 # Test plan and results
 
+## 2026-09-13 — DTNet dielectric dataset integration
+
+计划检查：
+
+- 转换器只接受官方 DTNet Materials Project JSON schema，严格校验稳定 MP ID、无序/重复 ID、
+  晶格、分数坐标、元素/占位率，以及 electronic/ionic/total 三个有限 `3x3` 张量；
+- 明确验证 total 与 electronic + ionic 的上游约定，不能以修复标签为名静默覆盖原始数值；
+- 处理产物逐条保留三类原始张量、对称化张量、反对称残差及来源元数据；默认训练 target
+  明确选择 symmetric total dielectric，并验证 `(T+T^T)/2`，而非拒绝真实上游非对称项；
+- manifest 固定 source URL/commit、raw/processed bytes 与 SHA-256、schema/filter、计数和精确
+  split；split 按材料 ID 分组、固定 seed、8:1:1、无重叠且可重复；
+- loader 必须先验证 processed 大小/SHA，再解析结构和 target；拒绝路径逃逸、篡改资源、
+  split 缺失/重叠、非法 tensor/structure，以及请求 split 外 ID；
+- 使用合成 fixture 覆盖成功路径、三类标签保留、确定性、错误路径和 five-structure smoke；
+  再对官方下载文件运行完整转换与独立统计/哈希/抽样加载验证；
+- 提交前运行 targeted pytest、完整 pytest、`py_compile`、CLI help、文档路径/命令检查及
+  `git diff --check`。
+
+预期结果：所有错误 fail closed；真实处理记录数、过滤数、split 数与官方文件实测一致，
+产物能由 `TrainingUnit("dtnet", "dielectric")` 直接加载并完成 3/1/1 smoke。
+
+实际结果：
+
+- 官方 raw 为 37,774,263 bytes，SHA-256
+  `7dae31b2f95b60060bf2bab1ce91751f7a48cb18f4e3b6459e44a899337759e0`；严格转换成功
+  6,648/6,648 条，split 为 5,318/665/665；
+- processed JSONL 为 16,576,244 bytes，SHA-256
+  `af49608cdee0f16bbed0464b9eb9f7ebb54a6f9fb16a81066282f597ebcaab76`；重复生成前后
+  manifest 与 processed SHA 均完全一致；
+- 全量 loader 成功读取 6,648 条，3/1/1 smoke IDs 与公开 seed-3 split 一致，target shape
+  `(3,3)`、coefficient width 6、单位 dimensionless、严格对称；structure candidates 为 6,648；
+- quality audit：68 种元素，2–192 atoms；electronic/total 反对称残差超过 `1e-8` 的记录数
+  分别为 2,133/2,131，最大 2.692517058772644；component-sum 最大残差 `1.42e-14`；
+- converter/loader/training-unit focused：26 passed；最终 `python -m pytest tests -q`：
+  217 passed、0 failed、598 warnings，260.21s；`py_compile`、CLI help、真实 hash/size、
+  文档路径与 `git diff --check` 均通过；
+- 一次未限定路径的 `pytest -q` 错误收集了 `data/sources`/`data/vendor` 的第三方测试并失败；
+  明确限定本项目权威目录 `tests/` 后完整通过。`ruff` 未安装，因此不把 lint 记为通过。
+
 ## 2026-09-13 — Guqq resubmission status documentation
 
 计划检查：

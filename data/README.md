@@ -18,6 +18,12 @@ path for the expanded implementation goal.
   5,000 calculation archives (about 9.95 GiB), while the associated paper
   reports 5,015 calculations. This release difference is recorded explicitly
   in `manifests/jarvis_dfpt_bec.json`.
+- raw/dtnet/mp_dielectric.json: the 6,648-record refined Materials Project v2023.11.1 dielectric
+  release from the [official DTNet repository](https://github.com/pfnet-research/dielectric-pred)
+  and [paper](https://arxiv.org/abs/2405.09052). `prepare_dtnet_dielectric.py` verifies its pinned commit SHA,
+  retains electronic/ionic/total tensors, audits their antisymmetric parts, and writes normalized
+  JSONL to `processed/dtnet/dielectric.jsonl`. The repository training target is the symmetric part
+  of the total tensor because the official DTNet readout is symmetric by construction.
 
 The pinned source repositories are retained under sources/GMTNet and
 sources/matten so that the original filtering, split, tensor convention and
@@ -48,6 +54,15 @@ ignored `results/`; production manifests are promoted only from local Git.
 
 The GMTNet files are Python pickles. Only load them when their SHA-256 values
 match the manifests and their provenance is the pinned official repository.
+
+Prepare DTNet reproducibly with:
+
+    python data/prepare_dtnet_dielectric.py --download
+
+The command downloads only the pinned raw URL, verifies SHA-256 before promotion, reproduces the
+public implementation's seed-3 8:1:1 split, then atomically writes the ignored processed JSONL and
+tracked manifest. The paper reports five distinct random splits but the public repository does not
+publish all five seeds; this manifest therefore makes no claim to encode all five experimental runs.
 
 ## BEC extraction
 

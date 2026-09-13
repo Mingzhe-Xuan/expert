@@ -1,5 +1,15 @@
 # Agent lessons
 
+## 2026-09-13 — Symmetric tensor datasets may contain material antisymmetric labels
+
+- Do not assume a dielectric dataset is numerically symmetric because the property and model output
+  are symmetric by construction. DTNet's published MP file contains electronic/total tensors with
+  substantial antisymmetric components, while its official readout explicitly symmetrizes outputs.
+- For an irrep target containing only `0e+2e`, preserve the raw label for audit, record the
+  antisymmetric residual, and explicitly define the training label as `(T + T^T)/2`. Silently dropping
+  entries or applying a tiny-tolerance rejection would either lose many official samples or obscure
+  a real source-data convention.
+
 ## 2026-09-11 — Verify the angular support of a named readout input
 
 - A configuration field such as `allowed_l_p` states what an instruction may support, not what a

@@ -1,5 +1,22 @@
 # Agent progress updates
 
+- 2026-09-13: completed DTNet dataset integration. Downloaded and verified the 37,774,263-byte
+  official raw JSON, generated a deterministic 16,576,244-byte normalized JSONL plus tracked
+  provenance/split/quality manifest, and registered `dtnet × dielectric` with total-tensor symmetric
+  target loading, smoke selection, and structure candidates. Real validation loaded all 6,648 rows
+  with 5,318/665/665 splits. Focused integration passed 26 tests; final project suite passed 217 with
+  zero failures; compile, CLI help, deterministic regeneration, hashes, and diff checks passed.
+
+- 2026-09-13: started DTNet dielectric dataset integration from the official
+  `pfnet-research/dielectric-pred` repository. Scoped a separate `dtnet × dielectric` unit, a strict
+  raw-to-normalized converter retaining electronic/ionic/total tensors, a total-tensor canonical
+  training target, frozen provenance/checksum/split manifest, loader integration, and real-data
+  validation. Raw/processed data will remain Git-ignored.
+- 2026-09-13: inspected all 6,648 upstream records and froze the public seed-3 split counts as
+  5,318/665/665. Found material electronic/total antisymmetry in respectively 2,133/2,131 rows above
+  `1e-8` (maximum about 2.6925), while the official model symmetrizes its output. Adjusted the data contract to retain
+  raw tensors/residuals but train this repository's symmetric `0e+2e` target on `(T + T^T)/2`.
+
 - 2026-09-13: the third consecutive resumed-Goal recovery audit reached Guqq, but the mandatory
   HTTP/1.1 GitHub pull failed with GnuTLS `-110`. All later status and Slurm commands remained gated
   and did not execute. Because the same pre-synchronization external blocker has now repeated for

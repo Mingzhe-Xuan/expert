@@ -19,6 +19,7 @@ DEFAULT_DATA_MANIFESTS = MappingProxyType(
     {
         ("jarvis_tensor", "dielectric"): DATA_ROOT / "manifests" / "jarvis_dielectric.json",
         ("jarvis_tensor", "elastic"): DATA_ROOT / "manifests" / "jarvis_elastic.json",
+        ("dtnet", "dielectric"): DATA_ROOT / "manifests" / "dtnet_dielectric.json",
         ("matten", "elastic"): DATA_ROOT / "manifests" / "matten_elastic.json",
         ("jarvis_dfpt", "bec"): DATA_ROOT / "manifests" / "jarvis_dfpt_bec.json",
     }
@@ -480,6 +481,104 @@ def _load_bec(
     return IndependentTensorDataset(unit, samples, split)
 
 
+def _dtnet_split(manifest: Mapping[str, Any]) -> SplitManifest:
+    expected_target = (
+        "dielectric_symmetric.total = (dielectric_raw.total + transpose) / 2"
+    )
+    if manifest.get("training_target") != expected_target:
+        raise ValueError("DTNet manifest has an unsupported training target convention")
+    splits = manifest["splits"]
+    ids = {
+        name: tuple(str(value) for value in splits[name])
+        for name in ("train", "validation", "test")
+    }
+    all_ids = ids["train"] + ids["validation"] + ids["test"]
+    counts = {name: len(values) for name, values in ids.items()}
+    if counts != {name: int(value) for name, value in manifest["split_counts"].items()}:
+        raise ValueError("DTNet split counts differ from the manifest")
+    expected_records = int(manifest["processed_output"]["records"])
+    if len(all_ids) != int(manifest["filtered_records"]) or len(all_ids) != expected_records:
+        raise ValueError("DTNet split does not cover the declared processed records")
+    return SplitManifest(
+        seed=int(manifest["split_seed"]),
+        source="published",
+        train=ids["train"],
+        validation=ids["validation"],
+        test=ids["test"],
+        sample_to_group={sample_id: sample_id for sample_id in all_ids},
+    )
+
+
+def _load_dtnet(
+    unit: TrainingUnit,
+    manifest_path: Path,
+    manifest: Mapping[str, Any],
+    sample_ids: set[str] | None,
+) -> IndependentTensorDataset:
+    output = manifest["processed_output"]
+    path = _resource_path(manifest_path, str(output["path"]))
+    _verify_resource(path, size_bytes=output["size_bytes"], sha256=output["sha256"])
+    split = _dtnet_split(manifest)
+    allowed = set(split.train + split.validation + split.test)
+    requested = allowed if sample_ids is None else sample_ids
+    if not requested <= allowed:
+        raise ValueError("requested DTNet IDs are outside the published split")
+    samples = []
+    seen = set()
+    with path.open("r", encoding="utf-8") as stream:
+        for line_number, line in enumerate(stream, start=1):
+            if not line.strip():
+                continue
+            raw = json.loads(line)
+            if int(raw.get("schema_version", 0)) != 1:
+                raise ValueError(f"DTNet row {line_number} has an unsupported schema")
+            sample_id = str(raw["sample_id"])
+            if sample_id not in allowed:
+                raise ValueError(f"DTNet processed row {sample_id!r} is outside the manifest split")
+            if sample_id in seen:
+                raise ValueError(f"duplicate DTNet sample ID {sample_id}")
+            seen.add(sample_id)
+            if sample_id not in requested:
+                continue
+            target = torch.as_tensor(
+                raw["dielectric_symmetric"]["total"], dtype=torch.float64
+            )
+            raw_total = torch.as_tensor(raw["dielectric_raw"]["total"], dtype=torch.float64)
+            if target.shape != (3, 3) or not torch.isfinite(target).all():
+                raise ValueError(f"DTNet sample {sample_id} has an invalid total tensor")
+            if not torch.allclose(target, target.T, atol=1.0e-12, rtol=0.0):
+                raise ValueError(f"DTNet sample {sample_id} target is not symmetric")
+            expected_target = 0.5 * (raw_total + raw_total.T)
+            if raw_total.shape != (3, 3) or not torch.allclose(
+                target, expected_target, atol=1.0e-12, rtol=0.0
+            ):
+                raise ValueError(f"DTNet sample {sample_id} violates target symmetrization")
+            samples.append(
+                _make_sample(
+                    sample_id,
+                    unit,
+                    (
+                        torch.as_tensor(raw["lattice_angstrom"], dtype=torch.float64),
+                        torch.as_tensor(raw["fractional_coordinates"], dtype=torch.float64),
+                        _atomic_numbers(raw["elements"]),
+                    ),
+                    target,
+                    "dimensionless",
+                    {
+                        "resource": path.name,
+                        "band_gap_ev": raw["band_gap_ev"],
+                        "dielectric_raw": raw["dielectric_raw"],
+                        "quality": raw["quality"],
+                        **dict(raw.get("source", {})),
+                    },
+                )
+            )
+    missing = allowed - seen
+    if missing:
+        raise ValueError(f"DTNet processed resource is missing manifest IDs: {sorted(missing)}")
+    return IndependentTensorDataset(unit, samples, split)
+
+
 def load_training_dataset(
     unit: TrainingUnit,
     *,
@@ -499,6 +598,8 @@ def load_training_dataset(
         raise ValueError("requested sample IDs must be unique")
     if unit.dataset == "jarvis_tensor":
         return _load_jarvis(unit, resolved, manifest, requested)
+    if unit.dataset == "dtnet":
+        return _load_dtnet(unit, resolved, manifest, requested)
     if unit.dataset == "matten":
         return _load_matten(unit, resolved, manifest, requested)
     return _load_bec(unit, resolved, manifest, requested)
@@ -519,6 +620,9 @@ def load_five_structure_smoke(
     resolved, manifest = _load_manifest(path)
     if unit.dataset == "jarvis_tensor":
         split = _published_split(manifest)
+        ids = (*split.train[:3], split.validation[0], split.test[0])
+    elif unit.dataset == "dtnet":
+        split = _dtnet_split(manifest)
         ids = (*split.train[:3], split.validation[0], split.test[0])
     elif unit.dataset == "matten":
         indices = manifest["split_indices"]
@@ -575,7 +679,7 @@ def load_structure_candidates(
                     numbers,
                 )
             )
-    else:
+    elif unit.dataset == "matten":
         raw = json.loads(resource.read_text(encoding="utf-8"))
         indices = (
             *manifest["split_indices"]["train"],
@@ -593,6 +697,19 @@ def load_structure_candidates(
                     lattice,
                     fractional,
                     numbers,
+                )
+            )
+    else:
+        dataset = load_training_dataset(unit, manifest_path=resolved)
+        for sample in dataset:
+            candidates.append(
+                StructureCandidate(
+                    sample.sample_id,
+                    unit.namespace,
+                    manifest_sha,
+                    sample.lattice,
+                    sample.fractional_positions,
+                    sample.atomic_numbers,
                 )
             )
     ids = [candidate.sample_id for candidate in candidates]

@@ -10,11 +10,12 @@ from src.heads import TARGET_LAYOUTS
 from src.training import CoefficientNormalizer
 
 
-def test_exactly_four_independent_training_units_are_legal() -> None:
+def test_five_independent_training_units_are_legal() -> None:
     units = [TrainingUnit(dataset, target) for dataset, target in LEGAL_TRAINING_UNITS]
     assert [unit.namespace for unit in units] == [
         "jarvis_tensor__dielectric",
         "jarvis_tensor__elastic",
+        "dtnet__dielectric",
         "matten__elastic",
         "jarvis_dfpt__bec",
     ]
@@ -22,6 +23,8 @@ def test_exactly_four_independent_training_units_are_legal() -> None:
         TrainingUnit("jarvis_tensor", "bec")
     with pytest.raises(ValueError):
         TrainingUnit("matten", "dielectric")
+    with pytest.raises(ValueError):
+        TrainingUnit("dtnet", "elastic")
 
 
 def test_seeded_split_is_deterministic_group_preserving_8_1_1() -> None:
