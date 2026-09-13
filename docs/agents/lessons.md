@@ -1,5 +1,15 @@
 # Agent lessons
 
+## 2026-09-13 — JARVIS/VASP elastic Voigt ordering
+
+JARVIS `elastic_total_kbar` retains VASP's component order `XX, YY, ZZ, XY, YZ, ZX`, which differs
+from the commonly assumed standard Voigt order `xx, yy, zz, yz, xz, xy`. Directly expanding a
+JARVIS matrix with the standard index map silently permutes all shear components. This can survive
+shape/symmetry tests but causes false crystal point-group violations (about 3.9% relative residual
+for the audited hexagonal JVASP-20502 example). Reorder both matrix axes by `[0, 1, 2, 4, 5, 3]`
+before converting to a Cartesian fourth-rank tensor; regression tests should use distinct shear
+diagonal values so the convention cannot pass accidentally.
+
 ## 2026-09-13 — Symmetric tensor datasets may contain material antisymmetric labels
 
 - Do not assume a dielectric dataset is numerically symmetric because the property and model output

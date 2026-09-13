@@ -1,5 +1,48 @@
 # Test plan and results
 
+## 2026-09-13 — unified dielectric/elastic curation
+
+Planned checks:
+
+- source adapters must verify frozen resource hashes before deserialization, reject malformed or
+  non-finite structures/tensors, convert GMTNet elastic kbar to GPa, retain raw labels/provenance,
+  and assign explicit dielectric `electronic`, `ionic`, and `total` or elastic `stiffness_static`
+  subtypes without merging semantically unknown quantities;
+- dielectric fixtures cover intrinsic symmetry residuals, electronic/total positive definiteness,
+  ionic positive semidefiniteness, component-sum consistency, point-group projection residuals, and
+  reason-coded rejection; elastic fixtures cover minor/major symmetry, Voigt/full conversion,
+  positive-definite mechanical stability, point-group invariance, and unit consistency;
+- statistical outliers are reported separately from hard physical invalidity using deterministic,
+  per-subtype robust scores; an outlier flag must not silently rewrite a label;
+- duplicate candidates are grouped conservatively by normalized structure, only within a physical
+  subtype; agreeing duplicates collapse with complete provenance, while conflicting labels are
+  excluded from the strict merged set and remain in a conflict audit;
+- deterministic group-safe splits must keep every duplicate group in one split; generated JSONL,
+  audit, manifest, descriptive statistics, and point-group counts must conserve all input rows and
+  be byte-reproducible on fixture data;
+- before commit run focused pytest, full `python -m pytest tests -q`, compilation/CLI checks,
+  report/manifest schema and link checks, and `git diff --check`; full real-data processing and
+  point-group statistics must execute via Slurm and match locally verified hashes after retrieval.
+
+Expected result: every source row has an auditable disposition; strict outputs contain only
+physically valid, non-conflicting records grouped by compatible property subtype, and the report
+quantifies both property distributions and remaining 32-point-group imbalance without conflating
+source filters with physical screening.
+
+Implementation-stage results:
+
+- focused curation plus real-data loader regression: 15 passed; the new curation-only file contains
+  4 passing tests, including distinct VASP shear values that verify the JARVIS axis reorder;
+- real source spot checks passed hash-gated parsing and physical audit for one DTNet row, one GMTNet
+  dielectric row, one GMTNet elastic row, and one MatTen row; after the JARVIS/VASP reorder,
+  JVASP-20502's point-group residual is `4.3393e-8` and it passes;
+- full authoritative suite with third-party pytest plugin autoload disabled: 221 passed, 0 failed,
+  598 warnings in 321.04 s; Python compilation, CLI `--help`, and `git diff --check` passed.
+- an initial pytest invocation failed before collection because an unrelated globally installed
+  LangSmith plugin lacked `requests_toolbelt`; rerunning with `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`
+  isolated the repository suite. One accidentally duplicated full-suite process was stopped, while
+  the retained run completed successfully. Full real-data batch acceptance remains pending Slurm.
+
 ## 2026-09-13 — DTNet dielectric dataset integration
 
 计划检查：

@@ -31,6 +31,11 @@ inside Slurm and writes a candidate 14,220-record manifest under ignored `result
 The candidate must be copied back, inspected, tested, and committed locally; the server job never
 edits the Git-managed production manifest.
 
+`curate_tensor_datasets.sbatch` performs the full DTNet/GMTNet/MatTen physical audit,
+point-group projection checks, robust outlier analysis, and conservative duplicate merge on CPU.
+Large JSONL outputs go to ignored `data/processed/curated_tensors/`; compact candidate manifests and
+reports go to `results/tensor-curation/candidate-$SLURM_JOB_ID/` for local inspection and promotion.
+
 Both mixed-backbone arrays use `select_backbone_venv.sh`. Their frozen schedules map array
 index modulo four to MACE, GRACE, DPA4, and EquiformerV2 respectively. The full core test suite,
 fixture builder, and BEC preparation use the MACE/core environment; standalone adapter jobs use

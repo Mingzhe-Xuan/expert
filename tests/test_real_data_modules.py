@@ -122,7 +122,8 @@ def test_jarvis_dielectric_and_elastic_loaders_preserve_published_3_1_1(tmp_path
     )
     assert elastic[0].target_cartesian.shape == (3, 3, 3, 3)
     assert elastic[0].target_unit == "GPa"
-    assert elastic[0].target_cartesian[1, 2, 1, 2] == voigt_kbar[3, 3] / 10.0
+    # JARVIS/VASP stores shears as XY,YZ,ZX; Cartesian yz therefore comes from index 4.
+    assert elastic[0].target_cartesian[1, 2, 1, 2] == voigt_kbar[4, 4] / 10.0
     assert torch.allclose(
         irreps_to_cartesian(elastic[0].target_coefficients, "elastic"),
         elastic[0].target_cartesian,

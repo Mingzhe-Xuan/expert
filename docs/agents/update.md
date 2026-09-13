@@ -1,5 +1,19 @@
 # Agent progress updates
 
+- 2026-09-13: started unified physical curation of DTNet/GMTNet dielectric and GMTNet/MatTen
+  elastic data. Audited local schemas and primary papers, separated dielectric electronic/ionic/
+  total semantics, identified both elastic targets as stiffness tensors in GPa, and planned a new
+  `data/curation` module with reason-coded physical/numerical/outlier screening, conservative
+  structure deduplication, conflict-safe per-subtype merging, deterministic group splits, and
+  descriptive plus 32-point-group statistics. Full processing is reserved for Slurm.
+
+- 2026-09-13: implemented the curation module, fixture tests, CLI, and Slurm launcher. A real-data
+  spot audit exposed JARVIS/VASP's `XX,YY,ZZ,XY,YZ,ZX` shear order; corrected both the curation
+  adapter and existing training loader to standard Voigt order, reducing a hexagonal sample's false
+  PG residual from about 3.9% to `4.3e-8`. Focused tests passed 15 and the complete suite passed 221
+  with zero failures. Next step is commit/push followed by pull-first Guqq synchronization and full
+  Slurm curation.
+
 - 2026-09-13: completed DTNet dataset integration. Downloaded and verified the 37,774,263-byte
   official raw JSON, generated a deterministic 16,576,244-byte normalized JSONL plus tracked
   provenance/split/quality manifest, and registered `dtnet × dielectric` with total-tensor symmetric

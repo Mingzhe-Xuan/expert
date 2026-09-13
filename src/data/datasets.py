@@ -25,6 +25,7 @@ DEFAULT_DATA_MANIFESTS = MappingProxyType(
     }
 )
 _VOIGT_PAIRS = ((0, 0), (1, 1), (2, 2), (1, 2), (0, 2), (0, 1))
+_JARVIS_VASP_TO_STANDARD = (0, 1, 2, 4, 5, 3)
 
 
 @dataclass(frozen=True, slots=True)
@@ -345,6 +346,8 @@ def _load_jarvis(
                     [bool(bits & (1 << index)) for index in range(36)]
                 ).reshape(6, 6)
                 voigt_gpa = voigt_gpa * support
+            order = torch.tensor(_JARVIS_VASP_TO_STANDARD)
+            voigt_gpa = voigt_gpa[order[:, None], order[None, :]]
             target = voigt_stiffness_to_cartesian(voigt_gpa)
             target_unit = "GPa"
         samples.append(

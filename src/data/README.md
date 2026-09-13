@@ -28,3 +28,7 @@ training script (5,318/665/665 for the published 6,648 rows).
 `load_structure_candidates` is the structure-only, checksum-gated iterator used by
 the 32-point-group fixture builder. It preserves source sample IDs and provenance,
 and deliberately rejects BEC because that source is not an equilibrium benchmark.
+
+JARVIS elastic values originate in VASP order `XX, YY, ZZ, XY, YZ, ZX`; the loader explicitly
+reorders both Voigt axes to the repository's standard `xx, yy, zz, yz, xz, xy` convention before
+expanding the fourth-rank stiffness tensor. This is required for Cartesian point-group consistency.

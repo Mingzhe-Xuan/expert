@@ -1,5 +1,32 @@
 # Agent state
 
+## Current snapshot — unified dielectric/elastic curation (2026-09-13)
+
+Started a new curation unit covering DTNet dielectric, GMTNet/JARVIS dielectric and elastic, and
+MatTen/Materials Project elastic. The implementation will keep source semantics explicit and will
+only merge records within the same physical subtype. Current semantic audit identifies DTNet's
+electronic, ionic, and total tensors; GMTNet/JARVIS provides electronic `dielectric` plus
+`dielectric_ionic` (with total derived and provenance retained); both elastic sources are stiffness
+tensors in GPa, with GMTNet also retaining raw and source-symmetrized Voigt forms.
+
+The planned module boundary is `data/curation/`: source adapters normalize structures and property
+subtypes; physical checks audit intrinsic tensor symmetry, finite/numerical quality, dielectric
+positivity, elastic mechanical stability, and point-group invariance; conservative structure
+fingerprints group possible duplicates; merging never averages conflicting labels silently; report
+generation emits reason-coded audit rows, strict per-subtype JSONL datasets, manifests, descriptive
+statistics, and 32-point-group imbalance metrics. Generated datasets stay under ignored
+`data/processed/`; compact manifests and reports are tracked. Full batch processing and point-group
+analysis will run through Slurm after local fixture tests and Git synchronization.
+
+### Current plan
+
+1. Freeze source semantics, units, tolerances, outlier policy, duplicate conflict policy, and fixture
+   acceptance tests.
+2. Implement and locally test source adapters, physical audit, conservative deduplication, merging,
+   deterministic splits, and reports.
+3. Commit/push, connect to Guqq under the pull-first rule, submit the full curation through Slurm,
+   retrieve and verify compact results/manifests, and assess residual point-group imbalance.
+
 ## Current snapshot — DTNet dielectric dataset integration (2026-09-13)
 
 Completed a new data-integration unit from the official `pfnet-research/dielectric-pred` release.

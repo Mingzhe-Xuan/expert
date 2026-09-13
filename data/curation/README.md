@@ -1,0 +1,29 @@
+# Tensor dataset curation
+
+This module normalizes and audits DTNet/GMTNet dielectric tensors and GMTNet/MatTen elastic
+stiffness tensors. It deliberately separates property semantics from source names:
+
+- `dielectric_electronic`: clamped-ion/electronic relative permittivity;
+- `dielectric_ionic`: lattice/ionic contribution to relative permittivity;
+- `dielectric_total`: electronic plus ionic static relative permittivity;
+- `elastic_stiffness`: fourth-rank stiffness tensor in GPa.
+
+`sources.py` contains hash-gated source adapters. `physics.py` performs structural, intrinsic tensor,
+positive-(semi)definiteness, mechanical-stability, and point-group checks. `dedup.py` constructs a
+conservative primitive-cell fingerprint and resolves only same-subtype duplicates. `pipeline.py`
+orchestrates screening, robust outlier flags, conflict-safe merging, deterministic group splits, and
+machine-readable reports.
+
+Generated full datasets and row-level audits are written below `data/processed/curated_tensors/` and
+are intentionally Git-ignored. Compact manifests and descriptive/point-group reports are written to
+`data/manifests/curated_tensors.json` and `docs/analysis/curated_tensor_datasets.{json,md}`.
+
+Run the complete real-data job through Slurm:
+
+```text
+python data/curate_tensor_datasets.py
+```
+
+Do not interpret a statistical outlier as automatically unphysical. The report exposes
+`physical_valid` and `recommended` separately: the latter additionally removes extreme robust
+outliers and unresolved duplicate-label conflicts.
