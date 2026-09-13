@@ -1,0 +1,155 @@
+{
+  "execution": {
+    "git_commit": "61797c336014542891f73b4caeda4c33dfc0642e",
+    "slurm_job_id": "436",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:00:05",
+    "cpus": 1,
+    "memory_gib": 4,
+    "node": "node221"
+  },
+  "record_annotation": {
+    "field": "reduction",
+    "available_groups_field": "property_available_point_groups",
+    "frequency_fields": [
+      "point_group_count",
+      "point_group_frequency",
+      "property_recommended_records"
+    ],
+    "preserved_fields": "all original recommended-record fields, including split"
+  },
+  "artifacts": {
+    "dielectric_electronic": {
+      "available_point_groups": [
+        "2/m",
+        "mm2",
+        "mmm",
+        "4/mmm",
+        "-3m",
+        "-43m",
+        "m-3m"
+      ],
+      "path": "data/processed/curated_tensors/reduced_gt_5pct/dielectric_electronic.jsonl",
+      "point_group_counts": {
+        "-3m": 975,
+        "-43m": 559,
+        "2/m": 1090,
+        "4/mmm": 711,
+        "m-3m": 756,
+        "mm2": 927,
+        "mmm": 1132
+      },
+      "records": 6150,
+      "retained_fraction": 0.5830489192263937,
+      "sha256": "f27c64937b3e67ca6fbfbc03dbd3e049592b99b90ca3b668cc7cb5ed9c20a694",
+      "size_bytes": 16214695,
+      "split_counts": {
+        "test": 601,
+        "train": 4924,
+        "validation": 625
+      }
+    },
+    "dielectric_ionic": {
+      "available_point_groups": [
+        "2/m",
+        "mm2",
+        "mmm",
+        "4/mmm",
+        "-3m",
+        "-43m",
+        "m-3m"
+      ],
+      "path": "data/processed/curated_tensors/reduced_gt_5pct/dielectric_ionic.jsonl",
+      "point_group_counts": {
+        "-3m": 1014,
+        "-43m": 571,
+        "2/m": 1123,
+        "4/mmm": 704,
+        "m-3m": 754,
+        "mm2": 929,
+        "mmm": 1135
+      },
+      "records": 6230,
+      "retained_fraction": 0.5683787975549676,
+      "sha256": "3777c06c1e33472958398e1c9defc24d2d9906eb11e8d4fbd19f3ae8ecbba6fd",
+      "size_bytes": 16347240,
+      "split_counts": {
+        "test": 668,
+        "train": 4933,
+        "validation": 629
+      }
+    },
+    "dielectric_total": {
+      "available_point_groups": [
+        "2/m",
+        "mm2",
+        "mmm",
+        "4/mmm",
+        "-3m",
+        "-43m",
+        "m-3m"
+      ],
+      "path": "data/processed/curated_tensors/reduced_gt_5pct/dielectric_total.jsonl",
+      "point_group_counts": {
+        "-3m": 1029,
+        "-43m": 566,
+        "2/m": 1130,
+        "4/mmm": 717,
+        "m-3m": 757,
+        "mm2": 947,
+        "mmm": 1169
+      },
+      "records": 6315,
+      "retained_fraction": 0.5695346320346321,
+      "sha256": "6cfefc7c04734ceb4c7873e5aaa7d483251ea909a378e55034414d53f9110963",
+      "size_bytes": 16612850,
+      "split_counts": {
+        "test": 677,
+        "train": 5001,
+        "validation": 637
+      }
+    },
+    "elastic_stiffness": {
+      "available_point_groups": [
+        "2/m",
+        "mmm",
+        "4/mmm",
+        "-3m",
+        "6/mmm",
+        "m-3m"
+      ],
+      "path": "data/processed/curated_tensors/reduced_gt_5pct/elastic_stiffness.jsonl",
+      "point_group_counts": {
+        "-3m": 1388,
+        "2/m": 1628,
+        "4/mmm": 3351,
+        "6/mmm": 1120,
+        "m-3m": 6002,
+        "mmm": 2375
+      },
+      "records": 15864,
+      "retained_fraction": 0.7503192545996311,
+      "sha256": "3607e03dc6ff94a8e2e69c550f8f9f8aa086bb57fce57bfdb82b3dc1d7508a67",
+      "size_bytes": 48311921,
+      "split_counts": {
+        "test": 1606,
+        "train": 12699,
+        "validation": 1559
+      }
+    }
+  },
+  "criterion": {
+    "frequency_denominator": "recommended_records_within_property_subtype",
+    "operator": ">",
+    "source_scope": "recommended",
+    "threshold": 0.05
+  },
+  "schema_version": 1,
+  "source": {
+    "curated_manifest": "data/manifests/curated_tensors.json",
+    "curated_manifest_sha256": "76de46b77cea7ce877f901114b106ddbfdb12096b3430c026c9e55228b671e4f",
+    "report": "docs/analysis/curated_tensor_datasets.json",
+    "report_sha256": "19c1e61efa8baf48a85a9d5ba950503c802e6d2b328dc927cfb909d61c63a8a3"
+  }
+}

@@ -26,6 +26,12 @@ validation and preservation of an existing output when malformed input fails. Py
 CLI help and `bash -n` for the Slurm launcher passed. Full real-data extraction remains pending the
 committed Guqq Slurm run.
 
+Real-data acceptance: Slurm job 436 completed with state `COMPLETED`, exit `0:0`, runtime 5 seconds,
+1 CPU and 4 GiB on node221. Server-side manifest/hash/line checks passed for 6,150/6,230/6,315/15,864
+records. After retrieval, all four local outputs independently matched recorded sizes, SHA-256 and
+line counts; sampled records contained the exact available-group-list length and frequency above 5%.
+The candidate Git evidence is full commit `61797c336014542891f73b4caeda4c33dfc0642e`.
+
 ## 2026-09-13 — point-group frequency visualization
 
 Planned checks:

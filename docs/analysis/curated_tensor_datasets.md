@@ -34,3 +34,6 @@ per-point-group evaluation without stratified reporting or a balanced-training a
 
 The complete artifact inventory, record counts, splits, byte sizes, and SHA-256 digests are
 recorded in [`data/manifests/curated_tensors.json`](../../data/manifests/curated_tensors.json).
+
+The strict per-property `>5%` point-group subset is documented in
+[`curated_tensor_reduced_gt_5pct.md`](curated_tensor_reduced_gt_5pct.md).

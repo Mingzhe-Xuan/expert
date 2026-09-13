@@ -10,6 +10,10 @@
   and splits are retained, and each selected row carries its property's available-point-group list
   plus count/frequency. Focused tests passed 8; compilation, CLI and launcher syntax checks passed.
 
+- 2026-09-13: Slurm job 436 completed the strict `>5%` real-data extraction in 5 seconds. Retrieved
+  34,559 rows across four subtype files and independently verified every byte size, SHA-256 and line
+  count. Promoted the compact manifest and usage/schema summary; full JSONL outputs remain ignored.
+
 - 2026-09-13: started a reproducible point-group frequency visualization using the tracked
   recommended-set counts. Planned a dependency-free four-panel SVG renderer and strict count/schema/
   determinism tests so the figure remains regenerable without loading the full curated JSONL files.

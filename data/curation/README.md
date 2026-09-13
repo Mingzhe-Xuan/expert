@@ -42,6 +42,10 @@ threshold, the property's complete `property_available_point_groups` list, and t
 count/frequency. The compact candidate manifest records these fields again at dataset level together
 with output hashes, byte sizes, record counts, point-group counts and split counts.
 
+The accepted real-data manifest and summary are tracked at
+`data/manifests/curated_tensors_reduced_gt_5pct.json` and
+`docs/analysis/curated_tensor_reduced_gt_5pct.md`.
+
 Run the complete real-data job through Slurm:
 
 ```text
