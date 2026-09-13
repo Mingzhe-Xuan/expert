@@ -52,6 +52,21 @@ manifest data root`; raw download completed at the expected size, processed outp
 only Git/environment evidence existed. Retry acceptance adds a shell check for the temporary
 manifest path/move and must show that the tracked `data/manifests/dtnet_dielectric.json` is unchanged.
 
+Job 435 acceptance result: Slurm state `COMPLETED`, exit `0:0`, elapsed 00:03:31, 8 CPUs and 48 GiB
+on node221. It consumed 59,708 source-property rows and produced four physical-valid plus four
+recommended JSONL datasets. All eight retrieved datasets match manifest byte size, SHA-256, and
+line count exactly. The compact JSON report and manifest parse successfully; the tracked report hash
+is `19c1e61efa8baf48a85a9d5ba950503c802e6d2b328dc927cfb909d61c63a8a3`.
+The 59,708-row audit JSONL was retrieved after a successful spaced HTTP/1.1 pull retry and matches
+its recorded 67,488,191-byte size, SHA-256, and line count. Thus all nine manifest artifacts and the
+tracked report hash pass end-to-end local verification.
+
+Final tracked-artifact regression: an initial sandboxed `uv` call could not access its user cache;
+the first authorized invocation used the wrong pytest entry point, and the corrected module
+invocation then encountered an unreadable global pytest temp root. After recording the recurring
+environment constraint, the repository-standard invocation with `PYTHONPATH=.`, plugin autoload
+disabled, cacheprovider disabled, and a fresh task-scoped `--basetemp` passed all 4 curation tests.
+
 ## 2026-09-13 — DTNet dielectric dataset integration
 
 计划检查：

@@ -20,6 +20,17 @@ diagonal values so the convention cannot pass accidentally.
   entries or applying a tiny-tolerance rejection would either lose many official samples or obscure
   a real source-data convention.
 
+## 2026-09-13 — Pin pytest import and temp roots on this Windows workspace
+
+- `uv run pytest` may resolve an entry point whose import path omits the repository root; invoke
+  `uv run python -m pytest` with `PYTHONPATH=.` for repository tests.
+- The user-level `C:\Users\asus\AppData\Local\Temp\pytest-of-asus` and stale workspace pytest
+  directories can be unreadable even when the test itself is valid. Give each acceptance run a new,
+  task-scoped `--basetemp` below ignored `results/` and disable the cache provider with
+  `-p no:cacheprovider`.
+- Treat collection/import/temp-root failures as environment failures, not product-test failures, and
+  retain the last successful code-level suite until the invocation is corrected.
+
 ## 2026-09-11 — Verify the angular support of a named readout input
 
 - A configuration field such as `allowed_l_p` states what an instruction may support, not what a

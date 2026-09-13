@@ -26,6 +26,14 @@
   use a unique temporary manifest under `data/manifests/`, move it to the ignored job results after
   conversion, and avoid redownloading an already present raw file.
 
+- 2026-09-13: replacement Slurm job 435 completed the unified curation at `06d63cd`. Retrieved and
+  hash/size/row-count verified all eight physical-valid and recommended datasets, promoted the
+  compact manifest and descriptive/point-group reports, and confirmed 32/32 point-group coverage
+  for every subtype. Dielectric remains moderately imbalanced (CV about 1.0); elastic remains
+  strongly imbalanced (CV 1.836, `m-3m` share 28.4%). After two mandatory-pull GitHub failures, a
+  spaced HTTP/1.1 retry succeeded; the 59,708-row audit was retrieved and all nine artifacts pass
+  manifest SHA-256, byte-size, and line-count verification.
+
 - 2026-09-13: completed DTNet dataset integration. Downloaded and verified the 37,774,263-byte
   official raw JSON, generated a deterministic 16,576,244-byte normalized JSONL plus tracked
   provenance/split/quality manifest, and registered `dtnet × dielectric` with total-tensor symmetric

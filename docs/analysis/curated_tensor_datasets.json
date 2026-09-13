@@ -1,0 +1,633 @@
+{
+  "execution": {
+    "git_commit": "06d63cd",
+    "slurm_job_id": "435",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:03:31",
+    "cpus": 8,
+    "memory_gib": 48,
+    "node": "node221",
+    "stderr_note": "Eight spglib exact-position warnings (four repeated pairs); no failure or traceback."
+  },
+  "label_agreement_relative_tolerance": 0.001,
+  "schema_version": 1,
+  "spglib_version": "2.6.0",
+  "subtypes": {
+    "dielectric_electronic": {
+      "descriptive_statistics_recommended": {
+        "eigenvalue_max": {
+          "max": 516.9317469999999,
+          "mean": 8.355540781079023,
+          "median": 4.74116,
+          "min": 0.9999999999999996,
+          "q01": 1.8670815182,
+          "q99": 71.53527644000026,
+          "std": 21.114143880255845
+        },
+        "eigenvalue_min": {
+          "max": 384.60655799999967,
+          "mean": 6.759885394850822,
+          "median": 3.9446720527259522,
+          "min": 0.9999999999999991,
+          "q01": 1.7628026953569158,
+          "q99": 55.16855841000017,
+          "std": 15.690416512475878
+        },
+        "tensor_frobenius": {
+          "max": 695.2577390601033,
+          "mean": 13.330736216658698,
+          "median": 7.692502021113739,
+          "min": 1.732050807568882,
+          "q01": 3.181976715465442,
+          "q99": 114.86848308408457,
+          "std": 32.00197570444143
+        },
+        "tensor_max_abs": {
+          "max": 516.931747,
+          "mean": 8.331488312561932,
+          "median": 4.722880805000001,
+          "min": 1.000000059505108,
+          "q01": 1.8669675707621205,
+          "q99": 71.53529007000024,
+          "std": 21.064385025100812
+        },
+        "trace_mean": {
+          "max": 399.815615,
+          "mean": 7.614268932909536,
+          "median": 4.418107259999999,
+          "min": 0.9999999999999992,
+          "q01": 1.8366521560666667,
+          "q99": 65.17400164666681,
+          "std": 18.11580015880541
+        }
+      },
+      "duplicate_status_counts": {
+        "collapsed_agreeing": 45,
+        "conflicting_labels": 5,
+        "representative": 42,
+        "unique": 11206
+      },
+      "input_records": 11647,
+      "outlier_records": 700,
+      "physical_valid_records": 11298,
+      "point_group_counts": {
+        "physical_valid": {
+          "-1": 297,
+          "-3": 202,
+          "-3m": 1049,
+          "-4": 155,
+          "-42m": 434,
+          "-43m": 596,
+          "-6": 15,
+          "-6m2": 150,
+          "1": 462,
+          "2": 458,
+          "2/m": 1141,
+          "222": 330,
+          "23": 128,
+          "3": 71,
+          "32": 142,
+          "3m": 530,
+          "4": 21,
+          "4/m": 47,
+          "4/mmm": 734,
+          "422": 93,
+          "432": 18,
+          "4mm": 103,
+          "6": 70,
+          "6/m": 22,
+          "6/mmm": 263,
+          "622": 33,
+          "6mm": 238,
+          "m": 531,
+          "m-3": 45,
+          "m-3m": 767,
+          "mm2": 967,
+          "mmm": 1186
+        },
+        "recommended": {
+          "-1": 288,
+          "-3": 200,
+          "-3m": 975,
+          "-4": 153,
+          "-42m": 412,
+          "-43m": 559,
+          "-6": 15,
+          "-6m2": 116,
+          "1": 435,
+          "2": 439,
+          "2/m": 1090,
+          "222": 324,
+          "23": 127,
+          "3": 70,
+          "32": 135,
+          "3m": 318,
+          "4": 20,
+          "4/m": 47,
+          "4/mmm": 711,
+          "422": 92,
+          "432": 18,
+          "4mm": 96,
+          "6": 70,
+          "6/m": 22,
+          "6/mmm": 237,
+          "622": 32,
+          "6mm": 226,
+          "m": 463,
+          "m-3": 43,
+          "m-3m": 756,
+          "mm2": 927,
+          "mmm": 1132
+        }
+      },
+      "point_group_metrics_recommended": {
+        "coefficient_of_variation_32": 1.003274729775237,
+        "covered": 32,
+        "effective_point_groups": 19.993766047677973,
+        "largest_share": 0.10731892301858172,
+        "normalized_entropy_32": 0.864295668036996,
+        "zero": 0
+      },
+      "reason_counts": {
+        "dielectric_not_positive_semidefinite": 1,
+        "intrinsic_symmetry_residual": 49,
+        "point_group_residual": 299
+      },
+      "recommended_records": 10548,
+      "source_counts": {
+        "dtnet": 6648,
+        "gmtnet": 4999
+      },
+      "warning_counts": {
+        "duplicate_label_conflict": 5,
+        "intrinsic_symmetry_projected": 3154,
+        "point_group_projected": 4127,
+        "robust_statistical_outlier": 700
+      }
+    },
+    "dielectric_ionic": {
+      "descriptive_statistics_recommended": {
+        "eigenvalue_max": {
+          "max": 2471.473054,
+          "mean": 14.814381443162658,
+          "median": 7.0482460300000005,
+          "min": 0.0,
+          "q01": 0.11007979410304279,
+          "q99": 119.55822130094046,
+          "std": 49.20351604192535
+        },
+        "eigenvalue_min": {
+          "max": 1267.3592483333337,
+          "mean": 6.796379918248501,
+          "median": 3.935993079999999,
+          "min": 0.0,
+          "q01": 0.013244000000000011,
+          "q99": 41.474184629333365,
+          "std": 24.845353811850273
+        },
+        "tensor_frobenius": {
+          "max": 2883.7555845356665,
+          "mean": 20.38603039561726,
+          "median": 10.39792184355897,
+          "min": 0.0,
+          "q01": 0.17826885640648668,
+          "q99": 155.39946981721886,
+          "std": 66.23009051437583
+        },
+        "tensor_max_abs": {
+          "max": 2471.473054,
+          "mean": 14.57950460505064,
+          "median": 6.969543516666668,
+          "min": 0.0,
+          "q01": 0.11011729410304275,
+          "q99": 117.06889079999996,
+          "std": 49.02062964028548
+        },
+        "trace_mean": {
+          "max": 1363.8292103333329,
+          "mean": 10.710332097931913,
+          "median": 5.77016818,
+          "min": 0.0,
+          "q01": 0.09272960000000001,
+          "q99": 75.65344559999993,
+          "std": 33.38883819174374
+        }
+      },
+      "duplicate_status_counts": {
+        "collapsed_agreeing": 39,
+        "conflicting_labels": 16,
+        "representative": 37,
+        "unique": 11093
+      },
+      "input_records": 11643,
+      "outlier_records": 169,
+      "physical_valid_records": 11185,
+      "point_group_counts": {
+        "physical_valid": {
+          "-1": 298,
+          "-3": 199,
+          "-3m": 1036,
+          "-4": 148,
+          "-42m": 422,
+          "-43m": 590,
+          "-6": 14,
+          "-6m2": 148,
+          "1": 486,
+          "2": 454,
+          "2/m": 1136,
+          "222": 328,
+          "23": 128,
+          "3": 68,
+          "32": 139,
+          "3m": 508,
+          "4": 19,
+          "4/m": 44,
+          "4/mmm": 727,
+          "422": 90,
+          "432": 18,
+          "4mm": 97,
+          "6": 70,
+          "6/m": 22,
+          "6/mmm": 261,
+          "622": 32,
+          "6mm": 234,
+          "m": 525,
+          "m-3": 45,
+          "m-3m": 766,
+          "mm2": 956,
+          "mmm": 1177
+        },
+        "recommended": {
+          "-1": 297,
+          "-3": 199,
+          "-3m": 1014,
+          "-4": 148,
+          "-42m": 419,
+          "-43m": 571,
+          "-6": 14,
+          "-6m2": 129,
+          "1": 485,
+          "2": 447,
+          "2/m": 1123,
+          "222": 325,
+          "23": 127,
+          "3": 68,
+          "32": 136,
+          "3m": 504,
+          "4": 19,
+          "4/m": 44,
+          "4/mmm": 704,
+          "422": 89,
+          "432": 18,
+          "4mm": 96,
+          "6": 70,
+          "6/m": 21,
+          "6/mmm": 248,
+          "622": 32,
+          "6mm": 231,
+          "m": 522,
+          "m-3": 43,
+          "m-3m": 754,
+          "mm2": 929,
+          "mmm": 1135
+        }
+      },
+      "point_group_metrics_recommended": {
+        "coefficient_of_variation_32": 0.9883662864368826,
+        "covered": 32,
+        "effective_point_groups": 20.038076427494836,
+        "largest_share": 0.10354894626402701,
+        "normalized_entropy_32": 0.8649344234614404,
+        "zero": 0
+      },
+      "reason_counts": {
+        "point_group_residual": 458
+      },
+      "recommended_records": 10961,
+      "source_counts": {
+        "dtnet": 6648,
+        "gmtnet": 4995
+      },
+      "warning_counts": {
+        "duplicate_label_conflict": 16,
+        "point_group_projected": 6781,
+        "robust_statistical_outlier": 169
+      }
+    },
+    "dielectric_total": {
+      "descriptive_statistics_recommended": {
+        "eigenvalue_max": {
+          "max": 2414.0290441651214,
+          "mean": 26.857701011095642,
+          "median": 13.52565683106128,
+          "min": 1.1552482799999988,
+          "q01": 2.8810430873994775,
+          "q99": 252.43406529999868,
+          "std": 76.98875463960864
+        },
+        "eigenvalue_min": {
+          "max": 1136.4079226666656,
+          "mean": 14.453506001957852,
+          "median": 8.63648666666667,
+          "min": 1.14797543,
+          "q01": 2.124451359999999,
+          "q99": 112.23903756666645,
+          "std": 34.31385187835186
+        },
+        "tensor_frobenius": {
+          "max": 2476.030498039763,
+          "mean": 38.30053285299847,
+          "median": 20.309723987573914,
+          "min": 2.0009487163165574,
+          "q01": 4.7139438492116135,
+          "q99": 374.5998671350729,
+          "std": 100.17879155514748
+        },
+        "tensor_max_abs": {
+          "max": 1976.193791,
+          "mean": 26.55502921625499,
+          "median": 13.40625169,
+          "min": 1.1552482800000006,
+          "q01": 2.8621664690000004,
+          "q99": 252.23806871999975,
+          "std": 75.21122405081276
+        },
+        "trace_mean": {
+          "max": 1241.3979533333334,
+          "mean": 20.702132244131192,
+          "median": 11.347513978333325,
+          "min": 1.1552482799999988,
+          "q01": 2.6937444725330666,
+          "q99": 187.18566441333286,
+          "std": 51.10373860512449
+        }
+      },
+      "duplicate_status_counts": {
+        "collapsed_agreeing": 42,
+        "conflicting_labels": 10,
+        "representative": 40,
+        "unique": 11158
+      },
+      "input_records": 11643,
+      "outlier_records": 110,
+      "physical_valid_records": 11250,
+      "point_group_counts": {
+        "physical_valid": {
+          "-1": 298,
+          "-3": 201,
+          "-3m": 1046,
+          "-4": 153,
+          "-42m": 426,
+          "-43m": 594,
+          "-6": 14,
+          "-6m2": 150,
+          "1": 466,
+          "2": 456,
+          "2/m": 1138,
+          "222": 329,
+          "23": 128,
+          "3": 71,
+          "32": 142,
+          "3m": 523,
+          "4": 19,
+          "4/m": 44,
+          "4/mmm": 733,
+          "422": 91,
+          "432": 18,
+          "4mm": 100,
+          "6": 70,
+          "6/m": 22,
+          "6/mmm": 264,
+          "622": 32,
+          "6mm": 235,
+          "m": 527,
+          "m-3": 45,
+          "m-3m": 768,
+          "mm2": 965,
+          "mmm": 1182
+        },
+        "recommended": {
+          "-1": 294,
+          "-3": 201,
+          "-3m": 1029,
+          "-4": 153,
+          "-42m": 421,
+          "-43m": 566,
+          "-6": 14,
+          "-6m2": 142,
+          "1": 465,
+          "2": 451,
+          "2/m": 1130,
+          "222": 326,
+          "23": 127,
+          "3": 71,
+          "32": 139,
+          "3m": 518,
+          "4": 19,
+          "4/m": 44,
+          "4/mmm": 717,
+          "422": 90,
+          "432": 18,
+          "4mm": 98,
+          "6": 70,
+          "6/m": 22,
+          "6/mmm": 257,
+          "622": 32,
+          "6mm": 233,
+          "m": 525,
+          "m-3": 43,
+          "m-3m": 757,
+          "mm2": 947,
+          "mmm": 1169
+        }
+      },
+      "point_group_metrics_recommended": {
+        "coefficient_of_variation_32": 0.9908128020803353,
+        "covered": 32,
+        "effective_point_groups": 20.037133402829966,
+        "largest_share": 0.10542929292929293,
+        "normalized_entropy_32": 0.864920844024043,
+        "zero": 0
+      },
+      "reason_counts": {
+        "intrinsic_symmetry_residual": 44,
+        "point_group_residual": 354
+      },
+      "recommended_records": 11088,
+      "source_counts": {
+        "dtnet": 6648,
+        "gmtnet": 4995
+      },
+      "warning_counts": {
+        "duplicate_label_conflict": 10,
+        "intrinsic_symmetry_projected": 3159,
+        "point_group_projected": 6904,
+        "robust_statistical_outlier": 110
+      }
+    },
+    "elastic_stiffness": {
+      "descriptive_statistics_recommended": {
+        "kelvin_condition": {
+          "max": 553.1322216218338,
+          "mean": 10.70462391816296,
+          "median": 5.220025536477171,
+          "min": 1.1400231444898927,
+          "q01": 2.0036377144446917,
+          "q99": 113.14008655187612,
+          "std": 26.639751872533306
+        },
+        "kelvin_eigenvalue_max_gpa": {
+          "max": 1474.78020276,
+          "mean": 305.8333778591673,
+          "median": 255.3548826199998,
+          "min": 0.0001400000000000001,
+          "q01": 27.390429445926028,
+          "q99": 948.4730580173676,
+          "std": 209.47523800529504
+        },
+        "kelvin_eigenvalue_min_gpa": {
+          "max": 983.2226999999992,
+          "mean": 62.943652312747034,
+          "median": 42.34123653100077,
+          "min": 1.9999999999999937e-05,
+          "q01": 1.0641956000000006,
+          "q99": 306.2788841999991,
+          "std": 65.2934406840943
+        },
+        "tensor_frobenius": {
+          "max": 2722.1662149753215,
+          "mean": 390.0752630497055,
+          "median": 325.7531867569977,
+          "min": 0.00017663521732655694,
+          "q01": 36.66611920501104,
+          "q99": 1288.1562039573025,
+          "std": 274.40354957403014
+        },
+        "tensor_max_abs": {
+          "max": 1380.22339456,
+          "mean": 182.81550263240035,
+          "median": 152.18666029,
+          "min": 5.9999999999999995e-05,
+          "q01": 15.292193363200001,
+          "q99": 630.3373110693993,
+          "std": 134.1786708759071
+        }
+      },
+      "duplicate_status_counts": {
+        "collapsed_agreeing": 279,
+        "conflicting_labels": 56,
+        "representative": 272,
+        "unique": 20957
+      },
+      "input_records": 24775,
+      "outlier_records": 89,
+      "physical_valid_records": 21564,
+      "point_group_counts": {
+        "physical_valid": {
+          "-1": 381,
+          "-3": 169,
+          "-3m": 1430,
+          "-4": 88,
+          "-42m": 515,
+          "-43m": 965,
+          "-6": 4,
+          "-6m2": 433,
+          "1": 220,
+          "2": 160,
+          "2/m": 1643,
+          "222": 106,
+          "23": 88,
+          "3": 15,
+          "32": 60,
+          "3m": 282,
+          "4": 7,
+          "4/m": 129,
+          "4/mmm": 3421,
+          "422": 42,
+          "432": 6,
+          "4mm": 423,
+          "6": 10,
+          "6/m": 14,
+          "6/mmm": 1171,
+          "622": 26,
+          "6mm": 243,
+          "m": 311,
+          "m-3": 119,
+          "m-3m": 6145,
+          "mm2": 535,
+          "mmm": 2403
+        },
+        "recommended": {
+          "-1": 379,
+          "-3": 167,
+          "-3m": 1388,
+          "-4": 88,
+          "-42m": 507,
+          "-43m": 952,
+          "-6": 4,
+          "-6m2": 422,
+          "1": 218,
+          "2": 158,
+          "2/m": 1628,
+          "222": 104,
+          "23": 88,
+          "3": 15,
+          "32": 56,
+          "3m": 270,
+          "4": 7,
+          "4/m": 129,
+          "4/mmm": 3351,
+          "422": 42,
+          "432": 6,
+          "4mm": 420,
+          "6": 10,
+          "6/m": 14,
+          "6/mmm": 1120,
+          "622": 26,
+          "6mm": 241,
+          "m": 310,
+          "m-3": 116,
+          "m-3m": 6002,
+          "mm2": 530,
+          "mmm": 2375
+        }
+      },
+      "point_group_metrics_recommended": {
+        "coefficient_of_variation_32": 1.8359615332220585,
+        "covered": 32,
+        "effective_point_groups": 11.64557740624722,
+        "largest_share": 0.2838764602941872,
+        "normalized_entropy_32": 0.7083420534647782,
+        "zero": 0
+      },
+      "reason_counts": {
+        "elastic_component_limit": 20,
+        "elastic_not_positive_definite": 3197,
+        "point_group_residual": 25
+      },
+      "recommended_records": 21143,
+      "source_counts": {
+        "gmtnet": 14499,
+        "matten": 10276
+      },
+      "warning_counts": {
+        "duplicate_label_conflict": 56,
+        "point_group_projected": 6622,
+        "robust_statistical_outlier": 89
+      }
+    }
+  },
+  "thresholds": {
+    "angle_tolerance": -1.0,
+    "dielectric_eigen_tolerance": 0.001,
+    "elastic_component_limit_gpa": 1500.0,
+    "elastic_eigen_absolute_tolerance_gpa": 1e-06,
+    "elastic_eigen_relative_tolerance": 1e-08,
+    "intrinsic_relative_tolerance": 0.001,
+    "outlier_modified_z": 8.0,
+    "point_group_relative_tolerance": 0.005,
+    "structure_min_volume": 1e-06,
+    "symprec": 1e-05
+  }
+}

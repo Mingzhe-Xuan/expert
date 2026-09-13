@@ -1,0 +1,139 @@
+{
+  "execution": {
+    "git_commit": "06d63cd",
+    "slurm_job_id": "435",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:03:31",
+    "cpus": 8,
+    "memory_gib": 48,
+    "node": "node221"
+  },
+  "artifacts": {
+    "audit": {
+      "path": "data/processed/curated_tensors/audit.jsonl",
+      "records": 59708,
+      "sha256": "7cb7cdb65e7c00018b6289734d9bd11d88d40eec6a49f116787cec8b29c8beda",
+      "size_bytes": 67488191
+    },
+    "physical_valid/dielectric_electronic": {
+      "path": "data/processed/curated_tensors/physical_valid/dielectric_electronic.jsonl",
+      "records": 11298,
+      "sha256": "2e388d5c75987d1e732a901145c6d4eb990322a8e3a2dfc978a5addff8dc19f8",
+      "size_bytes": 28289257,
+      "split_counts": {
+        "test": 1100,
+        "train": 9044,
+        "validation": 1154
+      }
+    },
+    "physical_valid/dielectric_ionic": {
+      "path": "data/processed/curated_tensors/physical_valid/dielectric_ionic.jsonl",
+      "records": 11185,
+      "sha256": "9f23acf69616f1d4fa7db7cdd7f35f3f9644f92e6a04e8726b2479d5599e72ed",
+      "size_bytes": 27856004,
+      "split_counts": {
+        "test": 1196,
+        "train": 8862,
+        "validation": 1127
+      }
+    },
+    "physical_valid/dielectric_total": {
+      "path": "data/processed/curated_tensors/physical_valid/dielectric_total.jsonl",
+      "records": 11250,
+      "sha256": "ed18b9b40aa0db69d62ea79a055f515f97527987ffd4ef680f4a9df5bfbaa3bd",
+      "size_bytes": 28208420,
+      "split_counts": {
+        "test": 1165,
+        "train": 8949,
+        "validation": 1136
+      }
+    },
+    "physical_valid/elastic_stiffness": {
+      "path": "data/processed/curated_tensors/physical_valid/elastic_stiffness.jsonl",
+      "records": 21564,
+      "sha256": "731042c55d3f40687e6c5cb4caa09c5a988c2b677656744b5aed54e0b4bc1ba3",
+      "size_bytes": 63465208,
+      "split_counts": {
+        "test": 2160,
+        "train": 17278,
+        "validation": 2126
+      }
+    },
+    "recommended/dielectric_electronic": {
+      "path": "data/processed/curated_tensors/recommended/dielectric_electronic.jsonl",
+      "records": 10548,
+      "sha256": "d952d9bfec4f2fee7cb3a475ab946821c8d60ce9a6b5e05ea307005f99a91c18",
+      "size_bytes": 26741245,
+      "split_counts": {
+        "test": 1014,
+        "train": 8455,
+        "validation": 1079
+      }
+    },
+    "recommended/dielectric_ionic": {
+      "path": "data/processed/curated_tensors/recommended/dielectric_ionic.jsonl",
+      "records": 10961,
+      "sha256": "28900badc7208ae03c9971c34fd87a9128972e96f5c346def94356d3252304c1",
+      "size_bytes": 27419315,
+      "split_counts": {
+        "test": 1178,
+        "train": 8680,
+        "validation": 1103
+      }
+    },
+    "recommended/dielectric_total": {
+      "path": "data/processed/curated_tensors/recommended/dielectric_total.jsonl",
+      "records": 11088,
+      "sha256": "11cf03fc3cfe5b5b3831d5f0b90e259d9eda7e99325542c8bd57e8f53a89585a",
+      "size_bytes": 27878478,
+      "split_counts": {
+        "test": 1150,
+        "train": 8808,
+        "validation": 1130
+      }
+    },
+    "recommended/elastic_stiffness": {
+      "path": "data/processed/curated_tensors/recommended/elastic_stiffness.jsonl",
+      "records": 21143,
+      "sha256": "2edbe741c9f2ca63425573ce4cc4bbd570425e8d22862274652546a89c19b45b",
+      "size_bytes": 62296963,
+      "split_counts": {
+        "test": 2118,
+        "train": 16948,
+        "validation": 2077
+      }
+    }
+  },
+  "label_agreement_relative_tolerance": 0.001,
+  "report": {
+    "json": "docs/analysis/curated_tensor_datasets.json",
+    "json_sha256": "19c1e61efa8baf48a85a9d5ba950503c802e6d2b328dc927cfb909d61c63a8a3",
+    "markdown": "docs/analysis/curated_tensor_datasets.md"
+  },
+  "schema_version": 1,
+  "semantics": {
+    "dielectric_electronic": "clamped-ion electronic relative permittivity",
+    "dielectric_ionic": "ionic/lattice contribution to relative permittivity",
+    "dielectric_total": "static relative permittivity; electronic + ionic",
+    "elastic_stiffness": "fourth-rank stiffness tensor in GPa"
+  },
+  "sources": [
+    "data/manifests/dtnet_dielectric.json",
+    "data/manifests/jarvis_dielectric.json",
+    "data/manifests/jarvis_elastic.json",
+    "data/manifests/matten_elastic.json"
+  ],
+  "thresholds": {
+    "angle_tolerance": -1.0,
+    "dielectric_eigen_tolerance": 0.001,
+    "elastic_component_limit_gpa": 1500.0,
+    "elastic_eigen_absolute_tolerance_gpa": 1e-06,
+    "elastic_eigen_relative_tolerance": 1e-08,
+    "intrinsic_relative_tolerance": 0.001,
+    "outlier_modified_z": 8.0,
+    "point_group_relative_tolerance": 0.005,
+    "structure_min_volume": 1e-06,
+    "symprec": 1e-05
+  }
+}

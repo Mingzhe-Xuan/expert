@@ -2,9 +2,9 @@
 
 ## Current snapshot — unified dielectric/elastic curation (2026-09-13)
 
-Started a new curation unit covering DTNet dielectric, GMTNet/JARVIS dielectric and elastic, and
-MatTen/Materials Project elastic. The implementation will keep source semantics explicit and will
-only merge records within the same physical subtype. Current semantic audit identifies DTNet's
+Completed the curation unit covering DTNet dielectric, GMTNet/JARVIS dielectric and elastic, and
+MatTen/Materials Project elastic. The implementation keeps source semantics explicit and only
+merges records within the same physical subtype. The semantic audit identifies DTNet's
 electronic, ionic, and total tensors; GMTNet/JARVIS provides electronic `dielectric` plus
 `dielectric_ionic` (with total derived and provenance retained); both elastic sources are stiffness
 tensors in GPa, with GMTNet also retaining raw and source-symmetrized Voigt forms.
@@ -13,18 +13,18 @@ The planned module boundary is `data/curation/`: source adapters normalize struc
 subtypes; physical checks audit intrinsic tensor symmetry, finite/numerical quality, dielectric
 positivity, elastic mechanical stability, and point-group invariance; conservative structure
 fingerprints group possible duplicates; merging never averages conflicting labels silently; report
-generation emits reason-coded audit rows, strict per-subtype JSONL datasets, manifests, descriptive
-statistics, and 32-point-group imbalance metrics. Generated datasets stay under ignored
-`data/processed/`; compact manifests and reports are tracked. Full batch processing and point-group
-analysis will run through Slurm after local fixture tests and Git synchronization.
+generation emits reason-coded audit rows, physical-valid and recommended per-subtype JSONL datasets,
+manifests, descriptive statistics, and 32-point-group imbalance metrics. Generated datasets stay
+under ignored `data/processed/`; compact manifests and reports are tracked. Slurm job 435 completed
+the full batch at commit `06d63cd` with exit code `0:0`.
 
 ### Current plan
 
-1. Freeze source semantics, units, tolerances, outlier policy, duplicate conflict policy, and fixture
+1. [x] Freeze source semantics, units, tolerances, outlier policy, duplicate conflict policy, and fixture
    acceptance tests.
-2. Implement and locally test source adapters, physical audit, conservative deduplication, merging,
+2. [x] Implement and locally test source adapters, physical audit, conservative deduplication, merging,
    deterministic splits, and reports.
-3. Commit/push, connect to Guqq under the pull-first rule, submit the full curation through Slurm,
+3. [x] Commit/push, connect to Guqq under the pull-first rule, submit the full curation through Slurm,
    retrieve and verify compact results/manifests, and assess residual point-group imbalance.
 
 Commit `94591b6` is pushed and Guqq successfully fast-forwarded to it. The three GMTNet/MatTen raw
@@ -39,6 +39,15 @@ had placed that manifest under `results/`. No partial curation output was produc
 create a uniquely named temporary manifest beside the production manifests (without overwriting any
 tracked file), move it into the job's results directory after successful conversion, and reuse the
 already downloaded raw file.
+
+Job 435 completed in 00:03:31 on node221. The four recommended datasets contain 10,548 electronic
+dielectric, 10,961 ionic dielectric, 11,088 total dielectric, and 21,143 elastic-stiffness records;
+all eight physical-valid/recommended JSONL files match their recorded byte sizes, row counts, and
+SHA-256 digests locally. The 59,708-row audit also matches its recorded 67,488,191-byte size and
+SHA-256. All subtypes cover 32/32 point groups, but coverage is not balanced:
+dielectric CV is about 0.99--1.00 with a 10.4--10.7% largest-group share, while elastic CV is 1.836
+and `m-3m` alone contributes 28.4%. Two pull-first recovery attempts were stopped by GitHub
+TLS/timeout errors; a spaced HTTP/1.1 retry then succeeded and enabled the final audit transfer.
 
 ## Current snapshot — DTNet dielectric dataset integration (2026-09-13)
 
