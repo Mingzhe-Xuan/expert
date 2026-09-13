@@ -1,5 +1,15 @@
 # Agent progress updates
 
+- 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
+  datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
+  a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
+  manifests, fixture tests, and Slurm-only full extraction.
+
+- 2026-09-13: implemented the streaming reduced-dataset builder and Slurm launcher. Inputs are
+  size/SHA/count/split gated, the four outputs are promoted only after all validate, original records
+  and splits are retained, and each selected row carries its property's available-point-group list
+  plus count/frequency. Focused tests passed 8; compilation, CLI and launcher syntax checks passed.
+
 - 2026-09-13: started a reproducible point-group frequency visualization using the tracked
   recommended-set counts. Planned a dependency-free four-panel SVG renderer and strict count/schema/
   determinism tests so the figure remains regenerable without loading the full curated JSONL files.

@@ -1,5 +1,21 @@
 # Agent state
 
+## Current snapshot — >5% point-group reduced datasets (2026-09-13)
+
+Started a new dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is
+computed independently per property subtype with the strict rule `point_group_count / recommended_records
+> 0.05`. The three dielectric subtypes currently select the same seven groups (`mmm`, `2/m`, `-3m`,
+`mm2`, `m-3m`, `4/mmm`, `-43m`); elastic selects six (`m-3m`, `4/mmm`, `mmm`, `2/m`, `-3m`, `6/mmm`).
+
+### Current plan
+
+1. Add a streaming, hash-gated reducer under `data/curation/` that validates report/dataset agreement,
+   preserves original records and splits, and adds explicit per-property eligible-group annotations.
+2. Add malformed-input, strict-threshold, annotation, split/count conservation, deterministic-output,
+   and hash-manifest tests; document the new reduced schema and CLI.
+3. Commit/push locally, synchronize Guqq pull-first, run the full extraction through Slurm, retrieve
+   and verify the ignored reduced JSONL files, then promote the compact manifest/report and push.
+
 ## Current snapshot — point-group frequency visualization (2026-09-13)
 
 Completed a lightweight reporting unit that renders the tracked `recommended` point-group counts as

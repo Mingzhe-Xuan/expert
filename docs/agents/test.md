@@ -1,5 +1,31 @@
 # Test plan and results
 
+## 2026-09-13 — >5% point-group reduced datasets
+
+Planned checks:
+
+- selection is calculated separately for every property from the tracked recommended point-group
+  counts, uses strict `>` rather than `>=`, and validates that all 32 counts sum to
+  `recommended_records`;
+- each recommended JSONL input must match the curated manifest's byte size, SHA-256 and row count
+  before extraction; every row must have the expected subtype, known point group and valid split;
+- outputs retain record/tensor/provenance fields byte-semantically, include schema-versioned reduction
+  metadata with the property's complete eligible-point-group list plus the row group's count/fraction,
+  and preserve input train/validation/test assignments;
+- fixture tests cover boundary exclusion at exactly 5%, missing/extra/inconsistent point groups,
+  malformed JSONL rows, count mismatch, annotations, deterministic JSONL/manifest bytes, and hashes;
+- full extraction is submitted through Slurm, never run locally; after retrieval all reduced files
+  must match the candidate manifest's byte size, line count, SHA-256, selected counts and split sums.
+
+Expected result: four independently usable reduced datasets containing only point groups above 5%
+for their corresponding property, with no cross-property leakage or ambiguous eligibility semantics.
+
+Implementation-stage result: focused tensor curation/reduction suite passed 8 tests, including exact
+5% exclusion, deterministic regeneration, per-record available-group annotations, hash/count/split
+validation and preservation of an existing output when malformed input fails. Python compilation,
+CLI help and `bash -n` for the Slurm launcher passed. Full real-data extraction remains pending the
+committed Guqq Slurm run.
+
 ## 2026-09-13 — point-group frequency visualization
 
 Planned checks:

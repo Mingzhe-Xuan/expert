@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -9,6 +10,10 @@ import pytest
 
 from data.curation.physics import AuditThresholds, audit_record
 from data.curation.plot_point_groups import POINT_GROUPS, render_point_group_frequency_svg
+from data.curation.reduce_point_groups import (
+    reduce_recommended_datasets,
+    select_available_point_groups,
+)
 from data.curation.pipeline import run_pipeline
 from data.curation.records import NormalizedRecord
 from data.curation.sources import jarvis_voigt_to_standard, voigt_to_elastic
@@ -179,3 +184,137 @@ def test_point_group_frequency_svg_rejects_inconsistent_counts() -> None:
 
     with pytest.raises(ValueError, match="missing=\\['1'\\]"):
         render_point_group_frequency_svg(report)
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _reduction_fixture(root: Path) -> tuple[Path, Path]:
+    counts = {point_group: 3 for point_group in POINT_GROUPS}
+    counts["1"] = 6
+    counts["-1"] = 5
+    counts[POINT_GROUPS[-1]] = 2
+    assert sum(counts.values()) == 100
+    report = {
+        "subtypes": {
+            subtype: {
+                "recommended_records": 100,
+                "point_group_counts": {"recommended": counts},
+            }
+            for subtype in (
+                "dielectric_electronic",
+                "dielectric_ionic",
+                "dielectric_total",
+                "elastic_stiffness",
+            )
+        }
+    }
+    report_path = root / "docs" / "analysis" / "report.json"
+    report_path.parent.mkdir(parents=True)
+    report_path.write_text(json.dumps(report, sort_keys=True), encoding="utf-8")
+
+    artifacts = {}
+    for subtype in report["subtypes"]:
+        path = root / "data" / "recommended" / f"{subtype}.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        rows = []
+        index = 0
+        for point_group, count in counts.items():
+            for _ in range(count):
+                split = "train" if index < 80 else "validation" if index < 90 else "test"
+                rows.append(
+                    {
+                        "record_id": f"{subtype}:{index}",
+                        "property_subtype": subtype,
+                        "point_group": point_group,
+                        "split": split,
+                        "tensor": [index],
+                    }
+                )
+                index += 1
+        path.write_text(
+            "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+            encoding="utf-8",
+        )
+        artifacts[f"recommended/{subtype}"] = {
+            "path": path.relative_to(root).as_posix(),
+            "records": 100,
+            "size_bytes": path.stat().st_size,
+            "sha256": _sha256(path),
+            "split_counts": {"train": 80, "validation": 10, "test": 10},
+        }
+    manifest = {
+        "report": {"json_sha256": _sha256(report_path)},
+        "artifacts": artifacts,
+    }
+    manifest_path = root / "data" / "manifests" / "curated.json"
+    manifest_path.parent.mkdir(parents=True)
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+    return report_path, manifest_path
+
+
+def test_reducer_uses_strict_frequency_threshold_and_annotates_records(tmp_path: Path) -> None:
+    report_path, manifest_path = _reduction_fixture(tmp_path)
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert select_available_point_groups(report, "dielectric_total") == ("1",)
+
+    output_dir = tmp_path / "reduced"
+    output_manifest = tmp_path / "reduced-manifest.json"
+    manifest = reduce_recommended_datasets(
+        report_path=report_path,
+        curated_manifest_path=manifest_path,
+        output_dir=output_dir,
+        output_manifest_path=output_manifest,
+        repository_root=tmp_path,
+    )
+    first_manifest = output_manifest.read_bytes()
+    first_outputs = {path.name: path.read_bytes() for path in output_dir.iterdir()}
+
+    repeated = reduce_recommended_datasets(
+        report_path=report_path,
+        curated_manifest_path=manifest_path,
+        output_dir=output_dir,
+        output_manifest_path=output_manifest,
+        repository_root=tmp_path,
+    )
+    assert manifest == repeated
+    assert output_manifest.read_bytes() == first_manifest
+    assert {path.name: path.read_bytes() for path in output_dir.iterdir()} == first_outputs
+
+    for subtype, artifact in manifest["artifacts"].items():
+        assert artifact["available_point_groups"] == ["1"]
+        assert artifact["records"] == 6
+        rows = [
+            json.loads(line)
+            for line in (output_dir / f"{subtype}.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        assert len(rows) == 6
+        assert all(row["point_group"] == "1" for row in rows)
+        assert all(row["reduction"]["property_available_point_groups"] == ["1"] for row in rows)
+        assert all(row["reduction"]["point_group_frequency"] == 0.06 for row in rows)
+
+
+def test_reducer_fails_closed_on_tampered_recommended_input(tmp_path: Path) -> None:
+    report_path, manifest_path = _reduction_fixture(tmp_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    artifact = manifest["artifacts"]["recommended/dielectric_electronic"]
+    path = tmp_path / artifact["path"]
+    path.write_text("{not-json}\n", encoding="utf-8")
+    artifact["size_bytes"] = path.stat().st_size
+    artifact["sha256"] = _sha256(path)
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+    output_dir = tmp_path / "reduced"
+    output_dir.mkdir()
+    existing = output_dir / "dielectric_electronic.jsonl"
+    existing.write_text("previous-valid-output\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid JSON"):
+        reduce_recommended_datasets(
+            report_path=report_path,
+            curated_manifest_path=manifest_path,
+            output_dir=output_dir,
+            output_manifest_path=tmp_path / "reduced-manifest.json",
+            repository_root=tmp_path,
+        )
+    assert existing.read_text(encoding="utf-8") == "previous-valid-output\n"

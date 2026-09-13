@@ -28,6 +28,20 @@ python -m data.curation.plot_point_groups
 The deterministic SVG uses one count axis per property subtype and writes to
 `docs/analysis/curated_tensor_point_group_frequency.svg` by default.
 
+Build per-property reduced datasets containing only point groups whose frequency in that property's
+recommended set is strictly greater than 5%:
+
+```text
+python -m data.curation.reduce_point_groups
+```
+
+Full real-data reduction must use `slurm/reduce_curated_tensor_point_groups.sbatch`. Outputs default
+to ignored `data/processed/curated_tensors/reduced_gt_5pct/`. Every row preserves its original
+structure, tensor, provenance and split, and adds a `reduction` object containing the strict
+threshold, the property's complete `property_available_point_groups` list, and the row point group's
+count/frequency. The compact candidate manifest records these fields again at dataset level together
+with output hashes, byte sizes, record counts, point-group counts and split counts.
+
 Run the complete real-data job through Slurm:
 
 ```text
