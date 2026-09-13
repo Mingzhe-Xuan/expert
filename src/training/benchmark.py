@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 import json
 import os
 import random
+import re
 from pathlib import Path
 from typing import Callable, Sequence
 
@@ -137,8 +138,14 @@ def save_frozen_feature_cache(
 ) -> None:
     """Atomically persist tensor-only frozen features for hyperparameter reuse."""
 
-    if split not in {"train", "validation", "test"} or not examples:
-        raise ValueError("cache split must be train/validation/test and non-empty")
+    split_match = re.fullmatch(
+        r"(train|validation|test)(?::shard:(0|[1-9][0-9]*)/([1-9][0-9]*))?",
+        split,
+    )
+    if split_match is None or not examples:
+        raise ValueError("cache split/partition must be valid and examples non-empty")
+    if split_match.group(2) is not None and int(split_match.group(2)) >= int(split_match.group(3)):
+        raise ValueError("cache shard index must be smaller than shard count")
     if len(checkpoint_sha256) != 64:
         raise ValueError("cache requires the frozen checkpoint SHA-256")
     if dataset_sha256 is not None and len(dataset_sha256) != 64:

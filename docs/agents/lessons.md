@@ -1,5 +1,14 @@
 # Agent lessons
 
+## 2026-09-13 — Model cache partition identity in the cache schema
+
+- If feature extraction is partitioned, do not encode shard identity only in directory names or
+  bypass the cache's split validation. Extend the schema validator to represent both the canonical
+  split role and a bounded `shard_index/shard_count` partition, and require the loader to match that
+  full identity together with the exact ordered sample IDs.
+- Exercise the actual cache serializer in the shard test. Testing only partition arithmetic and merge
+  logic can miss a boundary mismatch where extraction succeeds but every worker fails on publication.
+
 ## 2026-09-13 — Layered virtual environments require ABI-level validation
 
 - A `.pth`-layered environment must put the GPU-compatible PyTorch installation before environments

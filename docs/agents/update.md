@@ -62,6 +62,13 @@
   allocation and validates/reorders their outputs back to the untouched frozen split. Current 442
   remains running until the replacement passes local tests and a real concurrent smoke.
 
+- 2026-09-13: the first four-way smoke (job 444) proved all workers could coexist on the RTX 5090,
+  but each failed at cache publication because the serializer accepted only bare split names while
+  the sharded CLI supplied an explicit partition identity. The failure was repeated across all four
+  workers, so consulted `docs/agents/lessons.md` and added the missing schema-boundary lesson. The
+  fix extends validated split identities to bounded `split:shard:index/count` labels and adds real
+  serializer round-trip/malformed-label tests before retry.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

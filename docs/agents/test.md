@@ -76,6 +76,16 @@ rejects coverage drift, invalid worker parameters fail closed, and existing prov
 on every shard. Python compilation, launcher `bash -n`, and whitespace checks passed. The complete
 repository suite then passed 237 tests with zero failures/skips in 309.08 seconds.
 
+First 4-way real smoke result: all four job-444 workers extracted their assigned first split, then
+independently failed closed when the existing cache serializer rejected the explicit
+`train:shard:i/4` partition label. No shard cache was published and downstream merge/training did not
+run. Follow-up coverage must exercise actual save/load of a shard-labelled cache, including malformed
+partition rejection, before resubmission.
+
+Shard-cache schema fix result: 18 focused cache/shard/metric tests passed, including actual
+`torch.save`/`torch.load` round-trip for `train:shard:1/4` and rejection of out-of-range, negative,
+or noncanonical partition labels. Python compilation and whitespace checks passed.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

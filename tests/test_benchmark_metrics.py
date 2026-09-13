@@ -214,6 +214,44 @@ def test_frozen_feature_cache_round_trip_is_metadata_gated(tmp_path) -> None:
         )
 
 
+def test_frozen_feature_cache_accepts_gated_shard_partition(tmp_path) -> None:
+    unit, layout, examples = _cached_examples(2)
+    path = tmp_path / "features-shard.pt"
+    digest = "c" * 64
+    partition = "train:shard:1/4"
+    save_frozen_feature_cache(
+        path,
+        backbone_family="dpa4",
+        checkpoint_sha256=digest,
+        unit=unit,
+        split=partition,
+        layout=layout,
+        examples=examples,
+        dataset_sha256="d" * 64,
+    )
+    _, restored = load_frozen_feature_cache(
+        path,
+        expected_backbone="dpa4",
+        expected_checkpoint_sha256=digest,
+        expected_unit=unit,
+        expected_split=partition,
+        expected_sample_ids=[example.sample_id for example in examples],
+        expected_dataset_sha256="d" * 64,
+    )
+    assert tuple(example.sample_id for example in restored) == ("cached-0", "cached-1")
+    for malformed in ("train:shard:4/4", "train:shard:-1/4", "other:shard:0/4"):
+        with pytest.raises(ValueError, match="cache (split/partition|shard index)"):
+            save_frozen_feature_cache(
+                tmp_path / "invalid.pt",
+                backbone_family="dpa4",
+                checkpoint_sha256=digest,
+                unit=unit,
+                split=malformed,
+                layout=layout,
+                examples=examples,
+            )
+
+
 def test_cached_training_supports_full_pg_architecture_with_interface(tmp_path) -> None:
     unit, layout, examples = _cached_examples()
     architecture = ArchitectureConfig(
