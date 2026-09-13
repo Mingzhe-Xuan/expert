@@ -38,6 +38,17 @@ Real-smoke support result: the selector covers all seven retained point groups i
 frozen split (21 records total); CLI help, Python compilation and both launcher `bash -n` checks
 passed. The complete project suite then passed 229 tests with zero failures/skips in 265.30 seconds.
 
+First real-smoke diagnostic result: DPA4 job 437 failed before cache publication because frozen target
+reconstruction referenced a nonexistent outer `unit`; GMTNet job 438 successfully preprocessed all
+21 records but its Torch 2.4.1+cu121 CUDA build could not execute on RTX 5090 (`sm_120`). Added a
+canonical-target materialization regression test, corrected the per-sample task lookup, and widened
+optional GMTNet extension fallback to include dynamic-loader `OSError`. Expected retry result: both
+21-record, seven-PG-per-split smokes complete on GPU before any full run is accepted.
+
+Fix pre-commit result: the new target-materialization regression passed, and the complete repository
+suite passed 230 tests with zero failures/skips in 685.92 seconds. Python compilation, both Slurm
+launcher `bash -n` checks, and `git diff --check` also passed.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

@@ -10,18 +10,61 @@ from src.configs import ArchitectureConfig
 from src.data import TensorSample, TrainingUnit
 from src.evaluation import tensor_benchmark_metrics
 from src.experts import default_hidden_layout
-from src.heads import TensorReadout, cartesian_to_irreps
-from src.irreps import IrrepLayout, IrrepTerm
+from src.heads import TensorReadout, cartesian_to_irreps, irreps_to_cartesian
+from src.irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
 from src.training import (
     BenchmarkConfig,
     FrozenFeatureExample,
     collate_frozen_examples,
+    extract_frozen_examples,
     load_frozen_feature_cache,
     prepare_tensor_batch,
     require_published_split_counts,
     save_frozen_feature_cache,
     train_cached_backbone_readout,
 )
+
+
+def test_frozen_extraction_materializes_target_in_canonical_frame() -> None:
+    unit = TrainingUnit("curated_reduced_total", "dielectric")
+    target = torch.diag(torch.tensor([2.0, 3.0, 4.0]))
+    sample = TensorSample(
+        sample_id="frame-check",
+        unit=unit,
+        lattice=5.0 * torch.eye(3),
+        fractional_positions=torch.zeros((1, 3)),
+        atomic_numbers=torch.tensor([14]),
+        target_cartesian=target,
+        target_coefficients=cartesian_to_irreps(target, "dielectric"),
+        target_unit="dimensionless",
+        source={"fixture": "canonical-frame"},
+    )
+    layout = IrrepLayout((IrrepTerm(1, 0, "e", "fixture_scalar"),))
+
+    class Adapter(torch.nn.Module):
+        def forward_source(self, graph):  # noqa: ANN001
+            geometry = {
+                "positions": graph.positions,
+                "cell": graph.cell,
+                "atomic_numbers": graph.atomic_numbers,
+                "edge_index": graph.edge_index,
+                "cell_shifts": graph.cell_shifts,
+                "edge_vectors": graph.edge_vectors,
+                "edge_distances": graph.edge_distances,
+            }
+            return O3FeatureBatch(
+                node_features=torch.zeros((1, 1)),
+                node_layout=layout,
+                node_batch=graph.node_batch,
+                edge_geometry=geometry,
+            )
+
+    _, examples = extract_frozen_examples(
+        Adapter(), (sample,), cutoff=4.0, device="cpu"
+    )
+    prepared = prepare_tensor_batch((sample,), cutoff=4.0, device="cpu")
+    expected = irreps_to_cartesian(prepared.target_coefficients, "dielectric")
+    assert torch.allclose(examples[0].target_cartesian, expected)
 
 
 def test_tensor_benchmark_metrics_use_sample_frobenius_distances() -> None:

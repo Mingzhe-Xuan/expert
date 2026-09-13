@@ -24,6 +24,13 @@ frozen-feature architecture trainer; a dedicated GMTNet baseline module owns off
 execution adaptation; `src/evaluation/` alone computes common metrics from saved predictions;
 `src/cli/` and `slurm/` provide reproducible entry points and cluster launchers.
 
+First real Slurm integration smokes reached model execution but failed safely. Job 437 found an
+out-of-scope `unit` reference while materializing DPA4 cached Cartesian targets; job 438 completed all
+21 GMTNet graph conversions, then showed that its inherited Torch 2.4.1+cu121 lacks RTX 5090 `sm_120`
+kernels. The local source fix now resolves the task through each sample and has regression coverage;
+the next server step is to layer the existing Torch 2.11.0+cu128 DPA4 runtime first in the dedicated
+GMTNet environment, revalidate dependencies, and rerun both real smokes through Slurm.
+
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
 Completed a dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is

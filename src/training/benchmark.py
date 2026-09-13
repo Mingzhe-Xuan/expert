@@ -290,7 +290,7 @@ def extract_frozen_examples(
                 symmetry=_move_symmetry(prepared.symmetries[0], "cpu"),
                 target_coefficients=prepared.target_coefficients.detach().to("cpu"),
                 target_cartesian=irreps_to_cartesian(
-                    prepared.target_coefficients.detach().to("cpu"), unit.target
+                    prepared.target_coefficients.detach().to("cpu"), sample.unit.target
                 ),
             )
         )

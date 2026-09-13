@@ -1,5 +1,17 @@
 # Agent lessons
 
+## 2026-09-13 — Layered virtual environments require ABI-level validation
+
+- A `.pth`-layered environment must put the GPU-compatible PyTorch installation before environments
+  that contribute pure-Python packages such as PyG or pymatgen. Import success alone does not prove
+  CUDA compatibility; submit a minimal Slurm GPU smoke and execute a real CUDA tensor operation.
+- Never expose an entire user site merely to satisfy a missing lightweight dependency: stale compiled
+  extensions such as `torch_scatter` can shadow compatible fallbacks and fail with an `OSError`, not
+  only `ImportError`. Link the smallest package set (including matching `.dist-info`) and make optional
+  compiled-extension fallbacks tolerate loader/ABI errors.
+- Run `pip check` after constructing the layers, then record a fresh freeze and checksum after every
+  ordering change so the effective environment remains auditable.
+
 ## 2026-09-13 — JARVIS/VASP elastic Voigt ordering
 
 JARVIS `elastic_total_kbar` retains VASP's component order `XX, YY, ZZ, XY, YZ, ZX`, which differs

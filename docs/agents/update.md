@@ -35,6 +35,13 @@
   229-test suite passed. Three subsequent latest-source pulls/transport attempts failed; consulted the
   existing matching lesson in `docs/agents/lessons.md` and stopped blind retries before Slurm submit.
 
+- 2026-09-13: Guqq was synchronized to `7cc7f85` through a Git bundle and the first real 21-record
+  DPA4/GMTNet Slurm smokes were submitted as jobs 437/438. DPA4 exposed a frozen-target scope bug;
+  GMTNet completed graph preprocessing but proved Torch 2.4.1+cu121 cannot execute `sm_120` kernels
+  on the RTX 5090. Corrected the source lookup, added regression coverage, made optional compiled
+  extension fallbacks handle ABI-loader errors, and recorded the layered-environment lesson. Next is
+  a fully revalidated Torch 2.11-first GMTNet layer followed by repeat Slurm smokes.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

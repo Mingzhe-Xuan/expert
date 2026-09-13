@@ -55,7 +55,7 @@ def _load_official_modules(official_root: Path):
         raise ValueError(f"GMTNet checkout commit mismatch: {commit}")
     try:
         importlib.import_module("torch_scatter")
-    except ImportError:
+    except (ImportError, OSError):
         from torch_geometric.utils import scatter as pyg_scatter
 
         compatibility = ModuleType("torch_scatter")
@@ -63,7 +63,7 @@ def _load_official_modules(official_root: Path):
         sys.modules["torch_scatter"] = compatibility
     try:
         importlib.import_module("torch_sparse")
-    except ImportError:
+    except (ImportError, OSError):
         compatibility = ModuleType("torch_sparse")
         compatibility.SparseTensor = object
         sys.modules["torch_sparse"] = compatibility
