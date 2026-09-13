@@ -17,6 +17,10 @@ run_root="results/reduced-benchmark/dpa4"
 mkdir -p logs/slurm "${run_root}" results/reduced-benchmark/cache
 git rev-parse HEAD > "${run_root}/git-${SLURM_JOB_ID}.txt"
 python -m pip freeze > "${run_root}/environment-${SLURM_JOB_ID}.txt"
+smoke_args=()
+if [[ "${EXPERT_REDUCED_SMOKE:-0}" == "1" ]]; then
+  smoke_args+=(--smoke)
+fi
 python -m src.cli.reduced_dpa4_train \
   --device cuda \
   --cache-root results/reduced-benchmark/cache \
@@ -26,4 +30,5 @@ python -m src.cli.reduced_dpa4_train \
   --junit "${run_root}/junit-${SLURM_JOB_ID}.xml" \
   --max-epochs "${EXPERT_REDUCED_DPA4_EPOCHS:-200}" \
   --batch-size "${EXPERT_REDUCED_DPA4_BATCH_SIZE:-16}" \
-  --patience "${EXPERT_REDUCED_DPA4_PATIENCE:-30}"
+  --patience "${EXPERT_REDUCED_DPA4_PATIENCE:-30}" \
+  "${smoke_args[@]}"

@@ -134,6 +134,7 @@ def _prepare_cache(
     official_root: Path,
     cache_path: Path,
     dataset_sha256: str,
+    split_ids: dict[str, tuple[str, ...]],
 ) -> dict[str, list[dict[str, object]]]:
     if cache_path.is_file():
         payload = torch.load(cache_path, map_location="cpu", weights_only=True)
@@ -141,10 +142,7 @@ def _prepare_cache(
             raise ValueError("GMTNet graph cache implementation metadata mismatch")
         if payload.get("dataset_sha256") != dataset_sha256:
             raise ValueError("GMTNet graph cache dataset SHA-256 mismatch")
-        expected_ids = {
-            name: list(getattr(dataset.split_manifest, name))
-            for name in ("train", "validation", "test")
-        }
+        expected_ids = {name: list(ids) for name, ids in split_ids.items()}
         if payload.get("split_ids") != expected_ids:
             raise ValueError("GMTNet graph cache split IDs mismatch")
         return payload["splits"]
@@ -155,7 +153,7 @@ def _prepare_cache(
     adaptor = JarvisAtomsAdaptor()
     splits = {}
     for split in ("train", "validation", "test"):
-        ids = getattr(dataset.split_manifest, split)
+        ids = split_ids[split]
         rows = []
         for index, sample_id in enumerate(ids, start=1):
             rows.append(_prepare_row(dataset.by_id(sample_id), official_data, official_graphs, adaptor))
@@ -167,7 +165,7 @@ def _prepare_cache(
         "schema_version": 1,
         "official_commit": GMTNET_OFFICIAL_COMMIT,
         "dataset_sha256": dataset_sha256,
-        "split_ids": {name: list(getattr(dataset.split_manifest, name)) for name in splits},
+        "split_ids": {name: list(split_ids[name]) for name in splits},
         "splits": splits,
     }
     cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -220,12 +218,28 @@ def run_gmtnet_benchmark(
     predictions_path: str | Path,
     config: GMTNetConfig = GMTNetConfig(),
     device: str | torch.device = "cuda",
+    split_ids: dict[str, tuple[str, ...]] | None = None,
 ) -> dict[str, object]:
     if dataset.unit.namespace != "curated_reduced_total__dielectric":
         raise ValueError("GMTNet reduced benchmark received the wrong training unit")
     dataset_sha256 = str(dataset[0].source["manifest_sha256"])
     root = Path(official_root)
-    splits = _prepare_cache(dataset, root, Path(cache_path), dataset_sha256)
+    selected_ids = split_ids or {
+        name: tuple(getattr(dataset.split_manifest, name))
+        for name in ("train", "validation", "test")
+    }
+    if set(selected_ids) != {"train", "validation", "test"} or any(
+        not ids for ids in selected_ids.values()
+    ):
+        raise ValueError("GMTNet split_ids must contain three non-empty splits")
+    for name, ids in selected_ids.items():
+        if len(ids) != len(set(ids)):
+            raise ValueError(f"GMTNet {name} IDs must be unique")
+        if not set(ids) <= set(getattr(dataset.split_manifest, name)):
+            raise ValueError(f"GMTNet {name} IDs leave the frozen split")
+    splits = _prepare_cache(
+        dataset, root, Path(cache_path), dataset_sha256, selected_ids
+    )
     official_model, official_graphs, _ = _load_official_modules(root)
     data_type = official_graphs.Data
     batch_type = importlib.import_module("torch_geometric.data.batch").Batch
@@ -240,7 +254,8 @@ def run_gmtnet_benchmark(
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay
     )
-    steps_per_epoch = len(splits["train"]) // config.batch_size
+    training_batch_size = min(config.batch_size, len(splits["train"]))
+    steps_per_epoch = len(splits["train"]) // training_batch_size
     total_steps = steps_per_epoch * config.epochs
     criterion = nn.HuberLoss()
     best_mae = float("inf")
@@ -254,7 +269,7 @@ def run_gmtnet_benchmark(
         total_loss = 0.0
         seen = 0
         for batch_rows in _batches(
-            splits["train"], config.batch_size, seed=config.seed + epoch, drop_last=True
+            splits["train"], training_batch_size, seed=config.seed + epoch, drop_last=True
         ):
             graph, mask, equality, labels = _collate(batch_rows, data_type, batch_type, device)
             optimizer.zero_grad(set_to_none=True)

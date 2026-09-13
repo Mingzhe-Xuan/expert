@@ -5,8 +5,23 @@ from pathlib import Path
 import subprocess
 import sys
 
+from src.cli.reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratified_smoke_ids
+from src.data import TrainingUnit, load_training_dataset
+
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_real_smoke_selection_covers_every_retained_pg_in_each_split() -> None:
+    dataset = load_training_dataset(TrainingUnit("curated_reduced_total", "dielectric"))
+    selected = point_group_stratified_smoke_ids(dataset)
+    assert set(selected) == {"train", "validation", "test"}
+    for split, ids in selected.items():
+        assert len(ids) == len(REDUCED_POINT_GROUPS) == 7
+        assert tuple(dataset.by_id(sample_id).source["point_group"] for sample_id in ids) == (
+            REDUCED_POINT_GROUPS
+        )
+        assert set(ids) <= set(getattr(dataset.split_manifest, split))
 
 
 def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:

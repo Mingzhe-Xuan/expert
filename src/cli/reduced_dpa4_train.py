@@ -19,14 +19,11 @@ from ..training import (
     write_smoke_report,
 )
 from .reporting import execution_metadata, write_single_case_junit
+from .reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratified_smoke_ids
 
 
 ARCHITECTURE = ArchitectureConfig("B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg")
-POINT_GROUPS = ("2/m", "mm2", "mmm", "4/mmm", "-3m", "-43m", "m-3m")
-
-
-def _ordered_samples(dataset, split: str):
-    ids = getattr(dataset.split_manifest, split)
+def _ordered_samples(dataset, ids):
     return ids, tuple(dataset.by_id(sample_id) for sample_id in ids)
 
 
@@ -34,12 +31,14 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     unit = TrainingUnit("curated_reduced_total", "dielectric")
     dataset = load_training_dataset(unit, manifest_path=arguments.manifest)
     expected = {"train": 5001, "validation": 637, "test": 677}
-    actual = {
-        name: len(getattr(dataset.split_manifest, name))
+    full_ids = {
+        name: tuple(getattr(dataset.split_manifest, name))
         for name in ("train", "validation", "test")
     }
-    if actual != expected:
-        raise ValueError(f"reduced dielectric_total split drift: {actual}")
+    if {name: len(ids) for name, ids in full_ids.items()} != expected:
+        raise ValueError("reduced dielectric_total split drift")
+    selected_ids = point_group_stratified_smoke_ids(dataset) if arguments.smoke else full_ids
+    actual = {name: len(ids) for name, ids in selected_ids.items()}
     dataset_sha256 = str(dataset[0].source["manifest_sha256"])
     resource = BackboneResourceRegistry()["dpa4"]
     if resource.sha256 is None:
@@ -54,8 +53,9 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
                               "total": total, "sample_id": sample_id}, sort_keys=True), flush=True)
 
     for split in ("train", "validation", "test"):
-        sample_ids, samples = _ordered_samples(dataset, split)
-        cache = arguments.cache_root / "dpa4" / unit.namespace / f"{split}.pt"
+        sample_ids, samples = _ordered_samples(dataset, selected_ids[split])
+        cache_scope = "smoke" if arguments.smoke else "full"
+        cache = arguments.cache_root / "dpa4" / unit.namespace / cache_scope / f"{split}.pt"
         if cache.is_file():
             layout, examples = load_frozen_feature_cache(
                 cache,
@@ -115,7 +115,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         checkpoint_path=arguments.checkpoint,
         predictions_path=arguments.predictions,
         architecture=ARCHITECTURE,
-        expert_point_groups=POINT_GROUPS,
+        expert_point_groups=REDUCED_POINT_GROUPS,
         config=BenchmarkConfig(
             max_epochs=arguments.max_epochs,
             batch_size=arguments.batch_size,
@@ -151,6 +151,8 @@ def main() -> None:
     parser.add_argument("--normalization", choices=("rms", "variance"), default="rms")
     parser.add_argument("--gradient-clip-norm", type=float, default=10.0)
     parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--smoke", action="store_true",
+                        help="Use one real sample per retained point group in each split")
     arguments = parser.parse_args()
     started = time.perf_counter()
     error = None

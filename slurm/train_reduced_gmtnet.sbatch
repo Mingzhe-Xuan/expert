@@ -18,13 +18,20 @@ run_root="results/reduced-benchmark/gmtnet"
 mkdir -p logs/slurm "${run_root}" results/reduced-benchmark/cache
 git rev-parse HEAD > "${run_root}/git-${SLURM_JOB_ID}.txt"
 python -m pip freeze > "${run_root}/environment-${SLURM_JOB_ID}.txt"
+smoke_args=()
+cache_name="gmtnet-graphs.pt"
+if [[ "${EXPERT_REDUCED_SMOKE:-0}" == "1" ]]; then
+  smoke_args+=(--smoke)
+  cache_name="gmtnet-smoke-graphs.pt"
+fi
 python -m src.cli.reduced_gmtnet_train \
   --official-root "${EXPERT_GMTNET_ROOT}" \
   --device cuda \
-  --cache results/reduced-benchmark/cache/gmtnet-graphs.pt \
+  --cache "results/reduced-benchmark/cache/${cache_name}" \
   --checkpoint "${run_root}/checkpoint-${SLURM_JOB_ID}.pt" \
   --predictions "${run_root}/predictions-${SLURM_JOB_ID}.jsonl" \
   --summary "${run_root}/summary-${SLURM_JOB_ID}.json" \
   --junit "${run_root}/junit-${SLURM_JOB_ID}.xml" \
   --epochs "${EXPERT_REDUCED_GMTNET_EPOCHS:-200}" \
-  --batch-size "${EXPERT_REDUCED_GMTNET_BATCH_SIZE:-64}"
+  --batch-size "${EXPERT_REDUCED_GMTNET_BATCH_SIZE:-64}" \
+  "${smoke_args[@]}"

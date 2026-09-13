@@ -28,6 +28,13 @@
   JARVIS-tools 2025.5.30, pandas 2.3.3 and spglib 2.6.0. Direct server clone and the first 31 MB
   recursive transfer both suffered transport failures; next transfer will use one compact Git bundle.
 
+- 2026-09-13: replaced the fragile recursive vendor transfer with a 10,076,941-byte Git bundle
+  (`8ab2a682...147c4`), which transferred successfully. Added a 21-record integration-smoke mode that
+  deterministically takes one sample per retained point group from each frozen split and isolates
+  smoke caches from full caches. Compilation, CLI/launcher checks, 10 focused tests and the full
+  229-test suite passed. Three subsequent latest-source pulls/transport attempts failed; consulted the
+  existing matching lesson in `docs/agents/lessons.md` and stopped blind retries before Slurm submit.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

@@ -34,6 +34,10 @@ GMTNet compatibility follow-up: compilation and 9 focused metric/cache/compariso
 adding API-equivalent PyG scatter and annotation-only sparse fallbacks; documentation and whitespace
 checks also passed.
 
+Real-smoke support result: the selector covers all seven retained point groups independently in each
+frozen split (21 records total); CLI help, Python compilation and both launcher `bash -n` checks
+passed. The complete project suite then passed 229 tests with zero failures/skips in 265.30 seconds.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

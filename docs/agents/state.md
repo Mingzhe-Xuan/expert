@@ -13,7 +13,7 @@ RMSE, sample-mean Frobenius error (Fnorm), and EwT at 25%, 10%, and 5% on the co
 1. [x] Freeze the common target/split protocol and audit GMTNet paper/code metric semantics.
 2. [x] Add a validated reduced-dataset loader, architecture-aware cached DPA4 trainer, official
    GMTNet dataset adapter/runner, and prediction-based unified evaluator.
-3. [ ] Run fixture, metric-parity, checkpoint/provenance, CLI, and end-to-end protocol checks locally;
+3. [x] Run fixture, metric-parity, checkpoint/provenance, CLI, and end-to-end protocol checks locally;
    commit and push only task-owned source/docs.
 4. [ ] Pull on Guqq and submit exact-model smoke, DPA4 feature-cache, and both full training/testing
    runs via Slurm; retrieve predictions and reports.

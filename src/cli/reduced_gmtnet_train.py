@@ -9,6 +9,7 @@ from ..baselines.gmtnet import GMTNetConfig, run_gmtnet_benchmark
 from ..data import TrainingUnit, load_training_dataset
 from ..training import write_smoke_report
 from .reporting import execution_metadata, write_single_case_junit
+from .reduced_protocol import point_group_stratified_smoke_ids
 
 
 def main() -> None:
@@ -27,6 +28,8 @@ def main() -> None:
     parser.add_argument("--end-learning-rate", type=float, default=1.0e-5)
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--smoke", action="store_true",
+                        help="Use one real sample per retained point group in each split")
     arguments = parser.parse_args()
     started = time.perf_counter()
     error = None
@@ -50,6 +53,7 @@ def main() -> None:
                 seed=arguments.seed,
             ),
             device=arguments.device,
+            split_ids=(point_group_stratified_smoke_ids(dataset) if arguments.smoke else None),
         )
         report["execution"] = execution_metadata()
     except Exception as caught:
