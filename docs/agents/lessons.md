@@ -8,8 +8,9 @@
   utilization is high.
 - Separate cache partition count from concurrent worker count. Use many deterministic, provenance-
   checked cache partitions to bound imbalance and preserve partial progress, but keep only enough
-  persistent workers to saturate the GPU. Restore the original manifest order only after validating
-  exact coverage across all partitions.
+  persistent workers to saturate the GPU. Workers must dynamically claim the next unclaimed
+  partition; fixed round-robin assignment can still strand a slow worker while others go idle.
+  Restore the original manifest order only after validating exact coverage across all partitions.
 
 ## 2026-09-13 — Model cache partition identity in the cache schema
 

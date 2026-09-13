@@ -56,11 +56,23 @@ if (( feature_shards > 1 )); then
   if (( worker_threads < 1 )); then
     worker_threads=1
   fi
+  claim_root="${run_root}/claims-${SLURM_JOB_ID}"
+  mkdir -p "${claim_root}"
 
   run_feature_worker() {
-    local worker_index="$1"
+    local candidate
     local shard_index
-    for (( shard_index=worker_index; shard_index<feature_shards; shard_index+=feature_workers )); do
+    while true; do
+      shard_index=""
+      for (( candidate=0; candidate<feature_shards; candidate++ )); do
+        if mkdir "${claim_root}/${candidate}" 2>/dev/null; then
+          shard_index="${candidate}"
+          break
+        fi
+      done
+      if [[ -z "${shard_index}" ]]; then
+        return 0
+      fi
       if ! env OMP_NUM_THREADS="${worker_threads}" \
         DP_INTRA_OP_PARALLELISM_THREADS="${worker_threads}" \
         DP_INTER_OP_PARALLELISM_THREADS=1 \
@@ -81,7 +93,7 @@ if (( feature_shards > 1 )); then
 
   worker_pids=()
   for (( worker_index=0; worker_index<feature_workers; worker_index++ )); do
-    run_feature_worker "${worker_index}" &
+    run_feature_worker &
     worker_pids+=("$!")
   done
   worker_status=0

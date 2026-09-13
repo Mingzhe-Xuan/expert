@@ -115,6 +115,19 @@ with zero failures/skips in 358.53 seconds. Two earlier invocations did not coll
 unrelated missing `requests_toolbelt`; the successful unchanged suite used the established isolated
 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1; python -m pytest tests` command.
 
+Dynamic-claim follow-up plan: replace fixed round-robin partition ownership with atomic claims in a
+job-unique directory so any idle persistent worker can take the next unclaimed partition. Static
+launcher coverage must require the atomic claim loop and absence of the prior stride assignment;
+focused/full tests, Bash syntax, Python compilation and whitespace checks must pass. A real smoke
+must use a previously unused partition count, publish every partition once, restore exact split
+coverage/order, and complete training/checkpoint/test export before a new full job is accepted.
+
+Dynamic-claim local result: 9 focused reduced-benchmark tests passed, including launcher assertions
+for the job-unique claim directory, candidate scan and atomic `mkdir`. Bash syntax, Python
+compilation and whitespace checks passed. The complete isolated project suite passed 239 tests with
+zero failures/skips in 313.50 seconds; the count decreased only because five static-assignment tests
+were removed with the obsolete Python helper. Real five-partition smoke remains the remote gate.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

@@ -80,6 +80,15 @@ partition each split into 64 small cache shards processed sequentially per worke
 all sample IDs and final manifest order while bounding load imbalance and making every completed
 small shard reusable after interruption.
 
+The fine-grained scheduler passed 244 local tests and was committed/pushed as `31084df`. After the
+remote pull succeeded, task-owned infeasible job 446 was cancelled at 02:08:29 together with its
+now-invalid comparison dependency 447. Real smoke job 448 passed all seven cache partitions, strict
+merge, training, checkpoint reload and test export with exit `0:0` in 00:13:45. Its exact timestamps
+and two-worker diagnostic job 449 then showed that fixed round-robin partition ownership still
+leaves workers idle behind an unusually slow partition. The follow-up changes only the launcher to
+atomically and dynamically claim each unclaimed partition; a fresh-partition smoke must pass before
+the replacement full run and comparator are submitted.
+
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
 Completed a dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is

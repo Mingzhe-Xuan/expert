@@ -90,6 +90,17 @@
   checks, and the complete 244-test suite passed; next is commit/sync, cancel the provably infeasible
   task-owned jobs 446/447, and submit a real fine-grained smoke before the replacement full run.
 
+- 2026-09-13: fine-grained smoke 448 completed all seven partition caches, exact merge, training,
+  reload and test export in 00:13:45. Partition timestamps plus two-worker diagnostic 449 exposed a
+  remaining scheduler issue: fixed round-robin ownership can strand a worker behind one slow crystal
+  while another exhausts its assigned partitions and idles. Replaced static ownership with atomic,
+  job-local dynamic claims; next is local regression and a fresh five-partition real smoke.
+
+- 2026-09-13: dynamic-claim scheduler passed 9 focused tests plus Bash syntax, Python compilation
+  and whitespace checks. The complete isolated suite passed 239 tests in 313.50 seconds with no
+  failures or skips; five removed cases exclusively tested the retired static assignment helper.
+  Next is commit/push, Guqq sync, and the uncached five-partition Slurm smoke.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
