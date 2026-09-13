@@ -22,6 +22,12 @@
   PyG scatter compatibility fallback so GMTNet can use the existing compiled PyG runtime without a
   risky login-node extension build; compilation and 9 focused tests passed before its follow-up commit.
 
+- 2026-09-13: the official GMTNet transformer also imports `SparseTensor` only for typing. Added an
+  inert fallback for that unused annotation so no retired compiled extension is required. Guqq's
+  dedicated venv now imports Torch 2.4.1+cu121, e3nn 0.5.9, PyG 2.8.0.post1, pymatgen 2025.10.7,
+  JARVIS-tools 2025.5.30, pandas 2.3.3 and spglib 2.6.0. Direct server clone and the first 31 MB
+  recursive transfer both suffered transport failures; next transfer will use one compact Git bundle.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

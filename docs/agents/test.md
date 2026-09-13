@@ -31,7 +31,8 @@ and hit that checkout's incompatible local `torch_spline_conv` DLL; the reposito
 intentionally scopes collection to `tests/`, and the complete project suite then passed unchanged.
 
 GMTNet compatibility follow-up: compilation and 9 focused metric/cache/comparison tests passed after
-adding the API-equivalent PyG scatter fallback; its documentation and whitespace check also passed.
+adding API-equivalent PyG scatter and annotation-only sparse fallbacks; documentation and whitespace
+checks also passed.
 
 ## 2026-09-13 — >5% point-group reduced datasets
 

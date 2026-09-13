@@ -61,6 +61,12 @@ def _load_official_modules(official_root: Path):
         compatibility = ModuleType("torch_scatter")
         compatibility.scatter = pyg_scatter
         sys.modules["torch_scatter"] = compatibility
+    try:
+        importlib.import_module("torch_sparse")
+    except ImportError:
+        compatibility = ModuleType("torch_sparse")
+        compatibility.SparseTensor = object
+        sys.modules["torch_sparse"] = compatibility
     sys.path.insert(0, str(root))
     try:
         return (
