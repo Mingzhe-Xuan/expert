@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from data.curation.physics import AuditThresholds, audit_record
+from data.curation.plot_point_groups import POINT_GROUPS, render_point_group_frequency_svg
 from data.curation.pipeline import run_pipeline
 from data.curation.records import NormalizedRecord
 from data.curation.sources import jarvis_voigt_to_standard, voigt_to_elastic
@@ -135,3 +138,44 @@ def test_pipeline_collapses_agreeing_duplicates_and_excludes_conflicts(tmp_path:
     saved_manifest = json.loads(manifest.read_text(encoding="utf-8"))
     assert saved_manifest["artifacts"]["recommended/dielectric_electronic"]["records"] == 1
     assert "CV (32 PGs)" in report_md.read_text(encoding="utf-8")
+
+
+def _point_group_plot_report() -> dict[str, object]:
+    counts = {point_group: index + 1 for index, point_group in enumerate(POINT_GROUPS)}
+    subtype = {
+        "recommended_records": sum(counts.values()),
+        "point_group_counts": {"recommended": counts},
+    }
+    return {
+        "subtypes": {
+            name: subtype
+            for name in (
+                "dielectric_electronic",
+                "dielectric_ionic",
+                "dielectric_total",
+                "elastic_stiffness",
+            )
+        }
+    }
+
+
+def test_point_group_frequency_svg_is_deterministic_and_complete() -> None:
+    report = _point_group_plot_report()
+    first = render_point_group_frequency_svg(report)
+    second = render_point_group_frequency_svg(report)
+
+    assert first == second
+    assert first.count("<rect ") == 1 + 4 * 32
+    assert first.count("Frequency (records)") == 4
+    assert "Cubic" in first and "Triclinic" in first
+    assert "m-3m — 32 (6.1%)" in first
+    ET.fromstring(first)
+
+
+def test_point_group_frequency_svg_rejects_inconsistent_counts() -> None:
+    report = _point_group_plot_report()
+    electronic = report["subtypes"]["dielectric_electronic"]
+    electronic["point_group_counts"]["recommended"].pop("1")
+
+    with pytest.raises(ValueError, match="missing=\\['1'\\]"):
+        render_point_group_frequency_svg(report)

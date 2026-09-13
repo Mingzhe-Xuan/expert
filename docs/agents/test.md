@@ -1,5 +1,29 @@
 # Test plan and results
 
+## 2026-09-13 — point-group frequency visualization
+
+Planned checks:
+
+- the renderer must require exactly the canonical 32 crystallographic point groups for every
+  requested subtype and reject missing, extra, negative, non-integral, or count-inconsistent data;
+- recommended point-group counts must sum to each subtype's `recommended_records` value;
+- identical report input must produce byte-identical UTF-8 SVG, valid XML, four labelled panels,
+  all 32 tick labels, crystal-system separators, and a dominant-group count/share annotation;
+- the real tracked report must render without reading full JSONL data; inspect the resulting SVG at
+  full resolution, run focused pytest with a fresh writable basetemp, verify its deterministic hash,
+  validate documentation paths, and run `git diff --check` before commit.
+
+Expected result: a legible count-frequency histogram that preserves all four distributions without
+implying that equal point-group coverage means balanced data.
+
+Actual result: focused curation/visualization pytest passed 6 tests. The real report rendered to
+valid XML with four subtype panels; byte-for-byte regeneration preserved SHA-256
+`d1bc875de20038ea49341bec9a0669bcb4306b8fae45011e08298ba4f230734f`. Python compilation and CLI
+help passed. A 1800x1320 headless-browser preview was inspected at original resolution: titles,
+independent scales, all point-group labels, crystal-system separators, and maximum annotations are
+legible without clipping. Ruff formatting was unavailable in the environment, so syntax/style are
+covered by compilation, focused tests, manual diff inspection, and the final whitespace check.
+
 ## 2026-09-13 — unified dielectric/elastic curation
 
 Planned checks:

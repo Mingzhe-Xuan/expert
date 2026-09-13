@@ -18,6 +18,16 @@ Generated full datasets and row-level audits are written below `data/processed/c
 are intentionally Git-ignored. Compact manifests and descriptive/point-group reports are written to
 `data/manifests/curated_tensors.json` and `docs/analysis/curated_tensor_datasets.{json,md}`.
 
+Render the recommended-set point-group frequency figure directly from the compact JSON report
+(no full dataset scan or plotting dependency is required):
+
+```text
+python -m data.curation.plot_point_groups
+```
+
+The deterministic SVG uses one count axis per property subtype and writes to
+`docs/analysis/curated_tensor_point_group_frequency.svg` by default.
+
 Run the complete real-data job through Slurm:
 
 ```text

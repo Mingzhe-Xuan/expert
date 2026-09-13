@@ -8,6 +8,8 @@ Physical validity and robust statistical outliers are reported separately. Recom
 sets contain physical-valid, non-outlier representatives of agreeing duplicate groups and
 exclude unresolved duplicate-label conflicts.
 
+![Recommended record frequency across the 32 crystallographic point groups](curated_tensor_point_group_frequency.svg)
+
 | Subtype | Input | Physical valid | Outliers | Recommended | PG coverage | Largest PG share | CV (32 PGs) |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | `dielectric_electronic` | 11647 | 11298 | 700 | 10548 | 32/32 | 10.7% | 1.003 |

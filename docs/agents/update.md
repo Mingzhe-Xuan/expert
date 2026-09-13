@@ -1,5 +1,15 @@
 # Agent progress updates
 
+- 2026-09-13: started a reproducible point-group frequency visualization using the tracked
+  recommended-set counts. Planned a dependency-free four-panel SVG renderer and strict count/schema/
+  determinism tests so the figure remains regenerable without loading the full curated JSONL files.
+
+- 2026-09-13: completed the recommended-set point-group frequency figure as a deterministic
+  dependency-free SVG. The four-panel design keeps subtype count axes independent, orders all 32
+  groups by crystal system, and annotates each dominant group. Visual inspection passed; focused
+  tests passed 6, deterministic regeneration retained SHA-256 `d1bc875d...`, and compilation/CLI
+  checks passed.
+
 - 2026-09-13: started unified physical curation of DTNet/GMTNet dielectric and GMTNet/MatTen
   elastic data. Audited local schemas and primary papers, separated dielectric electronic/ionic/
   total semantics, identified both elastic targets as stiffness tensors in GPa, and planned a new

@@ -107,6 +107,8 @@
   },
   "label_agreement_relative_tolerance": 0.001,
   "report": {
+    "figure_svg": "docs/analysis/curated_tensor_point_group_frequency.svg",
+    "figure_svg_sha256": "d1bc875de20038ea49341bec9a0669bcb4306b8fae45011e08298ba4f230734f",
     "json": "docs/analysis/curated_tensor_datasets.json",
     "json_sha256": "19c1e61efa8baf48a85a9d5ba950503c802e6d2b328dc927cfb909d61c63a8a3",
     "markdown": "docs/analysis/curated_tensor_datasets.md"

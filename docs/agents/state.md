@@ -1,5 +1,26 @@
 # Agent state
 
+## Current snapshot — point-group frequency visualization (2026-09-13)
+
+Completed a lightweight reporting unit that renders the tracked `recommended` point-group counts as
+a deterministic four-panel SVG. Each physical subtype gets an independent count axis so the larger
+elastic dataset does not visually suppress the three dielectric distributions. The implementation
+will live in `data/curation/plot_point_groups.py`, consume the existing machine-readable report, and
+write the tracked figure under `docs/analysis/` without rereading full datasets.
+
+### Current plan
+
+1. [x] Implement a dependency-free SVG renderer with the canonical 32-point-group order, readable axis
+   labels, crystal-system separators, and dominant-group annotations.
+2. [x] Add fixture coverage for count conservation, deterministic output, XML validity, and malformed
+   report rejection; document the rendering command in the module README.
+3. [x] Generate the real figure from the verified report, visually inspect it, run focused tests and
+   whitespace/link checks, then commit and push only task-owned files.
+
+The real four-panel figure is generated and visually verified. It uses recommended-set record counts,
+independent per-subtype y-axes, canonical crystallographic ordering and crystal-system separators.
+Its deterministic SHA-256 is `d1bc875de20038ea49341bec9a0669bcb4306b8fae45011e08298ba4f230734f`.
+
 ## Current snapshot — unified dielectric/elastic curation (2026-09-13)
 
 Completed the curation unit covering DTNet dielectric, GMTNet/JARVIS dielectric and elastic, and
