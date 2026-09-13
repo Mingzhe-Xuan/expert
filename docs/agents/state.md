@@ -90,7 +90,10 @@ assignment to atomic dynamic claims and passed 239 local tests. Fresh five-parti
 published all caches, strict merge, seven predictions and a zero-failure JUnit; its live claim order
 proved a worker took partition 2 while partition 1 remained incomplete. Full DPA4 job 451 is now
 running with 64 partitions, two workers and a three-day limit. Comparator 452 is dependency-gated on
-completed GMTNet 443 and DPA4 451.
+completed GMTNet 443 and DPA4 451. At 01:23:51 runtime, full partition 0 atomically published its
+79/10/11 train/validation/test cache and zero-failure JUnit, after which the freed worker immediately
+claimed partition 2 while partition 1 remained active. The measured aggregate rate still fits the
+three-day allocation, with every completed partition independently reusable.
 
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 

@@ -107,6 +107,12 @@
   Submitted full DPA4 job 451 with 64 partitions/two workers/three-day walltime and comparison job
   452 held by `afterok:443:451` against the completed GMTNet full run.
 
+- 2026-09-14: DPA4 full job 451 published its first recovery-safe cache partition at 01:23:51
+  runtime: partition 0 passed 79/10/11 train/validation/test examples and a zero-failure JUnit with
+  the expected dataset/checkpoint/runtime provenance. Its worker immediately claimed partition 2
+  while the slower partition 1 continued, proving dynamic scheduling in the real full run. Current
+  aggregate throughput projects inside the three-day allocation; comparator 452 remains gated.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

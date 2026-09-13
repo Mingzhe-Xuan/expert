@@ -135,6 +135,13 @@ strict final merge/training/reload path wrote 7 predictions and a JUnit with one
 failures/errors/skips. Bounded log inspection found no traceback, error or failure marker. Full job
 451 and dependency-gated common comparator 452 were then submitted.
 
+First full-cache recovery evidence: job 451 partition 0 passed all 79 train, 10 validation and 11
+test examples and atomically published its prepare summary plus a one-test, zero-failure JUnit at
+01:23:51 runtime. The summary records exact dataset SHA-256
+`6cfefc7c04734ceb4c7873e5aaa7d483251ea909a378e55034414d53f9110963`, DPA4 commit `0b5ce27`,
+Torch 2.11.0+cu128/CUDA 12.8 and RTX 5090. The freed worker then dynamically claimed partition 2;
+no traceback, CUDA OOM, non-finite value or RuntimeError was found in its bounded stderr scan.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:
