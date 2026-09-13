@@ -63,6 +63,19 @@ path tolerance remains independently fixed at 2e-8.
 Subduction pre-commit result: the complete repository suite passed 231 tests with zero
 failures/skips in 658.21 seconds. Python compilation and `git diff --check` also passed.
 
+DPA4 sharded-cache plan: require strided shard assignments to be disjoint and exhaustive for every
+split; require shard caches to retain the same backbone/checkpoint/unit/dataset provenance gates;
+reject missing, duplicate, extra, or reordered merged IDs; and prove the merged examples exactly
+recover the frozen manifest order. CLI validation must reject invalid shard indices/counts and shard
+workers must be prepare-only. The Slurm launcher must keep all four workers inside its allocation,
+cap per-process CPU threads, fail if any worker fails, and begin training only after validated merge.
+
+DPA4 sharded-cache implementation result: 17 focused loader/cache/metric/shard tests passed. The
+four-way strided assignment is disjoint and exhaustive, merge restores the exact manifest order and
+rejects coverage drift, invalid worker parameters fail closed, and existing provenance gates remain
+on every shard. Python compilation, launcher `bash -n`, and whitespace checks passed. The complete
+repository suite then passed 237 tests with zero failures/skips in 309.08 seconds.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

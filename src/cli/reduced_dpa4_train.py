@@ -27,6 +27,46 @@ def _ordered_samples(dataset, ids):
     return ids, tuple(dataset.by_id(sample_id) for sample_id in ids)
 
 
+def _shard_sample_ids(sample_ids, shard_count: int, shard_index: int):
+    if shard_count < 1 or not 0 <= shard_index < shard_count:
+        raise ValueError("feature shard index/count are invalid")
+    return tuple(sample_ids[shard_index::shard_count])
+
+
+def _merge_sharded_examples(expected_ids, shards):
+    by_id = {}
+    for shard in shards:
+        for example in shard:
+            if example.sample_id in by_id:
+                raise ValueError(f"duplicate frozen shard sample ID {example.sample_id!r}")
+            by_id[example.sample_id] = example
+    expected = tuple(expected_ids)
+    missing = [sample_id for sample_id in expected if sample_id not in by_id]
+    extra = sorted(set(by_id) - set(expected))
+    if missing or extra:
+        raise ValueError(f"frozen shard coverage mismatch: missing={missing[:3]}, extra={extra[:3]}")
+    return tuple(by_id[sample_id] for sample_id in expected)
+
+
+def _cache_path(root, unit, scope, split, shard_count, shard_index):
+    base = root / "dpa4" / unit.namespace / scope
+    if shard_count == 1:
+        return base / f"{split}.pt"
+    return base / f"shards-{shard_count}" / f"shard-{shard_index}" / f"{split}.pt"
+
+
+def _validate_shard_arguments(shard_count, shard_index, prepare_only, minimum_split_size):
+    if shard_count < 1:
+        raise ValueError("feature_shards must be positive")
+    if shard_count > minimum_split_size:
+        raise ValueError("feature_shards cannot exceed the smallest selected split")
+    if shard_index is not None:
+        if not prepare_only:
+            raise ValueError("a feature shard worker must use --prepare-only")
+        if not 0 <= shard_index < shard_count:
+            raise ValueError("feature_shard_index is outside feature_shards")
+
+
 def run(arguments: argparse.Namespace) -> dict[str, object]:
     unit = TrainingUnit("curated_reduced_total", "dielectric")
     dataset = load_training_dataset(unit, manifest_path=arguments.manifest)
@@ -38,7 +78,22 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     if {name: len(ids) for name, ids in full_ids.items()} != expected:
         raise ValueError("reduced dielectric_total split drift")
     selected_ids = point_group_stratified_smoke_ids(dataset) if arguments.smoke else full_ids
-    actual = {name: len(ids) for name, ids in selected_ids.items()}
+    shard_count = arguments.feature_shards
+    shard_index = arguments.feature_shard_index
+    _validate_shard_arguments(
+        shard_count,
+        shard_index,
+        arguments.prepare_only,
+        min(len(ids) for ids in selected_ids.values()),
+    )
+    actual = {
+        name: len(
+            ids
+            if shard_index is None
+            else _shard_sample_ids(ids, shard_count, shard_index)
+        )
+        for name, ids in selected_ids.items()
+    }
     dataset_sha256 = str(dataset[0].source["manifest_sha256"])
     resource = BackboneResourceRegistry()["dpa4"]
     if resource.sha256 is None:
@@ -53,41 +108,93 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
                               "total": total, "sample_id": sample_id}, sort_keys=True), flush=True)
 
     for split in ("train", "validation", "test"):
-        sample_ids, samples = _ordered_samples(dataset, selected_ids[split])
         cache_scope = "smoke" if arguments.smoke else "full"
-        cache = arguments.cache_root / "dpa4" / unit.namespace / cache_scope / f"{split}.pt"
-        if cache.is_file():
-            layout, examples = load_frozen_feature_cache(
-                cache,
-                expected_backbone="dpa4",
-                expected_checkpoint_sha256=resource.sha256,
-                expected_unit=unit,
-                expected_split=split,
-                expected_sample_ids=sample_ids,
-                expected_dataset_sha256=dataset_sha256,
-            )
-        else:
-            if adapter is None:
-                adapter = build_backbone_adapter(
-                    "dpa4", default_hidden_layout(ARCHITECTURE), device=arguments.device
+        if shard_count > 1 and shard_index is None:
+            shard_layout = None
+            shard_examples = []
+            for current_shard in range(shard_count):
+                sample_ids = _shard_sample_ids(
+                    selected_ids[split], shard_count, current_shard
                 )
-            layout, examples = extract_frozen_examples(
-                adapter,
-                samples,
-                cutoff=resource.cutoff_angstrom,
-                device=arguments.device,
-                progress=progress,
+                cache = _cache_path(
+                    arguments.cache_root,
+                    unit,
+                    cache_scope,
+                    split,
+                    shard_count,
+                    current_shard,
+                )
+                if not cache.is_file():
+                    raise FileNotFoundError(f"missing frozen feature shard {cache}")
+                current_layout, current_examples = load_frozen_feature_cache(
+                    cache,
+                    expected_backbone="dpa4",
+                    expected_checkpoint_sha256=resource.sha256,
+                    expected_unit=unit,
+                    expected_split=f"{split}:shard:{current_shard}/{shard_count}",
+                    expected_sample_ids=sample_ids,
+                    expected_dataset_sha256=dataset_sha256,
+                )
+                if shard_layout is None:
+                    shard_layout = current_layout
+                elif shard_layout != current_layout:
+                    raise ValueError("source layout differs across frozen feature shards")
+                shard_examples.append(current_examples)
+            layout = shard_layout
+            examples = _merge_sharded_examples(selected_ids[split], shard_examples)
+        else:
+            current_shard = 0 if shard_index is None else shard_index
+            sample_ids = (
+                selected_ids[split]
+                if shard_count == 1
+                else _shard_sample_ids(selected_ids[split], shard_count, current_shard)
             )
-            save_frozen_feature_cache(
-                cache,
-                backbone_family="dpa4",
-                checkpoint_sha256=resource.sha256,
-                unit=unit,
-                split=split,
-                layout=layout,
-                examples=examples,
-                dataset_sha256=dataset_sha256,
+            _, samples = _ordered_samples(dataset, sample_ids)
+            cache = _cache_path(
+                arguments.cache_root,
+                unit,
+                cache_scope,
+                split,
+                shard_count,
+                current_shard,
             )
+            cache_split = (
+                split
+                if shard_count == 1
+                else f"{split}:shard:{current_shard}/{shard_count}"
+            )
+            if cache.is_file():
+                layout, examples = load_frozen_feature_cache(
+                    cache,
+                    expected_backbone="dpa4",
+                    expected_checkpoint_sha256=resource.sha256,
+                    expected_unit=unit,
+                    expected_split=cache_split,
+                    expected_sample_ids=sample_ids,
+                    expected_dataset_sha256=dataset_sha256,
+                )
+            else:
+                if adapter is None:
+                    adapter = build_backbone_adapter(
+                        "dpa4", default_hidden_layout(ARCHITECTURE), device=arguments.device
+                    )
+                layout, examples = extract_frozen_examples(
+                    adapter,
+                    samples,
+                    cutoff=resource.cutoff_angstrom,
+                    device=arguments.device,
+                    progress=progress,
+                )
+                save_frozen_feature_cache(
+                    cache,
+                    backbone_family="dpa4",
+                    checkpoint_sha256=resource.sha256,
+                    unit=unit,
+                    split=cache_split,
+                    layout=layout,
+                    examples=examples,
+                    dataset_sha256=dataset_sha256,
+                )
         if source_layout is None:
             source_layout = layout
         elif source_layout != layout:
@@ -103,6 +210,8 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             "dataset_sha256": dataset_sha256,
             "architecture": ARCHITECTURE.to_dict(),
             "split_counts": actual,
+            "feature_shards": shard_count,
+            "feature_shard_index": shard_index,
             "execution": execution_metadata(),
         }
     report = train_cached_backbone_readout(
@@ -151,6 +260,8 @@ def main() -> None:
     parser.add_argument("--normalization", choices=("rms", "variance"), default="rms")
     parser.add_argument("--gradient-clip-norm", type=float, default=10.0)
     parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--feature-shards", type=int, default=1)
+    parser.add_argument("--feature-shard-index", type=int)
     parser.add_argument("--smoke", action="store_true",
                         help="Use one real sample per retained point group in each split")
     arguments = parser.parse_args()

@@ -38,6 +38,18 @@ showed all seven required groups pass at a 5e-7 decomposition tolerance. The fol
 tolerance at 2e-8, adds an approximate-representation regression, and awaits full local regression
 before a DPA4-only third smoke.
 
+DPA4 job 441 then passed the complete 7/7/7 real GPU smoke, so both implementations now have
+end-to-end smoke evidence. Full jobs 442 (DPA4) and 443 (GMTNet) are submitted against the common
+5,001/637/677 split; 442 is building the full frozen-feature cache on node221 and 443 is correctly
+resource-queued behind it on the single available GPU.
+
+Full job 442's sustained GPU utilization is only 8% with 1.37 GiB memory because frozen extraction
+dispatches one structure at a time. A task-scoped throughput/recovery adjustment is in progress:
+partition each frozen split deterministically into four strided shards, extract those shards as four
+processes inside one Slurm GPU allocation, atomically cache each shard, then validate and restore the
+original split-ID order before unchanged downstream training. This does not alter samples, DPA4
+weights, the inversion-paired parity construction, architecture, seed, or metrics.
+
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
 Completed a dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is

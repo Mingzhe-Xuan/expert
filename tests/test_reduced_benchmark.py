@@ -4,12 +4,55 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from types import SimpleNamespace
 
+import pytest
+
+from src.cli.reduced_dpa4_train import (
+    _merge_sharded_examples,
+    _shard_sample_ids,
+    _validate_shard_arguments,
+)
 from src.cli.reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratified_smoke_ids
 from src.data import TrainingUnit, load_training_dataset
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_dpa4_feature_shards_are_disjoint_exhaustive_and_restore_order() -> None:
+    expected = tuple(f"sample-{index}" for index in range(17))
+    shard_ids = [_shard_sample_ids(expected, 4, index) for index in range(4)]
+    assert set().union(*(set(ids) for ids in shard_ids)) == set(expected)
+    assert sum(len(ids) for ids in shard_ids) == len(expected)
+    shards = [tuple(SimpleNamespace(sample_id=sample_id) for sample_id in ids)
+              for ids in reversed(shard_ids)]
+    assert tuple(row.sample_id for row in _merge_sharded_examples(expected, shards)) == expected
+
+
+def test_dpa4_feature_shard_merge_rejects_coverage_drift() -> None:
+    rows = tuple(SimpleNamespace(sample_id=value) for value in ("a", "b"))
+    with pytest.raises(ValueError, match="duplicate"):
+        _merge_sharded_examples(("a", "b"), (rows, rows[:1]))
+    with pytest.raises(ValueError, match="coverage mismatch"):
+        _merge_sharded_examples(("a", "b", "c"), (rows,))
+    with pytest.raises(ValueError, match="index/count"):
+        _shard_sample_ids(("a",), 0, 0)
+
+
+@pytest.mark.parametrize(
+    ("count", "index", "prepare_only", "message"),
+    (
+        (0, None, False, "positive"),
+        (8, None, False, "smallest selected split"),
+        (4, 0, False, "prepare-only"),
+        (4, 4, True, "outside"),
+    ),
+)
+def test_dpa4_feature_shard_cli_validation(count, index, prepare_only, message) -> None:
+    with pytest.raises(ValueError, match=message):
+        _validate_shard_arguments(count, index, prepare_only, minimum_split_size=7)
+    _validate_shard_arguments(4, 3, True, minimum_split_size=7)
 
 
 def test_real_smoke_selection_covers_every_retained_pg_in_each_split() -> None:

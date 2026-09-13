@@ -50,6 +50,18 @@
   from the stricter CG tolerance and added backend-residue regression coverage; next is full local
   regression and a DPA4-only Slurm retry.
 
+- 2026-09-13: DPA4 retry 441 passed all real GPU smoke stages at `b7c0bb8`; together with GMTNet
+  440 this establishes both exact-model pipelines on the same 7/7/7 point-group-stratified subset.
+  Submitted full jobs 442/443 for the frozen 5,001/637/677 protocol. DPA4 442 is running full feature
+  extraction on node221; GMTNet 443 is queued for that same single GPU. Final acceptance remains the
+  common 677-ID prediction comparison, not the one-epoch smoke metrics.
+
+- 2026-09-13: measured full DPA4 job 442 at a sustained 8% SM utilization and 1.37 GiB GPU memory;
+  sequential per-structure dispatch, not device capacity, is the throughput limit. Began a
+  deterministic four-shard cache mode that runs multiple DPA4 extractors inside the same Slurm GPU
+  allocation and validates/reorders their outputs back to the untouched frozen split. Current 442
+  remains running until the replacement passes local tests and a real concurrent smoke.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
