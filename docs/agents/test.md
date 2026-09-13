@@ -86,6 +86,12 @@ Shard-cache schema fix result: 18 focused cache/shard/metric tests passed, inclu
 `torch.save`/`torch.load` round-trip for `train:shard:1/4` and rejection of out-of-range, negative,
 or noncanonical partition labels. Python compilation and whitespace checks passed.
 
+Corrected 4-way real acceptance smoke: job 445 passed all four independent cache writers, validated
+and restored the exact 7/7/7 manifest order, then completed model construction, one training epoch,
+checkpoint reload, prediction export and evaluation. Its DPA4 metrics match serial job 441 within
+floating-point precision (RMSE 9.8611298, Fnorm 28.8066578, all three EwT rates 0%); concurrent GPU
+utilization reached 99% with about 2.44 GiB total memory.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

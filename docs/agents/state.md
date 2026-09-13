@@ -50,6 +50,12 @@ processes inside one Slurm GPU allocation, atomically cache each shard, then val
 original split-ID order before unchanged downstream training. This does not alter samples, DPA4
 weights, the inversion-paired parity construction, architecture, seed, or metrics.
 
+The corrected four-way real smoke (job 445) passed all shard publication, exact-order merge,
+training, checkpoint and prediction stages, matching the serial smoke metrics while reaching 99% SM
+utilization at only 2.44 GiB. Serial job 442 was cancelled at 100/5,001 after its measured rate proved
+the three splits could not finish within 48 hours. GMTNet full job 443 is now running; replacement
+four-way DPA4 full job 446 is queued behind it.
+
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
 Completed a dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is

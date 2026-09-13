@@ -69,6 +69,12 @@
   fix extends validated split identities to bounded `split:shard:index/count` labels and adds real
   serializer round-trip/malformed-label tests before retry.
 
+- 2026-09-13: corrected four-way smoke 445 passed and reproduced serial smoke 441 after exact shard
+  merge, while raising GPU SM utilization from 8% to 99% at 2.44 GiB. Cancelled serial full job 442
+  at 100/5,001 because its 47.5-minute measured rate made the 48-hour limit infeasible. Released
+  GMTNet full job 443, which is now preprocessing the common training split, and submitted replacement
+  four-way DPA4 full job 446 behind it.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
