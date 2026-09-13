@@ -64,6 +64,32 @@ def test_full_pg_blocks_are_closed_and_keep_o3_provenance() -> None:
         assert outside.numel() == 0 or float(outside.abs().max()) < 2e-8
 
 
+def test_subduction_tolerates_backend_scale_representation_residue() -> None:
+    exact_group = PointGroupRegistry()["2/m"]
+    generator = torch.Generator().manual_seed(20260913)
+    exact = exact_group.representation(NATURAL_LAYOUT)
+    approximate = exact + 2.5e-7 * torch.randn(
+        exact.shape, dtype=exact.dtype, generator=generator
+    )
+
+    class ApproximatePointGroup:
+        symbol = "2/m-backend-residue"
+
+        @staticmethod
+        def representation(layout, *, dtype=torch.float64):  # noqa: ANN001
+            assert layout == NATURAL_LAYOUT
+            return approximate.to(dtype=dtype)
+
+    plan = build_subduction_plan(ApproximatePointGroup(), NATURAL_LAYOUT)
+    assert plan.matrix.shape == (NATURAL_LAYOUT.dimension, NATURAL_LAYOUT.dimension)
+    identity = torch.eye(NATURAL_LAYOUT.dimension, dtype=torch.float64)
+    assert torch.allclose(plan.matrix.T @ plan.matrix, identity, atol=5e-7, rtol=5e-7)
+    transformed = approximate @ plan.matrix
+    restricted = torch.einsum("ai,gab,bj->gij", plan.matrix, approximate, plan.matrix)
+    reconstructed = torch.einsum("ai,gij->gaj", plan.matrix, restricted)
+    assert float((transformed - reconstructed).abs().max()) < 5e-6
+
+
 def test_repeated_o3_copies_remain_separately_labelled() -> None:
     layout = IrrepLayout(
         (

@@ -42,6 +42,14 @@
   extension fallbacks handle ABI-loader errors, and recorded the layered-environment lesson. Next is
   a fully revalidated Torch 2.11-first GMTNet layer followed by repeat Slurm smokes.
 
+- 2026-09-13: repaired the GMTNet environment ordering to Torch 2.11.0+cu128 and submitted jobs
+  439/440. GMTNet job 440 passed complete GPU training/evaluation on the 7/7/7 real smoke; DPA4 job
+  439 cached all 21 backbone examples but failed its finite-group invariant check. Server sweeps
+  isolated the required numerical threshold: all seven retained groups fail at 5e-8, only `2/m`
+  passes at 1e-7, four pass at 2e-7, and all seven pass at 5e-7. Separated the subduction tolerance
+  from the stricter CG tolerance and added backend-residue regression coverage; next is full local
+  regression and a DPA4-only Slurm retry.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

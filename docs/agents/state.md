@@ -31,6 +31,13 @@ kernels. The local source fix now resolves the task through each sample and has 
 the next server step is to layer the existing Torch 2.11.0+cu128 DPA4 runtime first in the dedicated
 GMTNet environment, revalidate dependencies, and rerun both real smokes through Slurm.
 
+Second smokes reached a split outcome: GMTNet job 440 passed end-to-end on RTX 5090 with the repaired
+Torch 2.11/CUDA 12.8 layer, while DPA4 job 439 completed all cached feature extraction but exposed a
+Torch/e3nn-version-scale (~1e-7) residue in the finite-group representation. Explicit server probing
+showed all seven required groups pass at a 5e-7 decomposition tolerance. The follow-up keeps CG-path
+tolerance at 2e-8, adds an approximate-representation regression, and awaits full local regression
+before a DPA4-only third smoke.
+
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
 Completed a dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is

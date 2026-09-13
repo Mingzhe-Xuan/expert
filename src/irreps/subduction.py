@@ -13,7 +13,8 @@ if TYPE_CHECKING:
     from ..symmetry.registry import PointGroup
 
 
-SUBDUCTION_TOLERANCE = 2.0e-8
+SUBDUCTION_TOLERANCE = 5.0e-7
+CG_TOLERANCE = 2.0e-8
 
 
 def _deterministic_range_basis(
@@ -274,7 +275,7 @@ def finite_group_intertwiners(
     right: torch.Tensor,
     output: torch.Tensor,
     *,
-    tolerance: float = SUBDUCTION_TOLERANCE,
+    tolerance: float = CG_TOLERANCE,
 ) -> CGPathBasis:
     """Return an orthonormal deterministic basis of equivariant bilinear paths."""
 

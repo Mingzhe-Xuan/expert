@@ -49,6 +49,20 @@ Fix pre-commit result: the new target-materialization regression passed, and the
 suite passed 230 tests with zero failures/skips in 685.92 seconds. Python compilation, both Slurm
 launcher `bash -n` checks, and `git diff --check` also passed.
 
+DPA4 subduction follow-up plan: reproduce the Torch 2.11/e3nn representation residue with a
+deterministically perturbed finite-group representation, require the default subduction builder to
+return a complete orthogonal block basis whose leakage stays within the declared numerical budget,
+and retain the existing exact all-32-group round-trip/equivariance tests. The tolerance change must
+remain local to subduction and must not silently loosen finite-group CG-path acceptance.
+
+DPA4 subduction focused result: all 7 subduction/CG tests passed, including exact 32-group
+round-trip/equivariance and a new deterministic 2.5e-7 representation-residue case. The default
+subduction tolerance is now 5e-7, the reconstructed-block leakage budget remains 5e-6, and the CG
+path tolerance remains independently fixed at 2e-8.
+
+Subduction pre-commit result: the complete repository suite passed 231 tests with zero
+failures/skips in 658.21 seconds. Python compilation and `git diff --check` also passed.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:
