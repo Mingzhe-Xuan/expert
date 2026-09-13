@@ -20,6 +20,12 @@
   ignored data paths and writes only a candidate preparation manifest under `results/` before the
   full audit. No batch processing was run on the login node.
 
+- 2026-09-13: job 434 ended during DTNet preparation with a fail-closed path error: the downloaded
+  raw file has the expected 37,774,263-byte size, but a manifest under `results/` made the converter
+  treat `results/` as its data root. No processed/merged output was written. Revised the launcher to
+  use a unique temporary manifest under `data/manifests/`, move it to the ignored job results after
+  conversion, and avoid redownloading an already present raw file.
+
 - 2026-09-13: completed DTNet dataset integration. Downloaded and verified the 37,774,263-byte
   official raw JSON, generated a deterministic 16,576,244-byte normalized JSONL plus tracked
   provenance/split/quality manifest, and registered `dtnet × dielectric` with total-tensor symmetric

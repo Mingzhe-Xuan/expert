@@ -33,6 +33,13 @@ The Slurm launcher is being adjusted to perform DTNet's hash-gated download and 
 the allocation before curation; this keeps batch conversion off the login node and leaves the
 tracked production manifest untouched.
 
+Job 434 downloaded the exact 37,774,263-byte DTNet raw resource but failed closed before conversion:
+the converter derives its allowed data root from the candidate manifest location, and the launcher
+had placed that manifest under `results/`. No partial curation output was produced. The retry will
+create a uniquely named temporary manifest beside the production manifests (without overwriting any
+tracked file), move it into the job's results directory after successful conversion, and reuse the
+already downloaded raw file.
+
 ## Current snapshot — DTNet dielectric dataset integration (2026-09-13)
 
 Completed a new data-integration unit from the official `pfnet-research/dielectric-pred` release.

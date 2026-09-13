@@ -47,6 +47,11 @@ Launcher adjustment check: `bash -n slurm/curate_tensor_datasets.sbatch` must pa
 branch invokes the already tested hash-gated converter inside Slurm and writes its candidate manifest
 under ignored `results/`, never over the tracked source manifest.
 
+Job 434 runtime result: failed before curation with `ValueError: DTNet resources must stay inside the
+manifest data root`; raw download completed at the expected size, processed output was absent, and
+only Git/environment evidence existed. Retry acceptance adds a shell check for the temporary
+manifest path/move and must show that the tracked `data/manifests/dtnet_dielectric.json` is unchanged.
+
 ## 2026-09-13 — DTNet dielectric dataset integration
 
 计划检查：
