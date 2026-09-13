@@ -12,6 +12,7 @@ from src.cli.reduced_dpa4_train import (
     _merge_sharded_examples,
     _shard_sample_ids,
     _validate_shard_arguments,
+    _worker_shard_indices,
 )
 from src.cli.reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratified_smoke_ids
 from src.data import TrainingUnit, load_training_dataset
@@ -38,6 +39,32 @@ def test_dpa4_feature_shard_merge_rejects_coverage_drift() -> None:
         _merge_sharded_examples(("a", "b", "c"), (rows,))
     with pytest.raises(ValueError, match="index/count"):
         _shard_sample_ids(("a",), 0, 0)
+
+
+def test_dpa4_feature_workers_assign_fine_grained_shards_exactly_once() -> None:
+    assignments = [_worker_shard_indices(64, 4, index) for index in range(4)]
+    assert tuple(len(rows) for rows in assignments) == (16, 16, 16, 16)
+    flattened = tuple(shard for rows in assignments for shard in rows)
+    assert sorted(flattened) == list(range(64))
+    assert len(flattened) == len(set(flattened))
+
+
+def test_dpa4_launcher_separates_cache_partitions_from_concurrent_workers() -> None:
+    launcher = (ROOT / "slurm" / "train_reduced_dpa4_full_pg.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "default_feature_shards=64" in launcher
+    assert "EXPERT_DPA4_FEATURE_WORKERS" in launcher
+    assert "worker_index<feature_workers" in launcher
+    assert "shard_index+=feature_workers" in launcher
+    assert 'run_feature_worker "${worker_index}" &' in launcher
+    assert '--feature-shard-index "${shard_index}"' in launcher
+
+
+@pytest.mark.parametrize("counts", ((0, 1, 0), (4, 0, 0), (3, 4, 0), (4, 2, 2)))
+def test_dpa4_feature_worker_validation(counts) -> None:
+    with pytest.raises(ValueError, match="worker|index"):
+        _worker_shard_indices(*counts)
 
 
 @pytest.mark.parametrize(

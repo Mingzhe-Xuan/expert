@@ -75,6 +75,21 @@
   GMTNet full job 443, which is now preprocessing the common training split, and submitted replacement
   four-way DPA4 full job 446 behind it.
 
+- 2026-09-13: GMTNet full job 443 completed with exit `0:0` after all 200 epochs and exact 677-row
+  test inference. Its epoch-93 best checkpoint reports RMSE 25.4498959, Fnorm 19.1692104 and EwT
+  25/10/5 of 53.0281%/18.3161%/7.3855%; output line count, JUnit and artifact hashes were verified.
+  DPA4 full job 446 then started automatically with all four shard workers active. Submitted
+  dependency-gated comparison job 447 so common-ID metric recomputation cannot run until both full
+  training jobs succeed.
+
+- 2026-09-13: exact job-446 timestamps disproved the four-monolithic-shard throughput assumption:
+  two shards reached 50 train records in 89--97 minutes, while another required 98 minutes for only
+  25, projecting beyond the 48-hour allocation. Reworked the launcher to separate 64 deterministic,
+  reusable cache partitions from four persistent GPU workers, limiting long-tail imbalance without
+  changing any sample, feature, model, seed, or final order. Fourteen focused tests, Bash/Python
+  checks, and the complete 244-test suite passed; next is commit/sync, cancel the provably infeasible
+  task-owned jobs 446/447, and submit a real fine-grained smoke before the replacement full run.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

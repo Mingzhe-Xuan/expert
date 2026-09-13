@@ -1,5 +1,16 @@
 # Agent lessons
 
+## 2026-09-13 — Long-tail feature extraction needs fine-grained recovery units
+
+- Equal record counts do not imply equal accelerator work for periodic equivariant models. Crystal
+  neighbor topology and model-internal work can make equally sized shards differ by more than 2x,
+  so a job gated on the slowest monolithic shard can exceed its walltime even when aggregate GPU
+  utilization is high.
+- Separate cache partition count from concurrent worker count. Use many deterministic, provenance-
+  checked cache partitions to bound imbalance and preserve partial progress, but keep only enough
+  persistent workers to saturate the GPU. Restore the original manifest order only after validating
+  exact coverage across all partitions.
+
 ## 2026-09-13 — Model cache partition identity in the cache schema
 
 - If feature extraction is partitioned, do not encode shard identity only in directory names or

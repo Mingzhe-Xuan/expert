@@ -92,6 +92,29 @@ checkpoint reload, prediction export and evaluation. Its DPA4 metrics match seri
 floating-point precision (RMSE 9.8611298, Fnorm 28.8066578, all three EwT rates 0%); concurrent GPU
 utilization reached 99% with about 2.44 GiB total memory.
 
+GMTNet full-run acceptance result: job 443 completed the exact 5,001/637/677 split, 200 official
+training epochs, best-validation checkpoint reload, and 677-row test inference with Slurm exit
+`0:0` in 01:31:39. JUnit reports one test and zero failures/errors/skips. The selected epoch is 93
+(validation MAE 4.1132789); test RMSE is 25.4498959, Fnorm is 19.1692104, and EwT 25/10/5 is
+53.0281%/18.3161%/7.3855%. Prediction SHA-256 is
+`484a4aa4137779013387f1470e5f9278d4f02c12523512c698128c7b4ca9d64c`; final cross-model
+acceptance remains pending DPA4 job 446 and dependency-gated comparison job 447.
+
+DPA4 fine-grained recovery plan: separate the number of deterministic cache partitions from the
+number of concurrent GPU workers. Launcher tests must require all partition indices to be assigned
+exactly once across the worker loops, reject worker counts larger than partition/CPU counts, retain
+per-partition stdout/stderr/summary/JUnit evidence, stop before merge if any partition fails, and
+allow the existing cache provenance loader to reuse completed partitions. Final merge must continue
+to prove exact original sample order and coverage before unchanged training/testing.
+
+Fine-grained scheduler pre-commit result: 14 focused tests passed, including exact-once assignment
+of 64 cache partitions to four persistent workers and launcher integration assertions. Bash syntax,
+Python compilation and whitespace checks passed. The complete project suite then passed 244 tests
+with zero failures/skips in 358.53 seconds. Two earlier invocations did not collect project tests:
+`uv run pytest` omitted the repository import root, and global pytest plugin auto-loading exposed an
+unrelated missing `requests_toolbelt`; the successful unchanged suite used the established isolated
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1; python -m pytest tests` command.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

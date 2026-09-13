@@ -21,9 +21,24 @@ smoke_args=()
 if [[ "${EXPERT_REDUCED_SMOKE:-0}" == "1" ]]; then
   smoke_args+=(--smoke)
 fi
-feature_shards="${EXPERT_DPA4_FEATURE_SHARDS:-4}"
+default_feature_shards=64
+if [[ "${EXPERT_REDUCED_SMOKE:-0}" == "1" ]]; then
+  default_feature_shards=4
+fi
+feature_shards="${EXPERT_DPA4_FEATURE_SHARDS:-${default_feature_shards}}"
 if ! [[ "${feature_shards}" =~ ^[1-9][0-9]*$ ]]; then
   echo "EXPERT_DPA4_FEATURE_SHARDS must be a positive integer" >&2
+  exit 2
+fi
+default_feature_workers=4
+if (( feature_shards < default_feature_workers )); then
+  default_feature_workers="${feature_shards}"
+fi
+feature_workers="${EXPERT_DPA4_FEATURE_WORKERS:-${default_feature_workers}}"
+if ! [[ "${feature_workers}" =~ ^[1-9][0-9]*$ ]] \
+  || (( feature_workers > feature_shards )) \
+  || (( feature_workers > SLURM_CPUS_PER_TASK )); then
+  echo "EXPERT_DPA4_FEATURE_WORKERS must be positive and no larger than shards or CPUs" >&2
   exit 2
 fi
 common_args=(
@@ -37,25 +52,36 @@ common_args=(
 )
 
 if (( feature_shards > 1 )); then
-  worker_threads=$(( SLURM_CPUS_PER_TASK / feature_shards ))
+  worker_threads=$(( SLURM_CPUS_PER_TASK / feature_workers ))
   if (( worker_threads < 1 )); then
     worker_threads=1
   fi
+
+  run_feature_worker() {
+    local worker_index="$1"
+    local shard_index
+    for (( shard_index=worker_index; shard_index<feature_shards; shard_index+=feature_workers )); do
+      if ! env OMP_NUM_THREADS="${worker_threads}" \
+        DP_INTRA_OP_PARALLELISM_THREADS="${worker_threads}" \
+        DP_INTER_OP_PARALLELISM_THREADS=1 \
+        python -m src.cli.reduced_dpa4_train \
+          "${common_args[@]}" \
+          --prepare-only \
+          --feature-shard-index "${shard_index}" \
+          --checkpoint "${run_root}/prepare-checkpoint-${SLURM_JOB_ID}-${shard_index}.pt" \
+          --predictions "${run_root}/prepare-predictions-${SLURM_JOB_ID}-${shard_index}.jsonl" \
+          --summary "${run_root}/prepare-summary-${SLURM_JOB_ID}-${shard_index}.json" \
+          --junit "${run_root}/prepare-junit-${SLURM_JOB_ID}-${shard_index}.xml" \
+          > "${run_root}/prepare-stdout-${SLURM_JOB_ID}-${shard_index}.log" \
+          2> "${run_root}/prepare-stderr-${SLURM_JOB_ID}-${shard_index}.log"; then
+        return 1
+      fi
+    done
+  }
+
   worker_pids=()
-  for (( shard_index=0; shard_index<feature_shards; shard_index++ )); do
-    env OMP_NUM_THREADS="${worker_threads}" \
-      DP_INTRA_OP_PARALLELISM_THREADS="${worker_threads}" \
-      DP_INTER_OP_PARALLELISM_THREADS=1 \
-      python -m src.cli.reduced_dpa4_train \
-        "${common_args[@]}" \
-        --prepare-only \
-        --feature-shard-index "${shard_index}" \
-        --checkpoint "${run_root}/prepare-checkpoint-${SLURM_JOB_ID}-${shard_index}.pt" \
-        --predictions "${run_root}/prepare-predictions-${SLURM_JOB_ID}-${shard_index}.jsonl" \
-        --summary "${run_root}/prepare-summary-${SLURM_JOB_ID}-${shard_index}.json" \
-        --junit "${run_root}/prepare-junit-${SLURM_JOB_ID}-${shard_index}.xml" \
-        > "${run_root}/prepare-stdout-${SLURM_JOB_ID}-${shard_index}.log" \
-        2> "${run_root}/prepare-stderr-${SLURM_JOB_ID}-${shard_index}.log" &
+  for (( worker_index=0; worker_index<feature_workers; worker_index++ )); do
+    run_feature_worker "${worker_index}" &
     worker_pids+=("$!")
   done
   worker_status=0

@@ -56,6 +56,30 @@ utilization at only 2.44 GiB. Serial job 442 was cancelled at 100/5,001 after it
 the three splits could not finish within 48 hours. GMTNet full job 443 is now running; replacement
 four-way DPA4 full job 446 is queued behind it.
 
+GMTNet job 443 remains healthy in full-split preprocessing and DPA4 job 446 remains queued for the
+same GPU. Slurm comparison job 447 is now dependency-gated with `afterok:443:446`; it will run only
+after both training jobs succeed, require exactly the same ordered 677 test IDs and frame-equivalent
+targets, and then write the common RMSE/Fnorm/EwT JSON and Markdown table.
+
+GMTNet job 443 has completed all 5,001/637/677 graph conversions and atomically published its
+145 MiB cache. Formal training has started successfully: by epoch 4 its validation MAE had improved
+from 4.7709 to 4.5228, with a best observed value of 4.4619 and no non-finite loss or CUDA error.
+
+GMTNet full job 443 subsequently completed all 200 epochs and test inference with exit `0:0` in
+01:31:39. The selected checkpoint is epoch 93 (validation MAE 4.1132789); its 677-row test output
+reports RMSE 25.4498959, Fnorm 19.1692104, and EwT 25/10/5 of 53.0281%/18.3161%/7.3855%.
+Prediction, summary, and zero-failure JUnit hashes were captured. DPA4 job 446 started automatically
+and all four train-split workers published their first progress record; comparison job 447 remains
+correctly dependency-gated.
+
+Job 446's first exact timestamps show unacceptable static-shard imbalance: shards 0/1 reached 50
+train examples after about 89--97 minutes, while shard 2 required about 98 minutes merely to reach
+25 and shard 3 had not yet reached 50 after 104 minutes. The slowest-shard projection exceeds the
+48-hour allocation. The recovery-safe replacement will retain four concurrent DPA4 processes but
+partition each split into 64 small cache shards processed sequentially per worker. This preserves
+all sample IDs and final manifest order while bounding load imbalance and making every completed
+small shard reusable after interruption.
+
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
 Completed a dataset-reduction unit over the four verified `recommended` JSONL files. Eligibility is

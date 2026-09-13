@@ -33,6 +33,16 @@ def _shard_sample_ids(sample_ids, shard_count: int, shard_index: int):
     return tuple(sample_ids[shard_index::shard_count])
 
 
+def _worker_shard_indices(shard_count: int, worker_count: int, worker_index: int):
+    """Assign fine-grained cache partitions exactly once across persistent workers."""
+
+    if shard_count < 1 or worker_count < 1 or worker_count > shard_count:
+        raise ValueError("feature worker/shard counts are invalid")
+    if not 0 <= worker_index < worker_count:
+        raise ValueError("feature worker index is outside feature_workers")
+    return tuple(range(worker_index, shard_count, worker_count))
+
+
 def _merge_sharded_examples(expected_ids, shards):
     by_id = {}
     for shard in shards:

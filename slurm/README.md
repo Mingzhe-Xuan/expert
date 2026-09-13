@@ -7,6 +7,13 @@ with seven current-point-group experts. The GMTNet job verifies the official che
 using its model and records the dedicated environment. Preprocessing caches and all run artifacts
 remain under ignored `results/reduced-benchmark/`.
 
+Full DPA4 extraction defaults to 64 deterministic cache partitions consumed by four persistent
+GPU workers. `EXPERT_DPA4_FEATURE_SHARDS` controls recovery granularity, while
+`EXPERT_DPA4_FEATURE_WORKERS` controls concurrency; they are deliberately separate so variable-cost
+crystals cannot strand one monolithic worker. Each completed partition is independently provenance
+checked and reusable, and the final process restores the frozen manifest order before training.
+Smoke mode retains four partitions by default.
+
 These non-interactive jobs are the only supported path for full tests, model inference,
 training smoke runs, and batch data processing on Guqq. Activate the recorded project
 backbone-specific virtual environments through `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,
