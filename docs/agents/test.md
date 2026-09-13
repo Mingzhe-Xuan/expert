@@ -30,6 +30,9 @@ skips in 267.98 seconds. An initial unscoped `pytest` invocation entered a vendo
 and hit that checkout's incompatible local `torch_spline_conv` DLL; the repository acceptance command
 intentionally scopes collection to `tests/`, and the complete project suite then passed unchanged.
 
+GMTNet compatibility follow-up: compilation and 9 focused metric/cache/comparison tests passed after
+adding the API-equivalent PyG scatter fallback; its documentation and whitespace check also passed.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

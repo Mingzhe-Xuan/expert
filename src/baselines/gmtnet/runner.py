@@ -9,6 +9,7 @@ import random
 import subprocess
 import sys
 from types import SimpleNamespace
+from types import ModuleType
 from typing import Sequence
 
 import numpy as np
@@ -52,6 +53,14 @@ def _load_official_modules(official_root: Path):
     ).stdout.strip()
     if commit != GMTNET_OFFICIAL_COMMIT:
         raise ValueError(f"GMTNet checkout commit mismatch: {commit}")
+    try:
+        importlib.import_module("torch_scatter")
+    except ImportError:
+        from torch_geometric.utils import scatter as pyg_scatter
+
+        compatibility = ModuleType("torch_scatter")
+        compatibility.scatter = pyg_scatter
+        sys.modules["torch_scatter"] = compatibility
     sys.path.insert(0, str(root))
     try:
         return (
@@ -300,7 +309,8 @@ def run_gmtnet_benchmark(
         "split_counts": {name: len(rows) for name, rows in splits.items()},
         "config": asdict(config),
         "protocol_repairs": ["no_wandb", "explicit_paths", "complete_validation_and_test_batches",
-                             "best_validation_mae_from_epoch_1"],
+                             "best_validation_mae_from_epoch_1",
+                             "pyg_scatter_compatibility_if_torch_scatter_unavailable"],
         "best_epoch": best_epoch,
         "best_validation_mae": best_mae,
         "test_metrics": metrics,

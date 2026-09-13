@@ -15,6 +15,13 @@
   compare canonical-frame predictions against canonical-frame targets and bumped cache schema to 2.
   Focused tests passed 27; next is final code review/commit and Guqq environment plus Slurm smoke.
 
+- 2026-09-13: committed and pushed the locally verified pipeline as `e6c26e3` (full suite 228/228).
+  Guqq's first pull failed with GnuTLS `-110`; the mandated `bash net.sh` plus three-minute wait was
+  applied. A retry timed out, then a second recovery/wait followed by an HTTP/1.1 pull succeeded.
+  Audit found 15 GiB free and confirmed DPA4 Torch 2.11/e3nn 0.5.9/DeepMD 3.2.0. Added a documented
+  PyG scatter compatibility fallback so GMTNet can use the existing compiled PyG runtime without a
+  risky login-node extension build; compilation and 9 focused tests passed before its follow-up commit.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
