@@ -142,6 +142,12 @@ test examples and atomically published its prepare summary plus a one-test, zero
 Torch 2.11.0+cu128/CUDA 12.8 and RTX 5090. The freed worker then dynamically claimed partition 2;
 no traceback, CUDA OOM, non-finite value or RuntimeError was found in its bounded stderr scan.
 
+Ten-hour full-run health evidence: job 451 had atomically published the contiguous partition set
+0--11 and dynamically claimed 12/13 at 09:56:50 runtime. GPU utilization was 99% with 2,157 MiB used;
+the bounded error scan remained empty. The resulting approximately 1.2 partitions/hour steady rate
+projects all 64 recovery units inside the three-day allocation, without changing the frozen model,
+dataset, split or evaluation protocol.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

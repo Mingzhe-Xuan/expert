@@ -93,7 +93,10 @@ running with 64 partitions, two workers and a three-day limit. Comparator 452 is
 completed GMTNet 443 and DPA4 451. At 01:23:51 runtime, full partition 0 atomically published its
 79/10/11 train/validation/test cache and zero-failure JUnit, after which the freed worker immediately
 claimed partition 2 while partition 1 remained active. The measured aggregate rate still fits the
-three-day allocation, with every completed partition independently reusable.
+three-day allocation, with every completed partition independently reusable. At 09:56:50 runtime,
+partitions 0--11 were complete and workers 12/13 were active at 99% GPU utilization; the measured
+steady rate projects roughly 53 hours for all 64 partitions, leaving margin for final training and
+comparison inside the three-day limit.
 
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 

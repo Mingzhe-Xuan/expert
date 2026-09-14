@@ -113,6 +113,12 @@
   while the slower partition 1 continued, proving dynamic scheduling in the real full run. Current
   aggregate throughput projects inside the three-day allocation; comparator 452 remains gated.
 
+- 2026-09-14: after a jump-session interruption and the mandatory recorded `net.sh` plus full
+  three-minute recovery wait, Guqq pulled first and showed DPA4 job 451 healthy at 09:56:50 runtime.
+  Partitions 0--11 were complete, 12/13 active, GPU utilization 99%, and bounded error scans empty.
+  The observed steady throughput projects about 53 hours for all 64 partitions, retaining margin for
+  final training/testing and dependency-gated comparison 452 within the three-day allocation.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
