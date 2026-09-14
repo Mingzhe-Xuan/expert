@@ -96,7 +96,9 @@ claimed partition 2 while partition 1 remained active. The measured aggregate ra
 three-day allocation, with every completed partition independently reusable. At 09:56:50 runtime,
 partitions 0--11 were complete and workers 12/13 were active at 99% GPU utilization; the measured
 steady rate projects roughly 53 hours for all 64 partitions, leaving margin for final training and
-comparison inside the three-day limit.
+comparison inside the three-day limit. At 18:13:13 runtime the completed/claimed counts reached
+23/25, GPU utilization remained 99%, and the bounded error scan stayed empty. The updated steady
+projection is approximately 51 hours for all partitions.
 
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 

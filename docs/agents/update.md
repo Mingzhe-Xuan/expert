@@ -119,6 +119,11 @@
   The observed steady throughput projects about 53 hours for all 64 partitions, retaining margin for
   final training/testing and dependency-gated comparison 452 within the three-day allocation.
 
+- 2026-09-14: a later pull-first bounded check found DPA4 job 451 healthy at 18:13:13 runtime with
+  23/64 partitions complete and 25/64 claimed. GPU utilization remained 99%, bounded error scans
+  remained empty, and the steady projection improved to about 51 hours for all cache partitions.
+  Comparator 452 remains dependency-held; no job or model setting was changed.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

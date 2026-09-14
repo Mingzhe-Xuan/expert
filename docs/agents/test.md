@@ -148,6 +148,11 @@ the bounded error scan remained empty. The resulting approximately 1.2 partition
 projects all 64 recovery units inside the three-day allocation, without changing the frozen model,
 dataset, split or evaluation protocol.
 
+Eighteen-hour full-run health evidence: at 18:13:13 job 451 had published partitions 0--22 and
+claimed 23/24, for 23 completed and 25 claimed recovery units. GPU utilization remained 99% with
+2,385 MiB used and the bounded traceback/OOM/non-finite/RuntimeError scan remained empty. The
+observed rate projects approximately 51 hours for all partitions, retaining three-day margin.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:
