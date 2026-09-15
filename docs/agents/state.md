@@ -98,7 +98,9 @@ partitions 0--11 were complete and workers 12/13 were active at 99% GPU utilizat
 steady rate projects roughly 53 hours for all 64 partitions, leaving margin for final training and
 comparison inside the three-day limit. At 18:13:13 runtime the completed/claimed counts reached
 23/25, GPU utilization remained 99%, and the bounded error scan stayed empty. The updated steady
-projection is approximately 51 hours for all partitions.
+projection is approximately 51 hours for all partitions. At 2-00:52:45 runtime, 61/64 partitions
+were complete and 63/64 claimed; GPU utilization was still 99% and the bounded error scan remained
+empty. Only three recovery units remain before strict merge and final DPA4 training/testing.
 
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 

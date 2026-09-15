@@ -153,6 +153,11 @@ claimed 23/24, for 23 completed and 25 claimed recovery units. GPU utilization r
 2,385 MiB used and the bounded traceback/OOM/non-finite/RuntimeError scan remained empty. The
 observed rate projects approximately 51 hours for all partitions, retaining three-day margin.
 
+Near-complete cache evidence: after a successful HTTP/1.1 pull-first check, job 451 had atomically
+published 61/64 partitions and claimed 63/64 at 2-00:52:45 runtime. Active partitions 61/62 remained
+computing at 99% GPU utilization with 2,969 MiB used; the bounded error scan was still empty. This
+leaves only three recovery units before the already tested strict merge/train/test path.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

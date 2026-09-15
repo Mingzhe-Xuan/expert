@@ -124,6 +124,11 @@
   remained empty, and the steady projection improved to about 51 hours for all cache partitions.
   Comparator 452 remains dependency-held; no job or model setting was changed.
 
+- 2026-09-16: after repeated slow GitHub responses, the mandated recovery/wait completed and the
+  HTTP/1.1 pull-first attempt eventually returned `Already up to date`. DPA4 job 451 was healthy at
+  2-00:52:45 with 61/64 partitions complete, 63/64 claimed, 99% GPU utilization and no bounded error
+  marker. Only three cache units remain before merge/training/testing; comparator 452 stays gated.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic
