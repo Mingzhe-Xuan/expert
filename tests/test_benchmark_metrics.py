@@ -276,6 +276,39 @@ def test_cached_training_supports_full_pg_architecture_with_interface(tmp_path) 
     assert report["routing"] == "current_point_group_only"
 
 
+def test_cached_training_supports_gmtnet_optimization_protocol(tmp_path) -> None:
+    unit, layout, examples = _cached_examples()
+    report = train_cached_backbone_readout(
+        backbone_family="analytic-cgcnn-protocol",
+        unit=unit,
+        source_layout=layout,
+        train_examples=examples[:3],
+        validation_examples=examples[3:5],
+        test_examples=examples[5:],
+        checkpoint_path=tmp_path / "gmtnet-protocol.pt",
+        config=BenchmarkConfig(
+            max_epochs=2,
+            batch_size=2,
+            patience=1,
+            training_protocol="gmtnet",
+            end_learning_rate=1.0e-5,
+            seed=42,
+        ),
+        device="cpu",
+    )
+    assert report["training_protocol"] == "gmtnet"
+    assert report["training_loss_function"] == "cartesian_huber_delta_1"
+    assert report["checkpoint_selection_metric"] == "validation_component_mae"
+    assert report["test_indicators"] == ["rmse", "fnorm", "ewt_25", "ewt_10", "ewt_5"]
+    assert len(report["history"]) == 2  # GMTNet protocol does not early-stop.
+    assert report["history"][-1]["learning_rate"] == pytest.approx(1.0e-5)
+    assert report["best_validation_mae"] == min(
+        row["validation_mae"] for row in report["history"]
+    )
+    assert report["test_loss"] >= 0.0
+    assert report["test_mae"] >= 0.0
+
+
 def test_published_split_gate_rejects_current_14480_elastic_manifest() -> None:
     unit = TrainingUnit("jarvis_tensor", "elastic")
     valid = SimpleNamespace(

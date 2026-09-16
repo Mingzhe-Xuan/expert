@@ -1,5 +1,37 @@
 # Test plan and results
 
+## 2026-09-16 — CGCNN-feature full-PG branch with GMTNet-aligned training
+
+Planned checks:
+
+- the feature provider returns exactly the same 92 CGCNN components as
+  `jarvis.core.specie.get_node_attributes(symbol, atom_features="cgcnn")`, preserves node order,
+  rejects unsupported atomic numbers, and exposes them only as even scalar (`0e`) channels;
+- the new branch is separately named/configured and does not change DPA4 cache paths, checkpoint
+  provenance, source layout, CLI defaults, or accepted predictions;
+- GMTNet-aligned training computes `torch.nn.HuberLoss` on raw Cartesian tensor components without
+  coefficient normalization, uses AdamW and per-optimizer-step linear decay from the configured
+  learning rate to `1e-5`, trains all requested epochs, and chooses checkpoints by validation MAE;
+- evaluation and saved rows use the reloaded best checkpoint and report the common component RMSE,
+  sample-mean Fnorm, and EwT 25/10/5 definitions over every selected test ID;
+- focused tests, full `tests/`, Python compilation, launcher syntax, CLI help, import, and
+  `git diff --check` pass before commit; the real 7/7/7 smoke and 5,001/637/677 full run execute only
+  through Slurm and emit zero-failure JUnit plus finite metrics.
+
+Expected result: a distinct CGCNN-feature `B+A+PGE+R/full_pg` row is added to the existing benchmark
+table with RMSE, Fnorm, and EwT 25/10/5; the original DPA4 row and artifacts remain byte-identical.
+
+Implementation-stage result: 26 focused feature/protocol/cache/comparison tests passed. They prove
+exact 92-component equality against the installed JARVIS provider, invalid-element rejection,
+independent `92 -> 128` model construction, raw-Cartesian Huber semantics, complete fixed-epoch
+training, final `1e-5` LR, validation-MAE selection, checkpoint reload, and optional third-row table
+generation. `python -m compileall -q src tests`, CLI help, launcher `bash -n`, and `git diff --check`
+passed. `uv run ruff` could not start because Ruff is not installed locally; no gate was weakened.
+
+Full pre-commit regression: `python -m pytest tests -q` passed 246 tests with zero failures/skips and
+627 warnings in 886.54 seconds. The warnings are existing TorchScript/profiler deprecations and do
+not contradict acceptance. Real GPU smoke and full-run evidence remain pending through Slurm.
+
 ## 2026-09-13 — reduced dielectric total DPA4-vs-GMTNet benchmark
 
 Planned checks:

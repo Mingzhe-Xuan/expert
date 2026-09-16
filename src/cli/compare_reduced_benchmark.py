@@ -43,9 +43,12 @@ def _write_atomic(path: Path, text: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Validate and compare reduced DPA4/GMTNet predictions")
+    parser = argparse.ArgumentParser(
+        description="Validate and compare reduced DPA4/CGCNN-full-PG/GMTNet predictions"
+    )
     parser.add_argument("--dpa4", type=Path, required=True)
     parser.add_argument("--gmtnet", type=Path, required=True)
+    parser.add_argument("--cgcnn-full-pg", type=Path)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--table", type=Path, required=True)
     arguments = parser.parse_args()
@@ -68,13 +71,32 @@ def main() -> None:
         ),
         "GMTNet": tensor_benchmark_metrics(gmt_prediction, gmt_target, task="dielectric"),
     }
+    prediction_sha256 = {
+        "dpa4": _sha256(arguments.dpa4),
+        "gmtnet": _sha256(arguments.gmtnet),
+    }
+    if arguments.cgcnn_full_pg is not None:
+        cgcnn_ids, cgcnn_prediction, cgcnn_target = _load(arguments.cgcnn_full_pg)
+        if cgcnn_ids != dpa_ids:
+            raise ValueError("CGCNN full-PG and reference test IDs or order differ")
+        if not torch.allclose(
+            torch.linalg.eigvalsh(cgcnn_target),
+            torch.linalg.eigvalsh(dpa_target),
+            atol=2.0e-4,
+            rtol=2.0e-5,
+        ):
+            raise ValueError("CGCNN full-PG targets are not frame-equivalent")
+        metrics["CGCNN B+A+PGE+R full_pg"] = tensor_benchmark_metrics(
+            cgcnn_prediction, cgcnn_target, task="dielectric"
+        )
+        prediction_sha256["cgcnn_full_pg"] = _sha256(arguments.cgcnn_full_pg)
     report = {
         "schema_version": 1,
         "status": "passed",
         "test_ids": dpa_ids,
         "test_count": len(dpa_ids),
         "target_equivalence": "symmetric_tensor_eigenvalues_atol_2e-4_rtol_2e-5",
-        "prediction_sha256": {"dpa4": _sha256(arguments.dpa4), "gmtnet": _sha256(arguments.gmtnet)},
+        "prediction_sha256": prediction_sha256,
         "metrics": metrics,
     }
     _write_atomic(arguments.summary, json.dumps(report, indent=2, sort_keys=True) + "\n")

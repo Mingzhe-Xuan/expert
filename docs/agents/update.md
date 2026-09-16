@@ -1,5 +1,18 @@
 # Agent progress updates
 
+- 2026-09-16: started the additive CGCNN-feature `B+A+PGE+R/full_pg` branch. Froze the intended
+  feature source to GMTNet's exact 92-component JARVIS/CGCNN descriptor and the optimization protocol
+  to Cartesian Huber loss, AdamW, per-step linear decay to `1e-5`, and validation component MAE
+  checkpoint selection. The existing DPA4 branch and its results remain unchanged. Planned local
+  parity/regression gates followed by a real Slurm smoke and full 5,001/637/677 training/test run.
+
+- 2026-09-16: implemented the independent fixed-feature provider/cache, learned GMTNet-shaped
+  `92 -> 128` scalar embedding, full-PG model wrapper, dedicated CLI/Slurm launcher, explicit
+  GMTNet optimization protocol, and optional third-model comparison-table input. Preserved the
+  legacy DPA4 coefficient-MSE/scheduler/early-stop path behind its original default. Focused tests
+  passed 26/26 and the complete project suite passed 246/246; compilation, CLI, launcher, and
+  whitespace checks passed. Next: commit/push, Guqq pull-first sync, and real Slurm smoke.
+
 - 2026-09-13: started the explicit reduced dielectric-total DPA4-vs-GMTNet acceptance benchmark.
   Froze the common 5,001/637/677 group-preserving split and target tensor, selected the exact DPA4
   `B+A+PGE+R/full_pg/full_o3` configuration with seven current-point-group experts, and defined the

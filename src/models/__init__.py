@@ -6,9 +6,12 @@ from .system import (
     build_backbone_adapter,
     periodic_graph_from_backbone,
 )
+from .cgcnn import CGCNNFeatureTensorModel, GMTNET_EMBEDDING_DIMENSION
 
 __all__ = [
     "BackboneTensorModel",
+    "CGCNNFeatureTensorModel",
+    "GMTNET_EMBEDDING_DIMENSION",
     "ModelForward",
     "build_backbone_adapter",
     "periodic_graph_from_backbone",

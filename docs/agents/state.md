@@ -1,5 +1,32 @@
 # Agent state
 
+## Current snapshot — CGCNN-feature full-PG branch (2026-09-16)
+
+In progress: add a new `B+A+PGE+R/full_pg/full_o3` training branch whose node input follows
+GMTNet's fixed 92-component CGCNN chemical feature and learned linear scalar embedding. This is an
+additional branch and does not replace, mutate, or invalidate the existing frozen-DPA4 branch or its
+accepted benchmark artifacts. Training is aligned to GMTNet with Cartesian Huber loss, AdamW,
+per-step linear learning-rate decay to `1e-5`, and best-checkpoint selection by validation component
+MAE. Final acceptance requires test RMSE, sample-mean Fnorm, and EwT 25/10/5 in the existing table.
+
+### Current plan
+
+1. [x] Add an exact GMTNet/CGCNN 92-feature provider and cache the features with the existing
+   canonical periodic graph, symmetry, target, split-ID, and dataset-hash contracts.
+2. [x] Add a separate CGCNN full-PG CLI and Slurm launcher; retain the DPA4 CLI/cache unchanged.
+3. [x] Generalize the cached trainer with an explicit GMTNet-aligned protocol: Cartesian Huber,
+   AdamW, per-step linear LR, full epochs, and validation-MAE checkpoint selection.
+4. [x] Verify feature parity, loss/selection/LR semantics, independent branch identity, checkpoint
+   reload, prediction export, and common RMSE/Fnorm/EwT calculation locally.
+5. [ ] Commit/push, pull-first sync Guqq, pass a real 7/7/7 Slurm smoke, then train/test the exact
+   5,001/637/677 reduced dielectric-total split through Slurm.
+6. [ ] Independently validate the 677 prediction rows and add the CGCNN full-PG metrics to the
+   existing DPA4/GMTNet comparison table.
+
+Module boundaries: `src/features/` owns fixed chemical feature construction; `src/training/` owns
+protocol-selectable optimization/evaluation; `src/cli/` owns the new independent entry point;
+`slurm/` owns cluster launch only; `src/evaluation/` remains the single metric implementation.
+
 ## Current snapshot — reduced dielectric total DPA4-vs-GMTNet benchmark (2026-09-13)
 
 Completed: trained and tested two tensor models on the exact same reduced dielectric-total records and

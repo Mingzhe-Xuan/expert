@@ -9,3 +9,9 @@ edge not satisfying the project's strict `distance < cutoff` convention; it neve
 widens the physical cutoff.
 Tests may inject a contract-compatible extractor only for orchestration tests; final
 acceptance always uses all four real adapters through Slurm.
+
+`CGCNNFeatureTensorModel` is an additive non-pretrained branch for controlled comparison with
+GMTNet. It consumes the exact fixed 92D JARVIS CGCNN descriptor, applies GMTNet's learned linear
+`92 -> 128` even-scalar atom embedding, then projects into the unchanged
+`B+A+PGE+R/full_pg` hidden layout. It does not share or replace any DPA4 adapter parameters or
+artifacts.

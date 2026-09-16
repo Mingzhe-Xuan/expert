@@ -1,11 +1,18 @@
 # Slurm entry points
 
-`train_reduced_dpa4_full_pg.sbatch` and `train_reduced_gmtnet.sbatch` form the paired custom
-dielectric-total benchmark. They consume the same manifest-frozen 5,001/637/677 split and export
+`train_reduced_dpa4_full_pg.sbatch`, `train_reduced_cgcnn_full_pg.sbatch`, and
+`train_reduced_gmtnet.sbatch` form the custom dielectric-total benchmark. They consume the same
+manifest-frozen 5,001/637/677 split and export
 per-ID test predictions for the common evaluator. The DPA4 job fixes `B+A+PGE+R/full_pg/full_o3`
 with seven current-point-group experts. The GMTNet job verifies the official checkout commit before
 using its model and records the dedicated environment. Preprocessing caches and all run artifacts
 remain under ignored `results/reduced-benchmark/`.
+
+The CGCNN full-PG job is an additive branch: it uses GMTNet's exact fixed 92D JARVIS CGCNN node
+feature and learned `92 -> 128` scalar atom embedding, followed by the same
+`B+A+PGE+R/full_pg/full_o3` downstream architecture. Its optimizer/evaluation protocol is GMTNet
+aligned (Cartesian Huber, AdamW, per-step linear LR to `1e-5`, validation MAE selection) and its
+cache/checkpoint/result namespace is independent from DPA4.
 
 Full DPA4 extraction defaults to 64 deterministic cache partitions dynamically claimed by four persistent
 GPU workers. `EXPERT_DPA4_FEATURE_SHARDS` controls recovery granularity, while
