@@ -19,6 +19,11 @@
   split the launcher variable to `EXPERT_CGCNN_VENV` so the dependency contract is explicit before
   retrying. No DPA4 environment or accepted artifact was modified.
 
+- 2026-09-16: corrected smoke job 456 passed on RTX 5090 with scheduler `COMPLETED/0:0`, a
+  zero-failure JUnit, best-checkpoint reload, 7 prediction rows, finite common metrics, and final LR
+  `1e-5`. Submitted full job 457 with exact 5,001/637/677 splits and 200 GMTNet-aligned epochs; its
+  initial health check reached 25/5,001 feature records on node221 without traceback.
+
 - 2026-09-13: started the explicit reduced dielectric-total DPA4-vs-GMTNet acceptance benchmark.
   Froze the common 5,001/637/677 group-preserving split and target tensor, selected the exact DPA4
   `B+A+PGE+R/full_pg/full_o3` configuration with seven current-point-group experts, and defined the

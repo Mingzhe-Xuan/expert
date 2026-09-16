@@ -23,6 +23,11 @@ MAE. Final acceptance requires test RMSE, sample-mean Fnorm, and EwT 25/10/5 in 
 6. [ ] Independently validate the 677 prediction rows and add the CGCNN full-PG metrics to the
    existing DPA4/GMTNet comparison table.
 
+Real Slurm smoke job 456 is accepted (`COMPLETED`, `ExitCode=0:0`, JUnit 1/1, 7 predictions).
+Exact full job 457 is running feature materialization on node221 under commit `20cb034`; completion
+still requires 200 training epochs, best-checkpoint reload, 677 predictions, metric recomputation,
+and the three-model table.
+
 Module boundaries: `src/features/` owns fixed chemical feature construction; `src/training/` owns
 protocol-selectable optimization/evaluation; `src/cli/` owns the new independent entry point;
 `slurm/` owns cluster launch only; `src/evaluation/` remains the single metric implementation.

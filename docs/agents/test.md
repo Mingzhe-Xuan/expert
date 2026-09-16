@@ -38,6 +38,11 @@ The recorded GMTNet environment passed the dependency probe with Torch `2.11.0+c
 and jarvis-tools `2025.5.30`. Expected retry gate: launcher requires `EXPERT_CGCNN_VENV` and the real
 7/7/7 smoke completes with a zero-failure JUnit and finite aligned metrics.
 
+Retry smoke result: job 456 completed in 00:01:02 with scheduler `ExitCode=0:0`; JUnit contains one
+test with zero failures/errors/skips, and checkpoint reload exported exactly 7 predictions. Its
+two-epoch integration metrics were finite (RMSE 10.135396, Fnorm 29.681377, EwT 25/10/5 all 0%) and
+the LR ended at `1e-5`. Full job 457 is now the pending exact-split acceptance run.
+
 ## 2026-09-13 — reduced dielectric total DPA4-vs-GMTNet benchmark
 
 Planned checks:
