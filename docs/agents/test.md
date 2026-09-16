@@ -32,6 +32,12 @@ Full pre-commit regression: `python -m pytest tests -q` passed 246 tests with ze
 627 warnings in 886.54 seconds. The warnings are existing TorchScript/profiler deprecations and do
 not contradict acceptance. Real GPU smoke and full-run evidence remain pending through Slurm.
 
+First Slurm integration result: job 455 failed before feature materialization with an explicit
+`ModuleNotFoundError: jarvis`; the DPA4 runtime has Torch/e3nn but intentionally lacks jarvis-tools.
+The recorded GMTNet environment passed the dependency probe with Torch `2.11.0+cu128`, e3nn `0.5.9`,
+and jarvis-tools `2025.5.30`. Expected retry gate: launcher requires `EXPERT_CGCNN_VENV` and the real
+7/7/7 smoke completes with a zero-failure JUnit and finite aligned metrics.
+
 ## 2026-09-13 — reduced dielectric total DPA4-vs-GMTNet benchmark
 
 Planned checks:

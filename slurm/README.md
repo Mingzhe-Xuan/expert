@@ -13,6 +13,10 @@ feature and learned `92 -> 128` scalar atom embedding, followed by the same
 `B+A+PGE+R/full_pg/full_o3` downstream architecture. Its optimizer/evaluation protocol is GMTNet
 aligned (Cartesian Huber, AdamW, per-step linear LR to `1e-5`, validation MAE selection) and its
 cache/checkpoint/result namespace is independent from DPA4.
+Set `EXPERT_CGCNN_VENV` to the recorded compatible environment; the accepted setup reuses
+`/home/xmz/expert-envs/gmtnet-py310`, which contains Torch 2.11, e3nn 0.5.9, and jarvis-tools
+2025.5.30. The variable is deliberately separate from `EXPERT_DPA4_VENV` so missing chemical-feature
+dependencies cannot be hidden by the pretrained-backbone runtime.
 
 Full DPA4 extraction defaults to 64 deterministic cache partitions dynamically claimed by four persistent
 GPU workers. `EXPERT_DPA4_FEATURE_SHARDS` controls recovery granularity, while

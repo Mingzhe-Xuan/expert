@@ -1,5 +1,13 @@
 # Guqq environments
 
+## 2026-09-16 — CGCNN-feature full-PG environment reuse
+
+- Runtime path: `/home/xmz/expert-envs/gmtnet-py310`; this is the already recorded isolated GMTNet
+  environment, reused without mutation because it provides the required compatible stack.
+- Verified before retry: Torch `2.11.0+cu128`, e3nn `0.5.9`, and jarvis-tools `2025.5.30`.
+- Launcher variable: `EXPERT_CGCNN_VENV`. The separate name prevents accidental reuse of the DPA4
+  environment, which intentionally lacks jarvis-tools and failed job 455 before training began.
+
 ## 2026-09-13 — GMTNet reduced-benchmark environment plan
 
 - Planned path: `/home/xmz/expert-envs/gmtnet-py310`, created with

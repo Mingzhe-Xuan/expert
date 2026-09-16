@@ -13,6 +13,12 @@
   passed 26/26 and the complete project suite passed 246/246; compilation, CLI, launcher, and
   whitespace checks passed. Next: commit/push, Guqq pull-first sync, and real Slurm smoke.
 
+- 2026-09-16: commit `90c9c45` was pushed and pulled on Guqq. First smoke job 455 failed safely
+  before preprocessing because the DPA4 environment lacks jarvis-tools. Verified the existing
+  GMTNet environment already has the compatible Torch 2.11/e3nn 0.5.9/jarvis-tools 2025.5.30 stack;
+  split the launcher variable to `EXPERT_CGCNN_VENV` so the dependency contract is explicit before
+  retrying. No DPA4 environment or accepted artifact was modified.
+
 - 2026-09-13: started the explicit reduced dielectric-total DPA4-vs-GMTNet acceptance benchmark.
   Froze the common 5,001/637/677 group-preserving split and target tensor, selected the exact DPA4
   `B+A+PGE+R/full_pg/full_o3` configuration with seven current-point-group experts, and defined the

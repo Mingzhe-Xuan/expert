@@ -11,8 +11,8 @@
 #SBATCH --error=logs/slurm/reduced-cgcnn-full-pg-%j.err
 
 set -euo pipefail
-: "${EXPERT_DPA4_VENV:?Set the recorded DPA4/core environment}"
-source "${EXPERT_DPA4_VENV}/bin/activate"
+: "${EXPERT_CGCNN_VENV:?Set the recorded CGCNN full-PG environment}"
+source "${EXPERT_CGCNN_VENV}/bin/activate"
 run_root="results/reduced-benchmark/cgcnn-full-pg"
 mkdir -p logs/slurm "${run_root}" results/reduced-benchmark/cache
 git rev-parse HEAD > "${run_root}/git-${SLURM_JOB_ID}.txt"
