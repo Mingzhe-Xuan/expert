@@ -129,6 +129,19 @@
   2-00:52:45 with 61/64 partitions complete, 63/64 claimed, 99% GPU utilization and no bounded error
   marker. Only three cache units remain before merge/training/testing; comparator 452 stays gated.
 
+- 2026-09-16: DPA4 full job 451 completed all 64 caches and the exact 5,001/637/677 merge/train/test
+  pipeline with a zero-failure JUnit and 677 predictions. Its summary reports RMSE 26.1664448, Fnorm
+  31.5391254 and EwT 25/10/5 12.2600%/2.5111%/1.0340%. Comparator 452 failed before Python because
+  Slurm `--wrap` ran `/bin/sh`, which rejected `set -o pipefail`; next is an explicit-Bash comparator
+  retry over unchanged prediction artifacts, followed by common-ID/hash verification and retrieval.
+
+- 2026-09-16: explicit-Bash comparator job 454 completed with exit `0:0` in 4 seconds. It verified
+  the identical ordered 677 IDs and frame-equivalent symmetric targets, then produced the requested
+  table: DPA4 RMSE/Fnorm/EwT25/10/5 26.166445/31.539129/12.26%/2.51%/1.03%, versus GMTNet
+  25.449894/19.169209/53.03%/18.32%/7.39%. Retrieved predictions, summaries, JUnits, table and logs
+  passed independent local line-count, unique/order, hash, metric-parity and error-marker checks.
+  Added the compact tracked report under `docs/benchmarks/`; the benchmark acceptance goal is met.
+
 - 2026-09-13: started strict per-property `>5%` point-group reduction over the verified recommended
   datasets. The dielectric properties select seven groups and elastic stiffness selects six; planned
   a streaming hash-gated reducer, explicit per-record/property eligibility metadata, deterministic

@@ -158,6 +158,25 @@ published 61/64 partitions and claimed 63/64 at 2-00:52:45 runtime. Active parti
 computing at 99% GPU utilization with 2,969 MiB used; the bounded error scan was still empty. This
 leaves only three recovery units before the already tested strict merge/train/test path.
 
+Comparator shell-retry plan: require job 451's final JUnit to have one test and zero failures/errors/
+skips, require exactly 677 DPA4 and 677 GMTNet prediction rows, then invoke the existing tested
+`src.cli.compare_reduced_benchmark` under explicit Bash. The retry must exit successfully, verify
+identical ordered IDs and frame-equivalent targets, and atomically produce the JSON summary and
+Markdown RMSE/Fnorm/EwT table. Job 452 is not metric evidence because `/bin/sh` rejected `pipefail`
+before Python started.
+
+Final acceptance result: explicit-Bash Slurm comparator 454 completed with exit `0:0` in 4 seconds.
+Both model JUnits have one test and zero failures/errors/skips; both prediction files contain 677
+rows and 677 unique sample IDs in exactly the same order; comparison status is `passed`, contains
+the same 677 IDs and records target equivalence as
+`symmetric_tensor_eigenvalues_atol_2e-4_rtol_2e-5`. Independent local hashes match the server:
+DPA4 predictions `a8745811...36f5`, GMTNet predictions `484a4aa4...d64c`, comparison JSON
+`da19fe54...e223`, and table `a7e7d30d...3ce7`. Unified recomputation reports DPA4 RMSE/Fnorm/
+EwT25/10/5 = 26.1664449/31.5391286/12.25997%/2.51108%/1.03397% and GMTNet =
+25.4498938/19.1692091/53.02806%/18.31610%/7.38552%. Bounded local log scans contain no traceback,
+CUDA OOM, non-finite value or RuntimeError. Documentation links, paths, hashes and whitespace checks
+passed before the final evidence commit.
+
 ## 2026-09-13 — >5% point-group reduced datasets
 
 Planned checks:

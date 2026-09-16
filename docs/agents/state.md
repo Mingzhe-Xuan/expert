@@ -2,7 +2,7 @@
 
 ## Current snapshot — reduced dielectric total DPA4-vs-GMTNet benchmark (2026-09-13)
 
-In progress: train and test two tensor models on the exact same reduced dielectric-total records and
+Completed: trained and tested two tensor models on the exact same reduced dielectric-total records and
 frozen train/validation/test assignments (5,001/637/677): (1) DPA4 with `B+A+PGE+R`, `full_pg`,
 `full_o3` adaptation/readout and one expert for each of the seven retained point groups; and (2) the
 official GMTNet dielectric model. The primary acceptance artifact is one table reporting component
@@ -15,9 +15,9 @@ RMSE, sample-mean Frobenius error (Fnorm), and EwT at 25%, 10%, and 5% on the co
    GMTNet dataset adapter/runner, and prediction-based unified evaluator.
 3. [x] Run fixture, metric-parity, checkpoint/provenance, CLI, and end-to-end protocol checks locally;
    commit and push only task-owned source/docs.
-4. [ ] Pull on Guqq and submit exact-model smoke, DPA4 feature-cache, and both full training/testing
+4. [x] Pull on Guqq and submit exact-model smoke, DPA4 feature-cache, and both full training/testing
    runs via Slurm; retrieve predictions and reports.
-5. [ ] Verify identical test IDs/targets and produce the requested comparison table with run metadata.
+5. [x] Verify identical test IDs/targets and produce the requested comparison table with run metadata.
 
 Module boundaries: `src/data/` owns manifest-gated dataset loading; `src/training/` owns the DPA4
 frozen-feature architecture trainer; a dedicated GMTNet baseline module owns official-code input and
@@ -101,6 +101,17 @@ comparison inside the three-day limit. At 18:13:13 runtime the completed/claimed
 projection is approximately 51 hours for all partitions. At 2-00:52:45 runtime, 61/64 partitions
 were complete and 63/64 claimed; GPU utilization was still 99% and the bounded error scan remained
 empty. Only three recovery units remain before strict merge and final DPA4 training/testing.
+
+DPA4 job 451 subsequently completed all 64 partitions, strict 5,001/637/677 merge, training,
+checkpoint reload and 677-row inference. Its zero-failure JUnit and summary report RMSE 26.1664448,
+Fnorm 31.5391254 and EwT 25/10/5 of 12.2600%/2.5111%/1.0340%. Dependency job 452 reached the
+comparison stage but failed before invoking Python because Slurm `--wrap` used `/bin/sh`, where
+`set -o pipefail` is illegal. A Bash-explicit comparator retry over the unchanged saved predictions
+was submitted as job 454 and completed with exit `0:0` in 4 seconds. It verified 677 unique ordered
+IDs plus symmetric-target eigenvalue equivalence and produced the accepted table: DPA4 RMSE/Fnorm/
+EwT25/10/5 = 26.166445/31.539129/12.26%/2.51%/1.03%; GMTNet =
+25.449894/19.169209/53.03%/18.32%/7.39%. Retrieved hashes and JUnits independently match the server
+records; the compact report is `docs/benchmarks/reduced_dielectric_total_dpa4_vs_gmtnet.md`.
 
 ## Current snapshot — >5% point-group reduced datasets (2026-09-13)
 
