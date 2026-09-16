@@ -1,5 +1,9 @@
 # Slurm entry points
 
+`compare_reduced_benchmark.sbatch` runs the strict common-677-row comparison after all prediction
+artifacts exist. It requires explicit environment and three-model prediction paths; submit it with
+an `afterok` dependency on the CGCNN training job so evaluation never races an incomplete JSONL.
+
 `train_reduced_dpa4_full_pg.sbatch`, `train_reduced_cgcnn_full_pg.sbatch`, and
 `train_reduced_gmtnet.sbatch` form the custom dielectric-total benchmark. They consume the same
 manifest-frozen 5,001/637/677 split and export

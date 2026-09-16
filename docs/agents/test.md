@@ -1,5 +1,25 @@
 # Test plan and results
 
+## 2026-09-17 — dependency-safe reduced benchmark comparator launcher
+
+Planned checks:
+
+- the Slurm launcher requires an explicit recorded Python environment and explicit DPA4, GMTNet,
+  and CGCNN prediction paths rather than guessing mutable `latest` artifacts;
+- it invokes the existing strict 677-ID/eigenvalue-equivalence comparator and writes job-scoped JSON
+  plus Markdown table outputs under the ignored reduced-benchmark result root;
+- Bash syntax, a focused launcher-contract test, the complete `tests/` suite, compilation, and
+  `git diff --check` pass before commit; submission uses `afterok:458` so comparison cannot run on a
+  failed or incomplete training artifact.
+
+Expected result: once job 458 succeeds, the dependent Slurm job immediately emits the validated
+three-model table without any login-node evaluation or manual race window.
+
+Result: launcher-contract tests passed within 10 focused reduced-benchmark tests; Bash syntax and
+task-scoped whitespace checks passed. The complete project suite passed 248 tests with zero
+failures/skips in 275.71 seconds, and Python compilation passed. The launcher is eligible to commit,
+pull, and submit with an `afterok:458` dependency.
+
 ## 2026-09-17 — full-run canonical expert-domain repair
 
 Planned checks:

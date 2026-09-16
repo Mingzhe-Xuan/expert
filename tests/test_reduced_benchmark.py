@@ -116,3 +116,16 @@ def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:
     assert report["metrics"]["GMTNet"]["rmse"] == 0.0
     assert report["metrics"]["CGCNN B+A+PGE+R full_pg"]["rmse"] == 0.0
     assert "| Model | RMSE" in table.read_text(encoding="utf-8")
+
+
+def test_comparison_launcher_requires_explicit_artifacts_and_job_scopes_outputs() -> None:
+    launcher = (ROOT / "slurm" / "compare_reduced_benchmark.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "EXPERT_CGCNN_VENV:?" in launcher
+    assert "EXPERT_REDUCED_DPA4_PREDICTIONS:?" in launcher
+    assert "EXPERT_REDUCED_GMTNET_PREDICTIONS:?" in launcher
+    assert "EXPERT_REDUCED_CGCNN_PREDICTIONS:?" in launcher
+    assert '--cgcnn-full-pg "${EXPERT_REDUCED_CGCNN_PREDICTIONS}"' in launcher
+    assert 'summary-${SLURM_JOB_ID}.json' in launcher
+    assert 'table-${SLURM_JOB_ID}.md' in launcher

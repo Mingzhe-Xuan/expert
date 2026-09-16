@@ -18,7 +18,7 @@ MAE. Final acceptance requires test RMSE, sample-mean Fnorm, and EwT 25/10/5 in 
    AdamW, per-step linear LR, full epochs, and validation-MAE checkpoint selection.
 4. [x] Verify feature parity, loss/selection/LR semantics, independent branch identity, checkpoint
    reload, prediction export, and common RMSE/Fnorm/EwT calculation locally.
-5. [ ] Repair the full-run expert-domain mismatch exposed only after all 6,315 records were
+5. [x] Repair the full-run expert-domain mismatch exposed only after all 6,315 records were
    canonicalized: instantiate the union of actual cached symmetry groups instead of assuming that
    source-manifest PG labels and redetected canonical PGs are identical. Add a mismatch regression,
    retest, commit/push, and rerun through Slurm while reusing the published caches.
@@ -26,12 +26,33 @@ MAE. Final acceptance requires test RMSE, sample-mean Fnorm, and EwT 25/10/5 in 
 7. [ ] Independently validate the 677 prediction rows and add the CGCNN full-PG metrics to the
    existing DPA4/GMTNet comparison table.
 
+Automation refinement in progress: add a dependency-safe Slurm wrapper around the existing strict
+comparator, requiring explicit three-model prediction paths and producing job-scoped JSON/Markdown
+outputs only after job 458 succeeds.
+
 Real Slurm smoke job 456 is accepted (`COMPLETED`, `ExitCode=0:0`, JUnit 1/1, 7 predictions).
 Exact full job 457 materialized and atomically cached all 5,001/637/677 records, then failed before
 training because at least one structure redetected as `6/mmm`, which is outside the seven source
 labels used to instantiate experts. No predictions were produced. The next implementation unit
 derives the finite expert domain from the already-canonical cached examples and verifies this
 source-vs-redetection boundary before a cache-reusing retry.
+
+Repair commit `3dccf65` passed 247/247 local tests and is pulled on Guqq. Retry job 458 loaded the
+three complete caches, started with the exact 200-epoch GMTNet-aligned arguments, and is running on
+node221 with an active CUDA process. Final metrics and the comparison table remain pending.
+
+The temporary pull-first blocker is resolved after a fresh `net.sh` and full 180-second wait. The
+next mandatory pull succeeded; job 458 was `RUNNING` at 22:09 and its 3.3 MiB checkpoint proves it
+crossed canonical expert construction and at least one validation boundary. It continues unchanged;
+terminal summary, JUnit, 677 predictions, metrics, and the comparison-table update remain pending.
+
+Latest checkpoint inspection found step/epoch 10 at 35:57 runtime. The observed mean is roughly 3.6
+minutes per epoch, projecting about 12 hours for 200 epochs—comfortably inside the 48-hour Slurm
+limit, though final acceptance still depends on actual terminal artifacts.
+
+The next successful recovery check found epoch 14 at 49:04, maintaining about 3.5 minutes/epoch and
+confirming forward progress. The fresh three-turn blocked audit did not reach its threshold because
+the third pull succeeded.
 
 Module boundaries: `src/features/` owns fixed chemical feature construction; `src/training/` owns
 protocol-selectable optimization/evaluation; `src/cli/` owns the new independent entry point;

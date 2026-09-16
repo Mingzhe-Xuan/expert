@@ -1,5 +1,15 @@
 # Agent progress updates
 
+- 2026-09-17: while job 458 continues, started a small independent implementation unit for an
+  `afterok:458` comparator launcher. It will require explicit DPA4/GMTNet/CGCNN prediction paths and
+  run the existing 677-ID/target-equivalence validator through Slurm, removing the completion-time
+  manual race without changing training or model code.
+
+- 2026-09-17: implemented the explicit-artifact, job-scoped comparison launcher. Ten focused tests,
+  Bash syntax, compilation, and whitespace checks passed; the full project suite passed 248/248.
+  Next: commit/push, pull first on Guqq, confirm accepted DPA4/GMTNet prediction paths, and submit the
+  comparator with `afterok:458`.
+
 - 2026-09-17: full job 457 completed atomic feature materialization for every 5,001/637/677 record,
   then failed before training because a canonicalized structure routes to `6/mmm` while expert
   construction was hard-coded to the seven source-manifest retention labels. No predictions or
@@ -11,6 +21,37 @@
   untouched DPA4 branch. The new `6/mmm` regression passed within 16 focused tests; the complete
   suite passed 247/247, and compilation, launcher syntax, and whitespace checks passed. Next:
   commit/push, pull-first sync, and submit the cache-reusing full retry.
+
+- 2026-09-17: pushed repair `3dccf65`, pulled it first on Guqq, verified the complete 188/25/27 MiB
+  train/validation/test caches, and submitted exact full retry job 458. Startup inspection showed
+  the requested 200 epochs, batch 64, LR `1e-3 -> 1e-5`, weight decay `1e-5`, a live CUDA process,
+  and nonzero GPU utilization; the prior pre-training `6/mmm` failure has not recurred.
+
+- 2026-09-17: a later read-only monitor stalled at the Vlab banner. Ran the required `bash net.sh`,
+  completed the full three-minute wait, and retried; the command channel still did not reach the
+  mandatory `git pull`. Terminated the monitor without touching Slurm job 458 and stopped immediate
+  retries in accordance with the existing network lesson. The last authoritative job state remains
+  healthy `RUNNING`; terminal metrics are still pending.
+
+- 2026-09-17: bounded verbose SSH proved both hops authenticate and Guqq accepts the command, but
+  the mandatory default pull stalled. A later 45-second-bounded HTTP/1.1 pull also returned exit 1
+  without output, and its `&&` gate correctly prevented scheduler access. This same external pull
+  blocker has now repeated for three consecutive goal turns; job 458 remains untouched and the goal
+  must wait for Guqq outbound network recovery before terminal verification can continue.
+
+- 2026-09-17: resumed with a fresh `net.sh` and full 180-second wait; mandatory pull then succeeded.
+  Job 458 was healthy `RUNNING` at 22:09 and had published a 3.3 MiB checkpoint, proving the dynamic
+  canonical expert domain crossed the prior `6/mmm` failure and completed at least one validation
+  boundary. Summary, JUnit, and predictions are correctly absent while training continues.
+
+- 2026-09-17: a second recovery/wait plus HTTP/1.1 pull restored monitoring. Job 458 reached 35:57,
+  its checkpoint advanced to 03:26, and a lightweight CPU-only metadata read reported epoch 10.
+  This implies roughly 3.6 minutes/epoch and a projected ~12-hour 200-epoch run, within the 48-hour
+  allocation. No terminal artifacts exist yet, so the job remains in progress.
+
+- 2026-09-17: after two consecutive pull-gated monitor failures, the third recovery/wait succeeded.
+  Job 458 was healthy at 49:04 and checkpoint epoch 14 (mtime 03:39), so the fresh blocked audit reset
+  without marking the goal blocked. Training throughput remains near 3.5 minutes/epoch.
 
 - 2026-09-16: started the additive CGCNN-feature `B+A+PGE+R/full_pg` branch. Froze the intended
   feature source to GMTNet's exact 92-component JARVIS/CGCNN descriptor and the optimization protocol
