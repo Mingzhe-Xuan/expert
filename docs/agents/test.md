@@ -1,5 +1,31 @@
 # Test plan and results
 
+## 2026-09-17 — full-run canonical expert-domain repair
+
+Planned checks:
+
+- reproduce a cached split whose source retention labels omit a point group that appears in the
+  canonical `SymmetryRecord`, and require expert-domain discovery to include it deterministically;
+- require discovery to cover train, validation, and test symmetries, reject empty split collections,
+  and instantiate/forward the CGCNN full-PG model without the job-457 `6/mmm` error;
+- preserve the smoke selector's seven source-retained groups and leave the DPA4 branch unchanged;
+- run focused tests, the full project suite, compilation, launcher syntax, and `git diff --check`
+  before commit; then rerun the exact full job through Slurm and require 677 predictions plus a
+  zero-failure JUnit before accepting metrics.
+
+Expected result: the retry loads job 457's complete feature caches, trains all 200 epochs, reloads
+the validation-MAE-best checkpoint, and exports finite RMSE/Fnorm/EwT over exactly 677 test rows.
+
+Focused result: 16 CGCNN/reduced-benchmark tests passed. The regression supplies `6/mmm` only via a
+cached canonical symmetry, proves deterministic registry-ordered discovery across all three splits,
+constructs the corresponding full-PG expert, and rejects an empty split. Full regression and static
+checks remain required before commit.
+
+Pre-commit result: the complete project suite passed 247 tests with zero failures/skips in 273.55
+seconds. Python compilation, the CGCNN Slurm launcher's Bash syntax, and task-scoped
+`git diff --check` all passed. The repair is eligible to commit and synchronize before a cache-reusing
+Slurm retry.
+
 ## 2026-09-16 — CGCNN-feature full-PG branch with GMTNet-aligned training
 
 Planned checks:

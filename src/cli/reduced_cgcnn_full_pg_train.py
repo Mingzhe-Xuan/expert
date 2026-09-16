@@ -25,7 +25,11 @@ from ..training import (
     write_smoke_report,
 )
 from .reporting import execution_metadata, write_single_case_junit
-from .reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratified_smoke_ids
+from .reduced_protocol import (
+    REDUCED_POINT_GROUPS,
+    canonical_expert_point_groups,
+    point_group_stratified_smoke_ids,
+)
 
 
 ARCHITECTURE = ArchitectureConfig(
@@ -126,6 +130,9 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             "split_counts": {name: len(rows) for name, rows in splits.items()},
             "execution": execution_metadata(),
         }
+    expert_point_groups = canonical_expert_point_groups(
+        splits["train"], splits["validation"], splits["test"]
+    )
     report = train_cached_backbone_readout(
         backbone_family=BACKBONE_NAME,
         unit=unit,
@@ -136,9 +143,9 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         checkpoint_path=arguments.checkpoint,
         predictions_path=arguments.predictions,
         architecture=ARCHITECTURE,
-        expert_point_groups=REDUCED_POINT_GROUPS,
+        expert_point_groups=expert_point_groups,
         model_builder=lambda _layout, task: CGCNNFeatureTensorModel(
-            ARCHITECTURE, task, REDUCED_POINT_GROUPS
+            ARCHITECTURE, task, expert_point_groups
         ),
         config=BenchmarkConfig(
             max_epochs=arguments.epochs,
@@ -156,6 +163,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     report["dataset_sha256"] = dataset_sha256
     report["feature_embedding"] = cgcnn_feature_metadata()
     report["graph_cutoff_angstrom"] = GRAPH_CUTOFF_ANGSTROM
+    report["source_retained_point_groups"] = list(REDUCED_POINT_GROUPS)
     report["execution"] = execution_metadata()
     return report
 

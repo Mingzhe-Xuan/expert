@@ -1,5 +1,17 @@
 # Agent progress updates
 
+- 2026-09-17: full job 457 completed atomic feature materialization for every 5,001/637/677 record,
+  then failed before training because a canonicalized structure routes to `6/mmm` while expert
+  construction was hard-coded to the seven source-manifest retention labels. No predictions or
+  metrics were emitted. Began a local repair to derive the expert domain deterministically from all
+  cached canonical symmetries; the retry will reuse the complete caches and remain a Slurm job.
+
+- 2026-09-17: implemented deterministic expert-domain discovery from all cached canonical train,
+  validation, and test symmetries, while retaining the seven source-label smoke selection and the
+  untouched DPA4 branch. The new `6/mmm` regression passed within 16 focused tests; the complete
+  suite passed 247/247, and compilation, launcher syntax, and whitespace checks passed. Next:
+  commit/push, pull-first sync, and submit the cache-reusing full retry.
+
 - 2026-09-16: started the additive CGCNN-feature `B+A+PGE+R/full_pg` branch. Froze the intended
   feature source to GMTNet's exact 92-component JARVIS/CGCNN descriptor and the optimization protocol
   to Cartesian Huber loss, AdamW, per-step linear decay to `1e-5`, and validation component MAE

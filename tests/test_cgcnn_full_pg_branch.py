@@ -8,6 +8,7 @@ from torch.nn import functional as F
 
 from src.cli.reduced_cgcnn_full_pg_train import ARCHITECTURE as CGCNN_ARCHITECTURE
 from src.cli.reduced_dpa4_train import ARCHITECTURE as DPA4_ARCHITECTURE
+from src.cli.reduced_protocol import canonical_expert_point_groups
 from src.data import TrainingUnit
 from src.features import (
     CGCNN_FEATURE_DIMENSION,
@@ -62,6 +63,24 @@ def test_cgcnn_full_pg_is_additive_and_has_gmtnet_embedding_shape() -> None:
     model = CGCNNFeatureTensorModel(CGCNN_ARCHITECTURE, "dielectric", ("m-3m",))
     assert model.atom_embedding.in_features == 92
     assert model.atom_embedding.out_features == GMTNET_EMBEDDING_DIMENSION == 128
+
+
+def test_cgcnn_expert_domain_covers_all_cached_canonical_symmetries() -> None:
+    def example(point_group: str) -> SimpleNamespace:
+        return SimpleNamespace(
+            symmetry=SimpleNamespace(current_point_group=point_group)
+        )
+
+    groups = canonical_expert_point_groups(
+        (example("m-3m"), example("6/mmm")),
+        (example("2/m"),),
+        (example("m-3m"),),
+    )
+    assert groups == ("2/m", "6/mmm", "m-3m")
+    model = CGCNNFeatureTensorModel(CGCNN_ARCHITECTURE, "dielectric", groups)
+    assert "6/mmm" in model.downstream.expert_point_groups
+    with pytest.raises(ValueError, match="every split"):
+        canonical_expert_point_groups((example("m-3m"),), ())
 
 
 def test_gmtnet_protocol_loss_is_raw_cartesian_huber() -> None:

@@ -18,15 +18,20 @@ MAE. Final acceptance requires test RMSE, sample-mean Fnorm, and EwT 25/10/5 in 
    AdamW, per-step linear LR, full epochs, and validation-MAE checkpoint selection.
 4. [x] Verify feature parity, loss/selection/LR semantics, independent branch identity, checkpoint
    reload, prediction export, and common RMSE/Fnorm/EwT calculation locally.
-5. [ ] Commit/push, pull-first sync Guqq, pass a real 7/7/7 Slurm smoke, then train/test the exact
-   5,001/637/677 reduced dielectric-total split through Slurm.
-6. [ ] Independently validate the 677 prediction rows and add the CGCNN full-PG metrics to the
+5. [ ] Repair the full-run expert-domain mismatch exposed only after all 6,315 records were
+   canonicalized: instantiate the union of actual cached symmetry groups instead of assuming that
+   source-manifest PG labels and redetected canonical PGs are identical. Add a mismatch regression,
+   retest, commit/push, and rerun through Slurm while reusing the published caches.
+6. [ ] Train/test the exact 5,001/637/677 reduced dielectric-total split through Slurm.
+7. [ ] Independently validate the 677 prediction rows and add the CGCNN full-PG metrics to the
    existing DPA4/GMTNet comparison table.
 
 Real Slurm smoke job 456 is accepted (`COMPLETED`, `ExitCode=0:0`, JUnit 1/1, 7 predictions).
-Exact full job 457 is running feature materialization on node221 under commit `20cb034`; completion
-still requires 200 training epochs, best-checkpoint reload, 677 predictions, metric recomputation,
-and the three-model table.
+Exact full job 457 materialized and atomically cached all 5,001/637/677 records, then failed before
+training because at least one structure redetected as `6/mmm`, which is outside the seven source
+labels used to instantiate experts. No predictions were produced. The next implementation unit
+derives the finite expert domain from the already-canonical cached examples and verifies this
+source-vs-redetection boundary before a cache-reusing retry.
 
 Module boundaries: `src/features/` owns fixed chemical feature construction; `src/training/` owns
 protocol-selectable optimization/evaluation; `src/cli/` owns the new independent entry point;

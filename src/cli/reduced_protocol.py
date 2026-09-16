@@ -1,9 +1,30 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from ..data import IndependentTensorDataset
+from ..symmetry import PointGroupRegistry
+from ..symmetry.registry import canonical_point_group_symbol
 
 
 REDUCED_POINT_GROUPS = ("2/m", "mm2", "mmm", "4/mmm", "-3m", "-43m", "m-3m")
+
+
+def canonical_expert_point_groups(
+    *example_splits: Sequence[object],
+) -> tuple[str, ...]:
+    """Return the deterministic expert domain used by cached canonical symmetries."""
+
+    if not example_splits or any(not examples for examples in example_splits):
+        raise ValueError("canonical expert discovery requires every split to be non-empty")
+    observed = {
+        canonical_point_group_symbol(example.symmetry.current_point_group)
+        for examples in example_splits
+        for example in examples
+    }
+    return tuple(
+        group.symbol for group in PointGroupRegistry() if group.symbol in observed
+    )
 
 
 def point_group_stratified_smoke_ids(
