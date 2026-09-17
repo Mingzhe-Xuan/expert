@@ -19,6 +19,7 @@ CURRENT_GROUP_ROUTING_ALIASES = {
     "current_group_only",
     "current_point_group_only",
 }
+GMTNET_HISTORY_FIELDS = ("epoch", "training_loss", "validation_mae", "learning_rate")
 
 
 def file_sha256(path: str | Path) -> str:
@@ -65,9 +66,42 @@ def load_current_group_history(
     return payload
 
 
+def load_gmtnet_history(
+    path: str | Path,
+    *,
+    expected_sha256: str | None = None,
+    expected_epochs: int = 200,
+) -> dict[str, object]:
+    source = Path(path)
+    if expected_sha256 is not None and file_sha256(source) != expected_sha256.lower():
+        raise ValueError("GMTNet summary SHA-256 mismatch")
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    if payload.get("status") != "passed" or payload.get("model") != "GMTNet":
+        raise ValueError("training curve requires a passed GMTNet summary")
+    history = payload.get("history")
+    if not isinstance(history, list) or len(history) != expected_epochs:
+        raise ValueError(f"GMTNet history must contain exactly {expected_epochs} epochs")
+    epochs = []
+    for row in history:
+        if not isinstance(row, Mapping) or any(field not in row for field in GMTNET_HISTORY_FIELDS):
+            raise ValueError("GMTNet history row lacks required fields")
+        values = [float(row[field]) for field in GMTNET_HISTORY_FIELDS]
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("GMTNet history contains non-finite values")
+        epochs.append(int(row["epoch"]))
+    if epochs != list(range(1, expected_epochs + 1)):
+        raise ValueError("GMTNet epochs must be contiguous and one-indexed")
+    best_epoch = int(payload.get("best_epoch", 0))
+    minimum_epoch = min(history, key=lambda row: float(row["validation_mae"]))["epoch"]
+    if best_epoch != int(minimum_epoch):
+        raise ValueError("GMTNet best epoch disagrees with minimum validation MAE")
+    return payload
+
+
 def render_current_group_history(
     summary: Mapping[str, object],
     *,
+    gmtnet_summary: Mapping[str, object] | None = None,
     svg_path: str | Path,
     png_path: str | Path,
 ) -> None:
@@ -85,6 +119,15 @@ def render_current_group_history(
     learning_rate = [float(row["learning_rate"]) for row in history]
     best_epoch = int(summary["best_epoch"])
     best_mae = float(summary["best_validation_mae"])
+    if gmtnet_summary is not None:
+        gmtnet_history: Sequence[Mapping[str, object]] = gmtnet_summary["history"]  # type: ignore[assignment]
+        if [int(row["epoch"]) for row in gmtnet_history] != epochs:
+            raise ValueError("CGCNN and GMTNet histories must cover identical epochs")
+        gmtnet_train_loss = [float(row["training_loss"]) for row in gmtnet_history]
+        gmtnet_validation_mae = [float(row["validation_mae"]) for row in gmtnet_history]
+        gmtnet_learning_rate = [float(row["learning_rate"]) for row in gmtnet_history]
+        gmtnet_best_epoch = int(gmtnet_summary["best_epoch"])
+        gmtnet_best_mae = float(gmtnet_summary["best_validation_mae"])
 
     plt.rcParams.update(
         {
@@ -103,7 +146,8 @@ def render_current_group_history(
         "mae": "#2A9D8F",
         "fnorm": "#8C5DAA",
         "lr": "#53606B",
-        "best": "#C43C39",
+        "best": "#2A9D8F",
+        "gmt": "#D1495B",
     }
     figure, axes = plt.subplots(
         3,
@@ -113,7 +157,11 @@ def render_current_group_history(
         gridspec_kw={"height_ratios": (1.25, 1.25, 0.65), "hspace": 0.16},
     )
     figure.suptitle(
-        "CGCNN-style feature + current-group only — training history",
+        (
+            "CGCNN current-group only vs GMTNet — training history"
+            if gmtnet_summary is not None
+            else "CGCNN-style feature + current-group only — training history"
+        ),
         fontsize=16,
         fontweight="bold",
         y=0.985,
@@ -121,26 +169,58 @@ def render_current_group_history(
     figure.text(
         0.5,
         0.951,
-        "Reduced dielectric-total · B+A+PGE+R/full_pg · job 458 · 200 epochs",
+        (
+            "Reduced dielectric-total · CGCNN job 458 · GMTNet job 443 · 200 epochs"
+            if gmtnet_summary is not None
+            else "Reduced dielectric-total · B+A+PGE+R/full_pg · job 458 · 200 epochs"
+        ),
         ha="center",
         color="#53606B",
     )
 
-    axes[0].plot(epochs, train_loss, color=colors["train"], linewidth=1.8, label="Train Huber loss")
+    axes[0].plot(
+        epochs,
+        train_loss,
+        color=colors["train"],
+        linewidth=1.8,
+        label="CGCNN train Huber",
+    )
     axes[0].plot(
         epochs,
         validation_loss,
         color=colors["validation"],
         linewidth=1.8,
-        label="Validation Huber loss",
+        label="CGCNN validation Huber",
     )
+    if gmtnet_summary is not None:
+        axes[0].plot(
+            epochs,
+            gmtnet_train_loss,
+            color=colors["gmt"],
+            linewidth=1.8,
+            linestyle=(0, (5, 2)),
+            label="GMTNet train Huber",
+        )
     axes[0].set_ylabel("Huber loss")
     axes[0].set_title("Optimization objective", loc="left")
-    axes[0].legend(frameon=False, ncol=2, loc="upper right")
+    axes[0].legend(frameon=False, ncol=3 if gmtnet_summary is not None else 2, loc="upper right")
 
     axes[1].plot(
-        epochs, validation_mae, color=colors["mae"], linewidth=1.8, label="Validation MAE"
+        epochs,
+        validation_mae,
+        color=colors["mae"],
+        linewidth=1.8,
+        label="CGCNN validation MAE",
     )
+    if gmtnet_summary is not None:
+        axes[1].plot(
+            epochs,
+            gmtnet_validation_mae,
+            color=colors["gmt"],
+            linewidth=1.8,
+            linestyle=(0, (5, 2)),
+            label="GMTNet validation MAE",
+        )
     axes[1].set_ylabel("Component MAE")
     axes[1].set_title("Validation metrics", loc="left")
     metric_right = axes[1].twinx()
@@ -151,7 +231,7 @@ def render_current_group_history(
         color=colors["fnorm"],
         linewidth=1.6,
         alpha=0.9,
-        label="Validation Fnorm",
+        label="CGCNN validation Fnorm",
     )
     metric_right.set_ylabel("Fnorm", color=colors["fnorm"])
     handles_left, labels_left = axes[1].get_legend_handles_labels()
@@ -173,22 +253,64 @@ def render_current_group_history(
         zorder=5,
     )
     axes[1].annotate(
-        f"Best epoch {best_epoch}\nvalidation MAE {best_mae:.4f}",
+        f"CGCNN best epoch {best_epoch}\nvalidation MAE {best_mae:.4f}",
         xy=(best_epoch, best_mae),
-        xytext=(-12, 24),
-        textcoords="offset points",
+        xytext=(0.98, 0.84),
+        textcoords="axes fraction",
         ha="right",
-        va="bottom",
+        va="top",
         color=colors["best"],
         fontsize=9,
+        bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "none", "alpha": 0.9},
         arrowprops={"arrowstyle": "-", "color": colors["best"], "lw": 0.9},
     )
+    if gmtnet_summary is not None:
+        axes[1].scatter(
+            [gmtnet_best_epoch],
+            [gmtnet_best_mae],
+            s=48,
+            color=colors["gmt"],
+            edgecolor="white",
+            linewidth=0.8,
+            zorder=5,
+        )
+        axes[1].annotate(
+            f"GMTNet best epoch {gmtnet_best_epoch}\nvalidation MAE {gmtnet_best_mae:.4f}",
+            xy=(gmtnet_best_epoch, gmtnet_best_mae),
+            xytext=(0.55, 0.68),
+            textcoords="axes fraction",
+            ha="center",
+            va="top",
+            color=colors["gmt"],
+            fontsize=9,
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "none", "alpha": 0.9},
+            arrowprops={"arrowstyle": "-", "color": colors["gmt"], "lw": 0.9},
+        )
 
-    axes[2].plot(epochs, learning_rate, color=colors["lr"], linewidth=1.8)
+    if gmtnet_summary is not None and all(
+        math.isclose(left, right, rel_tol=1.0e-12, abs_tol=1.0e-15)
+        for left, right in zip(learning_rate, gmtnet_learning_rate)
+    ):
+        lr_label = "Shared LR schedule (both models)"
+    else:
+        lr_label = "CGCNN learning rate"
+    axes[2].plot(
+        epochs, learning_rate, color=colors["lr"], linewidth=1.8, label=lr_label
+    )
+    if gmtnet_summary is not None and lr_label != "Shared LR schedule (both models)":
+        axes[2].plot(
+            epochs,
+            gmtnet_learning_rate,
+            color=colors["gmt"],
+            linewidth=1.6,
+            linestyle=(0, (5, 2)),
+            label="GMTNet learning rate",
+        )
     axes[2].set_yscale("log")
     axes[2].set_ylabel("Learning rate")
     axes[2].set_xlabel("Epoch")
     axes[2].set_title("Per-step linear decay (epoch-end value)", loc="left")
+    axes[2].legend(frameon=False, loc="upper right")
     axes[2].annotate(
         f"final {learning_rate[-1]:.0e}",
         xy=(epochs[-1], learning_rate[-1]),
@@ -201,6 +323,14 @@ def render_current_group_history(
 
     for axis in axes:
         axis.axvline(best_epoch, color=colors["best"], linestyle="--", linewidth=1.0, alpha=0.65)
+        if gmtnet_summary is not None:
+            axis.axvline(
+                gmtnet_best_epoch,
+                color=colors["gmt"],
+                linestyle=(0, (3, 2)),
+                linewidth=1.0,
+                alpha=0.55,
+            )
         axis.grid(axis="y", color="#D7DDE2", linewidth=0.7, alpha=0.75)
         axis.set_xlim(1, epochs[-1])
     axes[2].set_xticks([1, 25, 50, 75, 100, 125, 150, 175, 200])
@@ -215,7 +345,14 @@ def render_current_group_history(
     figure.savefig(
         svg,
         format="svg",
-        metadata={"Date": None, "Title": "CGCNN-style feature + current-group only training history"},
+        metadata={
+            "Date": None,
+            "Title": (
+                "CGCNN current-group only vs GMTNet training history"
+                if gmtnet_summary is not None
+                else "CGCNN-style feature + current-group only training history"
+            ),
+        },
     )
     # Matplotlib emits spaces at the ends of multiline SVG path records. Normalize them so the
     # tracked documentation asset passes the repository's whitespace gate deterministically.
@@ -229,6 +366,12 @@ def render_current_group_history(
         png,
         format="png",
         dpi=180,
-        metadata={"Title": "CGCNN-style feature + current-group only training history"},
+        metadata={
+            "Title": (
+                "CGCNN current-group only vs GMTNet training history"
+                if gmtnet_summary is not None
+                else "CGCNN-style feature + current-group only training history"
+            )
+        },
     )
     plt.close(figure)

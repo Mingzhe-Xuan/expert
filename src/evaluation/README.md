@@ -5,6 +5,10 @@ model identity, SHA-256, contiguous epochs, finite fields, and best-validation e
 deterministic SVG/PNG optimization history. The plot shows train/validation Huber losses,
 validation component MAE/Fnorm, epoch-end learning rate, and the selected checkpoint without
 recomputing any benchmark metric.
+When an accepted GMTNet summary is supplied, the same figure overlays its recorded training Huber
+loss and validation MAE, marks both selected checkpoints, and collapses identical learning-rate
+schedules into one explicitly shared curve. GMTNet validation loss/Fnorm are omitted because its
+runner did not record them.
 
 Evaluation reports per-irrep physical metrics, graph and tensor equivariance, parameter
 counts, FLOPs, latency, and peak memory. Reports are emitted as machine-readable data and

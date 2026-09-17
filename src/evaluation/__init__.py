@@ -11,6 +11,7 @@ from .fixtures import (
 from .training_history import (
     file_sha256,
     load_current_group_history,
+    load_gmtnet_history,
     render_current_group_history,
 )
 from .efficiency import profile_model_efficiency
@@ -33,6 +34,7 @@ __all__ = [
     "write_point_group_fixture_manifest",
     "file_sha256",
     "load_current_group_history",
+    "load_gmtnet_history",
     "render_current_group_history",
     "profile_model_efficiency",
     "tensor_benchmark_metrics",

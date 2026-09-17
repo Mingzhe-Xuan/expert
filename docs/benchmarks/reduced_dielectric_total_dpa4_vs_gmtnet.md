@@ -21,13 +21,16 @@
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
 
-## CGCNN current-group-only training history
+## CGCNN current-group-only vs GMTNet training history
 
-![CGCNN-style feature plus current-group-only 200-epoch training history](cgcnn_current_group_only_training_curve.svg)
+![CGCNN current-group-only and GMTNet 200-epoch training histories](cgcnn_current_group_only_training_curve.svg)
 
-The curves come directly from job 458's accepted 200-epoch summary (SHA-256
-`7070c4f66d57d5573b58d95a3219f780b0b776a662eab11426903544966fb536`). The dashed marker is
-the validation-MAE-selected checkpoint at epoch 159; no metric was recomputed for this plot.
+The curves come directly from the accepted 200-epoch summaries for CGCNN job 458 (SHA-256
+`7070c4f66d57d5573b58d95a3219f780b0b776a662eab11426903544966fb536`) and GMTNet job 443
+(SHA-256 `b4ded0b3696e87406fef4046b56685c0ae4d21b9bd5f9f3bd7cb1354abd9e6ae`). Dashed markers show
+their validation-MAE-selected checkpoints at epochs 159 and 93. GMTNet's runner records training
+Huber loss, validation MAE, and learning rate, but not validation loss or validation Fnorm; therefore
+only its recorded series are overlaid. No metric was recomputed for this plot.
 
 ## Metrics
 

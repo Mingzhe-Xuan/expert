@@ -50,6 +50,8 @@ only by `slurm/train_reduced_cgcnn_parent_dag.sbatch`.
 `python -m src.cli.plot_training_history --summary ... --expected-sha256 ... --svg ... --png ...`
 validates and renders the accepted CGCNN current-group-only epoch history. It is visualization only:
 no prediction, target, or metric is recomputed.
+Optional paired `--gmtnet-summary/--gmtnet-expected-sha256` arguments overlay GMTNet's natively
+recorded training Huber loss and validation MAE in that same figure.
 
 `python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.
