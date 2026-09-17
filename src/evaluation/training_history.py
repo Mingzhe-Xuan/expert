@@ -158,7 +158,7 @@ def render_current_group_history(
     )
     figure.suptitle(
         (
-            "CGCNN current-group only vs GMTNet — training history"
+            "current-pg vs GMTNet — training history"
             if gmtnet_summary is not None
             else "CGCNN-style feature + current-group only — training history"
         ),
@@ -170,7 +170,7 @@ def render_current_group_history(
         0.5,
         0.951,
         (
-            "Reduced dielectric-total · CGCNN job 458 · GMTNet job 443 · 200 epochs"
+            "Reduced dielectric-total · current-pg job 458 · GMTNet job 443 · 200 epochs"
             if gmtnet_summary is not None
             else "Reduced dielectric-total · B+A+PGE+R/full_pg · job 458 · 200 epochs"
         ),
@@ -183,14 +183,14 @@ def render_current_group_history(
         train_loss,
         color=colors["train"],
         linewidth=1.8,
-        label="CGCNN train Huber",
+        label="current-pg train Huber",
     )
     axes[0].plot(
         epochs,
         validation_loss,
         color=colors["validation"],
         linewidth=1.8,
-        label="CGCNN validation Huber",
+        label="current-pg validation Huber",
     )
     if gmtnet_summary is not None:
         axes[0].plot(
@@ -210,7 +210,7 @@ def render_current_group_history(
         validation_mae,
         color=colors["mae"],
         linewidth=1.8,
-        label="CGCNN validation MAE",
+        label="current-pg validation MAE",
     )
     if gmtnet_summary is not None:
         axes[1].plot(
@@ -231,7 +231,7 @@ def render_current_group_history(
         color=colors["fnorm"],
         linewidth=1.6,
         alpha=0.9,
-        label="CGCNN validation Fnorm",
+        label="current-pg validation Fnorm",
     )
     metric_right.set_ylabel("Fnorm", color=colors["fnorm"])
     handles_left, labels_left = axes[1].get_legend_handles_labels()
@@ -253,7 +253,7 @@ def render_current_group_history(
         zorder=5,
     )
     axes[1].annotate(
-        f"CGCNN best epoch {best_epoch}\nvalidation MAE {best_mae:.4f}",
+        f"current-pg best epoch {best_epoch}\nvalidation MAE {best_mae:.4f}",
         xy=(best_epoch, best_mae),
         xytext=(0.98, 0.84),
         textcoords="axes fraction",
@@ -293,7 +293,7 @@ def render_current_group_history(
     ):
         lr_label = "Shared LR schedule (both models)"
     else:
-        lr_label = "CGCNN learning rate"
+        lr_label = "current-pg learning rate"
     axes[2].plot(
         epochs, learning_rate, color=colors["lr"], linewidth=1.8, label=lr_label
     )
@@ -348,7 +348,7 @@ def render_current_group_history(
         metadata={
             "Date": None,
             "Title": (
-                "CGCNN current-group only vs GMTNet training history"
+                "current-pg vs GMTNet training history"
                 if gmtnet_summary is not None
                 else "CGCNN-style feature + current-group only training history"
             ),
@@ -368,7 +368,7 @@ def render_current_group_history(
         dpi=180,
         metadata={
             "Title": (
-                "CGCNN current-group only vs GMTNet training history"
+                "current-pg vs GMTNet training history"
                 if gmtnet_summary is not None
                 else "CGCNN-style feature + current-group only training history"
             )

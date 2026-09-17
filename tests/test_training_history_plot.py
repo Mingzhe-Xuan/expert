@@ -88,8 +88,10 @@ def test_training_history_render_writes_parseable_labeled_svg_and_png(tmp_path) 
     )
     ET.parse(svg)
     svg_text = svg.read_text(encoding="utf-8")
-    assert "current-group only" in svg_text
-    assert "CGCNN best epoch 200" in svg_text
+    assert "current-pg" in svg_text
+    assert "current-pg vs GMTNet" in svg_text
+    assert "current-pg train Huber" in svg_text
+    assert "current-pg best epoch 200" in svg_text
     assert "GMTNet best epoch 200" in svg_text
     assert "Shared LR schedule (both models)" in svg_text
     assert all(line == line.rstrip() for line in svg_text.splitlines())

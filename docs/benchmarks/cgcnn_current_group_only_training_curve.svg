@@ -2,12 +2,12 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="756pt" height="648pt" viewBox="0 0 756 648" xmlns="http://www.w3.org/2000/svg" version="1.1">
- <title>CGCNN current-group only vs GMTNet training history</title>
+ <title>current-pg vs GMTNet training history</title>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:title>CGCNN current-group only vs GMTNet training history</dc:title>
+    <dc:title>current-pg vs GMTNet training history</dc:title>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -695,22 +695,22 @@ L 680.4 251.177143
    </g>
    <g id="legend_1">
     <g id="line2d_25">
-     <path d="M 227.74375 71.418437
-L 237.74375 71.418437
-L 247.74375 71.418437
+     <path d="M 196.35 71.418437
+L 206.35 71.418437
+L 216.35 71.418437
 " style="fill: none; stroke: #2e6f9e; stroke-width: 1.8; stroke-linecap: square"/>
     </g>
     <g id="text_8">
-     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="255.74375" y="74.918437" transform="rotate(-0 255.74375 74.918437)">CGCNN train Huber</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="224.35" y="74.918437" transform="rotate(-0 224.35 74.918437)">current-pg train Huber</text>
     </g>
     <g id="line2d_26">
-     <path d="M 372.521875 71.418437
-L 382.521875 71.418437
-L 392.521875 71.418437
+     <path d="M 356.825 71.418437
+L 366.825 71.418437
+L 376.825 71.418437
 " style="fill: none; stroke: #e07a3f; stroke-width: 1.8; stroke-linecap: square"/>
     </g>
     <g id="text_9">
-     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="400.521875" y="74.918437" transform="rotate(-0 400.521875 74.918437)">CGCNN validation Huber</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="384.825" y="74.918437" transform="rotate(-0 384.825 74.918437)">current-pg validation Huber</text>
     </g>
     <g id="line2d_27">
      <path d="M 543.259375 71.418437
@@ -1316,25 +1316,25 @@ L 680.4 469.954286
 " style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="patch_8">
-    <path d="M 608.20872 330.748951
-Q 582.478324 378.166248 556.747927 425.583545
+    <path d="M 601.982697 330.796973
+Q 579.319873 378.167126 556.657049 425.537278
 " style="fill: none; stroke: #2a9d8f; stroke-width: 0.9; stroke-linecap: round"/>
    </g>
    <g id="text_19">
     <g id="patch_9">
-     <path d="M 562.656656 328.992629
+     <path d="M 548.529469 328.992629
 L 668.304 328.992629
 Q 670.554 328.992629 670.554 326.742629
 L 670.554 307.954286
 Q 670.554 305.704286 668.304 305.704286
-L 562.656656 305.704286
-Q 560.406656 305.704286 560.406656 307.954286
-L 560.406656 326.742629
-Q 560.406656 328.992629 562.656656 328.992629
+L 548.529469 305.704286
+Q 546.279469 305.704286 546.279469 307.954286
+L 546.279469 326.742629
+Q 546.279469 328.992629 548.529469 328.992629
 z
 " style="fill: #ffffff; opacity: 0.9"/>
     </g>
-    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #2a9d8f" transform="translate(562.656656 314.792879)">CGCNN best epoch 159</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #2a9d8f" transform="translate(548.529469 314.792879)">current-pg best epoch 159</text>
     <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #2a9d8f" transform="translate(567.172125 324.870911)">validation MAE 4.3647</text>
    </g>
    <g id="patch_10">
@@ -1400,31 +1400,31 @@ z
    </g>
    <g id="legend_2">
     <g id="line2d_55">
-     <path d="M 353.83125 290.19558
-L 363.83125 290.19558
-L 373.83125 290.19558
+     <path d="M 325.8 290.19558
+L 335.8 290.19558
+L 345.8 290.19558
 " style="fill: none; stroke: #2a9d8f; stroke-width: 1.8; stroke-linecap: square"/>
     </g>
     <g id="text_22">
-     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="381.83125" y="293.69558" transform="rotate(-0 381.83125 293.69558)">CGCNN validation MAE</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="353.8" y="293.69558" transform="rotate(-0 353.8 293.69558)">current-pg validation MAE</text>
     </g>
     <g id="line2d_56">
-     <path d="M 353.83125 304.873705
-L 363.83125 304.873705
-L 373.83125 304.873705
+     <path d="M 325.8 304.873705
+L 335.8 304.873705
+L 345.8 304.873705
 " style="fill: none; stroke-dasharray: 9,3.6; stroke-dashoffset: 0; stroke: #d1495b; stroke-width: 1.8"/>
     </g>
     <g id="text_23">
-     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="381.83125" y="308.373705" transform="rotate(-0 381.83125 308.373705)">GMTNet validation MAE</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="353.8" y="308.373705" transform="rotate(-0 353.8 308.373705)">GMTNet validation MAE</text>
     </g>
     <g id="line2d_57">
-     <path d="M 519.248437 290.19558
-L 529.248437 290.19558
-L 539.248437 290.19558
+     <path d="M 503.551562 290.19558
+L 513.551562 290.19558
+L 523.551562 290.19558
 " style="fill: none; stroke: #8c5daa; stroke-opacity: 0.9; stroke-width: 1.6; stroke-linecap: square"/>
     </g>
     <g id="text_24">
-     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="547.248437" y="293.69558" transform="rotate(-0 547.248437 293.69558)">CGCNN validation Fnorm</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="531.551562" y="293.69558" transform="rotate(-0 531.551562 293.69558)">current-pg validation Fnorm</text>
     </g>
    </g>
   </g>
@@ -2097,10 +2097,10 @@ L 680.4 469.954286
    </g>
   </g>
   <g id="text_49">
-   <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: middle" x="378" y="21.8775" transform="rotate(-0 378 21.8775)">CGCNN current-group only vs GMTNet — training history</text>
+   <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: middle" x="378" y="21.8775" transform="rotate(-0 378 21.8775)">current-pg vs GMTNet — training history</text>
   </g>
   <g id="text_50">
-   <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #53606b" x="378" y="31.752" transform="rotate(-0 378 31.752)">Reduced dielectric-total · CGCNN job 458 · GMTNet job 443 · 200 epochs</text>
+   <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #53606b" x="378" y="31.752" transform="rotate(-0 378 31.752)">Reduced dielectric-total · current-pg job 458 · GMTNet job 443 · 200 epochs</text>
   </g>
  </g>
  <defs>
