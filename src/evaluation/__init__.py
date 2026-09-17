@@ -8,6 +8,11 @@ from .fixtures import (
     validate_point_group_fixture_manifest,
     write_point_group_fixture_manifest,
 )
+from .training_history import (
+    file_sha256,
+    load_current_group_history,
+    render_current_group_history,
+)
 from .efficiency import profile_model_efficiency
 from .pg_smoke import (
     FLOAT32_TOLERANCE,
@@ -26,6 +31,9 @@ __all__ = [
     "select_point_group_fixtures",
     "validate_point_group_fixture_manifest",
     "write_point_group_fixture_manifest",
+    "file_sha256",
+    "load_current_group_history",
+    "render_current_group_history",
     "profile_model_efficiency",
     "tensor_benchmark_metrics",
 ]

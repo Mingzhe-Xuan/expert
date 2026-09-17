@@ -47,6 +47,10 @@ plus continuous residual map on every forward pass. Its optimizer, split, seed d
 schedule, checkpoint selection, and metrics match the current-group-only run. On Guqq it is launched
 only by `slurm/train_reduced_cgcnn_parent_dag.sbatch`.
 
+`python -m src.cli.plot_training_history --summary ... --expected-sha256 ... --svg ... --png ...`
+validates and renders the accepted CGCNN current-group-only epoch history. It is visualization only:
+no prediction, target, or metric is recomputed.
+
 `python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.
 It is batch data processing and must run through `slurm/build_point_group_fixtures.sbatch`

@@ -1,5 +1,11 @@
 # Evaluation
 
+`training_history.py` validates an accepted CGCNN current-group-only summary (status, routing,
+model identity, SHA-256, contiguous epochs, finite fields, and best-validation epoch) and renders a
+deterministic SVG/PNG optimization history. The plot shows train/validation Huber losses,
+validation component MAE/Fnorm, epoch-end learning rate, and the selected checkpoint without
+recomputing any benchmark metric.
+
 Evaluation reports per-irrep physical metrics, graph and tensor equivariance, parameter
 counts, FLOPs, latency, and peak memory. Reports are emitted as machine-readable data and
 Markdown with architecture, task, PG, mode, and backend keys.

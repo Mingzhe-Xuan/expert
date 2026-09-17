@@ -21,6 +21,14 @@
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
 
+## CGCNN current-group-only training history
+
+![CGCNN-style feature plus current-group-only 200-epoch training history](cgcnn_current_group_only_training_curve.svg)
+
+The curves come directly from job 458's accepted 200-epoch summary (SHA-256
+`7070c4f66d57d5573b58d95a3219f780b0b776a662eab11426903544966fb536`). The dashed marker is
+the validation-MAE-selected checkpoint at epoch 159; no metric was recomputed for this plot.
+
 ## Metrics
 
 - RMSE: component-wise root mean squared error over the full test tensors.
