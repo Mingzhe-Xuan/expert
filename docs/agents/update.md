@@ -1,5 +1,51 @@
 # Agent progress updates
 
+- 2026-09-17: terminal audit completed after network recovery. Job 458 produced a passed summary,
+  200/200 history through epoch 200, best epoch 159 by validation component MAE, zero-failure JUnit,
+  and exactly 677 predictions. Job 459 produced a passed strict comparison with 677 ordered IDs and
+  the symmetric-target eigenvalue-equivalence gate. CGCNN final metrics are RMSE `26.186150`, Fnorm
+  `19.496103`, EwT25 `40.77%`, EwT10 `10.64%`, and EwT5 `4.28%`. Updated the tracked benchmark into
+  a three-model table with artifact hashes; next step is final checks, selective commit, and push.
+
+- 2026-09-17: user confirmed Guqq network recovery, reopening a fresh blocked audit. Next action is
+  the mandated `net.sh` plus full three-minute wait, then an HTTP/1.1 pull-first check of jobs
+  458/459 and their terminal artifacts; no completion or metric is assumed in advance.
+
+- 2026-09-17: after recovery, the same Vlab observation-channel closure persisted across three
+  consecutive resumed-goal turns. Immediate reconnection would violate the recorded bounded-retry
+  lesson, and no local action can prove terminal metrics. Marked the goal blocked again while
+  leaving Slurm jobs 458/459 unchanged.
+
+- 2026-09-17: a corrected separator-free monitor pulled successfully and reconfirmed job 458
+  `RUNNING` at 9:55:38; the best checkpoint had advanced to mtime 11:35. Vlab closed the SSH
+  transport after roughly five minutes, affecting only observation and not Slurm. Deferred another
+  recovery connection until a meaningful interval rather than immediately retrying.
+
+- 2026-09-17: the corrected resumed-goal recovery completed its full wait and bounded HTTP/1.1
+  pull successfully (`Already up to date`). Job 458 was healthy `RUNNING` at 9:53:18 on node221;
+  job 459 remained correctly pending on its dependency. The fresh blocked audit resets, and
+  low-frequency read-only monitoring resumes without changing either job.
+
+- 2026-09-17: the blocked goal was resumed, starting a fresh blocked audit. After an approximately
+  18-minute interval, prepared one bounded recovery attempt with `net.sh`, a full three-minute wait,
+  and an HTTP/1.1 pull-first gate. Jobs 458/459 remain untouched; scheduler and artifact inspection
+  are still conditional on pull success.
+
+- 2026-09-17: the same mandatory pull-first network failure persisted across at least three
+  consecutive goal turns after the last recovery attempt. No further local or remote action can
+  establish job completion, retrieve artifacts, validate 677 predictions, or update the metric
+  table without that external gate. Marked the goal blocked under the strict audit; jobs 458/459
+  remain untouched and can be audited immediately after Guqq outbound access recovers.
+
+- 2026-09-17: the persistent monitor observed job 458 continuously healthy through 7:26:17 on
+  node221; the best checkpoint remained epoch 90, which is not a stall signal because publication
+  occurs only on validation-MAE improvement. Interrupting the local wait later closed the SSH
+  monitor but not the Slurm job. Three immediate recovery/pull-first connections failed, so the
+  existing network lesson was consulted and retries stopped. A later retry after roughly 30 minutes
+  completed `net.sh` and the full wait but still failed the bounded HTTP/1.1 pull; its `&&` gate
+  prevented scheduler access. Final training/test evidence remains pending without weakening the
+  200-epoch acceptance criterion.
+
 - 2026-09-17: while job 458 continues, started a small independent implementation unit for an
   `afterok:458` comparator launcher. It will require explicit DPA4/GMTNet/CGCNN prediction paths and
   run the existing 677-ID/target-equivalence validator through Slurm, removing the completion-time
@@ -9,6 +55,15 @@
   Bash syntax, compilation, and whitespace checks passed; the full project suite passed 248/248.
   Next: commit/push, pull first on Guqq, confirm accepted DPA4/GMTNet prediction paths, and submit the
   comparator with `afterok:458`.
+
+- 2026-09-17: pushed/pulled comparator commit `2b2c65f`, verified accepted DPA4 job-451 and GMTNet
+  job-443 prediction JSONLs, and submitted comparison job 459 with `afterok:458` plus the explicit
+  future CGCNN job-458 prediction path. The persistent read-only monitor shows training healthy
+  through 1:11 with checkpoint mtime continuing to advance.
+
+- 2026-09-17: persistent monitoring advanced job 458 past five hours. A pull-first, CPU-only
+  metadata check found best checkpoint epoch 90 at 5:15:22; job 459 remains correctly pending on
+  `afterok:458`. The fixed 200-epoch training protocol is near its midpoint and remains healthy.
 
 - 2026-09-17: full job 457 completed atomic feature materialization for every 5,001/637/677 record,
   then failed before training because a canonicalized structure routes to `6/mmm` while expert

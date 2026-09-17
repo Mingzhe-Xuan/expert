@@ -1,13 +1,17 @@
 # Agent state
 
-## Current snapshot — CGCNN-feature full-PG branch (2026-09-16)
+## Current snapshot — CGCNN-feature full-PG branch (2026-09-17)
 
-In progress: add a new `B+A+PGE+R/full_pg/full_o3` training branch whose node input follows
+Completed: added a new `B+A+PGE+R/full_pg/full_o3` training branch whose node input follows
 GMTNet's fixed 92-component CGCNN chemical feature and learned linear scalar embedding. This is an
 additional branch and does not replace, mutate, or invalidate the existing frozen-DPA4 branch or its
 accepted benchmark artifacts. Training is aligned to GMTNet with Cartesian Huber loss, AdamW,
 per-step linear learning-rate decay to `1e-5`, and best-checkpoint selection by validation component
-MAE. Final acceptance requires test RMSE, sample-mean Fnorm, and EwT 25/10/5 in the existing table.
+MAE. Final RMSE, sample-mean Fnorm, and EwT 25/10/5 are now recorded in the three-model table.
+
+Current external status: complete. Jobs 458 and 459 both left `squeue`; job 458 emitted a passed
+summary, zero-failure JUnit, and exactly 677 predictions, while job 459 emitted a passed strict
+three-model comparison over the same ordered IDs and frame-equivalent targets.
 
 ### Current plan
 
@@ -22,13 +26,15 @@ MAE. Final acceptance requires test RMSE, sample-mean Fnorm, and EwT 25/10/5 in 
    canonicalized: instantiate the union of actual cached symmetry groups instead of assuming that
    source-manifest PG labels and redetected canonical PGs are identical. Add a mismatch regression,
    retest, commit/push, and rerun through Slurm while reusing the published caches.
-6. [ ] Train/test the exact 5,001/637/677 reduced dielectric-total split through Slurm.
-7. [ ] Independently validate the 677 prediction rows and add the CGCNN full-PG metrics to the
+6. [x] Train/test the exact 5,001/637/677 reduced dielectric-total split through Slurm.
+7. [x] Independently validate the 677 prediction rows and add the CGCNN full-PG metrics to the
    existing DPA4/GMTNet comparison table.
 
-Automation refinement in progress: add a dependency-safe Slurm wrapper around the existing strict
-comparator, requiring explicit three-model prediction paths and producing job-scoped JSON/Markdown
-outputs only after job 458 succeeds.
+Automation refinement is complete: the dependency-safe Slurm wrapper requires explicit three-model
+prediction paths and produces job-scoped JSON/Markdown outputs only after job 458 succeeds.
+
+Comparator commit `2b2c65f` passed 248/248 tests, is pulled on Guqq, and dependency job 459 is
+submitted with `afterok:458` plus explicit accepted job-451/job-443/job-458 prediction paths.
 
 Real Slurm smoke job 456 is accepted (`COMPLETED`, `ExitCode=0:0`, JUnit 1/1, 7 predictions).
 Exact full job 457 materialized and atomically cached all 5,001/637/677 records, then failed before
@@ -54,9 +60,24 @@ The next successful recovery check found epoch 14 at 49:04, maintaining about 3.
 confirming forward progress. The fresh three-turn blocked audit did not reach its threshold because
 the third pull succeeded.
 
+Mid-run evidence: job 458 reached 5:15:22 with best checkpoint epoch 90; job 459 remains correctly
+pending on its dependency. Training is near the midpoint of the fixed 200-epoch protocol.
+
+The last uninterrupted monitor observed job 458 healthy at 7:26:17 on node221. Its checkpoint mtime
+remained at the epoch-90 best, which is expected when later validation epochs do not improve. The
+local wait was subsequently interrupted and closed only the SSH monitor, not the independent Slurm
+job. Three recovery/pull-first attempts and a later 30-minute-spaced recovery attempt did not pass
+the mandatory GitHub pull gate, so no unverified scheduler claim was made. Training, terminal
+artifacts, and dependent job 459 remain pending authoritative reconnection.
+
 Module boundaries: `src/features/` owns fixed chemical feature construction; `src/training/` owns
 protocol-selectable optimization/evaluation; `src/cli/` owns the new independent entry point;
 `slurm/` owns cluster launch only; `src/evaluation/` remains the single metric implementation.
+
+Terminal evidence: job 458 completed all 200 epochs and selected epoch 159 by validation component
+MAE (`4.3647098541`), then reported RMSE `26.186150`, Fnorm `19.496103`, EwT25 `40.77%`, EwT10
+`10.64%`, and EwT5 `4.28%`. Job 459 passed the 677-ID and target-equivalence gates and generated the
+three-row table. The original DPA4 implementation and accepted artifacts remain unchanged.
 
 ## Current snapshot — reduced dielectric total DPA4-vs-GMTNet benchmark (2026-09-13)
 

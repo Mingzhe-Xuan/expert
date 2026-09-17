@@ -1,5 +1,34 @@
 # Test plan and results
 
+## 2026-09-17 — CGCNN full-PG terminal acceptance and three-model table
+
+Planned checks:
+
+- require job 458 summary status `passed`, all 200 history epochs, validation-MAE best checkpoint,
+  exact 5,001/637/677 split counts, finite RMSE/Fnorm/EwT, zero-failure JUnit, and exactly 677
+  prediction rows;
+- require job 459 comparison status `passed`, 677 common ordered IDs, the symmetric-target
+  eigenvalue-equivalence gate, three prediction hashes, and a three-row Markdown table;
+- verify the tracked report reproduces the comparator values/hashes, preserves the original DPA4
+  row, links to the existing GMTNet reference, and accurately describes the additive branch;
+- rerun focused branch/comparator/metric tests, Python compilation, both relevant Slurm launcher
+  syntax checks, and task-scoped `git diff --check` before the final commit.
+
+Actual result:
+
+- Guqq job 458 emitted summary status `passed`, epochs 1 through 200, best epoch 159, split counts
+  5,001/637/677, zero-failure JUnit (`1/0/0/0`), and 677 prediction rows. Its test metrics are RMSE
+  `26.1861495972`, Fnorm `19.4961032867`, EwT25 `40.7680945%`, EwT10 `10.6351551%`, and EwT5
+  `4.2836041%`.
+- Job 459 emitted status `passed`, test count 677, the configured symmetric-tensor eigenvalue gate,
+  and matching rounded table values; prediction and report hashes were recorded in the benchmark.
+- Focused `test_cgcnn_full_pg_branch`, `test_reduced_benchmark`, and `test_benchmark_metrics` run:
+  28 passed, 0 failed in 29.29 seconds. The first sandboxed invocation could not read the existing
+  user-level uv cache; the approved identical rerun passed without changing the test standard.
+- Python compilation, `bash -n` for both CGCNN training and comparator launchers, metric/hash text
+  checks, GMTNet PDF path check, and task-scoped `git diff --check` all passed. Git emitted only the
+  existing LF-to-CRLF working-copy notices.
+
 ## 2026-09-17 — dependency-safe reduced benchmark comparator launcher
 
 Planned checks:
