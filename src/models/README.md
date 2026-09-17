@@ -15,3 +15,5 @@ GMTNet. It consumes the exact fixed 92D JARVIS CGCNN descriptor, applies GMTNet'
 `92 -> 128` even-scalar atom embedding, then projects into the unchanged
 `B+A+PGE+R/full_pg` hidden layout. It does not share or replace any DPA4 adapter parameters or
 artifacts.
+Its forward interface optionally passes a per-sample `ParentDAGSpec` and residual map to the same
+downstream dispatcher; absent metadata retains the accepted current-group-only behavior.

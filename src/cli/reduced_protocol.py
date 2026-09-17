@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+import spglib
+
 from ..data import IndependentTensorDataset
 from ..symmetry import PointGroupRegistry
 from ..symmetry.registry import canonical_point_group_symbol
@@ -22,6 +24,15 @@ def canonical_expert_point_groups(
         for examples in example_splits
         for example in examples
     }
+    for examples in example_splits:
+        for example in examples:
+            if getattr(example, "parent_dag", None) is None:
+                continue
+            for embedding in example.parent_dag.embeddings:
+                space_group = spglib.get_spacegroup_type(embedding.parent_hall_number)
+                if space_group is None:
+                    raise ValueError("parent DAG contains an invalid Hall number")
+                observed.add(canonical_point_group_symbol(space_group.pointgroup_international))
     return tuple(
         group.symbol for group in PointGroupRegistry() if group.symbol in observed
     )

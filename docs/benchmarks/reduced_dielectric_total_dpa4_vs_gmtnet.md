@@ -6,8 +6,9 @@
 - Frozen splits: 5,001 train / 637 validation / 677 test.
 - Dataset SHA-256: `6cfefc7c04734ceb4c7873e5aaa7d483251ea909a378e55034414d53f9110963`.
 - Source-retained point groups: `2/m`, `mm2`, `mmm`, `4/mmm`, `-3m`, `-43m`, `m-3m`.
-- DPA4 model: `B+A+PGE+R`, `full_o3` adaptation/readout, `full_pg` experts.
-- CGCNN full-PG model: additive (non-DPA4) branch using GMTNet's fixed 92-component JARVIS CGCNN
+- DPA4 model (current-group only): `B+A+PGE+R`, `full_o3` adaptation/readout, `full_pg`
+  experts; each sample activates only its detected current point-group expert.
+- CGCNN full-PG model (current-group only): additive (non-DPA4) branch using GMTNet's fixed 92-component JARVIS CGCNN
   node descriptor, a learned `92 -> 128` even-scalar embedding, and the same
   `B+A+PGE+R/full_pg/full_o3` tensor architecture. Its expert registry is the deterministic union of
   canonical train/validation/test symmetries: `2/m`, `mm2`, `mmm`, `4/mmm`, `3m`, `-3m`, `6/mmm`,
@@ -31,9 +32,9 @@
 
 | Model | RMSE ↓ | Fnorm ↓ | EwT 25% ↑ | EwT 10% ↑ | EwT 5% ↑ |
 |---|---:|---:|---:|---:|---:|
-| DPA4 B+A+PGE+R full_pg | 26.166445 | 31.539129 | 12.26% | 2.51% | 1.03% |
+| DPA4 B+A+PGE+R full_pg (current-group only) | 26.166445 | 31.539129 | 12.26% | 2.51% | 1.03% |
 | GMTNet | **25.449894** | **19.169209** | **53.03%** | **18.32%** | **7.39%** |
-| CGCNN B+A+PGE+R full_pg | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
+| CGCNN B+A+PGE+R full_pg (current-group only) | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
 
 GMTNet is best on every reported test metric under this frozen protocol. Relative to the DPA4 row,
 the additive CGCNN full-PG branch substantially improves Fnorm and every EwT threshold, while its

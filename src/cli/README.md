@@ -32,12 +32,20 @@ The CLI validates exact public split sizes before loading a backbone: `3770/471/
 and `11376/1422/1422` for elastic. Consequently, the known 14,480-record first-stage elastic
 manifest is rejected until the official second-stage candidate is generated and promoted.
 
-`python -m src.cli.reduced_cgcnn_full_pg_train ...` is the additive GMTNet-input ablation. It
+`python -m src.cli.reduced_cgcnn_full_pg_train ...` is the additive, explicitly
+`current-group only` GMTNet-input ablation. It
 leaves DPA4 untouched, materializes the exact 92D JARVIS CGCNN feature on the repository's
 canonical PBC graph, applies a learned `92 -> 128` scalar embedding, and trains
 `B+A+PGE+R/full_pg` with GMTNet-aligned Cartesian Huber, AdamW, linear learning-rate decay, and
 validation-MAE selection. It emits the same prediction JSONL and common RMSE/Fnorm/EwT metrics as
 the existing reduced runners and is launched only by `slurm/train_reduced_cgcnn_full_pg.sbatch`.
+
+`python -m src.cli.reduced_cgcnn_parent_dag_train ...` is its matched parent-DAG experiment. It
+reuses the immutable CGCNN feature caches, derives and separately caches material-specific relaxed
+Hall parents, instantiates the union of current and parent point-group experts, and supplies the DAG
+plus continuous residual map on every forward pass. Its optimizer, split, seed defaults, loss,
+schedule, checkpoint selection, and metrics match the current-group-only run. On Guqq it is launched
+only by `slurm/train_reduced_cgcnn_parent_dag.sbatch`.
 
 `python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.

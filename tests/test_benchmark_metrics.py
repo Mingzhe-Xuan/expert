@@ -273,7 +273,7 @@ def test_cached_training_supports_full_pg_architecture_with_interface(tmp_path) 
     )
     assert report["architecture"] == architecture.to_dict()
     assert report["expert_point_groups"] == list(groups)
-    assert report["routing"] == "current_point_group_only"
+    assert report["routing"] == "current_group_only"
 
 
 def test_cached_training_supports_gmtnet_optimization_protocol(tmp_path) -> None:

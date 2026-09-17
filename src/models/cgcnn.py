@@ -40,7 +40,9 @@ class CGCNNFeatureTensorModel(nn.Module):
             expert_point_groups=expert_point_groups,
         )
 
-    def forward(self, features, graph, symmetries):
+    def forward(
+        self, features, graph, symmetries, *, parent_dags=None, parent_residuals=None
+    ):
         if features.node_layout != CGCNN_SOURCE_LAYOUT:
             raise ValueError("CGCNN branch received a non-CGCNN source layout")
         embedded = O3FeatureBatch(
@@ -48,4 +50,10 @@ class CGCNNFeatureTensorModel(nn.Module):
             GMTNET_EMBEDDED_LAYOUT,
             features.node_batch,
         )
-        return self.downstream(self.interface(embedded), graph, symmetries)
+        return self.downstream(
+            self.interface(embedded),
+            graph,
+            symmetries,
+            parent_dags=parent_dags,
+            parent_residuals=parent_residuals,
+        )

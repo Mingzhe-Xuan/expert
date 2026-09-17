@@ -14,6 +14,7 @@ set -euo pipefail
 : "${EXPERT_REDUCED_DPA4_PREDICTIONS:?Set the accepted DPA4 prediction JSONL}"
 : "${EXPERT_REDUCED_GMTNET_PREDICTIONS:?Set the accepted GMTNet prediction JSONL}"
 : "${EXPERT_REDUCED_CGCNN_PREDICTIONS:?Set the completed CGCNN prediction JSONL}"
+: "${EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS:?Set the completed parent-DAG prediction JSONL}"
 
 source "${EXPERT_CGCNN_VENV}/bin/activate"
 run_root="results/reduced-benchmark/comparison"
@@ -23,5 +24,6 @@ python -m src.cli.compare_reduced_benchmark \
   --dpa4 "${EXPERT_REDUCED_DPA4_PREDICTIONS}" \
   --gmtnet "${EXPERT_REDUCED_GMTNET_PREDICTIONS}" \
   --cgcnn-full-pg "${EXPERT_REDUCED_CGCNN_PREDICTIONS}" \
+  --cgcnn-parent-dag "${EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS}" \
   --summary "${run_root}/summary-${SLURM_JOB_ID}.json" \
   --table "${run_root}/table-${SLURM_JOB_ID}.md"

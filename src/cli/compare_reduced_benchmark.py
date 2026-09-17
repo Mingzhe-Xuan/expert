@@ -44,11 +44,12 @@ def _write_atomic(path: Path, text: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Validate and compare reduced DPA4/CGCNN-full-PG/GMTNet predictions"
+        description="Validate reduced current-only, parent-DAG, and GMTNet predictions"
     )
     parser.add_argument("--dpa4", type=Path, required=True)
     parser.add_argument("--gmtnet", type=Path, required=True)
     parser.add_argument("--cgcnn-full-pg", type=Path)
+    parser.add_argument("--cgcnn-parent-dag", type=Path)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--table", type=Path, required=True)
     arguments = parser.parse_args()
@@ -66,7 +67,7 @@ def main() -> None:
     ):
         raise ValueError("model prediction files do not contain frame-equivalent targets")
     metrics = {
-        "DPA4 B+A+PGE+R full_pg": tensor_benchmark_metrics(
+        "DPA4 B+A+PGE+R full_pg (current-group only)": tensor_benchmark_metrics(
             dpa_prediction, dpa_target, task="dielectric"
         ),
         "GMTNet": tensor_benchmark_metrics(gmt_prediction, gmt_target, task="dielectric"),
@@ -86,10 +87,25 @@ def main() -> None:
             rtol=2.0e-5,
         ):
             raise ValueError("CGCNN full-PG targets are not frame-equivalent")
-        metrics["CGCNN B+A+PGE+R full_pg"] = tensor_benchmark_metrics(
+        metrics["CGCNN B+A+PGE+R full_pg (current-group only)"] = tensor_benchmark_metrics(
             cgcnn_prediction, cgcnn_target, task="dielectric"
         )
         prediction_sha256["cgcnn_full_pg"] = _sha256(arguments.cgcnn_full_pg)
+    if arguments.cgcnn_parent_dag is not None:
+        parent_ids, parent_prediction, parent_target = _load(arguments.cgcnn_parent_dag)
+        if parent_ids != dpa_ids:
+            raise ValueError("CGCNN parent-DAG and reference test IDs or order differ")
+        if not torch.allclose(
+            torch.linalg.eigvalsh(parent_target),
+            torch.linalg.eigvalsh(dpa_target),
+            atol=2.0e-4,
+            rtol=2.0e-5,
+        ):
+            raise ValueError("CGCNN parent-DAG targets are not frame-equivalent")
+        metrics["CGCNN B+A+PGE+R full_pg (parent-DAG)"] = tensor_benchmark_metrics(
+            parent_prediction, parent_target, task="dielectric"
+        )
+        prediction_sha256["cgcnn_parent_dag"] = _sha256(arguments.cgcnn_parent_dag)
     report = {
         "schema_version": 1,
         "status": "passed",

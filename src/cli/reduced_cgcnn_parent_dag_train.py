@@ -1,28 +1,34 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import json
 from pathlib import Path
 import time
 
-from ..configs import ArchitectureConfig
 from ..data import TrainingUnit, load_training_dataset
-from ..features import (
-    CGCNN_SOURCE_LAYOUT,
-    cgcnn_feature_metadata,
-    cgcnn_feature_sha256,
-    cgcnn_node_features,
-)
-from ..heads import irreps_to_cartesian
+from ..features import CGCNN_SOURCE_LAYOUT, cgcnn_feature_metadata, cgcnn_feature_sha256
 from ..models import CGCNNFeatureTensorModel
+from ..symmetry import (
+    DEFAULT_PARENT_SYMPRECS,
+    discover_material_parent_routing,
+    load_parent_routing_cache,
+    parent_detection_config_sha256,
+    parent_routing_coverage,
+    save_parent_routing_cache,
+)
 from ..training import (
     BenchmarkConfig,
-    FrozenFeatureExample,
     load_frozen_feature_cache,
-    prepare_tensor_batch,
     save_frozen_feature_cache,
     train_cached_backbone_readout,
     write_smoke_report,
+)
+from .reduced_cgcnn_full_pg_train import (
+    ARCHITECTURE,
+    BACKBONE_NAME,
+    GRAPH_CUTOFF_ANGSTROM,
+    _materialize_examples,
 )
 from .reporting import execution_metadata, write_single_case_junit
 from .reduced_protocol import (
@@ -32,46 +38,58 @@ from .reduced_protocol import (
 )
 
 
-ARCHITECTURE = ArchitectureConfig(
-    "B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg"
-)
-BACKBONE_NAME = "gmtnet_cgcnn_features"
-GRAPH_CUTOFF_ANGSTROM = 4.0
+MODEL_NAME = "CGCNN B+A+PGE+R full_pg parent-DAG"
 
 
-def _materialize_examples(dataset, sample_ids, *, progress):
-    examples = []
-    for index, sample_id in enumerate(sample_ids, start=1):
-        sample = dataset.by_id(sample_id)
-        prepared = prepare_tensor_batch(
-            (sample,), cutoff=GRAPH_CUTOFF_ANGSTROM, device="cpu"
+def _parent_enriched_examples(
+    examples, cache_path: Path, *, sample_ids, dataset_sha256: str
+):
+    if cache_path.is_file():
+        routings = load_parent_routing_cache(
+            cache_path, sample_ids=sample_ids, dataset_sha256=dataset_sha256
         )
-        examples.append(
-            FrozenFeatureExample(
-                sample_id=sample.sample_id,
-                features=cgcnn_node_features(prepared.graph.atomic_numbers),
-                graph=prepared.graph,
-                symmetry=prepared.symmetries[0],
-                target_coefficients=prepared.target_coefficients,
-                target_cartesian=irreps_to_cartesian(
-                    prepared.target_coefficients, sample.unit.target
-                ),
+    else:
+        values = []
+        for index, example in enumerate(examples, start=1):
+            values.append(
+                discover_material_parent_routing(
+                    example.sample_id,
+                    example.graph.positions,
+                    example.graph.cell[0],
+                    example.graph.atomic_numbers,
+                    example.symmetry,
+                )
             )
+            if index == 1 or index == len(examples) or index % 25 == 0:
+                print(
+                    json.dumps(
+                        {
+                            "event": "material_parent_dag_detection",
+                            "current": index,
+                            "total": len(examples),
+                            "sample_id": example.sample_id,
+                            "parent_count": len(values[-1].dag.embeddings),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+        routings = tuple(values)
+        save_parent_routing_cache(
+            cache_path,
+            routings,
+            sample_ids=sample_ids,
+            dataset_sha256=dataset_sha256,
         )
-        if progress and (index == 1 or index == len(sample_ids) or index % 25 == 0):
-            print(
-                json.dumps(
-                    {
-                        "event": "cgcnn_feature_materialization",
-                        "current": index,
-                        "total": len(sample_ids),
-                        "sample_id": sample_id,
-                    },
-                    sort_keys=True,
-                ),
-                flush=True,
-            )
-    return tuple(examples)
+    enriched = tuple(
+        replace(
+            example,
+            parent_dag=routing.dag,
+            parent_residuals=dict(routing.residuals),
+        )
+        for example, routing in zip(examples, routings)
+    )
+    return enriched, parent_routing_coverage(routings)
 
 
 def run(arguments: argparse.Namespace) -> dict[str, object]:
@@ -88,12 +106,18 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     dataset_sha256 = str(dataset[0].source["manifest_sha256"])
     feature_sha256 = cgcnn_feature_sha256()
     scope = "smoke" if arguments.smoke else "full"
-    splits = {}
+    splits, coverage = {}, {}
     for split in ("train", "validation", "test"):
-        cache = arguments.cache_root / "cgcnn-full-pg" / unit.namespace / scope / f"{split}.pt"
-        if cache.is_file():
+        feature_cache = (
+            arguments.cache_root
+            / "cgcnn-full-pg"
+            / unit.namespace
+            / scope
+            / f"{split}.pt"
+        )
+        if feature_cache.is_file():
             layout, examples = load_frozen_feature_cache(
-                cache,
+                feature_cache,
                 expected_backbone=BACKBONE_NAME,
                 expected_checkpoint_sha256=feature_sha256,
                 expected_unit=unit,
@@ -104,11 +128,9 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             if layout != CGCNN_SOURCE_LAYOUT:
                 raise ValueError("cached CGCNN source layout mismatch")
         else:
-            examples = _materialize_examples(
-                dataset, selected_ids[split], progress=True
-            )
+            examples = _materialize_examples(dataset, selected_ids[split], progress=True)
             save_frozen_feature_cache(
-                cache,
+                feature_cache,
                 backbone_family=BACKBONE_NAME,
                 checkpoint_sha256=feature_sha256,
                 unit=unit,
@@ -117,23 +139,43 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
                 examples=examples,
                 dataset_sha256=dataset_sha256,
             )
-        splits[split] = examples
-    if arguments.prepare_only:
-        return {
-            "schema_version": 1,
-            "status": "passed",
-            "mode": "prepare_only",
-            "model": "CGCNN B+A+PGE+R full_pg (current-group only)",
-            "routing": "current_group_only",
-            "training_unit": unit.namespace,
-            "dataset_sha256": dataset_sha256,
-            "feature_embedding": cgcnn_feature_metadata(),
-            "split_counts": {name: len(rows) for name, rows in splits.items()},
-            "execution": execution_metadata(),
-        }
+        routing_cache = (
+            arguments.cache_root
+            / "cgcnn-parent-dag"
+            / unit.namespace
+            / scope
+            / f"{split}.pt"
+        )
+        splits[split], coverage[split] = _parent_enriched_examples(
+            examples,
+            routing_cache,
+            sample_ids=selected_ids[split],
+            dataset_sha256=dataset_sha256,
+        )
+
     expert_point_groups = canonical_expert_point_groups(
         splits["train"], splits["validation"], splits["test"]
     )
+    common = {
+        "schema_version": 1,
+        "status": "passed",
+        "model": MODEL_NAME,
+        "routing": "material_parent_dag",
+        "training_unit": unit.namespace,
+        "dataset_sha256": dataset_sha256,
+        "feature_embedding": cgcnn_feature_metadata(),
+        "parent_detection": {
+            "symprecs_angstrom": list(DEFAULT_PARENT_SYMPRECS),
+            "config_sha256": parent_detection_config_sha256(),
+            "coverage_by_split": coverage,
+        },
+        "expert_point_groups": list(expert_point_groups),
+        "split_counts": {name: len(rows) for name, rows in splits.items()},
+        "execution": execution_metadata(),
+    }
+    if arguments.prepare_only:
+        return {**common, "mode": "prepare_only"}
+
     report = train_cached_backbone_readout(
         backbone_family=BACKBONE_NAME,
         unit=unit,
@@ -160,18 +202,15 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         ),
         device=arguments.device,
     )
-    report["model"] = "CGCNN B+A+PGE+R full_pg (current-group only)"
-    report["dataset_sha256"] = dataset_sha256
-    report["feature_embedding"] = cgcnn_feature_metadata()
+    report.update(common)
     report["graph_cutoff_angstrom"] = GRAPH_CUTOFF_ANGSTROM
     report["source_retained_point_groups"] = list(REDUCED_POINT_GROUPS)
-    report["execution"] = execution_metadata()
     return report
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train CGCNN-feature B+A+PGE+R/full_pg with GMTNet-aligned optimization"
+        description="Train CGCNN full-PG with material-specific parent-DAG routing"
     )
     parser.add_argument(
         "--manifest",
@@ -209,7 +248,7 @@ def main() -> None:
     write_smoke_report(arguments.summary, report)
     write_single_case_junit(
         arguments.junit,
-        suite_name="reduced_cgcnn_full_pg",
+        suite_name="reduced_cgcnn_parent_dag",
         seconds=time.perf_counter() - started,
         error=error,
     )

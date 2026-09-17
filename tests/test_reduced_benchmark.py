@@ -85,12 +85,14 @@ def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:
     dpa4 = tmp_path / "dpa4.jsonl"
     gmtnet = tmp_path / "gmtnet.jsonl"
     cgcnn = tmp_path / "cgcnn.jsonl"
+    parent = tmp_path / "parent.jsonl"
     target = [[2.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 4.0]]
     rotated = [[3.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 4.0]]
     with (
         dpa4.open("w", encoding="utf-8") as left,
         gmtnet.open("w", encoding="utf-8") as right,
         cgcnn.open("w", encoding="utf-8") as third,
+        parent.open("w", encoding="utf-8") as fourth,
     ):
         for index in range(677):
             left.write(json.dumps({"sample_id": f"sample-{index}", "prediction": target,
@@ -99,11 +101,14 @@ def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:
                                     "target": rotated}) + "\n")
             third.write(json.dumps({"sample_id": f"sample-{index}", "prediction": target,
                                     "target": target}) + "\n")
+            fourth.write(json.dumps({"sample_id": f"sample-{index}", "prediction": target,
+                                     "target": target}) + "\n")
     summary = tmp_path / "comparison.json"
     table = tmp_path / "comparison.md"
     subprocess.run(
         [sys.executable, "-m", "src.cli.compare_reduced_benchmark", "--dpa4", str(dpa4),
          "--gmtnet", str(gmtnet), "--cgcnn-full-pg", str(cgcnn),
+         "--cgcnn-parent-dag", str(parent),
          "--summary", str(summary), "--table", str(table)],
         cwd=ROOT,
         check=True,
@@ -114,7 +119,8 @@ def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:
     assert report["status"] == "passed"
     assert report["test_count"] == 677
     assert report["metrics"]["GMTNet"]["rmse"] == 0.0
-    assert report["metrics"]["CGCNN B+A+PGE+R full_pg"]["rmse"] == 0.0
+    assert report["metrics"]["CGCNN B+A+PGE+R full_pg (current-group only)"]["rmse"] == 0.0
+    assert report["metrics"]["CGCNN B+A+PGE+R full_pg (parent-DAG)"]["rmse"] == 0.0
     assert "| Model | RMSE" in table.read_text(encoding="utf-8")
 
 
@@ -126,6 +132,8 @@ def test_comparison_launcher_requires_explicit_artifacts_and_job_scopes_outputs(
     assert "EXPERT_REDUCED_DPA4_PREDICTIONS:?" in launcher
     assert "EXPERT_REDUCED_GMTNET_PREDICTIONS:?" in launcher
     assert "EXPERT_REDUCED_CGCNN_PREDICTIONS:?" in launcher
+    assert "EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS:?" in launcher
     assert '--cgcnn-full-pg "${EXPERT_REDUCED_CGCNN_PREDICTIONS}"' in launcher
+    assert '--cgcnn-parent-dag "${EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS}"' in launcher
     assert 'summary-${SLURM_JOB_ID}.json' in launcher
     assert 'table-${SLURM_JOB_ID}.md' in launcher

@@ -1,10 +1,12 @@
 # Slurm entry points
 
 `compare_reduced_benchmark.sbatch` runs the strict common-677-row comparison after all prediction
-artifacts exist. It requires explicit environment and three-model prediction paths; submit it with
-an `afterok` dependency on the CGCNN training job so evaluation never races an incomplete JSONL.
+artifacts exist. It requires explicit environment and four-model prediction paths; submit it with
+an `afterok` dependency on the parent-DAG CGCNN training job so evaluation never races an incomplete
+JSONL.
 
-`train_reduced_dpa4_full_pg.sbatch`, `train_reduced_cgcnn_full_pg.sbatch`, and
+`train_reduced_dpa4_full_pg.sbatch`, `train_reduced_cgcnn_full_pg.sbatch`,
+`train_reduced_cgcnn_parent_dag.sbatch`, and
 `train_reduced_gmtnet.sbatch` form the custom dielectric-total benchmark. They consume the same
 manifest-frozen 5,001/637/677 split and export
 per-ID test predictions for the common evaluator. The DPA4 job fixes `B+A+PGE+R/full_pg/full_o3`
@@ -17,6 +19,8 @@ feature and learned `92 -> 128` scalar atom embedding, followed by the same
 `B+A+PGE+R/full_pg/full_o3` downstream architecture. Its optimizer/evaluation protocol is GMTNet
 aligned (Cartesian Huber, AdamW, per-step linear LR to `1e-5`, validation MAE selection) and its
 cache/checkpoint/result namespace is independent from DPA4.
+The parent-DAG launcher reuses that immutable feature cache, builds a separate checked routing cache,
+and writes checkpoints/predictions under `results/reduced-benchmark/cgcnn-parent-dag/`.
 Set `EXPERT_CGCNN_VENV` to the recorded compatible environment; the accepted setup reuses
 `/home/xmz/expert-envs/gmtnet-py310`, which contains Torch 2.11, e3nn 0.5.9, and jarvis-tools
 2025.5.30. The variable is deliberately separate from `EXPERT_DPA4_VENV` so missing chemical-feature

@@ -6,7 +6,7 @@ import os
 import random
 import re
 from pathlib import Path
-from typing import Callable, Sequence
+from typing import Callable, Mapping, Sequence
 
 import torch
 from torch import nn
@@ -21,7 +21,7 @@ from ..graphs import PeriodicGraph, collate_periodic_graphs
 from ..heads import TARGET_LAYOUTS, irreps_to_cartesian
 from ..irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
 from ..models import periodic_graph_from_backbone
-from ..symmetry import SymmetryRecord
+from ..symmetry import ParentDAGSpec, SymmetryRecord
 from .checkpoint import load_checkpoint, save_checkpoint
 from .losses import coefficient_mse, physical_coefficient_metrics
 from .normalization import CoefficientNormalizer
@@ -86,6 +86,8 @@ class FrozenFeatureExample:
     symmetry: SymmetryRecord
     target_coefficients: torch.Tensor
     target_cartesian: torch.Tensor
+    parent_dag: ParentDAGSpec | None = None
+    parent_residuals: Mapping[int, float] | None = None
 
     def __post_init__(self) -> None:
         if not self.sample_id or self.features.ndim != 2:
@@ -96,6 +98,15 @@ class FrozenFeatureExample:
             raise ValueError("each cached benchmark example must contain exactly one graph")
         if self.target_coefficients.shape[0] != 1 or self.target_cartesian.shape[0] != 1:
             raise ValueError("global benchmark targets require one leading sample item")
+        if (self.parent_dag is None) != (self.parent_residuals is None):
+            raise ValueError("parent DAG and residuals must be supplied together")
+        if self.parent_dag is not None:
+            if self.parent_dag.material_id != self.sample_id:
+                raise ValueError("parent DAG material ID must match the cached sample")
+            active = {self.parent_dag.current_hall_number}
+            active.update(item.parent_hall_number for item in self.parent_dag.embeddings)
+            if set(self.parent_residuals) != active:
+                raise ValueError("parent residuals must cover exactly the active Hall nodes")
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,6 +117,8 @@ class FrozenFeatureBatch:
     target_coefficients: torch.Tensor
     target_cartesian: torch.Tensor
     sample_ids: tuple[str, ...]
+    parent_dags: tuple[ParentDAGSpec | None, ...]
+    parent_residuals: tuple[Mapping[int, float] | None, ...]
 
 
 class CachedBackboneTensorModel(nn.Module):
@@ -128,8 +141,16 @@ class CachedBackboneTensorModel(nn.Module):
             expert_point_groups=expert_point_groups,
         )
 
-    def forward(self, features, graph, symmetries):
-        return self.downstream(self.interface(features), graph, symmetries)
+    def forward(
+        self, features, graph, symmetries, *, parent_dags=None, parent_residuals=None
+    ):
+        return self.downstream(
+            self.interface(features),
+            graph,
+            symmetries,
+            parent_dags=parent_dags,
+            parent_residuals=parent_residuals,
+        )
 
 
 def save_frozen_feature_cache(
@@ -334,6 +355,20 @@ def collate_frozen_examples(
         ),
         target_cartesian=torch.cat([example.target_cartesian.to(device) for example in examples]),
         sample_ids=tuple(example.sample_id for example in examples),
+        parent_dags=tuple(example.parent_dag for example in examples),
+        parent_residuals=tuple(example.parent_residuals for example in examples),
+    )
+
+
+def _predict(model: nn.Module, batch: FrozenFeatureBatch):
+    if all(item is None for item in batch.parent_dags):
+        return model(batch.features, batch.graph, batch.symmetries)
+    return model(
+        batch.features,
+        batch.graph,
+        batch.symmetries,
+        parent_dags=batch.parent_dags,
+        parent_residuals=batch.parent_residuals,
     )
 
 
@@ -381,7 +416,7 @@ def _evaluate(
     with torch.no_grad():
         for rows in _batches(examples, batch_size, shuffle_seed=None):
             batch = collate_frozen_examples(rows, layout, device=device)
-            prediction = model(batch.features, batch.graph, batch.symmetries)
+            prediction = _predict(model, batch)
             loss = _training_loss(
                 prediction, batch, unit, normalizer, training_protocol
             )
@@ -397,6 +432,16 @@ def _evaluate(
                         "sample_id": sample_id,
                         "prediction": predicted[index].tolist(),
                         "target": expected[index].tolist(),
+                        "routing": (
+                            "current_group_only"
+                            if batch.parent_dags[index] is None
+                            else "material_parent_dag"
+                        ),
+                        "active_hall_numbers": (
+                            [batch.symmetries[index].hall_number]
+                            if batch.parent_dags[index] is None
+                            else sorted(batch.parent_residuals[index])
+                        ),
                     }
                     for index, sample_id in enumerate(batch.sample_ids)
                 )
@@ -445,6 +490,11 @@ def train_cached_backbone_readout(
         raise ValueError("this benchmark runner supports dielectric/elastic targets")
     if not train_examples or not validation_examples or not test_examples:
         raise ValueError("all published benchmark splits must be non-empty")
+    all_examples = (*train_examples, *validation_examples, *test_examples)
+    parent_flags = [example.parent_dag is not None for example in all_examples]
+    if any(parent_flags) and not all(parent_flags):
+        raise ValueError("parent-DAG routing must be enabled consistently across every split")
+    routing = "material_parent_dag" if all(parent_flags) else "current_group_only"
     torch.manual_seed(config.seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(config.seed)
@@ -510,7 +560,7 @@ def train_cached_backbone_readout(
         ):
             batch = collate_frozen_examples(rows, source_layout, device=device)
             optimizer.zero_grad(set_to_none=True)
-            prediction = model(batch.features, batch.graph, batch.symmetries)
+            prediction = _predict(model, batch)
             loss = _training_loss(
                 prediction, batch, unit, normalizer, config.training_protocol
             )
@@ -648,7 +698,7 @@ def train_cached_backbone_readout(
         "test_indicators": ["rmse", "fnorm", "ewt_25", "ewt_10", "ewt_5"],
         "test_irrep_metrics": irrep_metrics,
         "expert_point_groups": list(expert_point_groups),
-        "routing": "current_point_group_only",
+        "routing": routing,
         "predictions": None if predictions_path is None else str(predictions_path),
         "history": history,
         "checkpoint": str(checkpoint_path),
