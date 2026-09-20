@@ -10,6 +10,13 @@ loss and validation MAE, marks both selected checkpoints, and collapses identica
 schedules into one explicitly shared curve. GMTNet validation loss/Fnorm are omitted because its
 runner did not record them.
 
+`space_group_analysis.py` joins prediction JSONL files to the frozen curated split by record ID.
+It reports RMSE, sample-mean Fnorm, EwT25/10/5, and mean relative Fnorm for every source space
+group, together with train/validation/test counts. Training-coverage relationships use
+`log10(train_count)` and unweighted group-level Spearman/Pearson statistics; groups below the
+declared test-count threshold remain in the table but are excluded from that correlation cohort.
+The target Frobenius scale is reported as a diagnostic confounder.
+
 Evaluation reports per-irrep physical metrics, graph and tensor equivariance, parameter
 counts, FLOPs, latency, and peak memory. Reports are emitted as machine-readable data and
 Markdown with architecture, task, PG, mode, and backend keys.
