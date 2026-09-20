@@ -21,3 +21,7 @@ real `O3FeatureBatch`, conditionally executes only configured modules, routes on
 validated Hall DAG nodes, fuses in the shared O(3) layout, and invokes one task readout.
 It reports deduplicated active non-backbone parameters and per-sample active expert counts;
 expert-free branches report zero, while routed branches count each validated Hall node once.
+For the offline class-DAG mode, the dispatcher instead accepts one validated PG number per sample,
+looks up current plus every transitive parent class, executes every deduplicated expert, and fuses
+them with equal weights in the shared O(3) layout. Hall-DAG and PG-number inputs are mutually
+exclusive, and current-only routing retains the original interface.

@@ -120,7 +120,9 @@ def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:
     assert report["test_count"] == 677
     assert report["metrics"]["GMTNet"]["rmse"] == 0.0
     assert report["metrics"]["CGCNN B+A+PGE+R full_pg (current-group only)"]["rmse"] == 0.0
-    assert report["metrics"]["CGCNN B+A+PGE+R full_pg (parent-DAG)"]["rmse"] == 0.0
+    assert report["metrics"][
+        "CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors)"
+    ]["rmse"] == 0.0
     assert "| Model | RMSE" in table.read_text(encoding="utf-8")
 
 

@@ -92,6 +92,7 @@ class BackboneTensorModel(nn.Module):
         *,
         parent_dags: tuple[ParentDAGSpec | None, ...] | None = None,
         parent_residuals=None,
+        point_group_numbers=None,
     ) -> ModelForward:
         features = self.adapter(graph)
         used_graph = periodic_graph_from_backbone(features, cutoff=self.cutoff)
@@ -101,6 +102,7 @@ class BackboneTensorModel(nn.Module):
             symmetries,
             parent_dags=parent_dags,
             parent_residuals=parent_residuals,
+            point_group_numbers=point_group_numbers,
         )
         return ModelForward(prediction, features, used_graph)
 
@@ -111,10 +113,12 @@ class BackboneTensorModel(nn.Module):
         *,
         parent_dags: tuple[ParentDAGSpec | None, ...] | None = None,
         parent_residuals=None,
+        point_group_numbers=None,
     ) -> TensorPrediction:
         return self.forward_with_graph(
             graph,
             symmetries,
             parent_dags=parent_dags,
             parent_residuals=parent_residuals,
+            point_group_numbers=point_group_numbers,
         ).prediction

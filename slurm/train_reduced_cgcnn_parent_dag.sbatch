@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=expert-red-cgcnn-parent
+#SBATCH --job-name=expert-red-cgcnn-pg-dag
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -7,13 +7,13 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=48G
 #SBATCH --time=2-00:00:00
-#SBATCH --output=logs/slurm/reduced-cgcnn-parent-dag-%j.out
-#SBATCH --error=logs/slurm/reduced-cgcnn-parent-dag-%j.err
+#SBATCH --output=logs/slurm/reduced-cgcnn-pg-parent-dag-%j.out
+#SBATCH --error=logs/slurm/reduced-cgcnn-pg-parent-dag-%j.err
 
 set -euo pipefail
 : "${EXPERT_CGCNN_VENV:?Set the recorded CGCNN full-PG environment}"
 source "${EXPERT_CGCNN_VENV}/bin/activate"
-run_root="results/reduced-benchmark/cgcnn-parent-dag"
+run_root="results/reduced-benchmark/cgcnn-pg-parent-dag"
 mkdir -p logs/slurm "${run_root}" results/reduced-benchmark/cache
 git rev-parse HEAD > "${run_root}/git-${SLURM_JOB_ID}.txt"
 python -m pip freeze > "${run_root}/environment-${SLURM_JOB_ID}.txt"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -10,12 +11,9 @@ from ..data import TrainingUnit, load_training_dataset
 from ..features import CGCNN_SOURCE_LAYOUT, cgcnn_feature_metadata, cgcnn_feature_sha256
 from ..models import CGCNNFeatureTensorModel
 from ..symmetry import (
-    DEFAULT_PARENT_SYMPRECS,
-    discover_material_parent_routing,
-    load_parent_routing_cache,
-    parent_detection_config_sha256,
-    parent_routing_coverage,
-    save_parent_routing_cache,
+    PointGroupAncestorDAG,
+    load_point_group_number_cache,
+    save_point_group_number_cache,
 )
 from ..training import (
     BenchmarkConfig,
@@ -33,63 +31,68 @@ from .reduced_cgcnn_full_pg_train import (
 from .reporting import execution_metadata, write_single_case_junit
 from .reduced_protocol import (
     REDUCED_POINT_GROUPS,
-    canonical_expert_point_groups,
     point_group_stratified_smoke_ids,
 )
 
 
-MODEL_NAME = "CGCNN B+A+PGE+R full_pg parent-DAG"
+MODEL_NAME = "CGCNN B+A+PGE+R full_pg PG-parent-DAG all-ancestors"
 
 
-def _parent_enriched_examples(
-    examples, cache_path: Path, *, sample_ids, dataset_sha256: str
+def _point_group_enriched_examples(
+    examples,
+    cache_path: Path,
+    *,
+    sample_ids,
+    dataset_sha256: str,
+    dag: PointGroupAncestorDAG,
 ):
     if cache_path.is_file():
-        routings = load_parent_routing_cache(
-            cache_path, sample_ids=sample_ids, dataset_sha256=dataset_sha256
-        )
-    else:
-        values = []
-        for index, example in enumerate(examples, start=1):
-            values.append(
-                discover_material_parent_routing(
-                    example.sample_id,
-                    example.graph.positions,
-                    example.graph.cell[0],
-                    example.graph.atomic_numbers,
-                    example.symmetry,
-                )
-            )
-            if index == 1 or index == len(examples) or index % 25 == 0:
-                print(
-                    json.dumps(
-                        {
-                            "event": "material_parent_dag_detection",
-                            "current": index,
-                            "total": len(examples),
-                            "sample_id": example.sample_id,
-                            "parent_count": len(values[-1].dag.embeddings),
-                        },
-                        sort_keys=True,
-                    ),
-                    flush=True,
-                )
-        routings = tuple(values)
-        save_parent_routing_cache(
+        numbers = load_point_group_number_cache(
             cache_path,
-            routings,
             sample_ids=sample_ids,
             dataset_sha256=dataset_sha256,
+            dag=dag,
         )
+    else:
+        numbers = tuple(dag.number(example.symmetry.current_point_group) for example in examples)
+        save_point_group_number_cache(
+            cache_path,
+            sample_ids=sample_ids,
+            point_group_numbers=numbers,
+            dataset_sha256=dataset_sha256,
+            dag=dag,
+        )
+    for example, number in zip(examples, numbers):
+        if dag.number(example.symmetry.current_point_group) != number:
+            raise ValueError("cached point-group number disagrees with symmetry record")
     enriched = tuple(
-        replace(
-            example,
-            parent_dag=routing.dag,
-            parent_residuals=dict(routing.residuals),
-        )
-        for example, routing in zip(examples, routings)
+        replace(example, point_group_number=number)
+        for example, number in zip(examples, numbers)
     )
-    return enriched, parent_routing_coverage(routings)
+    active_sets = tuple(dag.ancestors(number) for number in numbers)
+    active_counts = [len(active) for active in active_sets]
+    current_counts = Counter(numbers)
+    parent_counts = Counter(
+        parent
+        for current, active in zip(numbers, active_sets)
+        for parent in active
+        if parent != current
+    )
+    summary = {
+        "samples": len(numbers),
+        "min_active_experts": min(active_counts),
+        "max_active_experts": max(active_counts),
+        "mean_active_experts": sum(active_counts) / len(active_counts),
+        "current_point_group_counts": {
+            dag.symbols_by_number[number]: count
+            for number, count in sorted(current_counts.items())
+        },
+        "activated_parent_point_group_counts": {
+            dag.symbols_by_number[number]: count
+            for number, count in sorted(parent_counts.items())
+        },
+    }
+    return enriched, summary
 
 
 def run(arguments: argparse.Namespace) -> dict[str, object]:
@@ -105,6 +108,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     selected_ids = point_group_stratified_smoke_ids(dataset) if arguments.smoke else full_ids
     dataset_sha256 = str(dataset[0].source["manifest_sha256"])
     feature_sha256 = cgcnn_feature_sha256()
+    dag = PointGroupAncestorDAG.from_path()
     scope = "smoke" if arguments.smoke else "full"
     splits, coverage = {}, {}
     for split in ("train", "validation", "test"):
@@ -141,33 +145,39 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             )
         routing_cache = (
             arguments.cache_root
-            / "cgcnn-parent-dag"
+            / "cgcnn-pg-parent-dag"
             / unit.namespace
             / scope
-            / f"{split}.pt"
+            / f"{split}.json"
         )
-        splits[split], coverage[split] = _parent_enriched_examples(
+        splits[split], coverage[split] = _point_group_enriched_examples(
             examples,
             routing_cache,
             sample_ids=selected_ids[split],
             dataset_sha256=dataset_sha256,
+            dag=dag,
         )
 
-    expert_point_groups = canonical_expert_point_groups(
-        splits["train"], splits["validation"], splits["test"]
+    active_numbers = sorted(
+        {
+            active
+            for rows in splits.values()
+            for example in rows
+            for active in dag.ancestors(example.point_group_number)
+        }
     )
+    expert_point_groups = dag.symbols(active_numbers)
     common = {
         "schema_version": 1,
         "status": "passed",
         "model": MODEL_NAME,
-        "routing": "material_parent_dag",
+        "routing": "point_group_parent_dag_all_ancestors",
         "training_unit": unit.namespace,
         "dataset_sha256": dataset_sha256,
         "feature_embedding": cgcnn_feature_metadata(),
-        "parent_detection": {
-            "symprecs_angstrom": list(DEFAULT_PARENT_SYMPRECS),
-            "config_sha256": parent_detection_config_sha256(),
-            "coverage_by_split": coverage,
+        "point_group_dag": {
+            **dag.metadata(),
+            "routing_by_split": coverage,
         },
         "expert_point_groups": list(expert_point_groups),
         "split_counts": {name: len(rows) for name, rows in splits.items()},
@@ -188,7 +198,10 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         architecture=ARCHITECTURE,
         expert_point_groups=expert_point_groups,
         model_builder=lambda _layout, task: CGCNNFeatureTensorModel(
-            ARCHITECTURE, task, expert_point_groups
+            ARCHITECTURE,
+            task,
+            expert_point_groups,
+            point_group_parent_dag=dag,
         ),
         config=BenchmarkConfig(
             max_epochs=arguments.epochs,
@@ -210,7 +223,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train CGCNN full-PG with material-specific parent-DAG routing"
+        description="Train CGCNN full-PG with offline all-ancestor point-group DAG routing"
     )
     parser.add_argument(
         "--manifest",

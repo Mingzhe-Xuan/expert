@@ -8,6 +8,7 @@ from ..configs import ArchitectureConfig
 from ..experts import PointGroupTensorModel, default_hidden_layout
 from ..features import CGCNN_FEATURE_DIMENSION, CGCNN_SOURCE_LAYOUT
 from ..irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
+from ..symmetry import PointGroupAncestorDAG
 
 
 GMTNET_EMBEDDING_DIMENSION = 128
@@ -24,6 +25,7 @@ class CGCNNFeatureTensorModel(nn.Module):
         architecture: ArchitectureConfig,
         task: str,
         expert_point_groups: tuple[str, ...],
+        point_group_parent_dag: PointGroupAncestorDAG | None = None,
     ) -> None:
         super().__init__()
         if architecture.branch != "B+A+PGE+R" or architecture.pg_hidden_mode != "full_pg":
@@ -38,10 +40,18 @@ class CGCNNFeatureTensorModel(nn.Module):
             task,
             hidden_layout=hidden_layout,
             expert_point_groups=expert_point_groups,
+            point_group_parent_dag=point_group_parent_dag,
         )
 
     def forward(
-        self, features, graph, symmetries, *, parent_dags=None, parent_residuals=None
+        self,
+        features,
+        graph,
+        symmetries,
+        *,
+        parent_dags=None,
+        parent_residuals=None,
+        point_group_numbers=None,
     ):
         if features.node_layout != CGCNN_SOURCE_LAYOUT:
             raise ValueError("CGCNN branch received a non-CGCNN source layout")
@@ -56,4 +66,5 @@ class CGCNNFeatureTensorModel(nn.Module):
             symmetries,
             parent_dags=parent_dags,
             parent_residuals=parent_residuals,
+            point_group_numbers=point_group_numbers,
         )

@@ -44,7 +44,9 @@ def _write_atomic(path: Path, text: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Validate reduced current-only, parent-DAG, and GMTNet predictions"
+        description=(
+            "Validate reduced current-only, all-ancestor PG-parent-DAG, and GMTNet predictions"
+        )
     )
     parser.add_argument("--dpa4", type=Path, required=True)
     parser.add_argument("--gmtnet", type=Path, required=True)
@@ -94,15 +96,15 @@ def main() -> None:
     if arguments.cgcnn_parent_dag is not None:
         parent_ids, parent_prediction, parent_target = _load(arguments.cgcnn_parent_dag)
         if parent_ids != dpa_ids:
-            raise ValueError("CGCNN parent-DAG and reference test IDs or order differ")
+            raise ValueError("CGCNN PG-parent-DAG and reference test IDs or order differ")
         if not torch.allclose(
             torch.linalg.eigvalsh(parent_target),
             torch.linalg.eigvalsh(dpa_target),
             atol=2.0e-4,
             rtol=2.0e-5,
         ):
-            raise ValueError("CGCNN parent-DAG targets are not frame-equivalent")
-        metrics["CGCNN B+A+PGE+R full_pg (parent-DAG)"] = tensor_benchmark_metrics(
+            raise ValueError("CGCNN PG-parent-DAG targets are not frame-equivalent")
+        metrics["CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors)"] = tensor_benchmark_metrics(
             parent_prediction, parent_target, task="dielectric"
         )
         prediction_sha256["cgcnn_parent_dag"] = _sha256(arguments.cgcnn_parent_dag)

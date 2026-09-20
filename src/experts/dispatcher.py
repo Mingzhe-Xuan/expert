@@ -11,7 +11,12 @@ from ..configs import ArchitectureConfig
 from ..graphs import PeriodicGraph
 from ..heads import TensorPrediction, TensorReadout
 from ..irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
-from ..symmetry import ParentDAGSpec, PointGroupRegistry, SymmetryRecord
+from ..symmetry import (
+    ParentDAGSpec,
+    PointGroupAncestorDAG,
+    PointGroupRegistry,
+    SymmetryRecord,
+)
 from ..symmetry.registry import canonical_point_group_symbol
 from .modules import (
     A1PointGroupExpert,
@@ -83,6 +88,7 @@ class PointGroupTensorModel(nn.Module):
         *,
         hidden_layout: IrrepLayout | None = None,
         expert_point_groups: tuple[str, ...] | None = None,
+        point_group_parent_dag: PointGroupAncestorDAG | None = None,
         cutoff: float = 6.0,
     ) -> None:
         super().__init__()
@@ -98,6 +104,7 @@ class PointGroupTensorModel(nn.Module):
         for symbol in selected:
             self.registry[symbol]
         self.expert_point_groups = selected
+        self.point_group_parent_dag = point_group_parent_dag
 
         self.adaptation = (
             O3Adaptation(
@@ -169,29 +176,50 @@ class PointGroupTensorModel(nn.Module):
         symmetries: tuple[SymmetryRecord, ...],
         parent_dags: tuple[ParentDAGSpec | None, ...],
         residuals: tuple[Mapping[int, torch.Tensor | float] | None, ...],
+        point_group_numbers: tuple[int | None, ...],
     ) -> torch.Tensor:
         output = torch.empty_like(features)
         for graph_index, symmetry in enumerate(symmetries):
             node_indices, local_graph = _extract_graph(graph, graph_index)
             local_features = features[node_indices]
-            halls = self._active_halls(symmetry, parent_dags[graph_index])
-            supplied = residuals[graph_index]
-            if supplied is None:
-                if len(halls) != 1:
-                    raise ValueError("parent-active routing requires residuals for every Hall node")
-                supplied = {halls[0]: local_features.new_zeros(())}
-            weights = self.routing_gate(halls, supplied)
+            point_group_number = point_group_numbers[graph_index]
+            if point_group_number is not None:
+                if self.point_group_parent_dag is None:
+                    raise ValueError("point-group number routing requires an offline parent DAG")
+                if parent_dags[graph_index] is not None or residuals[graph_index] is not None:
+                    raise ValueError("point-group DAG routing cannot mix Hall DAG inputs")
+                current = self.registry[symmetry.current_point_group].number
+                if int(point_group_number) != current:
+                    raise ValueError("stored point-group number disagrees with symmetry record")
+                active_ids = self.point_group_parent_dag.ancestors(current)
+                weight = local_features.new_tensor(1.0 / len(active_ids))
+                weights = {number: weight for number in active_ids}
+                group_numbers = {number: number for number in active_ids}
+            else:
+                if self.point_group_parent_dag is not None:
+                    raise ValueError("offline parent-DAG model requires a point-group number")
+                halls = self._active_halls(symmetry, parent_dags[graph_index])
+                supplied = residuals[graph_index]
+                if supplied is None:
+                    if len(halls) != 1:
+                        raise ValueError("parent-active routing requires residuals for every Hall node")
+                    supplied = {halls[0]: local_features.new_zeros(())}
+                weights = self.routing_gate(halls, supplied)
+                active_ids = halls
+                group_numbers = {
+                    hall: self.registry[_hall_point_group(hall)].number for hall in halls
+                }
             branches = {}
-            for hall in halls:
-                symbol = _hall_point_group(hall)
-                group = self.registry[symbol]
+            for active_id in active_ids:
+                group = self.registry[group_numbers[active_id]]
+                symbol = group.symbol
                 if symbol not in self.expert_point_groups:
                     raise ValueError(f"point-group expert {symbol!r} was not instantiated")
                 key = _expert_key(group.number)
                 if self.o3_experts is not None:
-                    branches[hall] = self.o3_experts[key](local_features, local_graph)
+                    branches[active_id] = self.o3_experts[key](local_features, local_graph)
                 else:
-                    branches[hall] = self.pg_experts[key](local_features)
+                    branches[active_id] = self.pg_experts[key](local_features)
             output[node_indices] = hierarchical_fusion(
                 branches, weights, self.hidden_layout
             )
@@ -208,6 +236,7 @@ class PointGroupTensorModel(nn.Module):
             Mapping[int, torch.Tensor | float] | None, ...
         ]
         | None = None,
+        point_group_numbers: tuple[int | None, ...] | None = None,
     ) -> TensorPrediction:
         if backbone_features.node_layout != self.hidden_layout:
             raise ValueError("backbone O(3) layout does not match downstream hidden layout")
@@ -217,14 +246,24 @@ class PointGroupTensorModel(nn.Module):
             raise ValueError("one symmetry record is required per graph")
         parent_dags = parent_dags or (None,) * graph.num_graphs
         parent_residuals = parent_residuals or (None,) * graph.num_graphs
-        if len(parent_dags) != graph.num_graphs or len(parent_residuals) != graph.num_graphs:
+        point_group_numbers = point_group_numbers or (None,) * graph.num_graphs
+        if (
+            len(parent_dags) != graph.num_graphs
+            or len(parent_residuals) != graph.num_graphs
+            or len(point_group_numbers) != graph.num_graphs
+        ):
             raise ValueError("parent routing inputs must align with the graph batch")
         features = backbone_features.node_features
         if self.adaptation is not None:
             features = self.adaptation(features, graph)
         if self.routing_gate is not None:
             features = self._apply_experts(
-                features, graph, symmetries, parent_dags, parent_residuals
+                features,
+                graph,
+                symmetries,
+                parent_dags,
+                parent_residuals,
+                point_group_numbers,
             )
         return self.readout(features, graph, symmetries)
 
@@ -232,19 +271,34 @@ class PointGroupTensorModel(nn.Module):
         self,
         symmetries: tuple[SymmetryRecord, ...],
         parent_dags: tuple[ParentDAGSpec | None, ...] | None = None,
+        point_group_numbers: tuple[int | None, ...] | None = None,
     ) -> int:
         parent_dags = parent_dags or (None,) * len(symmetries)
+        point_group_numbers = point_group_numbers or (None,) * len(symmetries)
         modules: list[nn.Module] = [self.readout]
         if self.adaptation is not None:
             modules.append(self.adaptation)
         if self.routing_gate is not None:
-            modules.append(self.routing_gate)
+            if self.point_group_parent_dag is None:
+                modules.append(self.routing_gate)
             expert_container = self.o3_experts or self.pg_experts
             keys = set()
-            for symmetry, dag in zip(symmetries, parent_dags):
-                for hall in self._active_halls(symmetry, dag):
-                    group = self.registry[_hall_point_group(hall)]
-                    keys.add(_expert_key(group.number))
+            for symmetry, dag, point_group_number in zip(
+                symmetries, parent_dags, point_group_numbers
+            ):
+                if point_group_number is not None:
+                    if self.point_group_parent_dag is None:
+                        raise ValueError("point-group number routing requires an offline parent DAG")
+                    if self.registry[symmetry.current_point_group].number != point_group_number:
+                        raise ValueError("stored point-group number disagrees with symmetry record")
+                    numbers = self.point_group_parent_dag.ancestors(point_group_number)
+                    keys.update(_expert_key(number) for number in numbers)
+                else:
+                    if self.point_group_parent_dag is not None:
+                        raise ValueError("offline parent-DAG model requires a point-group number")
+                    for hall in self._active_halls(symmetry, dag):
+                        group = self.registry[_hall_point_group(hall)]
+                        keys.add(_expert_key(group.number))
             modules.extend(expert_container[key] for key in sorted(keys))
         parameters = {id(parameter): parameter for module in modules for parameter in module.parameters()}
         return sum(parameter.numel() for parameter in parameters.values())
@@ -253,15 +307,28 @@ class PointGroupTensorModel(nn.Module):
         self,
         symmetries: tuple[SymmetryRecord, ...],
         parent_dags: tuple[ParentDAGSpec | None, ...] | None = None,
+        point_group_numbers: tuple[int | None, ...] | None = None,
     ) -> tuple[int, ...]:
         """Return the number of deduplicated routed expert branches per sample."""
 
         parent_dags = parent_dags or (None,) * len(symmetries)
-        if len(parent_dags) != len(symmetries):
+        point_group_numbers = point_group_numbers or (None,) * len(symmetries)
+        if len(parent_dags) != len(symmetries) or len(point_group_numbers) != len(symmetries):
             raise ValueError("parent DAGs must align with symmetries")
         if self.routing_gate is None:
             return (0,) * len(symmetries)
-        return tuple(
-            len(set(self._active_halls(symmetry, dag)))
-            for symmetry, dag in zip(symmetries, parent_dags)
-        )
+        counts = []
+        for symmetry, dag, point_group_number in zip(
+            symmetries, parent_dags, point_group_numbers
+        ):
+            if point_group_number is not None:
+                if self.point_group_parent_dag is None:
+                    raise ValueError("point-group number routing requires an offline parent DAG")
+                if self.registry[symmetry.current_point_group].number != point_group_number:
+                    raise ValueError("stored point-group number disagrees with symmetry record")
+                counts.append(len(self.point_group_parent_dag.ancestors(point_group_number)))
+            else:
+                if self.point_group_parent_dag is not None:
+                    raise ValueError("offline parent-DAG model requires a point-group number")
+                counts.append(len(set(self._active_halls(symmetry, dag))))
+        return tuple(counts)

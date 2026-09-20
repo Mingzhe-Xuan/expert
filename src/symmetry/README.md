@@ -23,3 +23,10 @@ limits the operation-index jump, and computes a continuous residual from species
 site displacement plus lattice-metric violation. Each accepted common-cell Hall embedding carries
 the full parent operations, identity site correspondence, Wyckoff splitting, convention/version,
 and checksum. `save_parent_routing_cache` freezes these records separately from backbone features.
+
+`PointGroupAncestorDAG` is the separate class-level routing contract used by the reduced CGCNN
+parent experiment. It validates the frozen 32-class/80-cover-edge asset offline and computes the
+deduplicated transitive reverse closure from a stored current point-group number. Its cache contains
+only ordered sample IDs and PG numbers, scoped by dataset and DAG-asset hashes. This class-level
+mechanism does not claim material-specific Hall compatibility and never consumes `max_parents`,
+symprec, residuals, Wyckoff data, or atom mappings.

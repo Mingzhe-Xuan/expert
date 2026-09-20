@@ -14,7 +14,7 @@ set -euo pipefail
 : "${EXPERT_REDUCED_DPA4_PREDICTIONS:?Set the accepted DPA4 prediction JSONL}"
 : "${EXPERT_REDUCED_GMTNET_PREDICTIONS:?Set the accepted GMTNet prediction JSONL}"
 : "${EXPERT_REDUCED_CGCNN_PREDICTIONS:?Set the completed CGCNN prediction JSONL}"
-: "${EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS:?Set the completed parent-DAG prediction JSONL}"
+: "${EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS:?Set the completed all-ancestor PG-parent-DAG prediction JSONL}"
 
 source "${EXPERT_CGCNN_VENV}/bin/activate"
 run_root="results/reduced-benchmark/comparison"

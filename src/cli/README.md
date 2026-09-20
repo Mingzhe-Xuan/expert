@@ -41,11 +41,13 @@ validation-MAE selection. It emits the same prediction JSONL and common RMSE/Fno
 the existing reduced runners and is launched only by `slurm/train_reduced_cgcnn_full_pg.sbatch`.
 
 `python -m src.cli.reduced_cgcnn_parent_dag_train ...` is its matched parent-DAG experiment. It
-reuses the immutable CGCNN feature caches, derives and separately caches material-specific relaxed
-Hall parents, instantiates the union of current and parent point-group experts, and supplies the DAG
-plus continuous residual map on every forward pass. Its optimizer, split, seed defaults, loss,
-schedule, checkpoint selection, and metrics match the current-group-only run. On Guqq it is launched
-only by `slurm/train_reduced_cgcnn_parent_dag.sbatch`.
+reuses the immutable CGCNN feature caches and separately stores only the current PG number for each
+ordered sample ID. A validated offline 32-point-group cover DAG supplies every transitive parent;
+online forward passes activate and equally fuse the current expert plus all deduplicated parent PG
+experts. No relaxed structure search, Hall embedding, residual, or `max_parents` cutoff participates.
+Its optimizer, split, seed defaults, loss, schedule, checkpoint selection, and metrics match the
+current-group-only run. On Guqq it is launched only by
+`slurm/train_reduced_cgcnn_parent_dag.sbatch`.
 
 `python -m src.cli.plot_training_history --summary ... --expected-sha256 ... --svg ... --png ...`
 validates and renders the accepted CGCNN current-group-only epoch history. It is visualization only:

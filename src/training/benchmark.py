@@ -21,7 +21,7 @@ from ..graphs import PeriodicGraph, collate_periodic_graphs
 from ..heads import TARGET_LAYOUTS, irreps_to_cartesian
 from ..irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
 from ..models import periodic_graph_from_backbone
-from ..symmetry import ParentDAGSpec, SymmetryRecord
+from ..symmetry import ParentDAGSpec, PointGroupAncestorDAG, SymmetryRecord
 from .checkpoint import load_checkpoint, save_checkpoint
 from .losses import coefficient_mse, physical_coefficient_metrics
 from .normalization import CoefficientNormalizer
@@ -88,6 +88,7 @@ class FrozenFeatureExample:
     target_cartesian: torch.Tensor
     parent_dag: ParentDAGSpec | None = None
     parent_residuals: Mapping[int, float] | None = None
+    point_group_number: int | None = None
 
     def __post_init__(self) -> None:
         if not self.sample_id or self.features.ndim != 2:
@@ -107,6 +108,11 @@ class FrozenFeatureExample:
             active.update(item.parent_hall_number for item in self.parent_dag.embeddings)
             if set(self.parent_residuals) != active:
                 raise ValueError("parent residuals must cover exactly the active Hall nodes")
+        if self.point_group_number is not None:
+            if self.parent_dag is not None:
+                raise ValueError("point-group number routing cannot mix material Hall routing")
+            if not 1 <= self.point_group_number <= 32:
+                raise ValueError("stored point-group number must be in [1, 32]")
 
 
 @dataclass(frozen=True, slots=True)
@@ -119,6 +125,7 @@ class FrozenFeatureBatch:
     sample_ids: tuple[str, ...]
     parent_dags: tuple[ParentDAGSpec | None, ...]
     parent_residuals: tuple[Mapping[int, float] | None, ...]
+    point_group_numbers: tuple[int | None, ...]
 
 
 class CachedBackboneTensorModel(nn.Module):
@@ -357,11 +364,14 @@ def collate_frozen_examples(
         sample_ids=tuple(example.sample_id for example in examples),
         parent_dags=tuple(example.parent_dag for example in examples),
         parent_residuals=tuple(example.parent_residuals for example in examples),
+        point_group_numbers=tuple(example.point_group_number for example in examples),
     )
 
 
 def _predict(model: nn.Module, batch: FrozenFeatureBatch):
-    if all(item is None for item in batch.parent_dags):
+    if all(item is None for item in batch.parent_dags) and all(
+        item is None for item in batch.point_group_numbers
+    ):
         return model(batch.features, batch.graph, batch.symmetries)
     return model(
         batch.features,
@@ -369,6 +379,7 @@ def _predict(model: nn.Module, batch: FrozenFeatureBatch):
         batch.symmetries,
         parent_dags=batch.parent_dags,
         parent_residuals=batch.parent_residuals,
+        point_group_numbers=batch.point_group_numbers,
     )
 
 
@@ -413,6 +424,12 @@ def _evaluate(
     model.eval()
     total_loss = 0.0
     predictions, coefficients, targets = [], [], []
+    point_group_dag = (
+        PointGroupAncestorDAG.from_path()
+        if prediction_rows is not None
+        and any(example.point_group_number is not None for example in examples)
+        else None
+    )
     with torch.no_grad():
         for rows in _batches(examples, batch_size, shuffle_seed=None):
             batch = collate_frozen_examples(rows, layout, device=device)
@@ -433,14 +450,30 @@ def _evaluate(
                         "prediction": predicted[index].tolist(),
                         "target": expected[index].tolist(),
                         "routing": (
-                            "current_group_only"
-                            if batch.parent_dags[index] is None
-                            else "material_parent_dag"
+                            "point_group_parent_dag_all_ancestors"
+                            if batch.point_group_numbers[index] is not None
+                            else (
+                                "current_group_only"
+                                if batch.parent_dags[index] is None
+                                else "material_parent_dag"
+                            )
                         ),
                         "active_hall_numbers": (
-                            [batch.symmetries[index].hall_number]
-                            if batch.parent_dags[index] is None
-                            else sorted(batch.parent_residuals[index])
+                            None
+                            if batch.point_group_numbers[index] is not None
+                            else (
+                                [batch.symmetries[index].hall_number]
+                                if batch.parent_dags[index] is None
+                                else sorted(batch.parent_residuals[index])
+                            )
+                        ),
+                        "point_group_number": batch.point_group_numbers[index],
+                        "active_point_group_numbers": (
+                            None
+                            if batch.point_group_numbers[index] is None
+                            else list(
+                                point_group_dag.ancestors(batch.point_group_numbers[index])
+                            )
                         ),
                     }
                     for index, sample_id in enumerate(batch.sample_ids)
@@ -492,9 +525,22 @@ def train_cached_backbone_readout(
         raise ValueError("all published benchmark splits must be non-empty")
     all_examples = (*train_examples, *validation_examples, *test_examples)
     parent_flags = [example.parent_dag is not None for example in all_examples]
+    point_group_flags = [example.point_group_number is not None for example in all_examples]
     if any(parent_flags) and not all(parent_flags):
         raise ValueError("parent-DAG routing must be enabled consistently across every split")
-    routing = "material_parent_dag" if all(parent_flags) else "current_group_only"
+    if any(point_group_flags) and not all(point_group_flags):
+        raise ValueError("point-group DAG routing must be enabled consistently across every split")
+    if any(parent_flags) and any(point_group_flags):
+        raise ValueError("material Hall and point-group DAG routing are mutually exclusive")
+    routing = (
+        "material_parent_dag"
+        if all(parent_flags)
+        else (
+            "point_group_parent_dag_all_ancestors"
+            if all(point_group_flags)
+            else "current_group_only"
+        )
+    )
     torch.manual_seed(config.seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(config.seed)

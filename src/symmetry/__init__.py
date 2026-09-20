@@ -19,6 +19,12 @@ from .parent_detection import (
 )
 from .canonicalization import CanonicalizationResult, canonicalize_structure
 from .registry import PointGroup, PointGroupRegistry, canonical_point_group_symbol
+from .point_group_dag import (
+    POINT_GROUP_DAG_CONVENTION,
+    PointGroupAncestorDAG,
+    load_point_group_number_cache,
+    save_point_group_number_cache,
+)
 
 __all__ = [
     "ParentDAGSpec",
@@ -37,6 +43,10 @@ __all__ = [
     "routing_to_payload",
     "save_parent_routing_cache",
     "canonical_point_group_symbol",
+    "POINT_GROUP_DAG_CONVENTION",
+    "PointGroupAncestorDAG",
+    "load_point_group_number_cache",
+    "save_point_group_number_cache",
     "canonicalize_structure",
     "validate_parent_embedding",
 ]

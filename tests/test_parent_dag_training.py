@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import pytest
 import torch
 
 import src.symmetry.parent_detection as parent_detection
@@ -20,6 +21,7 @@ from src.symmetry import (
     routing_from_payload,
     routing_to_payload,
     save_parent_routing_cache,
+    PointGroupAncestorDAG,
 )
 from src.training import FrozenFeatureExample, collate_frozen_examples
 from src.training.benchmark import _predict
@@ -233,3 +235,75 @@ def test_current_only_batch_keeps_legacy_three_argument_forward() -> None:
     )
     batch = collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
     assert _predict(LegacyModel(), batch) == 1
+
+
+def test_point_group_number_routes_all_offline_ancestors_and_backpropagates() -> None:
+    canonical, _ = _distorted_tetragonal_parent_fixture()
+    graph = build_periodic_graph(
+        canonical.canonical_positions.float(), canonical.canonical_cell.float(),
+        canonical.atomic_numbers, cutoff=4.0,
+    )
+    dag = PointGroupAncestorDAG.from_path()
+    current_number = dag.number(canonical.symmetry.current_point_group)
+    active_numbers = dag.ancestors(current_number)
+    groups = dag.symbols(active_numbers)
+    example = FrozenFeatureExample(
+        sample_id="material-static-pg",
+        features=cgcnn_node_features(graph.atomic_numbers),
+        graph=graph,
+        symmetry=replace(
+            canonical.symmetry,
+            canonical_frame=canonical.symmetry.canonical_frame.float(),
+            rotations=canonical.symmetry.rotations.float(),
+            translations=canonical.symmetry.translations.float(),
+        ),
+        target_coefficients=torch.zeros((1, TARGET_LAYOUTS["dielectric"].dimension)),
+        target_cartesian=torch.zeros((1, 3, 3)),
+        point_group_number=current_number,
+    )
+    model = CGCNNFeatureTensorModel(
+        ARCHITECTURE,
+        "dielectric",
+        groups,
+        point_group_parent_dag=dag,
+    )
+    batch = collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
+    assert model.downstream.active_expert_counts(
+        batch.symmetries, point_group_numbers=batch.point_group_numbers
+    ) == (len(active_numbers),)
+    prediction = _predict(model, batch)
+    prediction.raw_cartesian.square().sum().backward()
+    for number in active_numbers:
+        expert = model.downstream.pg_experts[f"pg{number:02d}"]
+        assert any(parameter.grad is not None for parameter in expert.parameters())
+    assert model.downstream.routing_gate.log_sigma.grad is None
+
+
+def test_point_group_number_must_match_cached_symmetry() -> None:
+    canonical, _ = _distorted_tetragonal_parent_fixture()
+    graph = build_periodic_graph(
+        canonical.canonical_positions.float(), canonical.canonical_cell.float(),
+        canonical.atomic_numbers, cutoff=4.0,
+    )
+    dag = PointGroupAncestorDAG.from_path()
+    example = FrozenFeatureExample(
+        "mismatch",
+        cgcnn_node_features(graph.atomic_numbers),
+        graph,
+        replace(
+            canonical.symmetry,
+            canonical_frame=canonical.symmetry.canonical_frame.float(),
+            rotations=canonical.symmetry.rotations.float(),
+            translations=canonical.symmetry.translations.float(),
+        ),
+        torch.zeros((1, TARGET_LAYOUTS["dielectric"].dimension)),
+        torch.zeros((1, 3, 3)),
+        point_group_number=dag.number("m-3m"),
+    )
+    groups = dag.symbols(dag.ancestors(dag.number("m-3m")))
+    model = CGCNNFeatureTensorModel(
+        ARCHITECTURE, "dielectric", groups, point_group_parent_dag=dag
+    )
+    batch = collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
+    with pytest.raises(ValueError, match="disagrees"):
+        _predict(model, batch)
