@@ -17,7 +17,7 @@ from .registry import canonical_point_group_symbol
 
 
 DEFAULT_PARENT_SYMPRECS = (1.0e-4, 1.0e-3, 1.0e-2, 5.0e-2, 1.0e-1)
-PARENT_DAG_CONVENTION = "spglib-relaxed-common-cell-v1"
+PARENT_DAG_CONVENTION = "spglib-relaxed-common-cell-v2"
 
 
 @dataclass(frozen=True, slots=True)
@@ -212,18 +212,28 @@ def discover_material_parent_routing(
         if previous is None or residual < previous[1]:
             accepted[parent_group] = (candidate, residual, float(symprec))
 
-    selected = sorted(
+    selected = []
+    embeddings = []
+    for candidate in sorted(
         accepted.values(), key=lambda item: (item[1], int(item[0].hall_number))
-    )[:max_parents]
-    embeddings = tuple(
-        _embedding(
-            parent_dataset=dataset,
-            child_dataset=child,
-            atomic_numbers=species,
-            detection_symprec=symprec,
-        )
-        for dataset, _, symprec in selected
-    )
+    ):
+        dataset, _, symprec = candidate
+        try:
+            embedding = _embedding(
+                parent_dataset=dataset,
+                child_dataset=child,
+                atomic_numbers=species,
+                detection_symprec=symprec,
+            )
+        except ValueError:
+            # Relaxed spglib output is only a proposal. A parent becomes active
+            # only after the complete affine/species/checksum validator accepts it.
+            continue
+        selected.append(candidate)
+        embeddings.append(embedding)
+        if len(embeddings) == max_parents:
+            break
+    embeddings = tuple(embeddings)
     dag = ParentDAGSpec(material_id, symmetry.hall_number, embeddings)
     residuals = {symmetry.hall_number: 0.0}
     detection = {symmetry.hall_number: base_symprec}

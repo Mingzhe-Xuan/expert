@@ -4,6 +4,8 @@ from dataclasses import replace
 
 import torch
 
+import src.symmetry.parent_detection as parent_detection
+
 from src.cli.reduced_cgcnn_full_pg_train import ARCHITECTURE
 from src.cli.reduced_protocol import canonical_expert_point_groups
 from src.features import CGCNN_SOURCE_LAYOUT, cgcnn_node_features
@@ -53,6 +55,28 @@ def test_relaxed_detection_builds_checked_material_parent_dag() -> None:
     coverage = parent_routing_coverage((routing,))
     assert coverage["coverage_percent"] == 100.0
     assert coverage["parent_point_group_counts"] == {"4/mmm": 1}
+
+
+def test_invalid_relaxed_parent_candidate_is_rejected_fail_closed(monkeypatch) -> None:
+    positions = torch.zeros((1, 3), dtype=torch.float64)
+    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
+    atomic_numbers = torch.tensor([14], dtype=torch.long)
+    canonical = canonicalize_structure(positions, cell, atomic_numbers)
+
+    def reject_candidate(**_):
+        raise ValueError("affine operation group is not multiplication closed")
+
+    monkeypatch.setattr(parent_detection, "_embedding", reject_candidate)
+    routing = discover_material_parent_routing(
+        "invalid-candidate",
+        canonical.canonical_positions,
+        canonical.canonical_cell,
+        atomic_numbers,
+        canonical.symmetry,
+    )
+    assert routing.dag.embeddings == ()
+    assert routing.residuals == {canonical.symmetry.hall_number: 0.0}
+    assert parent_routing_coverage((routing,))["coverage_percent"] == 0.0
 
 
 def test_parent_routing_cache_is_exact_and_rejects_dataset_drift(tmp_path) -> None:
