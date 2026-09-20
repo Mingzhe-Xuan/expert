@@ -79,6 +79,32 @@ def test_invalid_relaxed_parent_candidate_is_rejected_fail_closed(monkeypatch) -
     assert parent_routing_coverage((routing,))["coverage_percent"] == 0.0
 
 
+def test_parent_detection_prioritizes_cached_hall_setting(monkeypatch) -> None:
+    positions = torch.zeros((1, 3), dtype=torch.float64)
+    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
+    atomic_numbers = torch.tensor([14], dtype=torch.long)
+    canonical = canonicalize_structure(positions, cell, atomic_numbers)
+    original = parent_detection.spglib.get_symmetry_dataset
+    calls = []
+
+    def record_call(spglib_cell, **kwargs):
+        calls.append(kwargs.get("hall_number"))
+        if kwargs.get("hall_number") is None and kwargs["symprec"] == 1.0e-5:
+            raise AssertionError("automatic base Hall selection must not run first")
+        return original(spglib_cell, **kwargs)
+
+    monkeypatch.setattr(parent_detection.spglib, "get_symmetry_dataset", record_call)
+    routing = discover_material_parent_routing(
+        "cached-hall-first",
+        canonical.canonical_positions,
+        canonical.canonical_cell,
+        atomic_numbers,
+        canonical.symmetry,
+    )
+    assert calls[0] == canonical.symmetry.hall_number
+    assert routing.dag.current_hall_number == canonical.symmetry.hall_number
+
+
 def test_parent_routing_cache_is_exact_and_rejects_dataset_drift(tmp_path) -> None:
     _, routing = _distorted_tetragonal_parent_fixture()
     path = tmp_path / "parents.pt"
