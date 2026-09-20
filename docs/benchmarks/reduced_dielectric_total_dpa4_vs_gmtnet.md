@@ -53,6 +53,53 @@ component RMSE is slightly higher (`+0.019705`). DPA4's best checkpoint was epoc
 (`validation_loss=0.9333040631`); GMTNet's was epoch 93 (`validation_mae=4.1132789`); CGCNN's was
 epoch 159 (`validation_mae=4.3647098541`) after completing all 200 epochs.
 
+## Errors by source space group
+
+![Test error versus training structures per source space group](reduced_dielectric_total_space_group_errors.svg)
+
+Job 463 joins both prediction files to the frozen dataset by exact record ID and groups by the
+curated **source space-group number**. All 69 space groups represented in the 677-sample test set
+are retained in the [complete table](reduced_dielectric_total_space_group_errors.md); the
+[machine-readable CSV](reduced_dielectric_total_space_group_errors.csv) additionally contains
+relative Fnorm, EwT10/EwT5, and paired current-pg-minus-GMTNet deltas.
+
+The primary correlation cohort contains the 35 space groups with at least five test structures
+(621/677 test samples). The sensitivity cohort contains the 19 groups with at least ten test
+structures (516/677 samples). Correlations are unweighted across space groups and use
+`log10(train_count)`.
+
+| Cohort | Model | Error | Spearman rho | p | Pearson r | p |
+|---|---|---|---:|---:|---:|---:|
+| test >= 5 | current-pg | RMSE | 0.4260 | 0.0107 | 0.3590 | 0.0342 |
+| test >= 5 | current-pg | Fnorm | 0.3271 | 0.0551 | 0.3652 | 0.0310 |
+| test >= 5 | current-pg | relative Fnorm | 0.1290 | 0.4603 | 0.0532 | 0.7617 |
+| test >= 5 | GMTNet | RMSE | 0.4880 | 0.0029 | 0.3869 | 0.0217 |
+| test >= 5 | GMTNet | Fnorm | 0.3782 | 0.0251 | 0.3781 | 0.0251 |
+| test >= 5 | GMTNet | relative Fnorm | 0.3002 | 0.0798 | 0.0875 | 0.6172 |
+| test >= 10 | current-pg | RMSE | 0.1352 | 0.5810 | 0.0650 | 0.7915 |
+| test >= 10 | current-pg | Fnorm | 0.1387 | 0.5711 | 0.1375 | 0.5745 |
+| test >= 10 | current-pg | relative Fnorm | -0.1273 | 0.6035 | -0.2702 | 0.2633 |
+| test >= 10 | GMTNet | RMSE | 0.1835 | 0.4521 | 0.0991 | 0.6866 |
+| test >= 10 | GMTNet | Fnorm | 0.1431 | 0.5589 | 0.1340 | 0.5845 |
+| test >= 10 | GMTNet | relative Fnorm | -0.0342 | 0.8893 | -0.2954 | 0.2196 |
+
+This does **not** support the simple hypothesis that more training structures per space group
+automatically reduce test error. In the primary cohort the absolute errors instead increase with
+training count, while the scale-normalized error has no significant relationship; all associations
+also disappear under the stricter test-count threshold. Absolute error is strongly associated with
+the space group's mean target norm (Spearman rho `0.8955/0.9185` for current-pg RMSE/Fnorm and
+`0.8081/0.8084` for GMTNet, all `p < 1e-4`). The observed training-count trend is therefore mainly a
+group-difficulty/target-scale and cohort-composition diagnostic, not evidence that additional data
+hurts learning or that data volume alone explains the model gap.
+
+Among the 35 primary-cohort groups, current-pg has lower Fnorm than GMTNet in 12 and GMTNet in 23.
+The largest current-pg advantages are SG 74 (`-11.12` Fnorm, 5 test), SG 11 (`-5.83`, 23 test),
+SG 62 (`-4.59`, 25 test), SG 166 (`-3.96`, 24 test), and SG 164 (`-2.08`, 71 test). The largest
+GMTNet advantages are SG 141 (`+7.77`, 6 test), SG 129 (`+5.31`, 20 test), SG 216 (`+4.84`, 27
+test), SG 58 (`+4.16`, 5 test), and SG 136 (`+3.44`, 9 test), where positive deltas mean larger
+current-pg error. Small-test groups should be treated as hypotheses for targeted resampling rather
+than stable rankings.
+
 ## Acceptance evidence
 
 - DPA4 Slurm job 451: 64/64 recovery partitions; zero-failure JUnit; 677 predictions.
@@ -73,6 +120,13 @@ epoch 159 (`validation_mae=4.3647098541`) after completing all 200 epochs.
   `52091690cec9b61299a35a2f40acf4150f043f4bd7aed6ab338da4957c63e174`.
 - Three-model comparison table SHA-256:
   `2a4ef5b8ef1fe82daa8a30e3389708f60e327cf93771e009fe96feb24fad07e7`.
+- Space-group analysis Slurm job 463: 69 observed test space groups and exact frozen counts
+  5,001/637/677; stderr contains only known TorchScript annotation warnings and no traceback.
+- Space-group JSON/CSV/Markdown/SVG SHA-256:
+  `abebd7a9b07b68c0b257e4b2b97cef0f48ea35ee080ed344cf783a6460c1e474`,
+  `f0e9e4b9c00ecbe5856a5400a6bed445cb046908954472d4ab423774cbd8da66`,
+  `ef37f3bfcec074a433344e8cbda304e431bafc5eca0b9921f8a08dbbf8a04da2`, and
+  `c052615fbfb7bc0d415a92ec492f7f3b4b1df8ee27dc81e84dd6bee4e8e89519`.
 
 Generated evidence remains under ignored `results/reduced-benchmark/` on Guqq. Metric definitions
 follow the [GMTNet paper](../ref/GMTNet.pdf).
