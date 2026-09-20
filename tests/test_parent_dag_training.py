@@ -105,6 +105,58 @@ def test_parent_detection_prioritizes_cached_hall_setting(monkeypatch) -> None:
     assert routing.dag.current_hall_number == canonical.symmetry.hall_number
 
 
+def test_unreproduced_cached_child_falls_back_to_current_only(monkeypatch) -> None:
+    positions = torch.zeros((1, 3), dtype=torch.float64)
+    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
+    atomic_numbers = torch.tensor([14], dtype=torch.long)
+    canonical = canonicalize_structure(positions, cell, atomic_numbers)
+    original = parent_detection.spglib.get_symmetry_dataset
+    cubic_cell = (
+        torch.eye(3, dtype=torch.float64).numpy(),
+        torch.zeros((1, 3), dtype=torch.float64).numpy(),
+        atomic_numbers.numpy(),
+    )
+    mismatched = original(cubic_cell, symprec=1.0e-5, angle_tolerance=-1.0)
+    calls = []
+
+    def fail_cached_child(spglib_cell, **kwargs):
+        calls.append(kwargs.get("hall_number"))
+        return mismatched
+
+    monkeypatch.setattr(parent_detection.spglib, "get_symmetry_dataset", fail_cached_child)
+    routing = discover_material_parent_routing(
+        "unreproduced-child",
+        canonical.canonical_positions,
+        canonical.canonical_cell,
+        atomic_numbers,
+        canonical.symmetry,
+    )
+    assert calls == [canonical.symmetry.hall_number]
+    assert routing.dag.embeddings == ()
+    assert routing.residuals == {canonical.symmetry.hall_number: 0.0}
+    assert routing.detection_symprecs == {canonical.symmetry.hall_number: 1.0e-5}
+
+
+def test_inconsistent_cached_hall_metadata_remains_fatal() -> None:
+    positions = torch.zeros((1, 3), dtype=torch.float64)
+    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
+    atomic_numbers = torch.tensor([14], dtype=torch.long)
+    canonical = canonicalize_structure(positions, cell, atomic_numbers)
+    inconsistent = replace(canonical.symmetry, current_point_group="1")
+    try:
+        discover_material_parent_routing(
+            "inconsistent-cache",
+            canonical.canonical_positions,
+            canonical.canonical_cell,
+            atomic_numbers,
+            inconsistent,
+        )
+    except ValueError as error:
+        assert "internally inconsistent" in str(error)
+    else:
+        raise AssertionError("inconsistent cached Hall metadata must remain fatal")
+
+
 def test_parent_routing_cache_is_exact_and_rejects_dataset_drift(tmp_path) -> None:
     _, routing = _distorted_tetragonal_parent_fixture()
     path = tmp_path / "parents.pt"

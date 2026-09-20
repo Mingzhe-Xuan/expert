@@ -17,7 +17,7 @@ from .registry import canonical_point_group_symbol
 
 
 DEFAULT_PARENT_SYMPRECS = (1.0e-4, 1.0e-3, 1.0e-2, 5.0e-2, 1.0e-1)
-PARENT_DAG_CONVENTION = "spglib-relaxed-common-cell-v3"
+PARENT_DAG_CONVENTION = "spglib-relaxed-common-cell-v4"
 
 
 @dataclass(frozen=True, slots=True)
@@ -168,6 +168,23 @@ def discover_material_parent_routing(
         raise ValueError("parent detection requires an ID and symprecs above base_symprec")
     if tuple(symprecs) != tuple(sorted(set(symprecs))) or max_parents < 1:
         raise ValueError("parent symprecs must be strictly increasing and max_parents positive")
+    cached_type = spglib.get_spacegroup_type(symmetry.hall_number)
+    if (
+        cached_type is None
+        or int(cached_type.number) != symmetry.current_space_group
+        or canonical_point_group_symbol(str(cached_type.pointgroup_international))
+        != canonical_point_group_symbol(symmetry.current_point_group)
+    ):
+        raise ValueError("cached symmetry Hall metadata is internally inconsistent")
+
+    def current_only() -> MaterialParentRouting:
+        dag = ParentDAGSpec(material_id, symmetry.hall_number, ())
+        return MaterialParentRouting(
+            dag,
+            {symmetry.hall_number: 0.0},
+            {symmetry.hall_number: base_symprec},
+        )
+
     lattice, fractional, species = _fractional_structure(positions, cell, atomic_numbers)
     spglib_cell = (lattice, fractional, species)
     child = spglib.get_symmetry_dataset(
@@ -177,16 +194,12 @@ def discover_material_parent_routing(
         hall_number=symmetry.hall_number,
     )
     if child is None:
-        child = spglib.get_symmetry_dataset(
-            spglib_cell, symprec=base_symprec, angle_tolerance=-1.0
-        )
-    if child is None:
-        raise ValueError("spglib could not reproduce the current structure for parent detection")
+        return current_only()
     child_group = canonical_point_group_symbol(str(child.pointgroup))
     if child_group != canonical_point_group_symbol(symmetry.current_point_group):
-        raise ValueError("parent detection base point group disagrees with cached symmetry")
+        return current_only()
     if int(child.hall_number) != symmetry.hall_number:
-        raise ValueError("parent detection base Hall setting disagrees with cached symmetry")
+        return current_only()
 
     child_keys = _operation_keys(child)
     child_order = len(child_keys)
