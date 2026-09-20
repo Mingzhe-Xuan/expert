@@ -190,4 +190,3 @@ def load_point_group_number_cache(
     for number in numbers:
         dag.ancestors(number)
     return numbers
-
