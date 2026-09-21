@@ -12,7 +12,7 @@ claimed until the exact revision is pushed, pulled, smoke/preflight gated, and t
 
 1. [x] Audit and selectively commit the current implementation, launcher, tests, and documentation.
 2. [x] Push the exact revision; connect to Guqq under the pull-first/network-recovery protocol.
-3. [ ] Run a Slurm smoke and one-epoch full-split preflight, accepting exact split/JUnit/prediction
+3. [x] Run a Slurm smoke and one-epoch full-split preflight, accepting exact split/JUnit/prediction
    and routing identities before the 200-epoch job.
 4. [ ] Run the fixed 200-epoch training/test job and verify terminal summary, best checkpoint,
    677 ordered predictions, finite metrics, and zero-failure JUnit.
@@ -34,6 +34,16 @@ claimed until the exact revision is pushed, pulled, smoke/preflight gated, and t
 - 2026-09-22: The user authorized raising the formal job wall-time ceiling from 48 to 72 hours.
   The launcher will request exactly three days without changing the fixed 200-epoch optimization
   protocol; this applies to the formal job submitted only after repeat preflight 477 passes.
+- 2026-09-22: Repeat full preflight 477 passed at `e9c6f96` after generating all three routing
+  caches. It produced exact 5,001/637/677 splits, one epoch, 677 unique ordered predictions matching
+  job 472, finite metrics, and zero-failure JUnit. Formal 200-epoch submission is now authorized once
+  Guqq pulls the tested 72-hour launcher commit `2e48bcb`.
+- 2026-09-22: Guqq pulled `2e48bcb`; formal 200-epoch relative-PG 56D training is Slurm job 478 with
+  the authorized 72-hour limit and reusable full routing/feature caches. Monitoring and terminal
+  artifact verification are now in progress; no metric is assumed before the passed summary exists.
+- 2026-09-22: Job 478 crossed its first validation/checkpoint boundary after roughly 23 minutes and
+  remains healthy on node221 under the verified 72-hour allocation. No terminal artifacts exist yet;
+  monitoring continues without changing the fixed protocol.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

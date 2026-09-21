@@ -48,6 +48,11 @@ compilation/diff checks and repeat Slurm gates remain pending before commit/subm
 training launcher passed `bash -n`. The only runtime-policy change is the exact Slurm limit
 `3-00:00:00`; model/training arguments and requested compute resources are unchanged.
 
+Repeat full-preflight result: Slurm job 477 passed at `e9c6f96` with exact 5,001/637/677 splits,
+one contiguous epoch, 677 unique predictions in the same order as accepted job 472, finite RMSE
+`28.3181038` and Fnorm `29.4509411`, JUnit `1/0/0/0`, and exact relative-PG path metadata. Its
+summary/prediction SHA-256 values are `47f9c0c0...13829e51` and `8a6b2f35...5c1592d`.
+
 ## 2026-09-22 - Uniform `[8, 2, 2, 2, 2]` hidden irreps
 
 Planned checks:

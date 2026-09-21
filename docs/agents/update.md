@@ -22,6 +22,15 @@
 - 2026-09-22: The launcher now requests exactly 72 hours. Its contract tests pass 11/11 and Bash
   syntax passes; the change will be synchronized only after running preflight 477 exits, then used
   for the formal 200-epoch submission.
+- 2026-09-22: Repeat full preflight 477 passed every gate and wrote reusable train/validation/test
+  routing caches. The 677 test IDs exactly match the accepted static parent-DAG order. Next action is
+  syncing `2e48bcb` and submitting the fixed 200-epoch job with the authorized 72-hour limit.
+- 2026-09-22: Submitted formal Slurm job 478 at exact commit `2e48bcb`, 200 epochs, and 72-hour wall
+  time after every smoke/preflight gate passed. It reuses the validated full routing cache; next is
+  health/epoch monitoring through terminal artifact acceptance.
+- 2026-09-22: Formal job 478 produced its first 20.2 MB best checkpoint after about 23 minutes and
+  remains healthy with no restart or error signature. Training/test/curve/comparison remain pending
+  until the exact 200-epoch terminal artifacts are available.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

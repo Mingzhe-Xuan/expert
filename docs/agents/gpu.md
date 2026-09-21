@@ -2327,3 +2327,20 @@
   first at exact `e9c6f96`, inspect only repeat preflight 477 and its artifacts, and do not submit
   production yet. If 477 passes, the locally tested three-day launcher must be committed and pulled
   before formal submission; preflight 477 itself remains under its original allocation.
+- 2026-09-22: Repeat preflight 477 completed passed. Local validation confirms exact 5,001/637/677,
+  677 ordered IDs matching job 472, finite metrics, JUnit 1/0/0/0, complete routing metadata, and
+  all three reusable caches. Formal-submission connection purpose: pull tested commit `2e48bcb`
+  first, verify the launcher requests `3-00:00:00`, verify no conflicting job is active, then submit
+  the default 200-epoch training through Slurm. Preserve jobs 474--477 and all caches/results.
+- 2026-09-22: The remote GitHub pull timed out before submission, so a SHA-verified 2.8 KiB bundle
+  advanced Guqq to exact 72-hour launcher commit `2e48bcb5ec984406b2492f096a7932991f1185d4`.
+  Formal 200-epoch training is Slurm job 478. Startup-monitor purpose: pull first from the verified
+  bundle, verify job time limit is three days, confirm cache reuse/model startup and absence of
+  traceback/OOM/non-finite errors, then leave the job unchanged while healthy.
+- 2026-09-22: Formal-job continuation monitor purpose: no-op pull first at `2e48bcb`, inspect only
+  Slurm job 478, checkpoint/history progress, bounded stdout/stderr, and scheduler time limit. Do not
+  restart, cancel, change hyperparameters, or update the server worktree while training is healthy.
+- 2026-09-22: Job 478 is healthy `RUNNING` on node221 with `TimeLimit=3-00:00:00`, zero restarts,
+  and no traceback/OOM/non-finite output. A 20,189,572-byte validation-best checkpoint appeared at
+  06:16, about 23 minutes after start, proving the first train/validation/checkpoint cycle completed.
+  The job remains unchanged; terminal summary/JUnit/predictions are not yet present.
