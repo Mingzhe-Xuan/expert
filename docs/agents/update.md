@@ -65,6 +65,9 @@
 - 2026-09-22: Twenty-minute training health check passed at runtime 1:50: best checkpoint advanced
   to `step=6`, retained its 56-dimensional mask, and produced no error signature. All four staged
   downstream jobs remain correctly pending.
+- 2026-09-22: The next checkpoint window passed at runtime 2:04: best checkpoint advanced to
+  `step=7`, retained the 56-dimensional mask, and produced no error signature. Downstream jobs
+  479/480/482/483 remain correctly gated.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

@@ -2417,3 +2417,9 @@
 - 2026-09-22: At runtime 1:50, job 478 remained healthy and checkpoint advanced to validation-best
   `step=6` at 07:39 with output mask `(56,)`. The bounded error scan was empty; jobs 479/480/482/483
   remained dependency-gated and were not changed.
+- 2026-09-22: Next checkpoint-window purpose: first no-op pull `2e48bcb`, then inspect job 478 state,
+  checkpoint scalar step/mtime, bounded error output, and downstream queue states. Preserve all jobs
+  and artifacts if the training chain remains healthy.
+- 2026-09-22: At runtime 2:04, job 478 remained healthy and validation-best checkpoint advanced to
+  `step=7` at 07:56 with output mask `(56,)`. The error scan remained empty and all four downstream
+  jobs retained valid dependency waits.
