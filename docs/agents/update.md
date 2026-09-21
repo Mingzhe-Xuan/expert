@@ -10,6 +10,12 @@
 - 2026-09-22: While full preflight 475 runs, extended the strict result pipeline to accept and
   distinctly label relative-PG path-weighted histories/predictions alongside the historical static
   parent-DAG row. Focused tests pass 18/18 and comparison launcher syntax is valid.
+- 2026-09-22: Full preflight 475 failed before training on a real edgeless cutoff graph because the
+  relative-position residual rejected an empty vector set. The mathematically consistent empty-set
+  residual is zero; adding that explicit contract and rerunning all gates before any production job.
+- 2026-09-22: Implemented the explicit empty-observation RMS value `0.0`. Focused tests pass 61/61
+  and the complete suite passes 301/301. Final static checks and synchronization precede repeated
+  smoke/full preflight; job 475 remains preserved as failure evidence.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

@@ -29,6 +29,17 @@ the comparison Slurm script passed `bash -n`. The reporting code now validates b
 all-ancestor and new relative-PG path-fusion summaries, labels their curves distinctly, and supports
 a separate 56D relative-PG row without overwriting the accepted historical row.
 
+Preflight-475 failure and fix plan: the full dataset contains an edgeless cutoff graph, while the
+relative-PG residual implementation required at least one vector. Add a contract test proving that an
+empty relative-vector set yields zero incremental residual for every offline parent edge (no observed
+symmetry violation), preserves the complete DAG, and remains finite/cacheable; then rerun focused and
+full local tests, smoke, and the one-epoch full preflight without weakening any other gate.
+
+Edgeless fix result: 61 focused routing/cache/reporting tests passed in 25.04 seconds; the complete
+repository suite passed 301/301 in 350.87 seconds. The new regression constructs an empty `[0,3]`
+edge-vector tensor and verifies every complete-DAG incremental residual is exactly zero. Static
+compilation/diff checks and repeat Slurm gates remain pending before commit/submission.
+
 ## 2026-09-22 - Uniform `[8, 2, 2, 2, 2]` hidden irreps
 
 Planned checks:

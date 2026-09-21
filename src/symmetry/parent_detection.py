@@ -156,7 +156,10 @@ def _relative_edge_residual(
     """Measure parent-minus-child rotations on translation-free relative edge vectors."""
 
     if not len(edge_vectors):
-        raise ValueError("point-group distance requires at least one relative edge vector")
+        # The model observes geometry only through relative graph vectors. An empty
+        # observation set cannot witness violation of any parent-only rotation, so
+        # its incremental distance is the empty RMS value, zero.
+        return 0.0
     parent = [np.asarray(value, dtype=np.float64) for value in embedding.parent_rotations]
     grouped = {
         tuple(int(value) for value in pair): np.flatnonzero(

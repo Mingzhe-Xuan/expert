@@ -130,6 +130,25 @@ def test_point_group_distance_uses_relative_vectors_and_oriented_edge_minimum() 
     assert any(value > 0.0 for value in routing.residuals.values())
 
 
+def test_edgeless_graph_has_zero_relative_point_group_residuals() -> None:
+    _, class_dag, _, symmetry = _orthorhombic_routing()
+    dag = build_point_group_parent_dag(
+        "edgeless", class_dag.number(symmetry.current_point_group), class_dag
+    )
+    routing = route_material_on_point_group_dag(
+        "edgeless",
+        torch.empty((0, 3), dtype=torch.float64),
+        torch.empty((2, 0), dtype=torch.long),
+        torch.tensor([14]),
+        symmetry,
+        dag,
+        class_dag,
+    )
+    assert routing.dag == dag
+    assert set(routing.residuals) == {edge.checksum for edge in dag.embeddings}
+    assert routing.residuals and all(value == 0.0 for value in routing.residuals.values())
+
+
 def test_point_group_routing_rejects_strict_current_pg_mismatch() -> None:
     routing, class_dag, _, _ = _orthorhombic_routing()
     graph = build_periodic_graph(

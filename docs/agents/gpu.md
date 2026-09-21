@@ -2301,3 +2301,12 @@
   only job 475 queue/log/artifacts, and accept it only with exact 5,001/637/677 splits, one epoch,
   677 unique predictions, zero-failure JUnit, finite metrics, and the exact relative-PG routing/path
   metadata. Do not submit 200 epochs while job 475 is running or before all gates pass.
+- 2026-09-22: Job 475 was last observed healthy `RUNNING` at 10:29 on node221. The next monitor
+  connection was closed by the jump path before pull/output; the independent Slurm job is untouched.
+  Recovery purpose: run `bash net.sh`, wait the full three minutes, then resume pull-first terminal
+  inspection of job 475. No production submission occurs until its artifacts are locally validated.
+- 2026-09-22: Job 475 exited failed after about 51 minutes during full routing preparation, before
+  training, with `ValueError: point-group distance requires at least one relative edge vector`.
+  Summary status is failed and no predictions/checkpoint exist. No production job was submitted.
+  The edgeless relative-position contract will be corrected locally, tested, committed, synchronized,
+  and smoke/full-preflight gates repeated from scratch while preserving job-475 evidence.

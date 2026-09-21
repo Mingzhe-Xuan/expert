@@ -27,6 +27,10 @@ claimed until the exact revision is pushed, pulled, smoke/preflight gated, and t
 - 2026-09-22: Committed exact revision `1479bb7`, synchronized it to Guqq by a SHA-verified offline
   Git bundle after remote GitHub timeouts, and passed Slurm smoke job 474. All smoke gates passed;
   the next stage is a one-epoch full-split preflight before formal training.
+- 2026-09-22: Full preflight job 475 exposed an edgeless graph after 51 minutes of full routing
+  preparation and failed closed before training. Under the relative-position-only contract, an empty
+  observation set supplies no evidence of parent-operation violation, so its incremental edge
+  residuals must be zero. A regression-first correction is now in progress; production remains gated.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 
