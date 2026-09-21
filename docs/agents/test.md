@@ -1,5 +1,17 @@
 # Test plan and results
 
+## 2026-09-22 - Training-curve Unicode audit
+
+Plan: inspect title/subtitle code points rather than trusting the current PowerShell rendering, add
+rendered-SVG assertions forbidding U+FFFD for current/GMTNet, static-DAG, and relative-PG figures,
+then run focused plotting tests and scoped whitespace/compilation checks. Code-point inspection found
+the intended U+2014 em dash and U+00B7 middle dot; the apparent glyphs were a console-encoding
+artifact, so plotting source and pending curve job 480 require no replacement.
+
+Result: all seven plotting-history tests passed in 10.44 seconds, including the three new rendered
+SVG U+FFFD exclusion checks. `compileall` and scoped `git diff --check` passed. No plotting behavior,
+server source, or Slurm dependency changed.
+
 ## 2026-09-22 - Relative-PG final artifact manifest
 
 Plan: create an ignored, result-only Slurm payload; require local `bash -n`; then submit it with

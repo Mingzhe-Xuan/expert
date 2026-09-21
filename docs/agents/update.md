@@ -55,6 +55,10 @@
 - 2026-09-22: Job 478 advanced to best checkpoint `step=5` at runtime 1:34 with no error signature;
   all four downstream jobs remain correctly gated. Early cadence is stable, so subsequent health
   checks will be spaced at coarser milestones rather than every checkpoint.
+- 2026-09-22: Audited apparent curve-title mojibake and confirmed the source contains intentional
+  U+2014/U+00B7 code points; only PowerShell rendering was corrupt. Added SVG assertions forbidding
+  real U+FFFD corruption; all seven plotting tests, compilation, and whitespace checks pass. Curve
+  job 480 remains valid and was not replaced.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

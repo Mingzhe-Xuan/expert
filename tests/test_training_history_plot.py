@@ -144,6 +144,7 @@ def test_training_history_render_writes_parseable_labeled_svg_and_png(tmp_path) 
     assert "current-pg best epoch 200" in svg_text
     assert "GMTNet best epoch 200" in svg_text
     assert "Shared LR schedule (both models)" in svg_text
+    assert "\ufffd" not in svg_text
     assert all(line == line.rstrip() for line in svg_text.splitlines())
     data = png.read_bytes()
     assert data[:8] == b"\x89PNG\r\n\x1a\n"
@@ -200,6 +201,7 @@ def test_routing_comparison_render_is_labeled_and_parseable(tmp_path) -> None:
     assert "current-pg best epoch 200" in text
     assert "parent-DAG best epoch 200" in text
     assert "Shared LR schedule" in text
+    assert "\ufffd" not in text
     assert all(line == line.rstrip() for line in text.splitlines())
     data = png.read_bytes()
     assert data[:8] == b"\x89PNG\r\n\x1a\n"
@@ -222,3 +224,4 @@ def test_relative_routing_comparison_uses_distinct_labels(tmp_path) -> None:
     text = svg.read_text(encoding="utf-8")
     assert "current-pg vs relative-PG path-weighted" in text
     assert "relative-PG best epoch 200" in text
+    assert "\ufffd" not in text
