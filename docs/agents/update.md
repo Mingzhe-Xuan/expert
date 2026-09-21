@@ -1,5 +1,50 @@
 # Agent progress updates
 
+- 2026-09-22: Began the requested training/test/curve/benchmark cycle for the new 56D full-PG
+  relative-position parent-DAG model. The existing job-472 result is a historical static-router,
+  old-width baseline and will not be relabelled. Next is a selective source audit/commit, followed by
+  Slurm smoke and full-split preflight before the 200-epoch production run.
+
+- 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
+  `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across
+  modes, update the architecture documentation and exact layout tests, and revalidate the existing
+  active-parameter ceiling before completion.
+- 2026-09-22: The code, exact tests, module contract, GOAL/proposal, historical benchmark warning,
+  and parameter analysis now use or distinguish the new 56-component full-PG layout. Focused
+  expert/dispatcher verification passed 22/22; measured full-PG downstream totals remain under
+  204k for all 32 experts and under 47k for the reduced expert sets. Full-suite verification is next.
+- 2026-09-22: Completed the hidden-width unit. The full repository suite passed 298/298 in
+  353.03 seconds; Python compilation, reference audit, and scoped whitespace checks passed. The
+  default layout is now uniformly `[8, 2, 2, 2, 2]`, while pre-change benchmark metrics remain
+  preserved and visibly marked as historical-width results.
+
+- 2026-09-22: Began replacing Hall/space-group parent routing with canonical-frame point-group
+  distance because the model embeddings use relative positions only. The existing subgroup-chain
+  asset will supply both class topology and oriented rotation subsets; cache and report identities
+  will change so Hall-edge artifacts cannot be reused silently.
+- 2026-09-22: Finished the relative-position PG implementation and documentation migration. The
+  runtime no longer accepts or requests a Hall embedding registry; it reconstructs oriented cover
+  templates from `subgroup_chain.json`, computes minimum-orientation parent-minus-child residuals on
+  species-labelled graph vectors, and writes lightweight schema-3 caches. All 298 project tests pass;
+  the asset generator reproduces the tracked JSON exactly.
+- 2026-09-22: Removed the stale asset-policy depth/index limits so metadata matches the complete-path
+  implementation. One old assertion exposed the mismatch and was updated; the 32-PG path matrix plus
+  asset contract rerun passed 33/33.
+
+- 2026-09-22: Replaced the superseded node-residual/multi-`symprec` route with the requested offline
+  Hall-edge design. Added explicit fractional operations/common-cell conventions, concrete
+  `(Hall, setting)` paths, incremental parent-minus-child residuals, shared edge-template gates,
+  chain stick-breaking, path-length priors, and unique-PG aggregation. Cross-module tests pass
+  57/57; full-suite verification is next. No Guqq job was submitted because the required physical
+  Hall embedding registry is absent.
+- 2026-09-22: Completed local acceptance: clean compilation, parent-DAG Slurm syntax, scoped
+  whitespace checks, 57/57 cross-module tests, and 271/271 complete project tests passed. The code
+  is ready for a concrete embedding registry; generation or acquisition of that external artifact
+  is the only gate before Slurm preparation/smoke.
+- 2026-09-22: Added the final shared-edge-template collision and mutually exclusive router guards.
+  The affected 16-test parent-DAG/dispatcher regression passed, as did repeated compilation, Slurm
+  syntax, and whitespace checks. Test temporary directories were removed after verification.
+
 - 2026-09-17: terminal audit completed after network recovery. Job 458 produced a passed summary,
   200/200 history through epoch 200, best epoch 159 by validation component MAE, zero-failure JUnit,
   and exactly 677 predictions. Job 459 produced a passed strict comparison with 677 ordered IDs and
@@ -803,3 +848,156 @@
 - A single pull-first monitor followed 415 through 39:46 runtime with no traceback. During the same
   window, MACE job 414 advanced from feature 325 to 575/3,770 and free space remained near 7.0 GiB.
   Closing the monitor did not modify either Slurm job.
+
+# 2026-09-13 — 网络故障恢复规范补充
+
+- 在 `AGENTS.md` 中新增网络故障恢复顺序：SSH 成功连接后先执行 `bash net.sh`，等待 3 分钟，再执行 `git pull`、集群查询或任务提交等进一步操作。
+- 同步澄清原有 pull-first 规则在网络故障场景下应位于恢复脚本和等待步骤之后；相关内容检索与 Markdown whitespace 检查通过。
+# 2026-09-17 — Parent-DAG reduced benchmark started
+
+- The accepted CGCNN full-PG run is confirmed to be current-group-only: its training path supplies
+  neither `parent_dags` nor `parent_residuals`, and its summary records
+  `routing=current_point_group_only`.
+- Began a separate matched experiment rather than modifying the accepted model. The new path will
+  derive material-specific Hall parents only from higher-symmetry detections of each actual
+  structure, validate complete parent operations/species correspondence/checksums, and route with
+  continuous geometric residual gates.
+- Tests and module boundaries were recorded before implementation. No server connection, job, or
+  new metric has been claimed in this stage.
+- Implemented the material parent detector, versioned routing cache, batched DAG/residual plumbing,
+  separate parent-DAG CLI and Slurm launcher, and four-model strict comparator. Existing CGCNN and
+  DPA4 table rows now explicitly say `current-group only`; their numeric results are unchanged.
+- Local verification passed: 32 focused tests and all 252 repository tests, plus Python compilation
+  and Slurm shell syntax checks. No remote training metric is claimed yet.
+# 2026-09-18 — Current-group-only curve requested
+
+- Started a bounded visualization unit for CGCNN job 458. The plot will consume its recorded
+  200-epoch summary, label the routing as `current-group only`, and show optimization/validation
+  signals plus the learning-rate schedule. No model, split, prediction, or accepted metric changes.
+- Retrieved and hash-verified the accepted job-458 summary, implemented a validation/rendering CLI,
+  and generated deterministic SVG plus PNG assets. The benchmark report now embeds the SVG and
+  states the source hash/best epoch. Visual QA and 12 focused/regression tests passed.
+# 2026-09-18 — GMTNet overlay requested
+
+- Began extending the accepted CGCNN current-group-only training figure with GMTNet job 443's native
+  history. The comparison will use recorded values only and will not infer missing validation
+  metrics from test artifacts.
+- Completed the paired render and report update. It marks CGCNN epoch 159/MAE 4.3647 and GMTNet
+  epoch 93/MAE 4.1133, distinguishes all recorded series, and states why GMTNet validation
+  loss/Fnorm are absent. Deterministic rendering, visual QA, and 13 focused/regression tests passed.
+# 2026-09-18 — Curve label refinement started
+
+- Updating only the paired figure's CGCNN-facing display label to `current-pg`. No history,
+  checkpoint, metric, model, or routing implementation changes.
+- Completed the label-only rerender. All visible series/checkpoint labels and the paired title now
+  use `current-pg`; focused tests pass 3/3 and visual QA passed.
+# 2026-09-20 — Space-group stratified benchmark started
+
+- The requested evaluation is now scoped to the frozen reduced dielectric-total split. Each source
+  space group will receive train/validation/test counts and separate current-pg/GMTNet metrics,
+  instead of only dataset-wide aggregates.
+- The primary relationship analysis is predeclared as group-level Spearman/Pearson correlation
+  between log10 training count and test error for groups with at least five test structures, with a
+  >=10-test sensitivity check. Target magnitude is recorded to expose scale as a confounder.
+- The curated JSONL already contains the required labels. GMTNet predictions are local; accepted
+  current-pg per-sample predictions still need recovery before numerical results can be claimed.
+- Implemented the strict join, per-group metrics/deltas, two correlation cohorts, target-scale
+  diagnostic, deterministic CSV/Markdown/SVG writers, CLI, and Slurm entry point. Focused tests
+  passed 24/24 and the complete repository suite passed 258/258. No numerical relationship is
+  claimed until the immutable current-pg predictions are recovered and the real analysis runs.
+- Pushed implementation commit `cde6a3c`. After the user-confirmed recovery, three compliant Guqq
+  sessions each ran `net.sh` and waited at least three minutes, but their following HTTP/1.1 pulls
+  timed out silently. The chained gates prevented path inspection and `sbatch`; no job ID or
+  per-space-group result is claimed. `docs/agents/lessons.md` already records this exact three-strike
+  outbound-GitHub failure and requires a meaningful interval or network change before retrying.
+- A later renewed recovery confirmation did not change the observable Guqq-to-GitHub failure:
+  `net.sh` and the wait succeeded, while the bounded pull produced no output and failed. The
+  pull-first guard again prevented all scheduler actions.
+- Bypassed only GitHub—not Git—using a hash-verified, chunked Git bundle. Guqq pulled commit
+  `cde6a3c` from the bundle and completed Slurm job 463. Retrieved and verified JSON/CSV/Markdown/SVG
+  results for all 69 test space groups, then promoted the full table, CSV, plot, and interpretation
+  into the benchmark documentation.
+- Returned to the active parent-DAG objective. Auditing job 462 and the separate parent launcher;
+  no parent-DAG metric is accepted yet. A missing or incomplete old smoke will be replaced rather
+  than inferred from scheduler disappearance.
+- Smoke job 464 passed the fallback path but selected no actual parents. Full one-epoch preflight 465
+  failed during train routing detection with `affine operation group is not multiplication closed`.
+  The repair will reject only the invalid relaxed candidate, preserve all strict validation, search
+  later candidates, and invalidate the old routing-cache convention before rerunning.
+- Implemented the fail-closed candidate loop and bumped the routing convention to v2. Focused tests
+  passed 34/34 and the complete suite 259/259; strict parent validation was not relaxed. Next step is
+  commit, incremental bundle synchronization, and replacement full-data preflight.
+- Implemented cached-Hall-first child reproduction and bumped the convention to v3. Focused tests
+  passed 35/35 and the full suite 260/260. Next: commit/push, transfer a small incremental bundle,
+  and rerun the same full-data one-epoch preflight.
+- Committed the v3 fix as `951b682`, transferred its 1,144-byte incremental Git bundle by SCP,
+  verified SHA-256 and prerequisite on Guqq, and pulled it into the tracked worktree. Submitted
+  full-split one-epoch activation preflight job 467; no full training will be accepted or launched
+  until its routing coverage and strict artifacts pass review.
+- Job 467 failed after confirming nonzero parent selections: one cached float32 graph still could not
+  reproduce its cached child point group. Per the three-failure lesson rule, reviewed and extended the
+  parent-detection lesson. The next fix preserves fatal validation for inconsistent cache metadata but
+  makes numerical child non-reproduction a current-only fallback for that material.
+- Implemented convention-v4 per-material fallback with explicit cached Hall metadata validation.
+  Focused tests passed 22/22 and the full project suite passed 262/262; the next gate is a small source
+  commit, hash-verified SCP bundle synchronization, and the same one-epoch full-split preflight.
+- Committed and pushed the verified v4 change as `a7437cc`; created an incremental bundle requiring
+  `951b682`, verified its Git prerequisites and SHA-256 locally, and prepared direct SCP synchronization.
+- SCP synchronization completed, Guqq verified and pulled `a7437cc`, and Slurm job 468 now runs the
+  unchanged one-epoch full-split activation protocol. Formal training remains gated on its artifacts.
+- Job 468 passed. Untruncated local artifact review confirms exact splits, zero-failure JUnit, finite
+  metrics, and active parent routing in all three splits (46/4/6 samples). The cached routing can now
+  support the formal 200-epoch run after the prediction-line count is checked remotely.
+- Confirmed exactly 677 preflight predictions and submitted formal parent-DAG training as Slurm job 469
+  with the matched default 200-epoch protocol. Monitoring and final strict comparison remain active.
+- User superseded job 469's mechanism before completion. Audited the existing subgroup asset: it already
+  contains 32 point groups and 80 parent-to-child maximal-cover class edges, so the new branch can use a
+  validated transitive reverse lookup rather than online relaxed-spglib detection or `max_parents`.
+- Cancelled obsolete job 469 after the mandatory recovery gate. Implemented the versioned offline DAG,
+  PG-number cache, all-ancestor online routing/equal fusion, report/comparator identities, and module
+  documentation. Expanded focused tests pass 55/55; full-suite verification is next.
+- Full local verification passed 267/267 after compilation, Slurm syntax, and whitespace checks. The
+  implementation activates 15 reachable expert classes globally and 1–11 deduplicated experts per
+  retained PG sample, with the exact per-sample set determined only by its stored PG number.
+- Pushed implementation `69f61fe` and formatting follow-up `52d0c88`. The only post-commit test hiccup
+  was pytest system-temp permission during fixture setup; the same DAG test file passed 3/3 with a
+  workspace basetemp, and the committed diff is whitespace-clean.
+- Guqq verified/pulled the incremental bundle and submitted new-mechanism smoke job 470. This smoke uses
+  only cached PG numbers and the offline DAG; it does not invoke material relaxed-Hall discovery.
+- Smoke 470 passed with all 15 reachable expert classes instantiated and 1–11 experts activated per
+  sample. Its routing identity and finite 7-sample metrics are correct; full-data preflight is next.
+- Direct artifact parsing confirmed smoke JUnit and seven prediction rows. After replacing the brittle
+  nested-shell grep gate, submitted full-split one-epoch static PG-DAG preflight as job 471.
+- Full preflight 471 passed in 613.38 seconds with 677 unique, structurally valid all-ancestor prediction
+  rows and zero JUnit failures. The class-DAG route is now accepted for formal 200-epoch training.
+- Submitted the matched default 200-epoch static all-ancestor PG-DAG run as Slurm job 472. No protocol
+  or hyperparameter differs from current-pg except the requested offline-DAG expert activation.
+- Job 472 passed strict terminal validation: 200 contiguous epochs, best epoch 122, zero-failure JUnit,
+  exact 5,001/637/677 splits, and 677 unique all-ancestor prediction rows. Starting the requested
+  four-model comparison and deterministic curve/report unit; no accepted training artifact is changed.
+- Completed result integration. Comparator 473 passed all four-model identity/target gates; the new
+  curve overlays matched 200-epoch current-pg and parent-DAG histories and passed deterministic/visual
+  QA. Parent routing modestly improves all five test metrics over current-pg but remains behind GMTNet.
+  Focused tests pass 15/15 and the complete project suite passes 269/269.
+# 2026-09-21 — Material-Hall path-weighted parent-DAG started
+
+- Audited the current parent-DAG implementation: job-472's production path activates a deduplicated
+  static PG ancestor closure and assigns every expert `1/N`; the separate material Hall contract
+  retains residual gates but currently fuses its whole active set in one softmax and its detector
+  emits only a star.
+- Froze the replacement behavior and tests: enumerate material-specific current-to-root Hall paths,
+  weight paths in proportion to node count and normalize across paths, apply residual gates inside
+  each path, then sum duplicate destination contributions.  The reduced parent-DAG launcher will
+  return to material Hall caches; static all-ancestor routing remains a labelled ablation.
+- Implemented and locally accepted the replacement. Material discovery now transitive-reduces
+  validated Hall operation sets into cover edges (routing convention v5); `ParentDAGSpec` exposes
+  deterministic maximal paths; fusion applies length-normalized path priors and per-path residual
+  gates, then combines duplicate PG destinations. The parent training CLI again builds material
+  routing caches and records an unambiguous routing/path-fusion contract. Test totals: 17 focused,
+  47 cross-module, and 272 complete project tests passed; compilation and diff checks passed.
+- User corrected the algorithm before commit: the accepted target uses a stable offline full-path
+  topology, concrete Hall/common-cell edge embeddings, incremental `H \\ K` residuals, analytic edge
+  gates, and chain-wise stick-breaking. The just-tested node-softmax/multi-`symprec` route is now
+  superseded and will not be committed or trained. Asset audit confirms the class/orientation layer
+  exists but the physical Hall translation/origin embedding registry must be supplied separately;
+  implementation will enforce that boundary fail closed.

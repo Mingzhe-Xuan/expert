@@ -11,4 +11,9 @@ python tools/generate_point_group_subgroup_dag.py `
 
 The asset retains representative operation matrices, concrete oriented subgroup instances, class cover edges and all maximal class-chain sequences. Its metadata records the expected counts and source versions.
 
-This is a point-group candidate lattice, not a material-specific physical parent DAG. Runtime parent routing additionally requires validated Hall settings, basis/origin and common-cell transforms, translations, atom correspondence, Wyckoff splitting and domain variants.
+For models whose geometry inputs are species-labelled relative edge vectors, this asset is the
+complete runtime topology/orientation source: each cover edge supplies the full parent rotations and
+all oriented maximal child subsets. Runtime computes material-specific continuous residuals from
+those relative vectors, without Hall settings, translations, origins, Wyckoff data, or a separate
+embedding registry. Those space-group fields remain necessary only for models that consume absolute
+site embeddings.

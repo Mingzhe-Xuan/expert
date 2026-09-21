@@ -7,15 +7,16 @@ from .contracts import (
     validate_parent_embedding,
 )
 from .parent_detection import (
-    DEFAULT_PARENT_SYMPRECS,
     MaterialParentRouting,
-    discover_material_parent_routing,
+    build_point_group_parent_dag,
     load_parent_routing_cache,
     parent_detection_config_sha256,
     parent_routing_coverage,
     routing_from_payload,
     routing_to_payload,
+    route_material_on_point_group_dag,
     save_parent_routing_cache,
+    validate_point_group_parent_dag,
 )
 from .canonicalization import CanonicalizationResult, canonicalize_structure
 from .registry import PointGroup, PointGroupRegistry, canonical_point_group_symbol
@@ -33,15 +34,16 @@ __all__ = [
     "PointGroup",
     "PointGroupRegistry",
     "SymmetryRecord",
-    "DEFAULT_PARENT_SYMPRECS",
     "MaterialParentRouting",
-    "discover_material_parent_routing",
+    "build_point_group_parent_dag",
     "load_parent_routing_cache",
     "parent_detection_config_sha256",
     "parent_routing_coverage",
     "routing_from_payload",
     "routing_to_payload",
+    "route_material_on_point_group_dag",
     "save_parent_routing_cache",
+    "validate_point_group_parent_dag",
     "canonical_point_group_symbol",
     "POINT_GROUP_DAG_CONVENTION",
     "PointGroupAncestorDAG",

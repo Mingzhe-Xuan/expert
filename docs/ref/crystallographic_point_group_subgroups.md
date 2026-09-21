@@ -404,4 +404,4 @@ This table includes non-maximal descendants as well. Counts again refer to concr
 
 ## Interpretation boundary
 
-This is the complete point-group subgroup lattice. It is only the candidate class/orientation layer of a material parent DAG. A physical parent edge must additionally be validated at space-group level with Hall setting, basis/origin transform, translation subgroup, common cell, species-preserving atom correspondence, Wyckoff splitting, and a frozen domain variant.
+This is the complete point-group subgroup lattice and orientation source for routing models whose geometry inputs are relative vectors. Such models can compute parent-edge distances directly from the stored parent rotations and oriented child subsets; Hall settings and translations are required only by routes that consume absolute space-group embeddings.

@@ -40,12 +40,13 @@ canonical PBC graph, applies a learned `92 -> 128` scalar embedding, and trains
 validation-MAE selection. It emits the same prediction JSONL and common RMSE/Fnorm/EwT metrics as
 the existing reduced runners and is launched only by `slurm/train_reduced_cgcnn_full_pg.sbatch`.
 
-`python -m src.cli.reduced_cgcnn_parent_dag_train ...` is its matched parent-DAG experiment. It
-reuses the immutable CGCNN feature caches and separately stores only the current PG number for each
-ordered sample ID. A validated offline 32-point-group cover DAG supplies every transitive parent;
-online forward passes activate and equally fuse the current expert plus all deduplicated parent PG
-experts. No relaxed structure search, Hall embedding, residual, or `max_parents` cutoff participates.
-Its optimizer, split, seed defaults, loss, schedule, checkpoint selection, and metrics match the
+`python -m src.cli.reduced_cgcnn_parent_dag_train ...` is its matched relative-position point-group
+parent-DAG experiment. It reuses immutable CGCNN feature/graph caches, reconstructs oriented cover
+edges from `assets/docs/subgroup_chain.json`, and caches only material-specific relative-vector edge
+residuals under schema 3. No Hall embedding registry is required. Online routing weights paths in
+proportion to node count, applies analytic edge gates and root-to-current stick-breaking, then sums
+repeated PG destinations before normalized fusion. Its
+optimizer, split, seed defaults, loss, schedule, checkpoint selection, and metrics match the
 current-group-only run. On Guqq it is launched only by
 `slurm/train_reduced_cgcnn_parent_dag.sbatch`.
 
@@ -54,6 +55,9 @@ validates and renders the accepted CGCNN current-group-only epoch history. It is
 no prediction, target, or metric is recomputed.
 Optional paired `--gmtnet-summary/--gmtnet-expected-sha256` arguments overlay GMTNet's natively
 recorded training Huber loss and validation MAE in that same figure.
+Alternatively, paired `--parent-dag-summary/--parent-dag-expected-sha256` arguments render a separate
+matched current-pg versus static all-ancestor PG-DAG figure with both models' complete recorded
+validation series. GMTNet and parent-DAG overlays are deliberately separate to keep the plots legible.
 
 `python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.

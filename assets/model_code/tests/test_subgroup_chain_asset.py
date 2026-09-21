@@ -38,10 +38,13 @@ def test_subgroup_chain_asset_is_complete_and_consistent():
         for record in point_groups.values()
     ) == 222
     assert policy["class_skeleton_roots"] == ["m-3m", "6/mmm"]
-    assert policy["max_supergroup_index"] == 4
-    assert policy["max_parent_depth"] == 2
+    assert policy["max_supergroup_index"] is None
+    assert policy["max_parent_depth"] is None
+    assert policy["path_scope"] == "all_maximal_current_to_root_paths"
+    assert policy["active_set"] == "all_offline_ancestors_with_continuous_weights"
     assert policy["hard_top_k"] is False
-    assert policy["requires_hall_level_parent_embedding_registry"] is True
+    assert policy["requires_hall_level_parent_embedding_registry"] is False
+    assert policy["distance_input"] == "species-labelled-relative-edge-vectors"
 
     cover_pairs = {
         (edge["parent_symbol"], edge["child_symbol"]) for edge in edges

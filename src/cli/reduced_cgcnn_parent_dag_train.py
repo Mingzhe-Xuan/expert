@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -12,8 +11,12 @@ from ..features import CGCNN_SOURCE_LAYOUT, cgcnn_feature_metadata, cgcnn_featur
 from ..models import CGCNNFeatureTensorModel
 from ..symmetry import (
     PointGroupAncestorDAG,
-    load_point_group_number_cache,
-    save_point_group_number_cache,
+    build_point_group_parent_dag,
+    load_parent_routing_cache,
+    parent_detection_config_sha256,
+    parent_routing_coverage,
+    route_material_on_point_group_dag,
+    save_parent_routing_cache,
 )
 from ..training import (
     BenchmarkConfig,
@@ -31,68 +34,85 @@ from .reduced_cgcnn_full_pg_train import (
 from .reporting import execution_metadata, write_single_case_junit
 from .reduced_protocol import (
     REDUCED_POINT_GROUPS,
+    canonical_expert_point_groups,
     point_group_stratified_smoke_ids,
 )
 
 
-MODEL_NAME = "CGCNN B+A+PGE+R full_pg PG-parent-DAG all-ancestors"
+MODEL_NAME = "CGCNN B+A+PGE+R full_pg relative-position PG parent-DAG path-weighted"
 
 
-def _point_group_enriched_examples(
+def _shared_edge_ids(splits) -> tuple[str, ...]:
+    """Reject edge-ID collisions before constructing shared sigma parameters."""
+
+    signatures = {}
+    for rows in splits.values():
+        for example in rows:
+            for embedding in example.parent_dag.embeddings:
+                signature = (
+                    embedding.parent_point_group_number,
+                    embedding.child_point_group_number,
+                    embedding.asset_sha256,
+                    embedding.convention_id,
+                    embedding.version,
+                )
+                previous = signatures.setdefault(embedding.edge_id, signature)
+                if previous != signature:
+                    raise ValueError(
+                        f"offline edge ID {embedding.edge_id!r} has inconsistent templates"
+                    )
+    return tuple(sorted(signatures))
+
+
+def _parent_enriched_examples(
     examples,
     cache_path: Path,
     *,
     sample_ids,
     dataset_sha256: str,
-    dag: PointGroupAncestorDAG,
+    class_dag: PointGroupAncestorDAG,
 ):
     if cache_path.is_file():
-        numbers = load_point_group_number_cache(
+        routings = load_parent_routing_cache(
             cache_path,
             sample_ids=sample_ids,
             dataset_sha256=dataset_sha256,
-            dag=dag,
+            class_dag=class_dag,
         )
     else:
-        numbers = tuple(dag.number(example.symmetry.current_point_group) for example in examples)
-        save_point_group_number_cache(
-            cache_path,
-            sample_ids=sample_ids,
-            point_group_numbers=numbers,
-            dataset_sha256=dataset_sha256,
-            dag=dag,
+        values = tuple(
+            route_material_on_point_group_dag(
+                example.sample_id,
+                example.graph.edge_vectors,
+                example.graph.edge_index,
+                example.graph.atomic_numbers,
+                example.symmetry,
+                build_point_group_parent_dag(
+                    example.sample_id,
+                    class_dag.number(example.symmetry.current_point_group),
+                    class_dag,
+                ),
+                class_dag,
+            )
+            for example in examples
         )
-    for example, number in zip(examples, numbers):
-        if dag.number(example.symmetry.current_point_group) != number:
-            raise ValueError("cached point-group number disagrees with symmetry record")
+        routings = values
+        save_parent_routing_cache(
+            cache_path,
+            routings,
+            sample_ids=sample_ids,
+            dataset_sha256=dataset_sha256,
+            class_dag=class_dag,
+        )
     enriched = tuple(
-        replace(example, point_group_number=number)
-        for example, number in zip(examples, numbers)
+        replace(
+            example,
+            parent_dag=routing.dag,
+            parent_residuals=dict(routing.residuals),
+        )
+        for example, routing in zip(examples, routings)
     )
-    active_sets = tuple(dag.ancestors(number) for number in numbers)
-    active_counts = [len(active) for active in active_sets]
-    current_counts = Counter(numbers)
-    parent_counts = Counter(
-        parent
-        for current, active in zip(numbers, active_sets)
-        for parent in active
-        if parent != current
-    )
-    summary = {
-        "samples": len(numbers),
-        "min_active_experts": min(active_counts),
-        "max_active_experts": max(active_counts),
-        "mean_active_experts": sum(active_counts) / len(active_counts),
-        "current_point_group_counts": {
-            dag.symbols_by_number[number]: count
-            for number, count in sorted(current_counts.items())
-        },
-        "activated_parent_point_group_counts": {
-            dag.symbols_by_number[number]: count
-            for number, count in sorted(parent_counts.items())
-        },
-    }
-    return enriched, summary
+    return enriched, parent_routing_coverage(routings, class_dag)
 
 
 def run(arguments: argparse.Namespace) -> dict[str, object]:
@@ -108,7 +128,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     selected_ids = point_group_stratified_smoke_ids(dataset) if arguments.smoke else full_ids
     dataset_sha256 = str(dataset[0].source["manifest_sha256"])
     feature_sha256 = cgcnn_feature_sha256()
-    dag = PointGroupAncestorDAG.from_path()
+    class_dag = PointGroupAncestorDAG.from_path()
     scope = "smoke" if arguments.smoke else "full"
     splits, coverage = {}, {}
     for split in ("train", "validation", "test"):
@@ -145,39 +165,41 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             )
         routing_cache = (
             arguments.cache_root
-            / "cgcnn-pg-parent-dag"
+            / "cgcnn-material-parent-dag-point-group-v3"
             / unit.namespace
             / scope
-            / f"{split}.json"
+            / f"{split}.pt"
         )
-        splits[split], coverage[split] = _point_group_enriched_examples(
+        splits[split], coverage[split] = _parent_enriched_examples(
             examples,
             routing_cache,
             sample_ids=selected_ids[split],
             dataset_sha256=dataset_sha256,
-            dag=dag,
+            class_dag=class_dag,
         )
 
-    active_numbers = sorted(
-        {
-            active
-            for rows in splits.values()
-            for example in rows
-            for active in dag.ancestors(example.point_group_number)
-        }
+    expert_point_groups = canonical_expert_point_groups(
+        splits["train"], splits["validation"], splits["test"]
     )
-    expert_point_groups = dag.symbols(active_numbers)
     common = {
         "schema_version": 1,
         "status": "passed",
         "model": MODEL_NAME,
-        "routing": "point_group_parent_dag_all_ancestors",
+        "routing": "point_group_relative_edge_stick_breaking",
         "training_unit": unit.namespace,
         "dataset_sha256": dataset_sha256,
         "feature_embedding": cgcnn_feature_metadata(),
-        "point_group_dag": {
-            **dag.metadata(),
-            "routing_by_split": coverage,
+        "parent_detection": {
+            "config_sha256": parent_detection_config_sha256(class_dag),
+            "coverage_by_split": coverage,
+            "topology": "offline_complete_oriented_point_group_paths",
+            "class_dag_sha256": class_dag.asset_sha256,
+        },
+        "path_fusion": {
+            "path_definition": "maximal_current_point_group_to_root",
+            "between_path_prior": "node_count_normalized",
+            "within_path_weighting": "relative_vector_point_group_edge_stick_breaking",
+            "duplicate_destination_reduction": "sum_then_normalize",
         },
         "expert_point_groups": list(expert_point_groups),
         "split_counts": {name: len(rows) for name, rows in splits.items()},
@@ -185,6 +207,8 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     }
     if arguments.prepare_only:
         return {**common, "mode": "prepare_only"}
+
+    material_edge_ids = _shared_edge_ids(splits)
 
     report = train_cached_backbone_readout(
         backbone_family=BACKBONE_NAME,
@@ -201,7 +225,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             ARCHITECTURE,
             task,
             expert_point_groups,
-            point_group_parent_dag=dag,
+            material_edge_ids=material_edge_ids,
         ),
         config=BenchmarkConfig(
             max_epochs=arguments.epochs,
@@ -223,7 +247,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train CGCNN full-PG with offline all-ancestor point-group DAG routing"
+        description="Train CGCNN full-PG with relative-position point-group parent routing"
     )
     parser.add_argument(
         "--manifest",

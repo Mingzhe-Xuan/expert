@@ -1,309 +1,230 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from types import SimpleNamespace
 
 import pytest
 import torch
 
-import src.symmetry.parent_detection as parent_detection
-
 from src.cli.reduced_cgcnn_full_pg_train import ARCHITECTURE
-from src.cli.reduced_protocol import canonical_expert_point_groups
-from src.features import CGCNN_SOURCE_LAYOUT, cgcnn_node_features
+from src.cli.reduced_cgcnn_parent_dag_train import _shared_edge_ids
+from src.experts.modules import (
+    ContinuousEdgeGate,
+    material_point_group_stick_breaking_weights,
+)
 from src.graphs import build_periodic_graph
+from src.features import CGCNN_SOURCE_LAYOUT, cgcnn_node_features
 from src.heads import TARGET_LAYOUTS
 from src.models import CGCNNFeatureTensorModel
 from src.symmetry import (
-    canonicalize_structure,
-    discover_material_parent_routing,
-    load_parent_routing_cache,
-    parent_routing_coverage,
-    routing_from_payload,
-    routing_to_payload,
-    save_parent_routing_cache,
+    ParentDAGSpec,
+    ParentEmbeddingSpec,
     PointGroupAncestorDAG,
+    SymmetryRecord,
+    build_point_group_parent_dag,
+    canonicalize_structure,
+    load_parent_routing_cache,
+    route_material_on_point_group_dag,
+    save_parent_routing_cache,
+    validate_point_group_parent_dag,
 )
 from src.training import FrozenFeatureExample, collate_frozen_examples
 from src.training.benchmark import _predict
 
 
-def _distorted_tetragonal_parent_fixture():
-    positions = torch.zeros((1, 3), dtype=torch.float64)
-    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
-    atomic_numbers = torch.tensor([14], dtype=torch.long)
-    canonical = canonicalize_structure(positions, cell, atomic_numbers)
-    routing = discover_material_parent_routing(
-        "material-1",
-        canonical.canonical_positions,
-        canonical.canonical_cell,
-        atomic_numbers,
-        canonical.symmetry,
+I = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+X = ((1.0, 0.0, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, -1.0))
+Y = ((-1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, -1.0))
+Z = ((-1.0, 0.0, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, 1.0))
+
+
+def _edge(parent: int, child: int) -> ParentEmbeddingSpec:
+    candidate = ParentEmbeddingSpec(
+        parent_point_group_number=parent,
+        child_point_group_number=child,
+        parent_rotations=(I, X, Y, Z),
+        child_rotation_variants=((I,),),
+        edge_id=f"pg{parent:02d}-to-pg{child:02d}",
+        asset_sha256="a" * 64,
+        convention_id="test-relative-pg-v1",
+        version=1,
+        checksum="0" * 64,
     )
-    return canonical, routing
+    return replace(candidate, checksum=candidate.payload_checksum())
 
 
-def test_relaxed_detection_builds_checked_material_parent_dag() -> None:
-    canonical, routing = _distorted_tetragonal_parent_fixture()
+def test_edge_gate_and_stick_breaking_follow_exact_boundary_formula() -> None:
+    dag = ParentDAGSpec(
+        "path-weights",
+        1,
+        (_edge(3, 2), _edge(2, 1), _edge(4, 1)),
+    )
+    residuals = {edge.checksum: value for edge, value in zip(dag.embeddings, (0.3, 0.1, 0.2))}
+    gate = ContinuousEdgeGate(tuple(edge.edge_id for edge in dag.embeddings), initial_sigma=0.5)
+    gates = {
+        edge.checksum: gate.value(edge.edge_id, residuals[edge.checksum])
+        for edge in dag.embeddings
+    }
+    weights = material_point_group_stick_breaking_weights(dag, residuals, gate)
+    by_pair = {
+        (edge.parent_point_group_number, edge.child_point_group_number): gates[edge.checksum]
+        for edge in dag.embeddings
+    }
+    a32, a21, a41 = by_pair[(3, 2)], by_pair[(2, 1)], by_pair[(4, 1)]
+    expected = {
+        3: 0.6 * (1.0 - a32),
+        2: 0.6 * a32 * (1.0 - a21),
+        1: 0.6 * a32 * a21 + 0.4 * a41,
+        4: 0.4 * (1.0 - a41),
+    }
+    assert gate.value(dag.embeddings[0].edge_id, 0.0).item() == 0.0
+    assert torch.allclose(torch.stack(tuple(weights.values())).sum(), torch.tensor(1.0))
+    for number, value in expected.items():
+        assert torch.allclose(weights[number], value)
+    weights[3].backward()
+    assert any(parameter.grad is not None for parameter in gate.parameters())
+
+
+@pytest.mark.parametrize("current", range(1, 33))
+def test_offline_asset_builds_every_complete_point_group_path(current: int) -> None:
+    class_dag = PointGroupAncestorDAG.from_path()
+    dag = build_point_group_parent_dag("sample", current, class_dag)
+    validate_point_group_parent_dag(dag, class_dag)
+    assert dag.current_point_group_number == current
+    assert set(dag.current_to_root_paths()) == set(class_dag.maximal_paths(current))
+    assert all(edge.child_rotation_variants for edge in dag.embeddings)
+
+
+def _orthorhombic_routing():
+    positions = torch.zeros((1, 3), dtype=torch.float64)
+    cell = torch.diag(torch.tensor([2.8, 3.1, 3.4], dtype=torch.float64))
+    numbers = torch.tensor([14])
+    canonical = canonicalize_structure(positions, cell, numbers)
     assert canonical.symmetry.current_point_group == "mmm"
-    assert len(routing.dag.embeddings) == 1
-    parent = routing.dag.embeddings[0]
-    assert parent.child_hall_number == canonical.symmetry.hall_number
-    assert routing.detection_symprecs[parent.parent_hall_number] == 1.0e-2
-    assert routing.residuals[canonical.symmetry.hall_number] == 0.0
-    assert routing.residuals[parent.parent_hall_number] > 0.0
-    assert parent.checksum == parent.payload_checksum()
-    restored = routing_from_payload(routing_to_payload(routing))
-    assert restored == routing
-    coverage = parent_routing_coverage((routing,))
-    assert coverage["coverage_percent"] == 100.0
-    assert coverage["parent_point_group_counts"] == {"4/mmm": 1}
-
-
-def test_invalid_relaxed_parent_candidate_is_rejected_fail_closed(monkeypatch) -> None:
-    positions = torch.zeros((1, 3), dtype=torch.float64)
-    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
-    atomic_numbers = torch.tensor([14], dtype=torch.long)
-    canonical = canonicalize_structure(positions, cell, atomic_numbers)
-
-    def reject_candidate(**_):
-        raise ValueError("affine operation group is not multiplication closed")
-
-    monkeypatch.setattr(parent_detection, "_embedding", reject_candidate)
-    routing = discover_material_parent_routing(
-        "invalid-candidate",
+    graph = build_periodic_graph(
         canonical.canonical_positions,
         canonical.canonical_cell,
-        atomic_numbers,
+        numbers,
+        cutoff=3.5,
+    )
+    class_dag = PointGroupAncestorDAG.from_path()
+    dag = build_point_group_parent_dag(
+        "orthorhombic", class_dag.number("mmm"), class_dag
+    )
+    routing = route_material_on_point_group_dag(
+        "orthorhombic",
+        graph.edge_vectors,
+        graph.edge_index,
+        graph.atomic_numbers,
         canonical.symmetry,
+        dag,
+        class_dag,
     )
-    assert routing.dag.embeddings == ()
-    assert routing.residuals == {canonical.symmetry.hall_number: 0.0}
-    assert parent_routing_coverage((routing,))["coverage_percent"] == 0.0
+    return routing, class_dag, graph, canonical.symmetry
 
 
-def test_parent_detection_prioritizes_cached_hall_setting(monkeypatch) -> None:
-    positions = torch.zeros((1, 3), dtype=torch.float64)
-    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
-    atomic_numbers = torch.tensor([14], dtype=torch.long)
-    canonical = canonicalize_structure(positions, cell, atomic_numbers)
-    original = parent_detection.spglib.get_symmetry_dataset
-    calls = []
+def test_point_group_distance_uses_relative_vectors_and_oriented_edge_minimum() -> None:
+    routing, _, _, _ = _orthorhombic_routing()
+    assert routing.residuals
+    assert all(value >= 0.0 for value in routing.residuals.values())
+    assert any(value > 0.0 for value in routing.residuals.values())
 
-    def record_call(spglib_cell, **kwargs):
-        calls.append(kwargs.get("hall_number"))
-        if kwargs.get("hall_number") is None and kwargs["symprec"] == 1.0e-5:
-            raise AssertionError("automatic base Hall selection must not run first")
-        return original(spglib_cell, **kwargs)
 
-    monkeypatch.setattr(parent_detection.spglib, "get_symmetry_dataset", record_call)
-    routing = discover_material_parent_routing(
-        "cached-hall-first",
-        canonical.canonical_positions,
-        canonical.canonical_cell,
-        atomic_numbers,
-        canonical.symmetry,
+def test_point_group_routing_rejects_strict_current_pg_mismatch() -> None:
+    routing, class_dag, _, _ = _orthorhombic_routing()
+    graph = build_periodic_graph(
+        torch.zeros((1, 3), dtype=torch.float64),
+        torch.eye(3, dtype=torch.float64) * 3.0,
+        torch.tensor([14]),
+        cutoff=3.1,
     )
-    assert calls[0] == canonical.symmetry.hall_number
-    assert routing.dag.current_hall_number == canonical.symmetry.hall_number
-
-
-def test_unreproduced_cached_child_falls_back_to_current_only(monkeypatch) -> None:
-    positions = torch.zeros((1, 3), dtype=torch.float64)
-    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
-    atomic_numbers = torch.tensor([14], dtype=torch.long)
-    canonical = canonicalize_structure(positions, cell, atomic_numbers)
-    original = parent_detection.spglib.get_symmetry_dataset
-    cubic_cell = (
-        torch.eye(3, dtype=torch.float64).numpy(),
-        torch.zeros((1, 3), dtype=torch.float64).numpy(),
-        atomic_numbers.numpy(),
+    wrong = SymmetryRecord(
+        torch.eye(3), "1", 1, 1, torch.eye(3).unsqueeze(0), torch.zeros((1, 3))
     )
-    mismatched = original(cubic_cell, symprec=1.0e-5, angle_tolerance=-1.0)
-    calls = []
-
-    def fail_cached_child(spglib_cell, **kwargs):
-        calls.append(kwargs.get("hall_number"))
-        return mismatched
-
-    monkeypatch.setattr(parent_detection.spglib, "get_symmetry_dataset", fail_cached_child)
-    routing = discover_material_parent_routing(
-        "unreproduced-child",
-        canonical.canonical_positions,
-        canonical.canonical_cell,
-        atomic_numbers,
-        canonical.symmetry,
-    )
-    assert calls == [canonical.symmetry.hall_number]
-    assert routing.dag.embeddings == ()
-    assert routing.residuals == {canonical.symmetry.hall_number: 0.0}
-    assert routing.detection_symprecs == {canonical.symmetry.hall_number: 1.0e-5}
-
-
-def test_inconsistent_cached_hall_metadata_remains_fatal() -> None:
-    positions = torch.zeros((1, 3), dtype=torch.float64)
-    cell = torch.diag(torch.tensor([3.0, 3.01, 3.2], dtype=torch.float64))
-    atomic_numbers = torch.tensor([14], dtype=torch.long)
-    canonical = canonicalize_structure(positions, cell, atomic_numbers)
-    inconsistent = replace(canonical.symmetry, current_point_group="1")
-    try:
-        discover_material_parent_routing(
-            "inconsistent-cache",
-            canonical.canonical_positions,
-            canonical.canonical_cell,
-            atomic_numbers,
-            inconsistent,
+    with pytest.raises(ValueError, match="current point group"):
+        route_material_on_point_group_dag(
+            "orthorhombic",
+            graph.edge_vectors,
+            graph.edge_index,
+            graph.atomic_numbers,
+            wrong,
+            routing.dag,
+            class_dag,
         )
-    except ValueError as error:
-        assert "internally inconsistent" in str(error)
-    else:
-        raise AssertionError("inconsistent cached Hall metadata must remain fatal")
 
 
-def test_parent_routing_cache_is_exact_and_rejects_dataset_drift(tmp_path) -> None:
-    _, routing = _distorted_tetragonal_parent_fixture()
-    path = tmp_path / "parents.pt"
-    digest = "a" * 64
+def test_point_group_routing_cache_round_trip_and_stale_schema_rejection(tmp_path) -> None:
+    routing, class_dag, _, _ = _orthorhombic_routing()
+    path = tmp_path / "point-group-routing.pt"
     save_parent_routing_cache(
-        path, (routing,), sample_ids=("material-1",), dataset_sha256=digest
+        path,
+        (routing,),
+        sample_ids=("orthorhombic",),
+        dataset_sha256="a" * 64,
+        class_dag=class_dag,
     )
-    assert load_parent_routing_cache(
-        path, sample_ids=("material-1",), dataset_sha256=digest
-    ) == (routing,)
-    try:
+    loaded = load_parent_routing_cache(
+        path,
+        sample_ids=("orthorhombic",),
+        dataset_sha256="a" * 64,
+        class_dag=class_dag,
+    )
+    assert loaded[0].residuals == routing.residuals
+    payload = torch.load(path, map_location="cpu", weights_only=True)
+    payload["schema_version"] = 2
+    torch.save(payload, path)
+    with pytest.raises(ValueError, match="schema_version"):
         load_parent_routing_cache(
-            path, sample_ids=("material-1",), dataset_sha256="b" * 64
+            path,
+            sample_ids=("orthorhombic",),
+            dataset_sha256="a" * 64,
+            class_dag=class_dag,
         )
-    except ValueError as error:
-        assert "dataset_sha256 mismatch" in str(error)
-    else:
-        raise AssertionError("dataset drift must invalidate a parent routing cache")
 
 
-def test_cgcnn_batch_routes_current_and_parent_experts_and_backpropagates() -> None:
-    canonical, routing = _distorted_tetragonal_parent_fixture()
-    graph = build_periodic_graph(
-        canonical.canonical_positions.float(), canonical.canonical_cell.float(),
-        canonical.atomic_numbers, cutoff=4.0,
+def test_shared_edge_ids_are_asset_level_not_material_level() -> None:
+    first, class_dag, _, _ = _orthorhombic_routing()
+    second_dag = build_point_group_parent_dag(
+        "other", first.dag.current_point_group_number, class_dag
     )
+    values = _shared_edge_ids(
+        {
+            "train": (SimpleNamespace(parent_dag=first.dag),),
+            "validation": (SimpleNamespace(parent_dag=second_dag),),
+        }
+    )
+    assert len(values) == len(first.dag.embeddings)
+    assert all(value.startswith("pg") for value in values)
+
+
+def test_cgcnn_point_group_edge_route_backpropagates_through_shared_gates() -> None:
+    routing, class_dag, graph, symmetry = _orthorhombic_routing()
+    active = class_dag.ancestors(routing.dag.current_point_group_number)
+    groups = class_dag.symbols(active)
     example = FrozenFeatureExample(
-        sample_id="material-1",
-        features=cgcnn_node_features(graph.atomic_numbers),
-        graph=graph,
-        symmetry=replace(
-            canonical.symmetry,
-            canonical_frame=canonical.symmetry.canonical_frame.float(),
-            rotations=canonical.symmetry.rotations.float(),
-            translations=canonical.symmetry.translations.float(),
-        ),
-        target_coefficients=torch.zeros((1, TARGET_LAYOUTS["dielectric"].dimension)),
-        target_cartesian=torch.zeros((1, 3, 3)),
-        parent_dag=routing.dag,
-        parent_residuals=routing.residuals,
-    )
-    groups = canonical_expert_point_groups((example,), (example,), (example,))
-    assert groups == ("mmm", "4/mmm")
-    model = CGCNNFeatureTensorModel(ARCHITECTURE, "dielectric", groups)
-    batch = collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
-    prediction = _predict(model, batch)
-    assert prediction.raw_cartesian.shape == (1, 3, 3)
-    prediction.raw_cartesian.square().sum().backward()
-    assert model.downstream.routing_gate.log_sigma.grad is not None
-
-
-def test_current_only_batch_keeps_legacy_three_argument_forward() -> None:
-    class LegacyModel(torch.nn.Module):
-        def forward(self, features, graph, symmetries):
-            return len(symmetries)
-
-    canonical, _ = _distorted_tetragonal_parent_fixture()
-    graph = build_periodic_graph(
-        canonical.canonical_positions.float(), canonical.canonical_cell.float(),
-        canonical.atomic_numbers, cutoff=4.0,
-    )
-    example = FrozenFeatureExample(
-        "material-1",
-        cgcnn_node_features(graph.atomic_numbers),
-        graph,
+        "orthorhombic",
+        cgcnn_node_features(graph.atomic_numbers).float(),
+        graph.to("cpu", dtype=torch.float32),
         replace(
-            canonical.symmetry,
-            canonical_frame=canonical.symmetry.canonical_frame.float(),
-            rotations=canonical.symmetry.rotations.float(),
-            translations=canonical.symmetry.translations.float(),
+            symmetry,
+            canonical_frame=symmetry.canonical_frame.float(),
+            rotations=symmetry.rotations.float(),
+            translations=symmetry.translations.float(),
+            fractional_rotations=symmetry.fractional_rotations.float(),
         ),
         torch.zeros((1, TARGET_LAYOUTS["dielectric"].dimension)),
         torch.zeros((1, 3, 3)),
-    )
-    batch = collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
-    assert _predict(LegacyModel(), batch) == 1
-
-
-def test_point_group_number_routes_all_offline_ancestors_and_backpropagates() -> None:
-    canonical, _ = _distorted_tetragonal_parent_fixture()
-    graph = build_periodic_graph(
-        canonical.canonical_positions.float(), canonical.canonical_cell.float(),
-        canonical.atomic_numbers, cutoff=4.0,
-    )
-    dag = PointGroupAncestorDAG.from_path()
-    current_number = dag.number(canonical.symmetry.current_point_group)
-    active_numbers = dag.ancestors(current_number)
-    groups = dag.symbols(active_numbers)
-    example = FrozenFeatureExample(
-        sample_id="material-static-pg",
-        features=cgcnn_node_features(graph.atomic_numbers),
-        graph=graph,
-        symmetry=replace(
-            canonical.symmetry,
-            canonical_frame=canonical.symmetry.canonical_frame.float(),
-            rotations=canonical.symmetry.rotations.float(),
-            translations=canonical.symmetry.translations.float(),
-        ),
-        target_coefficients=torch.zeros((1, TARGET_LAYOUTS["dielectric"].dimension)),
-        target_cartesian=torch.zeros((1, 3, 3)),
-        point_group_number=current_number,
+        parent_dag=routing.dag,
+        parent_residuals=routing.residuals,
     )
     model = CGCNNFeatureTensorModel(
         ARCHITECTURE,
         "dielectric",
         groups,
-        point_group_parent_dag=dag,
+        material_edge_ids=tuple(edge.edge_id for edge in routing.dag.embeddings),
     )
-    batch = collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
-    assert model.downstream.active_expert_counts(
-        batch.symmetries, point_group_numbers=batch.point_group_numbers
-    ) == (len(active_numbers),)
-    prediction = _predict(model, batch)
+    prediction = _predict(
+        model, collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
+    )
     prediction.raw_cartesian.square().sum().backward()
-    for number in active_numbers:
-        expert = model.downstream.pg_experts[f"pg{number:02d}"]
-        assert any(parameter.grad is not None for parameter in expert.parameters())
-    assert model.downstream.routing_gate.log_sigma.grad is None
-
-
-def test_point_group_number_must_match_cached_symmetry() -> None:
-    canonical, _ = _distorted_tetragonal_parent_fixture()
-    graph = build_periodic_graph(
-        canonical.canonical_positions.float(), canonical.canonical_cell.float(),
-        canonical.atomic_numbers, cutoff=4.0,
-    )
-    dag = PointGroupAncestorDAG.from_path()
-    example = FrozenFeatureExample(
-        "mismatch",
-        cgcnn_node_features(graph.atomic_numbers),
-        graph,
-        replace(
-            canonical.symmetry,
-            canonical_frame=canonical.symmetry.canonical_frame.float(),
-            rotations=canonical.symmetry.rotations.float(),
-            translations=canonical.symmetry.translations.float(),
-        ),
-        torch.zeros((1, TARGET_LAYOUTS["dielectric"].dimension)),
-        torch.zeros((1, 3, 3)),
-        point_group_number=dag.number("m-3m"),
-    )
-    groups = dag.symbols(dag.ancestors(dag.number("m-3m")))
-    model = CGCNNFeatureTensorModel(
-        ARCHITECTURE, "dielectric", groups, point_group_parent_dag=dag
-    )
-    batch = collate_frozen_examples((example,), CGCNN_SOURCE_LAYOUT, device="cpu")
-    with pytest.raises(ValueError, match="disagrees"):
-        _predict(model, batch)
+    assert any(parameter.grad is not None for parameter in model.downstream.edge_gate.parameters())

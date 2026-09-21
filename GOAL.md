@@ -57,7 +57,7 @@
 Architectures 4/5 必须同时支持：
 
 - `a1_only`：natural multiplicity `[8, 2, 2, 2, 2]`；保留 provenance-labelled trivial irreps；
-- `full_pg`：natural multiplicity `[4, 1, 1, 1, 1]`；保留全部允许的 finite-group irreps、subduction copies 与 fusion copies。
+- `full_pg`：natural multiplicity `[8, 2, 2, 2, 2]`；保留全部允许的 finite-group irreps、subduction copies 与 fusion copies。
 
 每个 active PG expert 串联两个参数独立、不共享权重的 PG blocks。`C1` 可按冻结策略 bypass 无群论收益的 PG-TP，但必须保持相同输入输出 contract。
 
@@ -126,6 +126,13 @@ supervised loss 在不可约系数空间计算，并对 repeated copies 分别�
 实现必须支持 train-RMS/variance weighting、raw physical-unit inverse transform 和每-irrep metrics。BEC raw head、ASR-projected output 与 optional symmetry-control output 必须同时可取；smoke training 默认对 raw head 使用有限的 differentiable coefficient MSE，ASR/projector 不得掩盖 raw equivariance failure。完整训练采用哪一种 ASR loss/projection组合留给后续实验配置，不影响本 Goal 的执行链验收。
 
 ## 6. Subgroup-chain and physical parent DAG
+
+Current implementation clarification (2026-09-22): the reduced CGCNN parent-router consumes only
+species-labelled relative graph vectors. Its active DAG is therefore the complete oriented
+point-group cover graph in `assets/docs/subgroup_chain.json`; material residuals are computed on
+`parent \\ child` rotations and cached under the asset hash. It does not require Hall settings,
+translations, origins, Wyckoff mappings, or a separate embedding registry. The Hall-level contract
+below applies only to future routes that operate on absolute sites or explicit space-group modes.
 
 `assets/docs/subgroup_chain.json` 必须：
 

@@ -10,6 +10,12 @@ loss and validation MAE, marks both selected checkpoints, and collapses identica
 schedules into one explicitly shared curve. GMTNet validation loss/Fnorm are omitted because its
 runner did not record them.
 
+For the static all-ancestor ablation, the history validator separately requires routing identity
+`point_group_parent_dag_all_ancestors`, the frozen DAG activation contract, 200 contiguous finite
+epochs, and a hash-matched passed summary. The routing-comparison renderer overlays matched
+current-pg and parent-DAG train/validation Huber loss, validation MAE/Fnorm, shared learning-rate
+schedule, and both validation-MAE-selected checkpoints without recomputing benchmark metrics.
+
 `space_group_analysis.py` joins prediction JSONL files to the frozen curated split by record ID.
 It reports RMSE, sample-mean Fnorm, EwT25/10/5, and mean relative Fnorm for every source space
 group, together with train/validation/test counts. Training-coverage relationships use

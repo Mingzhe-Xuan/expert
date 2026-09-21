@@ -115,6 +115,24 @@ class PointGroupAncestorDAG:
             frontier.extend(self.parents_by_child[parent])
         return tuple(sorted(reached))
 
+    def maximal_paths(self, current_number: int) -> tuple[tuple[int, ...], ...]:
+        """Return all deterministic current-to-root cover paths in the offline class DAG."""
+
+        if current_number not in self.symbols_by_number:
+            raise ValueError("point-group number must be in [1, 32]")
+        paths: list[tuple[int, ...]] = []
+
+        def extend(number: int, prefix: tuple[int, ...]) -> None:
+            parents = self.parents_by_child[number]
+            if not parents:
+                paths.append(prefix)
+                return
+            for parent in parents:
+                extend(parent, (*prefix, parent))
+
+        extend(current_number, (current_number,))
+        return tuple(paths)
+
     def symbols(self, numbers: Sequence[int]) -> tuple[str, ...]:
         return tuple(self.symbols_by_number[number] for number in numbers)
 

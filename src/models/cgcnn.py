@@ -26,6 +26,7 @@ class CGCNNFeatureTensorModel(nn.Module):
         task: str,
         expert_point_groups: tuple[str, ...],
         point_group_parent_dag: PointGroupAncestorDAG | None = None,
+        material_edge_ids: tuple[str, ...] | None = None,
     ) -> None:
         super().__init__()
         if architecture.branch != "B+A+PGE+R" or architecture.pg_hidden_mode != "full_pg":
@@ -41,6 +42,7 @@ class CGCNNFeatureTensorModel(nn.Module):
             hidden_layout=hidden_layout,
             expert_point_groups=expert_point_groups,
             point_group_parent_dag=point_group_parent_dag,
+            material_edge_ids=material_edge_ids,
         )
 
     def forward(

@@ -3,11 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
-import math
-
 import numpy as np
 
 import torch
+
+
+COMMON_CELL_CONVENTION = "material-fractional-cell-canonical-cartesian-frame-v1"
 
 
 def _validate_rotation_matrix(matrix: torch.Tensor, name: str) -> None:
@@ -30,6 +31,8 @@ class SymmetryRecord:
     rotations: torch.Tensor
     translations: torch.Tensor
     audit_permutations: torch.Tensor | None = None
+    fractional_rotations: torch.Tensor | None = None
+    common_cell_convention: str = COMMON_CELL_CONVENTION
 
     def __post_init__(self) -> None:
         _validate_rotation_matrix(self.canonical_frame, "canonical_frame")
@@ -51,68 +54,50 @@ class SymmetryRecord:
                 raise ValueError("audit_permutations operation count mismatch")
             if self.audit_permutations.dtype != torch.long:
                 raise TypeError("audit_permutations must use torch.long")
+        if self.fractional_rotations is not None:
+            if self.fractional_rotations.shape != self.rotations.shape:
+                raise ValueError("fractional_rotations must match rotations shape")
+            rounded = self.fractional_rotations.round()
+            if not torch.allclose(self.fractional_rotations, rounded):
+                raise ValueError("fractional_rotations must contain integer matrices")
+        if not self.common_cell_convention:
+            raise ValueError("common_cell_convention must be explicit")
 
 
 @dataclass(frozen=True, slots=True)
 class ParentEmbeddingSpec:
-    """One versioned, material-specific Hall-level parent embedding."""
+    """One offline point-group cover edge with every concrete child orientation."""
 
-    parent_hall_number: int
-    child_hall_number: int
-    parent_setting: str
-    child_setting: str
-    basis_transform: tuple[tuple[float, float, float], ...]
-    origin_shift: tuple[float, float, float]
-    supercell_transform: tuple[tuple[int, int, int], ...]
-    operations: tuple[
-        tuple[tuple[tuple[int, int, int], ...], tuple[float, float, float]], ...
+    parent_point_group_number: int
+    child_point_group_number: int
+    parent_rotations: tuple[tuple[tuple[float, float, float], ...], ...]
+    child_rotation_variants: tuple[
+        tuple[tuple[tuple[float, float, float], ...], ...], ...
     ]
-    parent_atomic_numbers: tuple[int, ...]
-    child_atomic_numbers: tuple[int, ...]
-    atom_correspondence: tuple[int, ...]
-    wyckoff_splitting: tuple[str, ...]
-    domain_variant: str
+    edge_id: str
+    asset_sha256: str
     convention_id: str
     version: int
     checksum: str
 
     def __post_init__(self) -> None:
-        if self.parent_hall_number < 1 or self.child_hall_number < 1:
-            raise ValueError("Hall numbers must be positive")
-        if self.parent_hall_number == self.child_hall_number:
-            raise ValueError("a parent embedding must connect distinct Hall settings")
-        if not self.parent_setting or not self.child_setting:
-            raise ValueError("parent and child settings must be explicit")
-        if len(self.basis_transform) != 3 or any(len(row) != 3 for row in self.basis_transform):
-            raise ValueError("basis_transform must be 3x3")
-        if len(self.supercell_transform) != 3 or any(
-            len(row) != 3 for row in self.supercell_transform
+        if not 1 <= self.parent_point_group_number <= 32:
+            raise ValueError("parent point-group number must be in [1, 32]")
+        if not 1 <= self.child_point_group_number <= 32:
+            raise ValueError("child point-group number must be in [1, 32]")
+        if self.parent_point_group_number == self.child_point_group_number:
+            raise ValueError("a parent edge must connect distinct point groups")
+        if not self.parent_rotations or not self.child_rotation_variants:
+            raise ValueError("parent rotations and child orientation variants are required")
+        if (
+            not self.edge_id
+            or "." in self.edge_id
+            or len(self.asset_sha256) != 64
+            or any(character not in "0123456789abcdef" for character in self.asset_sha256)
+            or not self.convention_id
+            or self.version < 1
         ):
-            raise ValueError("supercell_transform must be 3x3")
-        if not self.operations:
-            raise ValueError("the full parent operation list is required")
-        for rotation, translation in self.operations:
-            if len(rotation) != 3 or any(len(row) != 3 for row in rotation):
-                raise ValueError("every operation rotation must be 3x3")
-            if len(translation) != 3:
-                raise ValueError("every operation translation must have length 3")
-        if not self.parent_atomic_numbers or not self.child_atomic_numbers:
-            raise ValueError("parent and child species lists are required")
-        if any(number < 1 for number in (*self.parent_atomic_numbers, *self.child_atomic_numbers)):
-            raise ValueError("atomic numbers must be positive")
-        if len(self.atom_correspondence) != len(self.child_atomic_numbers):
-            raise ValueError("atom_correspondence must map every child site")
-        if not self.atom_correspondence or min(self.atom_correspondence) < 0 or max(
-            self.atom_correspondence
-        ) >= len(self.parent_atomic_numbers):
-            raise ValueError("atom_correspondence contains an invalid parent index")
-        for child_index, parent_index in enumerate(self.atom_correspondence):
-            if self.child_atomic_numbers[child_index] != self.parent_atomic_numbers[parent_index]:
-                raise ValueError("atom correspondence must preserve species")
-        if not self.wyckoff_splitting or any(not value for value in self.wyckoff_splitting):
-            raise ValueError("Wyckoff splitting metadata must be non-empty")
-        if not self.domain_variant or not self.convention_id or self.version < 1:
-            raise ValueError("domain, convention and positive version are required")
+            raise ValueError("edge, asset, convention and positive version are required")
         if len(self.checksum) != 64 or any(
             character not in "0123456789abcdef" for character in self.checksum
         ):
@@ -136,37 +121,39 @@ class ParentEmbeddingSpec:
 @dataclass(frozen=True, slots=True)
 class ParentDAGSpec:
     material_id: str
-    current_hall_number: int
+    current_point_group_number: int
     embeddings: tuple[ParentEmbeddingSpec, ...]
 
     def __post_init__(self) -> None:
-        if not self.material_id or self.current_hall_number < 1:
-            raise ValueError("material_id and positive current_hall_number are required")
-        nodes = {self.current_hall_number}
-        identities: set[tuple[int, int, str, str, int]] = set()
+        if not self.material_id or not 1 <= self.current_point_group_number <= 32:
+            raise ValueError("material_id and current point-group number are required")
+        nodes = {self.current_point_group_number}
+        identities: set[tuple[int, int]] = set()
+        edge_ids: set[str] = set()
         adjacency: dict[int, set[int]] = {}
         for embedding in self.embeddings:
             validate_parent_embedding(embedding)
             identity = (
-                embedding.parent_hall_number,
-                embedding.child_hall_number,
-                embedding.domain_variant,
-                embedding.convention_id,
-                embedding.version,
+                embedding.parent_point_group_number,
+                embedding.child_point_group_number,
             )
             if identity in identities:
                 raise ValueError(f"duplicate parent embedding {identity}")
             identities.add(identity)
-            nodes.update((embedding.parent_hall_number, embedding.child_hall_number))
-            adjacency.setdefault(embedding.parent_hall_number, set()).add(
-                embedding.child_hall_number
-            )
-        if self.embeddings and self.current_hall_number not in {
-            embedding.child_hall_number for embedding in self.embeddings
+            if embedding.edge_id in edge_ids:
+                raise ValueError(f"duplicate offline edge ID {embedding.edge_id}")
+            edge_ids.add(embedding.edge_id)
+            parent_node = embedding.parent_point_group_number
+            child_node = embedding.child_point_group_number
+            nodes.update((parent_node, child_node))
+            adjacency.setdefault(parent_node, set()).add(child_node)
+        if self.embeddings and self.current_point_group_number not in {
+            embedding.child_point_group_number
+            for embedding in self.embeddings
         }:
-            raise ValueError("the DAG must contain an embedding terminating at the current Hall setting")
-        if adjacency.get(self.current_hall_number):
-            raise ValueError("current Hall setting must be a terminal DAG node")
+            raise ValueError("the DAG must contain an edge terminating at the current point group")
+        if adjacency.get(self.current_point_group_number):
+            raise ValueError("current point group must be a terminal DAG node")
 
         visiting: set[int] = set()
         visited: set[int] = set()
@@ -188,8 +175,8 @@ class ParentDAGSpec:
         for parent, children in adjacency.items():
             for child in children:
                 reverse.setdefault(child, set()).add(parent)
-        connected = {self.current_hall_number}
-        frontier = [self.current_hall_number]
+        connected = {self.current_point_group_number}
+        frontier = [self.current_point_group_number]
         while frontier:
             child = frontier.pop()
             for parent in reverse.get(child, ()):
@@ -197,55 +184,100 @@ class ParentDAGSpec:
                     connected.add(parent)
                     frontier.append(parent)
         if connected != nodes:
-            raise ValueError("every parent embedding node must lead to the current Hall setting")
+            raise ValueError("every parent node must lead to the current point group")
+
+    def current_to_root_paths(self) -> tuple[tuple[int, ...], ...]:
+        """Return deterministic maximal point-group paths from current to every root."""
+
+        parents_by_child: dict[int, set[int]] = {}
+        for embedding in self.embeddings:
+            parents_by_child.setdefault(embedding.child_point_group_number, set()).add(
+                embedding.parent_point_group_number
+            )
+
+        paths: list[tuple[int, ...]] = []
+
+        def extend(node: int, prefix: tuple[int, ...]) -> None:
+            parents = tuple(sorted(parents_by_child.get(node, ())))
+            if not parents:
+                paths.append(prefix)
+                return
+            for parent in parents:
+                extend(parent, (*prefix, parent))
+
+        extend(self.current_point_group_number, (self.current_point_group_number,))
+        return tuple(paths)
+
+    def current_to_root_embedding_paths(
+        self,
+    ) -> tuple[tuple[ParentEmbeddingSpec, ...], ...]:
+        """Return every class-cover path, ordered current edge to root edge."""
+
+        if not self.embeddings:
+            return ((),)
+        parents_by_child: dict[int, list[ParentEmbeddingSpec]] = {}
+        for embedding in self.embeddings:
+            child_node = embedding.child_point_group_number
+            parents_by_child.setdefault(child_node, []).append(embedding)
+        for values in parents_by_child.values():
+            values.sort(key=lambda value: value.checksum)
+        paths: list[tuple[ParentEmbeddingSpec, ...]] = []
+
+        def extend(
+            node: int, prefix: tuple[ParentEmbeddingSpec, ...]
+        ) -> None:
+            parents = parents_by_child.get(node, ())
+            if not parents:
+                paths.append(prefix)
+                return
+            for embedding in parents:
+                parent_node = embedding.parent_point_group_number
+                extend(parent_node, (*prefix, embedding))
+
+        extend(self.current_point_group_number, ())
+        return tuple(paths)
 
 
-def _affine_key(
-    rotation: np.ndarray, translation: np.ndarray, tolerance: float = 1.0e-8
-) -> tuple[int, ...]:
-    normalized = translation - np.floor(translation)
-    normalized[np.isclose(normalized, 1.0, atol=tolerance)] = 0.0
-    quantized = np.rint(normalized / tolerance).astype(np.int64)
-    return (*[int(value) for value in rotation.reshape(-1)], *quantized.tolist())
+def _rotation_key(rotation: np.ndarray, tolerance: float = 1.0e-7) -> tuple[int, ...]:
+    return tuple(np.rint(rotation.reshape(-1) / tolerance).astype(np.int64).tolist())
 
 
 def validate_parent_embedding(
     embedding: ParentEmbeddingSpec, *, validate_checksum: bool = True
 ) -> None:
-    """Validate affine-group, transform, species, and checksum invariants."""
+    """Validate point-group rotation subsets and checksum invariants."""
 
     if validate_checksum:
         embedding.validate_checksum()
-    basis = np.asarray(embedding.basis_transform, dtype=np.float64)
-    supercell = np.asarray(embedding.supercell_transform, dtype=np.int64)
-    if not np.isfinite(basis).all() or abs(float(np.linalg.det(basis))) < 1.0e-12:
-        raise ValueError("basis_transform must be finite and invertible")
-    if round(abs(float(np.linalg.det(supercell)))) < 1:
-        raise ValueError("supercell_transform must be invertible")
-    if not all(math.isfinite(value) for value in embedding.origin_shift):
-        raise ValueError("origin_shift must be finite")
+    def validated_group(values, label):
+        parsed = []
+        for rotation_value in values:
+            rotation = np.asarray(rotation_value, dtype=np.float64)
+            if rotation.shape != (3, 3) or not np.isfinite(rotation).all():
+                raise ValueError("point-group rotations must be finite 3x3 matrices")
+            if not np.allclose(rotation.T @ rotation, np.eye(3), atol=1.0e-6, rtol=0.0):
+                raise ValueError("point-group rotations must be orthogonal")
+            parsed.append(rotation)
+        keys = {_rotation_key(rotation) for rotation in parsed}
+        if len(keys) != len(parsed):
+            raise ValueError(f"{label} rotations must be unique")
+        identity = _rotation_key(np.eye(3))
+        if identity not in keys:
+            raise ValueError(f"{label} rotation group must contain identity")
+        for left_rotation in parsed:
+            if _rotation_key(left_rotation.T) not in keys:
+                raise ValueError(f"{label} rotation group is not inverse closed")
+            for right_rotation in parsed:
+                if _rotation_key(left_rotation @ right_rotation) not in keys:
+                    raise ValueError(f"{label} rotation group is not multiplication closed")
+        return keys
 
-    parsed = []
-    for rotation_value, translation_value in embedding.operations:
-        rotation = np.asarray(rotation_value, dtype=np.int64)
-        translation = np.asarray(translation_value, dtype=np.float64)
-        determinant = round(float(np.linalg.det(rotation)))
-        if abs(determinant) != 1 or not np.isfinite(translation).all():
-            raise ValueError("affine operations require unimodular rotations and finite translations")
-        parsed.append((rotation, translation))
-    keys = {_affine_key(rotation, translation) for rotation, translation in parsed}
-    if len(keys) != len(parsed):
-        raise ValueError("affine operations must be unique modulo lattice translations")
-    identity = _affine_key(np.eye(3, dtype=np.int64), np.zeros(3))
-    if identity not in keys:
-        raise ValueError("affine operation group must contain identity")
-    for left_rotation, left_translation in parsed:
-        inverse_rotation = np.rint(np.linalg.inv(left_rotation)).astype(np.int64)
-        inverse_translation = -(inverse_rotation @ left_translation)
-        if _affine_key(inverse_rotation, inverse_translation) not in keys:
-            raise ValueError("affine operation group is not inverse closed")
-        for right_rotation, right_translation in parsed:
-            rotation = left_rotation @ right_rotation
-            translation = left_rotation @ right_translation + left_translation
-            if _affine_key(rotation, translation) not in keys:
-                raise ValueError("affine operation group is not multiplication closed")
+    parent_keys = validated_group(embedding.parent_rotations, "parent")
+    variant_keys = []
+    for index, variant in enumerate(embedding.child_rotation_variants):
+        child_keys = validated_group(variant, f"child variant {index}")
+        if not child_keys < parent_keys:
+            raise ValueError("every child rotation variant must be a strict parent subset")
+        variant_keys.append(frozenset(child_keys))
+    if len(set(variant_keys)) != len(variant_keys):
+        raise ValueError("child orientation variants must be unique")

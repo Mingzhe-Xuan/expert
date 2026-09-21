@@ -202,6 +202,8 @@ def test_all_26_configs_construct_train_checkpoint_and_respect_budget(tmp_path) 
     )
     for index, config in enumerate(configs):
         layout = default_hidden_layout(config)
+        assert tuple(term.multiplicity for term in layout.terms) == (8, 2, 2, 2, 2)
+        assert layout.dimension == 56
         model = PointGroupTensorModel(
             config,
             "bec",
@@ -257,7 +259,7 @@ def test_all_26_configs_construct_train_checkpoint_and_respect_budget(tmp_path) 
         assert all(torch.equal(model.state_dict()[name], value) for name, value in before.items())
 
 
-def test_parent_routing_requires_validated_current_hall() -> None:
+def test_parent_routing_requires_validated_current_point_group() -> None:
     config = next(
         config for config in enumerate_architecture_configs() if config.branch == "B+PGE+R"
     )
@@ -275,8 +277,8 @@ def test_parent_routing_requires_validated_current_hall() -> None:
     )
     prediction = model(features, graph, symmetries)
     assert prediction.raw_cartesian.shape == (graph.num_nodes, 3, 3)
-    wrong_dag = ParentDAGSpec(material_id="fixture", current_hall_number=1, embeddings=())
-    with pytest.raises(ValueError, match="current Hall"):
+    wrong_dag = ParentDAGSpec(material_id="fixture", current_point_group_number=1, embeddings=())
+    with pytest.raises(ValueError, match="current point group"):
         model(
             features,
             graph,

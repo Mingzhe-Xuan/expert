@@ -234,12 +234,91 @@ class ContinuousResidualGate(nn.Module):
         return MappingProxyType({item: weight for item, weight in zip(deduplicated, weights)})
 
 
-def active_hall_numbers(parent_dag: ParentDAGSpec) -> tuple[int, ...]:
-    values = {parent_dag.current_hall_number}
+class ContinuousEdgeGate(nn.Module):
+    """Edge-specific positive scales for analytic parent-to-child breaking gates."""
+
+    def __init__(self, edge_ids: tuple[str, ...], initial_sigma: float = 0.08) -> None:
+        super().__init__()
+        if initial_sigma <= 0 or len(edge_ids) != len(set(edge_ids)):
+            raise ValueError("edge gate requires positive sigma and unique edge IDs")
+        initial = math.log(math.expm1(initial_sigma))
+        self.log_sigmas = nn.ParameterDict(
+            {f"edge_{edge_id}": nn.Parameter(torch.tensor(initial)) for edge_id in edge_ids}
+        )
+
+    def value(self, edge_id: str, residual: torch.Tensor | float) -> torch.Tensor:
+        """Evaluate one residual instance with its shared offline edge scale."""
+
+        key = f"edge_{edge_id}"
+        if key not in self.log_sigmas:
+            raise ValueError(f"unconfigured offline edge ID: {edge_id}")
+        parameter = self.log_sigmas[key]
+        value = torch.as_tensor(residual, dtype=parameter.dtype, device=parameter.device)
+        if not torch.isfinite(value) or bool(value < 0):
+            raise ValueError("edge residuals must be finite and non-negative")
+        sigma = torch.nn.functional.softplus(parameter).clamp_min(1.0e-8)
+        return -torch.expm1(-torch.square(value / sigma))
+
+    def forward(
+        self, residuals: Mapping[str, torch.Tensor | float]
+    ) -> Mapping[str, torch.Tensor]:
+        return MappingProxyType(
+            {edge_id: self.value(edge_id, residual) for edge_id, residual in residuals.items()}
+        )
+
+
+def active_parent_point_group_numbers(parent_dag: ParentDAGSpec) -> tuple[int, ...]:
+    values = {parent_dag.current_point_group_number}
     for embedding in parent_dag.embeddings:
-        values.add(embedding.parent_hall_number)
-        values.add(embedding.child_hall_number)
+        values.add(embedding.parent_point_group_number)
+        values.add(embedding.child_point_group_number)
     return tuple(sorted(values))
+
+
+def material_point_group_stick_breaking_weights(
+    parent_dag: ParentDAGSpec,
+    residuals: Mapping[str, torch.Tensor | float],
+    gate: ContinuousEdgeGate,
+) -> Mapping[int, torch.Tensor]:
+    """Apply analytic edge gates, per-path stick-breaking, and length path priors."""
+
+    active = active_parent_point_group_numbers(parent_dag)
+    if set(residuals) != {embedding.checksum for embedding in parent_dag.embeddings}:
+        raise ValueError("edge residuals must cover exactly the point-group DAG edges")
+    edge_gates = {
+        embedding.checksum: gate.value(
+            embedding.edge_id, residuals[embedding.checksum]
+        )
+        for embedding in parent_dag.embeddings
+    }
+    paths = parent_dag.current_to_root_embedding_paths()
+    if not paths:
+        raise ValueError("point-group DAG must contain at least one current-to-root path")
+    total_length = sum(len(path) + 1 for path in paths)
+    reference = next(iter(edge_gates.values()), None)
+    if reference is None:
+        reference = torch.zeros(())
+    combined = {
+        hall: torch.zeros((), dtype=reference.dtype, device=reference.device)
+        for hall in active
+    }
+    for path in paths:
+        path_prior = reference.new_tensor((len(path) + 1) / total_length)
+        remaining = reference.new_ones(())
+        for embedding in reversed(path):
+            edge_gate = edge_gates[embedding.checksum]
+            combined[embedding.parent_point_group_number] = (
+                combined[embedding.parent_point_group_number]
+                + path_prior * remaining * (1.0 - edge_gate)
+            )
+            remaining = remaining * edge_gate
+        combined[parent_dag.current_point_group_number] = (
+            combined[parent_dag.current_point_group_number] + path_prior * remaining
+        )
+    normalizer = torch.stack(tuple(combined.values())).sum()
+    if not torch.isfinite(normalizer) or bool(normalizer <= 0):
+        raise ValueError("point-group path weights must have a finite positive normalizer")
+    return MappingProxyType({hall: value / normalizer for hall, value in combined.items()})
 
 
 def hierarchical_fusion(

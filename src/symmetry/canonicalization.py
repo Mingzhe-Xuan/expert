@@ -203,6 +203,9 @@ def canonicalize_structure(
         audit_permutations=torch.as_tensor(
             permutations_numpy, dtype=torch.long, device=positions.device
         ),
+        fractional_rotations=torch.as_tensor(
+            rotations_numpy, dtype=positions.dtype, device=positions.device
+        ),
     )
     return CanonicalizationResult(
         canonical_positions=canonical_positions,

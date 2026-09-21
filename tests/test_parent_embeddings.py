@@ -7,84 +7,71 @@ import pytest
 from src.symmetry import ParentDAGSpec, ParentEmbeddingSpec, validate_parent_embedding
 
 
-IDENTITY_OPERATION = (
-    (
-        ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
-        (0.0, 0.0, 0.0),
-    ),
-)
+I = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+X = ((1.0, 0.0, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, -1.0))
+Y = ((-1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, -1.0))
+Z = ((-1.0, 0.0, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, 1.0))
 
 
-def _embedding(parent: int = 2, child: int = 1, variant: str = "identity"):
+def _embedding(parent: int = 3, child: int = 2) -> ParentEmbeddingSpec:
     candidate = ParentEmbeddingSpec(
-        parent_hall_number=parent,
-        child_hall_number=child,
-        parent_setting=f"hall-{parent}",
-        child_setting=f"hall-{child}",
-        basis_transform=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
-        origin_shift=(0.0, 0.0, 0.0),
-        supercell_transform=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
-        operations=IDENTITY_OPERATION,
-        parent_atomic_numbers=(6, 8),
-        child_atomic_numbers=(6, 6, 8),
-        atom_correspondence=(0, 0, 1),
-        wyckoff_splitting=("1a->1a+1b", "1b->1c"),
-        domain_variant=variant,
-        convention_id="hall-common-cell-v1",
+        parent_point_group_number=parent,
+        child_point_group_number=child,
+        parent_rotations=(I, X, Y, Z),
+        child_rotation_variants=((I, X), (I, Y), (I, Z)),
+        edge_id=f"pg{parent:02d}-to-pg{child:02d}",
+        asset_sha256="a" * 64,
+        convention_id="test-point-group-edge-v1",
         version=1,
         checksum="0" * 64,
     )
     return replace(candidate, checksum=candidate.payload_checksum())
 
 
-def test_embedding_validates_species_preserving_wyckoff_split_and_checksum() -> None:
+def test_point_group_edge_validates_orientations_and_checksum() -> None:
     embedding = _embedding()
     validate_parent_embedding(embedding)
-    assert embedding.atom_correspondence == (0, 0, 1)
+    assert len(embedding.child_rotation_variants) == 3
     with pytest.raises(ValueError, match="checksum"):
-        validate_parent_embedding(replace(embedding, origin_shift=(0.5, 0.0, 0.0)))
-    with pytest.raises(ValueError, match="preserve species"):
-        replace(
-            embedding,
-            child_atomic_numbers=(6, 7, 8),
-            checksum="0" * 64,
-        )
+        validate_parent_embedding(replace(embedding, edge_id="changed"))
 
 
-def test_affine_operations_require_complete_group() -> None:
-    quarter_turn = ((0, -1, 0), (1, 0, 0), (0, 0, 1))
-    with pytest.raises(ValueError, match="inverse closed|multiplication closed"):
+def test_point_group_edge_requires_closed_unique_strict_subgroups() -> None:
+    with pytest.raises(ValueError, match="multiplication closed|inverse closed"):
         replace(
             _embedding(),
-            operations=(IDENTITY_OPERATION[0], (quarter_turn, (0.0, 0.0, 0.0))),
+            parent_rotations=(I, ((0.0, -1.0, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, 1.0))),
             checksum="0" * 64,
         )
-    reflection = ((-1, 0, 0), (0, 1, 0), (0, 0, 1))
-    candidate = replace(
-        _embedding(),
-        operations=(IDENTITY_OPERATION[0], (reflection, (0.5, 0.0, 0.0))),
+    with pytest.raises(ValueError, match="strict parent subset"):
+        replace(
+            _embedding(),
+            child_rotation_variants=((I, X, Y, Z),),
+            checksum="0" * 64,
+        )
+    with pytest.raises(ValueError, match="variants must be unique"):
+        replace(
+            _embedding(),
+            child_rotation_variants=((I, X), (I, X)),
+            checksum="0" * 64,
+        )
+
+
+def test_parent_dag_enumerates_complete_class_paths() -> None:
+    lower = _embedding(3, 2)
+    upper = replace(
+        _embedding(4, 3),
+        edge_id="pg04-to-pg03",
         checksum="0" * 64,
     )
-    valid = replace(candidate, checksum=candidate.payload_checksum())
-    validate_parent_embedding(valid)
-
-
-def test_parent_dag_allows_orientation_variants_and_connected_chains() -> None:
-    direct = _embedding(2, 1, "domain-a")
-    alternate = _embedding(2, 1, "domain-b")
-    ancestor = _embedding(3, 2, "domain-a")
-    dag = ParentDAGSpec("sample", 1, (ancestor, direct, alternate))
-    assert len(dag.embeddings) == 3
+    upper = replace(upper, checksum=upper.payload_checksum())
+    dag = ParentDAGSpec("sample", 2, (upper, lower))
+    assert dag.current_to_root_paths() == ((2, 3, 4),)
+    assert dag.current_to_root_embedding_paths() == ((lower, upper),)
     with pytest.raises(ValueError, match="duplicate"):
-        ParentDAGSpec("sample", 1, (direct, direct))
+        ParentDAGSpec("sample", 2, (lower, lower))
 
 
-def test_parent_dag_rejects_cycle_and_disconnected_candidates() -> None:
-    with pytest.raises(ValueError, match="cycle"):
-        ParentDAGSpec(
-            "sample",
-            1,
-            (_embedding(3, 2), _embedding(2, 3), _embedding(4, 1)),
-        )
+def test_parent_dag_rejects_disconnected_edges() -> None:
     with pytest.raises(ValueError, match="lead to the current"):
-        ParentDAGSpec("sample", 1, (_embedding(3, 2), _embedding(4, 1)))
+        ParentDAGSpec("sample", 2, (_embedding(4, 3), _embedding(5, 2)))

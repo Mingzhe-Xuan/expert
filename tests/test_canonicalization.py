@@ -124,6 +124,12 @@ def test_full_operations_produce_species_preserving_bijections() -> None:
     # For this two-species structure every operation must fix each unique-species site.
     assert torch.equal(symmetry.audit_permutations, torch.tensor([[0, 1]]).expand(48, -1))
     assert symmetry.rotations.shape == (48, 3, 3)
+    assert symmetry.fractional_rotations is not None
+    assert symmetry.fractional_rotations.shape == (48, 3, 3)
+    assert torch.equal(symmetry.fractional_rotations, symmetry.fractional_rotations.round())
+    assert symmetry.common_cell_convention == (
+        "material-fractional-cell-canonical-cartesian-frame-v1"
+    )
     identity = torch.eye(3, dtype=torch.float64)
     assert torch.allclose(
         symmetry.rotations.transpose(1, 2) @ symmetry.rotations,

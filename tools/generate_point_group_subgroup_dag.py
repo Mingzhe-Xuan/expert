@@ -341,7 +341,7 @@ def render_markdown(data: dict) -> str:
         [
             "## Interpretation boundary",
             "",
-            "This is the complete point-group subgroup lattice. It is only the candidate class/orientation layer of a material parent DAG. A physical parent edge must additionally be validated at space-group level with Hall setting, basis/origin transform, translation subgroup, common cell, species-preserving atom correspondence, Wyckoff splitting, and a frozen domain variant.",
+            "This is the complete point-group subgroup lattice and orientation source for routing models whose geometry inputs are relative vectors. Such models can compute parent-edge distances directly from the stored parent rotations and oriented child subsets; Hall settings and translations are required only by routes that consume absolute space-group embeddings.",
             "",
         ]
     )
@@ -354,7 +354,7 @@ def build_subgroup_chain_asset(data: dict) -> dict:
     The full oriented subgroup instances and representative operation matrices
     are retained deliberately: class symbols alone are insufficient to recover
     an embedding.  This asset is still only a point-group candidate lattice;
-    material-specific parent selection requires a separate Hall-level registry.
+    relative-position parent routing can consume it directly without a Hall registry.
     """
 
     point_groups = data["point_groups"]
@@ -375,24 +375,25 @@ def build_subgroup_chain_asset(data: dict) -> dict:
                 for record in point_groups.values()
             ),
             "interpretation_boundary": (
-                "Complete crystallographic point-group candidate lattice only. "
-                "A physical parent DAG additionally requires Hall setting, "
-                "basis/origin and common-cell transforms, translations, "
-                "species-preserving atom correspondence, Wyckoff splitting, "
-                "domain variant, and validation against the material family."
+                "Complete point-group topology and oriented rotation subsets for "
+                "relative-position routing. Hall settings, translations and origins "
+                "are outside this contract and are needed only for absolute "
+                "space-group embeddings."
             ),
         },
         "proposal_runtime_policy": {
             "class_skeleton_roots": ["m-3m", "6/mmm"],
             "candidate_edge_type": "maximal_subgroup_cover",
             "candidate_traversal": "current_to_parent_reverse_edges",
-            "max_supergroup_index": 4,
-            "max_parent_depth": 2,
-            "active_set": "current_group_plus_all_physically_compatible_parents",
+            "max_supergroup_index": None,
+            "max_parent_depth": None,
+            "path_scope": "all_maximal_current_to_root_paths",
+            "active_set": "all_offline_ancestors_with_continuous_weights",
             "deduplicate_group_reached_by_multiple_paths": True,
             "hard_top_k": False,
             "weighting": "continuous_parent_residual_gates_and_path_stick_breaking",
-            "requires_hall_level_parent_embedding_registry": True,
+            "requires_hall_level_parent_embedding_registry": False,
+            "distance_input": "species-labelled-relative-edge-vectors",
         },
         "point_groups": point_groups,
         "class_cover_edges": data["class_cover_edges"],

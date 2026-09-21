@@ -31,6 +31,15 @@ def test_offline_point_group_dag_has_complete_deterministic_ancestor_closures() 
         active = dag.ancestors(dag.number(current))
         assert active == tuple(sorted(set(active)))
         assert dag.symbols(active) == symbols
+        paths = dag.maximal_paths(dag.number(current))
+        assert paths == tuple(sorted(paths))
+        assert all(path[0] == dag.number(current) for path in paths)
+        assert all(not dag.parents_by_child[path[-1]] for path in paths)
+        assert all(
+            parent in dag.parents_by_child[child]
+            for path in paths
+            for child, parent in zip(path, path[1:])
+        )
 
 
 def test_offline_point_group_dag_rejects_edge_metadata_drift(tmp_path) -> None:

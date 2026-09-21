@@ -139,3 +139,11 @@ def test_comparison_launcher_requires_explicit_artifacts_and_job_scopes_outputs(
     assert '--cgcnn-parent-dag "${EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS}"' in launcher
     assert 'summary-${SLURM_JOB_ID}.json' in launcher
     assert 'table-${SLURM_JOB_ID}.md' in launcher
+
+
+def test_parent_launcher_uses_offline_point_group_asset_without_hall_registry() -> None:
+    launcher = (ROOT / "slurm" / "train_reduced_cgcnn_parent_dag.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "EXPERT_REDUCED_HALL_EMBEDDING_ROOT" not in launcher
+    assert "--hall-embedding-root" not in launcher

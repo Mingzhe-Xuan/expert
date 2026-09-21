@@ -167,7 +167,7 @@ def test_active_nonbackbone_parameter_budget_is_well_below_five_million() -> Non
     full_layout = IrrepLayout(
         tuple(
             IrrepTerm(multiplicity, degree, "e" if degree % 2 == 0 else "o", f"l{degree}")
-            for degree, multiplicity in enumerate((4, 1, 1, 1, 1))
+            for degree, multiplicity in enumerate((8, 2, 2, 2, 2))
         )
     )
     group = PointGroupRegistry()["2/m"]

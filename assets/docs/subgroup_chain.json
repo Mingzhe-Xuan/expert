@@ -13,7 +13,7 @@
     "class_cover_edge_count": 80,
     "oriented_subgroup_instance_count": 433,
     "maximal_chain_class_sequence_count": 222,
-    "interpretation_boundary": "Complete crystallographic point-group candidate lattice only. A physical parent DAG additionally requires Hall setting, basis/origin and common-cell transforms, translations, species-preserving atom correspondence, Wyckoff splitting, domain variant, and validation against the material family."
+    "interpretation_boundary": "Complete point-group topology and oriented rotation subsets for relative-position routing. Hall settings, translations and origins are outside this contract and are needed only for absolute space-group embeddings."
   },
   "proposal_runtime_policy": {
     "class_skeleton_roots": [
@@ -22,13 +22,15 @@
     ],
     "candidate_edge_type": "maximal_subgroup_cover",
     "candidate_traversal": "current_to_parent_reverse_edges",
-    "max_supergroup_index": 4,
-    "max_parent_depth": 2,
-    "active_set": "current_group_plus_all_physically_compatible_parents",
+    "max_supergroup_index": null,
+    "max_parent_depth": null,
+    "path_scope": "all_maximal_current_to_root_paths",
+    "active_set": "all_offline_ancestors_with_continuous_weights",
     "deduplicate_group_reached_by_multiple_paths": true,
     "hard_top_k": false,
     "weighting": "continuous_parent_residual_gates_and_path_stick_breaking",
-    "requires_hall_level_parent_embedding_registry": true
+    "requires_hall_level_parent_embedding_registry": false,
+    "distance_input": "species-labelled-relative-edge-vectors"
   },
   "point_groups": {
     "1": {

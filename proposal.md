@@ -1469,6 +1469,14 @@ $$
 
 ### 5.6.1 完整 point-group parent DAG 与第一阶段投影
 
+> **Current relative-position implementation (2026-09-22).** The reduced CGCNN branch uses only
+> species-labelled relative edge vectors. It consumes the complete class-cover topology and all
+> oriented child subsets from `assets/docs/subgroup_chain.json`, computes incremental
+> `parent \\ child` rotation residuals, and reconstructs the DAG from the asset hash when loading
+> cache schema 3. Hall settings, translations, origins and atom mappings in the more general design
+> below are not part of this active branch; they remain requirements only for absolute-site or
+> space-group-mode routing.
+
 parent DAG 分为两个层次：
 
 1. **point-group class skeleton**：只记录 32 个 crystallographic point-group classes 之间可能的 subgroup cover relations，用于枚举候选路径、复用固定群论 registry，并为共享 router 提供 group conditioning；PG block 的可学习参数不在不同群或不同深度间共享；
@@ -3181,7 +3189,7 @@ $$
 | global order \(\ell\) | 0 | 1 | 2 | 3 | 4 |
 |---:|---:|---:|---:|---:|---:|
 | `a1_only` natural multiplicity | 8 | 2 | 2 | 2 | 2 |
-| `full_pg` natural multiplicity | 4 | 1 | 1 | 1 | 1 |
+| `full_pg` natural multiplicity | 8 | 2 | 2 | 2 | 2 |
 
 `a1_only` 对应基础 layout 为
 
@@ -3193,17 +3201,17 @@ $$
 +2\times4e,
 $$
 
-总 component dimension 为 \(56\)；`full_pg` 的基础 layout 为
+总 component dimension 为 \(56\)；`full_pg` 使用相同宽度的基础 layout：
 
 $$
-4\times0e
-+1\times1o
-+1\times2e
-+1\times3o
-+1\times4e,
+8\times0e
++2\times1o
++2\times2e
++2\times3o
++2\times4e,
 $$
 
-总 component dimension 为 \(28\)。其中 mandatory \((0,+)\) carrier 不得被 width pruning 删除。BEC 的一般 polar--polar rank-2 tensor 含 antisymmetric \(1e\) block，因此 BEC 模型在两种 PG mode 下均额外加入一个最小 \(1e\) carrier；dielectric 与 elastic 不加入 natural parity 以外的 carrier：
+总 component dimension 同样为 \(56\)。其中 mandatory \((0,+)\) carrier 不得被 width pruning 删除。BEC 的一般 polar--polar rank-2 tensor 含 antisymmetric \(1e\) block，因此 BEC 模型在两种 PG mode 下均额外加入一个最小 \(1e\) carrier；dielectric 与 elastic 不加入 natural parity 以外的 carrier：
 
 $$
 \begin{aligned}
@@ -3285,7 +3293,7 @@ architecture:
 
 representation:
   a1_only_natural_multiplicity_by_l: [8, 2, 2, 2, 2]
-  full_pg_natural_multiplicity_by_l: [4, 1, 1, 1, 1]
+  full_pg_natural_multiplicity_by_l: [8, 2, 2, 2, 2]
   extra_irreps_by_property:
     dielectric: []
     elastic: []
@@ -3356,7 +3364,7 @@ depth:
 
 当前 `a1_only` reference implementation 的逐参数统计见 `assets/model_code/reports/parameters_by_point_group.md`。在不含 backbone、current group 加全部 abstract class-DAG ancestors 均激活的口径下，32 个点群等权平均激活 6.94 个 experts；dielectric / elastic 的平均 active parameters 分别约为 0.392M / 0.392M。全部 32 个 PG experts 同时实例化时，双任务模型共有约 3.596M 参数。最坏的 \(C_1\) active parameters 约为 3.590M / 3.594M。
 
-按相同 `r_route=8`、2 个径向 channels、两个独立 PG blocks、\(C_1\) bypass 与 abstract class-DAG 口径，对尚待实现的 `full_pg` + \([4,1,1,1,1]\) 做 finite-group character/path-count 估算：全部实例化约 3.86M，32 群等权平均 active parameters 约 0.545M，最坏约 3.86M。该数字尚不含新增 BEC head 与 `1e` carrier，必须在实际 Full-PG path table 和 BEC head 实现后重新逐群统计；两种 mode 的每样本非-backbone active parameters 均必须严格小于 5M。
+旧版 `full_pg` + \([4,1,1,1,1]\) 的有限群参数估算不再适用于当前实现。当前 `full_pg` 使用 \([8,2,2,2,2]\)，参数量必须直接由已实现的 path table 逐配置统计；两种 mode 的每样本非-backbone active parameters 均必须严格小于 5M。
 
 ---
 
@@ -3393,7 +3401,7 @@ o3_tp_backend:
 pg_hidden_mode: a1_only | full_pg
 ```
 
-其中 `a1_only` 使用 \([8,2,2,2,2]\) natural layout，`full_pg` 使用预算匹配的 \([4,1,1,1,1]\) natural layout；两者在 BEC 中均额外保留 `1x1e` carrier，dielectric / elastic 不添加 unnatural-parity carrier。二者共享相同 parent DAG、gates、pooling/head policy 与 `<5M` active-parameter验收条件。
+其中 `a1_only` 与 `full_pg` 都使用 \([8,2,2,2,2]\) natural layout；两者在 BEC 中均额外保留 `1x1e` carrier，dielectric / elastic 不添加 unnatural-parity carrier。二者共享相同 parent DAG、gates、pooling/head policy 与 `<5M` active-parameter验收条件。
 
 五个 architecture branches 是主实验矩阵；下列外部工作仍作为 published baselines，用于比较绝对精度，但不计入内部 architecture branch 数量。
 
@@ -4699,7 +4707,7 @@ $$
 - frozen backbone pipeline；
 - 检查并强制保留至少一个 shared \((0,+)\) node channel；
 - shared O(3) adaptation TP + EqMLP，并开放独立的 `full_o3 | o2_tp` backend；
-- 落实 `a1_only=[8,2,2,2,2]`、`full_pg=[4,1,1,1,1]`、仅 BEC 增加的 `1x1e` carrier、`r_route=8`、`shared_adaptation_layers=1`、`shared_adaptation_tp_backend=o2_tp`、property-specific `lmax` 与 `o2_mmax=2`，并自动从 global \((\ell,p)\) layout 派生 local \(m\)-block multiplicities；
+- 落实 `a1_only=[8,2,2,2,2]`、`full_pg=[8,2,2,2,2]`、仅 BEC 增加的 `1x1e` carrier、`r_route=8`、`shared_adaptation_layers=1`、`shared_adaptation_tp_backend=o2_tp`、property-specific `lmax` 与 `o2_mmax=2`，并自动从 global \((\ell,p)\) layout 派生 local \(m\)-block multiplicities；
 - architecture 1 `B+R`；
 - architecture 2 `B+A+R`。
 

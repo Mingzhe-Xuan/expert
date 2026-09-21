@@ -11,7 +11,9 @@ from src.evaluation.training_history import (
     file_sha256,
     load_current_group_history,
     load_gmtnet_history,
+    load_parent_dag_history,
     render_current_group_history,
+    render_routing_comparison_history,
 )
 
 
@@ -52,6 +54,31 @@ def _gmtnet_summary(path: Path) -> Path:
     payload = {
         "status": "passed",
         "model": "GMTNet",
+        "best_epoch": 200,
+        "best_validation_mae": history[-1]["validation_mae"],
+        "history": history,
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _parent_summary(path: Path) -> Path:
+    history = [
+        {
+            "epoch": epoch,
+            "train_loss": 2.8 / epoch,
+            "validation_loss": 3.8 / epoch,
+            "validation_mae": 4.8 / epoch,
+            "validation_fnorm": 18.0 / epoch,
+            "learning_rate": 1.0e-3 - (epoch / 200) * 9.9e-4,
+        }
+        for epoch in range(1, 201)
+    ]
+    payload = {
+        "status": "passed",
+        "model": "CGCNN B+A+PGE+R full_pg PG-parent-DAG all-ancestors",
+        "routing": "point_group_parent_dag_all_ancestors",
+        "point_group_dag": {"activation": "current_plus_all_transitive_parents"},
         "best_epoch": 200,
         "best_validation_mae": history[-1]["validation_mae"],
         "history": history,
@@ -109,3 +136,39 @@ def test_gmtnet_history_rejects_wrong_model_and_epoch_gaps(tmp_path) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="passed GMTNet"):
         load_gmtnet_history(path)
+
+
+def test_parent_dag_history_validates_hash_routing_and_best_epoch(tmp_path) -> None:
+    path = _parent_summary(tmp_path / "parent.json")
+    payload = load_parent_dag_history(path, expected_sha256=file_sha256(path))
+    assert len(payload["history"]) == 200
+    assert payload["best_epoch"] == 200
+    changed = json.loads(path.read_text(encoding="utf-8"))
+    changed["routing"] = "material_parent_dag"
+    path.write_text(json.dumps(changed), encoding="utf-8")
+    with pytest.raises(ValueError, match="all-ancestor"):
+        load_parent_dag_history(path)
+
+
+def test_routing_comparison_render_is_labeled_and_parseable(tmp_path) -> None:
+    current_path = _summary(tmp_path / "current.json")
+    parent_path = _parent_summary(tmp_path / "parent.json")
+    svg = tmp_path / "routing.svg"
+    png = tmp_path / "routing.png"
+    render_routing_comparison_history(
+        load_current_group_history(current_path),
+        load_parent_dag_history(parent_path),
+        svg_path=svg,
+        png_path=png,
+    )
+    ET.parse(svg)
+    text = svg.read_text(encoding="utf-8")
+    assert "current-pg vs all-ancestor PG-DAG" in text
+    assert "current-pg best epoch 200" in text
+    assert "parent-DAG best epoch 200" in text
+    assert "Shared LR schedule" in text
+    assert all(line == line.rstrip() for line in text.splitlines())
+    data = png.read_bytes()
+    assert data[:8] == b"\x89PNG\r\n\x1a\n"
+    width, height = struct.unpack(">II", data[16:24])
+    assert width >= 1500 and height >= 1200

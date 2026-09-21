@@ -164,25 +164,16 @@ def test_symmetry_record_keeps_permutations_audit_only() -> None:
 
 def _embedding() -> ParentEmbeddingSpec:
     candidate = ParentEmbeddingSpec(
-        parent_hall_number=2,
-        child_hall_number=1,
-        parent_setting="P -1",
-        child_setting="P 1",
-        basis_transform=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
-        origin_shift=(0.0, 0.0, 0.0),
-        supercell_transform=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
-        operations=(
-            (
-                ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
-                (0.0, 0.0, 0.0),
-            ),
+        parent_point_group_number=2,
+        child_point_group_number=1,
+        parent_rotations=(
+            ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
+            ((-1.0, 0.0, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, -1.0)),
         ),
-        parent_atomic_numbers=(6, 8),
-        child_atomic_numbers=(6, 6, 8),
-        atom_correspondence=(0, 0, 1),
-        wyckoff_splitting=("1a->1a+1b", "1b->1c"),
-        domain_variant="identity",
-        convention_id="hall-standard-v1",
+        child_rotation_variants=((((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),),),
+        edge_id="pg02-to-pg01",
+        asset_sha256="a" * 64,
+        convention_id="point-group-relative-v1",
         version=1,
         checksum="0" * 64,
     )
@@ -191,13 +182,13 @@ def _embedding() -> ParentEmbeddingSpec:
 
 def test_parent_dag_requires_versioned_checksum_valid_embeddings() -> None:
     embedding = _embedding()
-    dag = ParentDAGSpec("material-1", current_hall_number=1, embeddings=(embedding,))
-    assert dag.embeddings[0].parent_hall_number == 2
+    dag = ParentDAGSpec("material-1", current_point_group_number=1, embeddings=(embedding,))
+    assert dag.embeddings[0].parent_point_group_number == 2
     with pytest.raises(ValueError, match="checksum"):
         ParentDAGSpec(
             "material-1",
-            current_hall_number=1,
-            embeddings=(replace(embedding, domain_variant="changed"),),
+            current_point_group_number=1,
+            embeddings=(replace(embedding, convention_id="changed"),),
         )
 
 

@@ -87,7 +87,7 @@ class FrozenFeatureExample:
     target_coefficients: torch.Tensor
     target_cartesian: torch.Tensor
     parent_dag: ParentDAGSpec | None = None
-    parent_residuals: Mapping[int, float] | None = None
+    parent_residuals: Mapping[str, float] | None = None
     point_group_number: int | None = None
 
     def __post_init__(self) -> None:
@@ -104,13 +104,12 @@ class FrozenFeatureExample:
         if self.parent_dag is not None:
             if self.parent_dag.material_id != self.sample_id:
                 raise ValueError("parent DAG material ID must match the cached sample")
-            active = {self.parent_dag.current_hall_number}
-            active.update(item.parent_hall_number for item in self.parent_dag.embeddings)
-            if set(self.parent_residuals) != active:
-                raise ValueError("parent residuals must cover exactly the active Hall nodes")
+            edge_ids = {item.checksum for item in self.parent_dag.embeddings}
+            if set(self.parent_residuals) != edge_ids:
+                raise ValueError("parent residuals must cover exactly the point-group cover edges")
         if self.point_group_number is not None:
             if self.parent_dag is not None:
-                raise ValueError("point-group number routing cannot mix material Hall routing")
+                raise ValueError("static and residual-weighted point-group routing cannot mix")
             if not 1 <= self.point_group_number <= 32:
                 raise ValueError("stored point-group number must be in [1, 32]")
 
@@ -124,7 +123,7 @@ class FrozenFeatureBatch:
     target_cartesian: torch.Tensor
     sample_ids: tuple[str, ...]
     parent_dags: tuple[ParentDAGSpec | None, ...]
-    parent_residuals: tuple[Mapping[int, float] | None, ...]
+    parent_residuals: tuple[Mapping[str, float] | None, ...]
     point_group_numbers: tuple[int | None, ...]
 
 
@@ -297,6 +296,12 @@ def _move_symmetry(record: SymmetryRecord, device: torch.device | str) -> Symmet
         audit_permutations=(
             None if record.audit_permutations is None else record.audit_permutations.to(device)
         ),
+        fractional_rotations=(
+            None
+            if record.fractional_rotations is None
+            else record.fractional_rotations.to(device)
+        ),
+        common_cell_convention=record.common_cell_convention,
     )
 
 
@@ -455,24 +460,28 @@ def _evaluate(
                             else (
                                 "current_group_only"
                                 if batch.parent_dags[index] is None
-                                else "material_parent_dag"
+                                else "point_group_relative_edge_stick_breaking"
                             )
                         ),
-                        "active_hall_numbers": (
-                            None
-                            if batch.point_group_numbers[index] is not None
-                            else (
-                                [batch.symmetries[index].hall_number]
-                                if batch.parent_dags[index] is None
-                                else sorted(batch.parent_residuals[index])
-                            )
-                        ),
+                        "active_hall_numbers": None,
                         "point_group_number": batch.point_group_numbers[index],
                         "active_point_group_numbers": (
-                            None
-                            if batch.point_group_numbers[index] is None
-                            else list(
+                            sorted(
+                                {
+                                    batch.parent_dags[index].current_point_group_number
+                                }
+                                | {
+                                    edge.parent_point_group_number
+                                    for edge in batch.parent_dags[index].embeddings
+                                }
+                            )
+                            if batch.parent_dags[index] is not None
+                            else (
+                                None
+                                if batch.point_group_numbers[index] is None
+                                else list(
                                 point_group_dag.ancestors(batch.point_group_numbers[index])
+                                )
                             )
                         ),
                     }
@@ -531,9 +540,9 @@ def train_cached_backbone_readout(
     if any(point_group_flags) and not all(point_group_flags):
         raise ValueError("point-group DAG routing must be enabled consistently across every split")
     if any(parent_flags) and any(point_group_flags):
-        raise ValueError("material Hall and point-group DAG routing are mutually exclusive")
+        raise ValueError("residual-weighted and static point-group routing are mutually exclusive")
     routing = (
-        "material_parent_dag"
+        "point_group_relative_edge_stick_breaking"
         if all(parent_flags)
         else (
             "point_group_parent_dag_all_ancestors"

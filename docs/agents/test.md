@@ -1,5 +1,102 @@
 # Test plan and results
 
+## 2026-09-22 - 56D relative-PG parent-DAG production training
+
+Planned acceptance gates:
+
+- local revision: complete tests pass; launcher uses the recorded CGCNN environment and Slurm;
+  model identity is `full_pg`, hidden multiplicities are `[8,2,2,2,2]`, and routing identity is
+  `point_group_relative_edge_stick_breaking` with all maximal offline paths;
+- smoke: passed summary/JUnit, exact stratified 7/7/7 rows, finite loss/metrics, predictions present,
+  cache schema/hash identities recorded, and edge-gate gradients exercised by existing tests;
+- one-epoch full preflight: exact 5,001/637/677 split, 677 unique ordered test predictions,
+  zero-failure JUnit, finite metrics, and correct routing/path-fusion metadata;
+- production: exactly 200 history epochs, validation-MAE-selected checkpoint, terminal passed status,
+  677 test predictions, finite RMSE/Fnorm/EwT metrics, and immutable Git/environment/artifact hashes;
+- reporting: deterministic SVG/PNG training curve, strict same-ID comparison against accepted prior
+  methods, updated Markdown benchmark, focused rendering/comparator tests, and final full checks.
+
+Actual results: local implementation previously passed 298/298; production revision audit and all
+Slurm/result gates are pending.
+
+## 2026-09-22 - Uniform `[8, 2, 2, 2, 2]` hidden irreps
+
+Planned checks:
+
+- every enumerated architecture mode receives exactly the five multiplicities
+  `(8, 2, 2, 2, 2)` and a 56-dimensional hidden O(3) layout;
+- full-PG, A1-only, O(3), readout, forward/backward, and checkpoint construction remain valid;
+- the existing `<5M` active non-backbone parameter contract remains satisfied after widening;
+- focused tests, complete `tests/`, Python compilation, and scoped whitespace checks pass.
+
+Actual results so far:
+
+- expert/dispatcher focused regression: 22 passed, 0 failed in 287.91 seconds;
+- all 26 architecture configurations used exact multiplicities `(8, 2, 2, 2, 2)`, dimension 56,
+  successful forward/backward and checkpoint round-trips, and active parameters below 5M;
+- direct full-PG instantiation measured downstream totals of 203,556 (32-expert dielectric),
+  46,292 (7-expert reduced dielectric), 203,646 (32-expert elastic), and 39,822
+  (6-expert reduced elastic);
+- complete repository-owned suite: 298 passed, 0 failed in 353.03 seconds;
+- targeted Python compilation, scoped `git diff --check`, and old-width reference classification
+  passed. Remaining `[4,1,1,1,1]` mentions are explicitly an ablation option or historical note,
+  not the current default contract.
+
+## 2026-09-22 - Point-group relative-position parent routing
+
+Planned checks:
+
+- construct deterministic oriented point-group parent DAGs directly from
+  `assets/docs/subgroup_chain.json`, covering every maximal current-to-root class path;
+- compute each edge residual only from parent rotations absent from the oriented child subgroup,
+  using relative-position species matching and lattice-metric violation in the canonical frame;
+- verify exact analytic edge gates, root-to-current stick-breaking, node-count path priors,
+  duplicate-PG aggregation, shared edge-template scales, normalization, and gradients;
+- reject stale Hall-edge caches through a new schema/config identity while round-tripping the new
+  point-group residual cache with exact sample/dataset/asset hashes;
+- verify current-only and static all-ancestor ablations remain separate, the launcher no longer
+  requires a Hall registry, documentation matches code, and focused/full tests pass.
+
+Actual results:
+
+- contract/cache/asset/launcher focused run: 71 passed, 0 failed;
+- material point-group route CGCNN forward/backward: 1 passed, including edge-gate gradients;
+- dispatcher/CGCNN/metric integration: 24 passed, 0 failed in 277.59 seconds;
+- complete repository-owned suite: 298 passed, 0 failed in 344.61 seconds;
+- Python compilation, Slurm syntax, scoped whitespace checks, and generator reproducibility passed;
+  regenerated `subgroup_chain.json` is semantically identical to the tracked asset and records the
+  relative-vector/no-Hall policy.
+- A post-suite asset-policy check initially failed one retained assertion expecting the superseded
+  index-4/depth-2 limit. The implementation uses all maximal paths, so the test was corrected to
+  require null limits plus `all_maximal_current_to_root_paths`; the exact rerun passed 33/33.
+
+
+## 2026-09-22 - Offline Hall-edge stick-breaking parent-DAG
+
+Planned checks:
+
+- strict current Hall/fractional-operation/common-cell records and checksum-validated embeddings;
+- exact maximal-path coverage, `(Hall, setting)` continuity, affine closure, and adjacent operation
+  equality in one common cell;
+- incremental `parent \ child` residuals, analytic gate boundaries, shared edge-template sigma,
+  root-to-current stick-breaking, node-count priors, duplicate-PG aggregation, and gradients;
+- launcher rejection of relaxed discovery and missing/incomplete registries, plus cache drift gates;
+- compilation, cross-module tests, complete `tests/`, Slurm syntax, and scoped whitespace.
+
+Actual so far: the focused canonicalization/contracts/embedding/routing/DAG/dispatcher/launcher
+regression passed 57/57 in 468.48 seconds. A preceding compile caught one duplicated CLI keyword
+from a mechanical patch; it was corrected immediately and awaits the clean compilation rerun.
+
+Final result: clean compilation passed; `bash -n` passed for the parent-DAG Slurm launcher; scoped
+`git diff --check` passed with only existing LF/CRLF notices; and the complete repository-owned
+`python -m pytest tests -q --basetemp=.pytest-tmp-offline-hall-20260922` run passed 271/271 with
+zero failures in 689.25 seconds.
+
+Post-suite hardening added a split-wide shared-edge-ID collision check and an exclusive router-
+configuration guard. The affected parent-DAG/dispatcher regression then passed 16/16 in 511.70
+seconds; compilation, Slurm syntax, and scoped whitespace checks passed again.
+
+
 ## 2026-09-17 — CGCNN full-PG terminal acceptance and three-model table
 
 Planned checks:
@@ -1764,3 +1861,259 @@ HTTP/1.1 pull 以 GnuTLS `-110` 结束；第三次连接 GitHub 443 在 133932 m
   manifest/Slurm/system integration selection passed 30 tests. `py_compile`, both launcher `bash -n`,
   and `git diff --check` passed. The complete `tests/` suite passed 208 tests with 0 failures and 598
   warnings in 521.21 seconds.
+
+## 2026-09-13 — 网络故障恢复规范补充
+
+- 范围：仅修改 `AGENTS.md` 及对应的 agent 过程文档，不修改代码、配置或数据。
+- 预期：`AGENTS.md` 明确规定网络出现问题时，在 SSH 成功连接后执行 `bash net.sh`，并等待 3 分钟后再采取进一步行动；命令、时长与 Markdown 格式均正确，`git diff --check` 通过。
+- 实际：`rg` 确认 `AGENTS.md` 同时包含 `bash net.sh`、等待 3 分钟及其与 `git pull` 的顺序说明；`git diff --check -- AGENTS.md docs/agents/state.md docs/agents/update.md docs/agents/test.md` 通过，仅输出 Git 的既有 LF/CRLF 转换提示，无 whitespace error。
+# 2026-09-17 — Reduced dielectric parent-DAG comparison plan
+
+- Scope: relabel the accepted CGCNN result as current-group-only and add a separate, otherwise
+  matched parent-DAG training path for reduced dielectric-total.
+- Unit expectations: controlled higher-`symprec` detection is deterministic; every accepted parent
+  is a distinct supergroup of the current point group; generated Hall embeddings pass checksum,
+  affine-group, species, correspondence, and DAG-connectivity validation; residuals are finite,
+  non-negative, zero for the current node, and positive for non-exact parent symmetry.
+- Integration expectations: parent metadata survives frozen-cache round trips, batching forwards
+  one DAG/residual mapping per graph, CGCNN passes those inputs to its existing downstream
+  dispatcher, current-only callers remain API compatible, and summaries/predictions truthfully
+  identify their routing mode and DAG coverage.
+- Experiment expectations: smoke and full training run only through Guqq Slurm; the full run uses
+  the same 5,001/637/677 split, seed, 200 epochs, Cartesian Huber, AdamW, LR schedule, checkpoint
+  selection, and metric implementation as the accepted current-group-only run. Strict comparison
+  rejects ID or target mismatches and reports RMSE, Fnorm, EwT25/10/5 and parent coverage.
+- Planned checks before the implementation commit: focused parent-DAG/CGCNN/benchmark tests,
+  cache compatibility tests, relevant `py_compile`, Slurm `bash -n`, full `tests/`, and scoped
+  `git diff --check`. Actual results will be appended before commit.
+- Actual: focused parent-DAG/CGCNN/benchmark coverage passed 32 tests in 77.45 seconds. The complete
+  local suite passed 252 tests with zero failures in 612.07 seconds. Relevant `py_compile` and
+  `bash -n` checks for both parent training and four-model comparison launchers passed. The final
+  scoped whitespace/staging audit is performed immediately before commit.
+# 2026-09-18 — CGCNN current-group-only training curve plan
+
+- Scope: visualize the accepted job-458 history only; no retraining or metric recomputation.
+- Expected source gates: summary status is `passed`, routing/model identity is current-group-only,
+  history contains exactly epochs 1..200, best epoch is 159, and required loss/MAE/Fnorm/LR fields
+  are finite.
+- Expected render gates: deterministic SVG and PNG are non-empty; titles explicitly say
+  `current-group only`; the best-epoch marker and final learning rate are present; SVG parses as XML
+  and PNG has a valid signature/dimensions. Focused tests, CLI execution, and `git diff --check`
+  must pass before commit.
+- Actual: job-458 source SHA-256 matched
+  `7070c4f66d57d5573b58d95a3219f780b0b776a662eab11426903544966fb536`; source gates confirmed
+  200 contiguous epochs and best epoch 159. Plot tests plus reduced-comparator regressions passed
+  12/12 in 13.60 seconds; `py_compile` and `git diff --check` passed. Repeated rendering produced
+  identical SVG/PNG SHA-256 values (`5f173d...c611b`, `1baeb1...ee69`), and visual inspection
+  confirmed readable labels, legends, axes, and checkpoint annotation.
+# 2026-09-18 — CGCNN current-group-only vs GMTNet curve overlay plan
+
+- Scope: add accepted GMTNet job 443 history to the existing job-458 figure; do not retrain or
+  recompute predictions/metrics.
+- Source gates: both summaries must be passed, hash-verified, contain contiguous epoch histories,
+  and identify their respective model/protocol; only fields actually recorded by both runners may
+  be compared on shared axes.
+- Render gates: the same SVG/PNG contains distinguishable CGCNN and GMTNet series, preserves the
+  current-group-only label, marks each selected checkpoint, documents unavailable series, parses
+  correctly, is deterministic, and passes focused/regression tests plus visual QA.
+- Actual: local final-evidence GMTNet summary SHA-256 is
+  `b4ded0b3696e87406fef4046b56685c0ae4d21b9bd5f9f3bd7cb1354abd9e6ae`; it contains 200 contiguous
+  epochs and selects epoch 93 by validation MAE. Focused plotting plus reduced-comparator tests
+  passed 13/13 in 12.21 seconds; compilation and `git diff --check` passed. Repeated paired renders
+  produced identical SVG/PNG hashes (`b726ed...ab232`, `bc984f...d3c9`), and visual QA confirmed
+  separated legends/annotations, both checkpoint markers, and the shared LR label.
+# 2026-09-18 — Training-curve CGCNN label refinement
+
+- Scope: change every CGCNN-facing label in the paired figure to `current-pg`; preserve numerical
+  data, GMTNet labels, source hashes, axes, and report routing semantics.
+- Expected: SVG contains the new title/legend/checkpoint labels and no old CGCNN-only legend text;
+  PNG passes visual QA; focused plot tests, deterministic rerender, and `git diff --check` pass.
+- Actual: the first focused run correctly exposed one stale assertion for the superseded
+  `current-group only` display text; the implementation output was correct, so the test expectation
+  was updated to `current-pg`. The rerun passed 3/3, visual QA confirmed every CGCNN-facing title,
+  legend, subtitle, and checkpoint label now uses `current-pg`, and `git diff --check` passed.
+# 2026-09-20 — Per-space-group error analysis plan
+
+- Scope: strict dataset/prediction joins, split counts per source space group, per-model dielectric
+  RMSE/Fnorm/EwT25/10/5, paired deltas, and training-count/error relationship statistics.
+- Unit expectations: duplicate/missing/extra IDs and non-equivalent targets fail closed; metrics
+  match direct tensor calculations; all test groups are retained; correlations use only the
+  predeclared minimum-test cohort and log10 positive train counts; constant or undersized cohorts
+  return explicit unavailable results rather than misleading numbers.
+- Integration expectations: accepted current-pg and GMTNet files contain exactly the same 677 test
+  IDs; generated JSON/CSV/Markdown/SVG are deterministic and identify source-space-group grouping,
+  cohort thresholds, hashes, and model labels. Plot parsing, source compilation, focused tests,
+  full tests, and scoped whitespace checks must pass before commit.
+- Actual (implementation): the focused analysis/benchmark/comparator selection passed 24 tests in
+  17.07 seconds. Python compilation, Slurm launcher syntax, and task-scoped whitespace checks
+  passed. The complete local suite passed 258 tests with zero failures in 370.20 seconds. Formal
+  artifact integration remains pending recovery of the accepted current-pg prediction JSONL.
+- Actual (job 463 integration): Git-bundle transport and pull reached `cde6a3c`; exact-ID analysis
+  completed for 677 test rows and 69 source space groups. All four output hashes matched after SCP,
+  the SVG parsed as XML, the promoted CSV contains one header plus 69 group rows, all report links
+  exist, and text/CSV `git diff --check` passed. The first all-file check correctly reported
+  Matplotlib's native trailing spaces inside SVG path data; preserving the job-scoped SVG hash was
+  chosen over rewriting generated geometry, so SVG acceptance instead uses exact SHA-256 plus XML
+  parsing. Slurm stderr contains only known TorchScript annotation warnings and no traceback.
+
+# 2026-09-20 — Parent-DAG activation preflight
+
+- Scope: use the exact full reduced split with one training epoch to populate the full routing cache
+  and prove that material-specific parents are actually accepted; the 7/7/7 smoke's zero coverage
+  is insufficient evidence for the mechanism.
+- Expected: status passed, routing `material_parent_dag`, exact 5,001/637/677 counts, zero-failure
+  JUnit, 677 predictions, finite common metrics, and at least one sample with a checked parent in the
+  full dataset. Only then may a matched 200-epoch run reuse the cache and proceed.
+- Failure/fix unit: job 465 failed after roughly 1,275 train structures because one relaxed spglib
+  candidate did not satisfy strict affine multiplication closure. Add a regression proving that an
+  invalid candidate is rejected without weakening `ParentEmbeddingSpec` validation or aborting the
+  material; valid later candidates remain eligible up to `max_parents`. Bump the detection convention
+  so pre-fix caches cannot be reused. Run focused parent/cache tests, compilation, full tests, and
+  scoped whitespace checks before replacement preflight.
+- Actual fix verification: focused parent/cache/contract/comparator coverage passed 34 tests in
+  13.15 seconds. Python compilation and scoped whitespace checks passed. The complete local suite
+  passed 259 tests with zero failures in 333.25 seconds. Replacement Slurm preflight remains the
+  required real-data acceptance gate.
+- Second real-data boundary: v2 job 466 passed the former failure and observed active parents, but
+  stopped around train item 4,401 because automatic base-symmetry selection disagreed with cached
+  symmetry before the code attempted the cached Hall setting. Add a regression where automatic
+  detection disagrees but explicit cached-Hall reproduction succeeds; require the detector to use
+  and validate that deterministic child setting. Bump the routing convention again and repeat the
+  same focused/full verification before another preflight.
+- Actual cached-Hall fix verification: focused parent/cache/contract/comparator coverage passed 35
+  tests in 32.15 seconds; compilation and scoped whitespace checks passed. The complete suite passed
+  260 tests with zero failures in 709.94 seconds. The longer runtime reflected local contention, not
+  retries or relaxed assertions.
+- Third preflight boundary: job 467 again reached roughly train item 4,401 and observed nonzero parent
+  selections, but one canonicalized float32 structure could not reproduce the cached child point group
+  at the exact base tolerance. Test a fail-closed per-material fallback: internally inconsistent cached
+  Hall/space-group/point-group metadata must still raise, while an otherwise valid cached record whose
+  child dataset cannot be reproduced must yield a checked current-only routing for that material and
+  must not disable valid parents elsewhere. Bump the cache convention, run focused tests, compilation,
+  scoped whitespace checks, and the full suite before the fourth full-data preflight.
+- Actual v4 verification: focused parent/benchmark tests passed 22/22 in 18.01 seconds. Source/test
+  compilation and scoped whitespace checks passed. An initial unscoped repository-root pytest command
+  correctly failed during collection on vendored upstream suites and read-only result directories; it
+  did not execute project tests. The intended project suite `python -m pytest tests -q` then passed
+  262/262 with zero failures in 362.86 seconds.
+- Actual job 468 integration: status passed at `a7437cc`, routing is `material_parent_dag`, split counts
+  are exactly 5,001/637/677, and JUnit is 1 test with zero failures/errors/skips. Nonzero parent coverage
+  is independently present in every split: train 46/5,001 (0.920%), validation 4/637 (0.628%), and test
+  6/677 (0.886%); maximum parent count is two in train. One-epoch finite test metrics are RMSE 28.3243,
+  Fnorm 29.3787, EwT25 5.1699%, EwT10 0.8863%, and EwT5 0.1477%. The remaining remote gate before the
+  formal run is confirming exactly 677 prediction lines in the same submission transaction.
+
+# 2026-09-20 — Static point-group ancestor DAG branch
+
+- Scope change: replace the experimental material-specific relaxed-Hall/max-parent route with a
+  versioned offline DAG of all 32 crystallographic point groups. Per sample/cache store only the current
+  point-group number; online routing must activate the current expert plus every transitive parent class.
+- Unit expectations: the offline asset validates all 32 unique number/symbol mappings, maximal-cover
+  edges are acyclic and parent-to-child, transitive ancestors are complete/deduplicated/deterministic,
+  and malformed or mismatched PG-number caches fail closed. Representative reduced groups must have
+  exact expected ancestor closures, including multiple paths without duplicate experts.
+- Integration expectations: current-only routing remains unchanged; the new branch accepts no material
+  ParentDAGSpec/residual/max-parent input, stores one PG number per ordered sample ID, instantiates every
+  expert reachable from the seven retained groups, reports per-split active-expert statistics, and writes
+  prediction rows labelled `point_group_parent_dag_all_ancestors`. Focused tests, compilation, Slurm
+  syntax, scoped whitespace checks, and the full project suite must pass before a Slurm preflight.
+- Actual focused verification: the initial DAG/cache/model/comparator set passed 30/30 in 21.62 seconds.
+  The expanded dispatcher, benchmark batch/collate, end-to-end smoke, history, DAG, parent-compatibility,
+  CGCNN, and comparator set passed 55/55 in 274.97 seconds. Both legacy current-only forwarding and the
+  legacy material-Hall contract remain covered while the reduced parent CLI no longer imports them.
+- Actual complete verification: Python compilation, both Slurm `bash -n` checks, and task-scoped
+  whitespace checks passed. The complete project suite passed 267/267 with zero failures in 352.55
+  seconds. Only known TorchScript/profiler deprecation warnings remain.
+- Commit-time whitespace review caught and removed one extra EOF blank line. The first post-fix test
+  invocation was blocked before test execution by Windows denying pytest access to its system temp
+  root; rerunning the identical file with an explicit workspace `--basetemp` passed 3/3 in 5.37 seconds,
+  and the fix-commit diff whitespace check passed.
+- Slurm smoke 470 passed at commit `52d0c88`: exact 7/7/7 splits, two epochs, finite metrics, routing
+  `point_group_parent_dag_all_ancestors`, 15 instantiated reachable experts, and per-split active-expert
+  range 1–11 with mean 4.7143. Remaining inline gates are seven prediction lines and zero-failure JUnit
+  before the full 5,001/637/677 one-epoch preflight is submitted.
+- Retrieved smoke artifacts parse successfully: JUnit is exactly 1 test/0 failures/0 errors/0 skips,
+  predictions contain exactly seven rows, and the first PG 5 row stores active closure
+  `[5,8,11,15,20,23,27,29,32]` with `active_hall_numbers=null`. The first submission chain stopped
+  because nested-shell XML quote matching was brittle, not because any artifact gate failed.
+- Full preflight 471 passed at `52d0c88`: exact 5,001/637/677 splits, JUnit 1/0/0/0, exactly 677 unique
+  prediction IDs, zero malformed routing rows, finite metrics, and DAG asset SHA
+  `c31d2b...d5d3b93`. Every prediction stores its PG number, a unique active closure containing that
+  number, `active_hall_numbers=null`, and the all-ancestor routing label. Test active-expert range is
+  1–11 (mean 5.2009). One epoch full pipeline took 613.38 seconds and produced RMSE 28.2676, Fnorm
+  28.9113, EwT25 8.2718%, EwT10 1.9202%, EwT5 0.7386%.
+
+# 2026-09-21 — Static parent-DAG final curve and four-model comparison
+
+- Artifact acceptance: require job 472 status `passed`, exactly 200 contiguous finite history rows,
+  best epoch equal to minimum validation MAE, exact 5,001/637/677 splits, JUnit 1/0/0/0, and 677
+  unique predictions labelled `point_group_parent_dag_all_ancestors`.
+- Comparison acceptance: run the existing strict comparator through Slurm against accepted jobs
+  451/443/458/472; require identical ordered IDs, frame-equivalent targets, finite metrics, and
+  deterministic JSON/Markdown outputs containing all four models.
+- Curve expectations: validate the immutable job-472 SHA-256 and routing identity, render all 200
+  epochs with train/validation Huber, validation MAE/Fnorm, LR decay, and the selected checkpoint;
+  overlay the matched current-pg history for direct routing comparison without recomputing metrics.
+- Regression/visual gates: focused history/comparator tests, deterministic SVG/PNG rerender hashes,
+  XML parse, PNG visual inspection, Python compilation, scoped `git diff --check`, and link/path checks
+  must pass before the report is considered complete.
+- Actual: job 472 passed every artifact gate; Slurm comparator job 473 passed the ordered-ID and
+  frame-equivalent-target checks for all four models. The first two local test invocations stopped
+  before collection/execution because `PYTHONPATH` and the user-level uv cache were unavailable;
+  the corrected workspace-cache run passed 15/15 focused tests. The complete project suite passed
+  269/269 in 365.30 seconds. Compilation, deterministic rerender hashes, SVG XML parsing, scoped
+  whitespace checks, report links, and PNG visual inspection all passed.
+# 2026-09-21 — Material-Hall path-weighted parent-DAG plan
+
+- Scope: replace the active reduced parent-DAG entry point's equal all-ancestor fusion with
+  material-specific Hall paths.  A path is a deterministic current-to-root node sequence; its
+  outer prior is `len(path) / sum(len(paths))`, including both endpoints.
+- Contract tests: a branching/merging `ParentDAGSpec` must enumerate every and only maximal path,
+  deterministically deduplicate orientation variants, handle current-only DAGs, and reject no
+  existing validation invariant.
+- Weight tests: each path must receive its length-normalized prior; nodes within a path must receive
+  the existing differentiable residual-gate weights; duplicate Hall/PG destinations across paths
+  must accumulate; final weights must be finite, non-negative, normalized, and backpropagate to
+  `log_sigma`.
+- Discovery tests: accepted nested Hall candidates must be connected through their inclusion-cover
+  relation instead of always directly to the current node; unrelated compatible candidates remain
+  separate branches; the cache convention/hash must change.
+- Integration tests: the reduced launcher must cache material routings, populate
+  `parent_dag/parent_residuals`, instantiate exactly the required PG experts, and report the new
+  material/path weighting identity.  Static PG-number all-ancestor routing remains an explicitly
+  separate ablation.
+- Expected checks before commit: focused parent embedding, point-group DAG, dispatcher, parent-DAG
+  training and reduced benchmark tests; compilation/static diff checks; complete local pytest.
+
+Actual results:
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_parent_embeddings.py tests/test_parent_dag_training.py -q`:
+  17 passed; covers maximal path enumeration, orientation-edge deduplication, length priors,
+  residual-gated within-path weights, gradient flow, inclusion-cover reduction, cache round trips,
+  detector fail-closed behavior, and material model forward/backward.
+- Focused cross-module run over dispatcher, parent contracts/training, offline PG DAG, benchmark
+  metrics and reduced comparator: 47 passed in 273.83 seconds.
+- `python -m py_compile` on every changed Python module passed; task-scoped `git diff --check`
+  passed with only existing LF/CRLF notices.
+- An unrestricted repository-root pytest invocation incorrectly collected vendored/source-project
+  tests under `data/sources`, `data/vendor`, and historical `results`, and stopped during collection
+  with 60 unrelated dependency/path/permission errors. No project test had run or failed in that
+  invocation. The repository-owned scope was rerun explicitly as
+  `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests -q`: 272 passed, 0 failed in 387.33 seconds.
+
+## 2026-09-21 — Corrected offline-edge/stick-breaking parent-DAG plan
+
+- Supersedes the node-residual softmax and relaxed-`symprec` topology recorded immediately above.
+- Offline DAG tests: enumerate complete maximal current-to-root class paths and require a supplied
+  concrete Hall embedding DAG to cover exactly those paths with class-cover edges; reject missing,
+  extra, disconnected, orientation-ambiguous, or non-common-cell operation contracts.
+- Residual tests: compute each edge residual only from affine operations in `parent \\ child`, with
+  species-preserving periodic Hungarian site matching plus lattice-metric violation; current child
+  operations must come from the strict cached `SymmetryRecord`.
+- Gate tests: verify `a=1-exp(-(r/sigma)^2)`, including `r=0 -> a=0`, large residual approaching one,
+  finite/non-negative validation, and gradient flow to positive edge-specific sigma parameters.
+- Stick-breaking tests: verify the exact root-to-current equations, per-path sum-to-one, normalized
+  node-count path priors, duplicate-PG accumulation, and final unique-expert normalization.
+- Integration tests: the reduced parent launcher must not call relaxed discovery, must require the
+  versioned concrete embedding registry, and must emit/cache edge residuals plus the new routing
+  identity. Missing registry data must fail closed before training.

@@ -209,3 +209,67 @@ diagonal values so the convention cannot pass accidentally.
 - e3nn representation checks should construct `D_from_matrix` from a CPU rotation and only then cast
   the finished matrix to the feature device/dtype. This avoids older/newer e3nn internal CPU constants
   colliding with CUDA inputs while preserving a device-matched comparison.
+
+## 2026-09-20 — Relaxed symmetry candidates are proposals, not accepted parents
+
+- A `spglib.get_symmetry_dataset` result at larger `symprec` may pass order/subset/residual screens
+  yet fail the project's stricter affine multiplication-closure validation after translations are
+  quantized at the parent-embedding tolerance.
+- This must not relax `ParentEmbeddingSpec` validation or abort detection for the whole material.
+  Treat every relaxed Hall result as a candidate: construct it under the full validator, reject a
+  failing candidate, and continue in residual/Hall order until `max_parents` valid parents are found.
+- Any change in candidate acceptance/rejection semantics must change the routing convention/hash so
+  partially generated or older routing caches cannot silently cross the algorithm boundary.
+- Parent detection must reproduce the child using its cached Hall number before consulting an
+  automatically selected Hall setting. Equivalent or near-boundary structures can make spglib's
+  automatic base choice disagree with the already validated canonical record; rejecting before the
+  explicit cached-Hall attempt turns a deterministic setting choice into a dataset-wide failure.
+- A cached Hall setting can still become unreproducible after the canonicalized structure is stored in
+  float32: rotating the lattice/positions and solving fractional coordinates again changes rounding at
+  a `1e-5` symmetry boundary. After three full-data preflight failures, the safe distinction is clear:
+  first verify that cached Hall metadata itself maps to the recorded space and point group (corruption
+  remains fatal); if spglib cannot reproduce that valid child from the cached graph, reject parent
+  discovery only for that material and return a current-only routing. An optional parent proposal must
+  not abort all 6,315 structures, and an unreproduced child must never activate a relaxed parent.
+
+## 2026-09-20 — Separate class-level ancestry from material-level parent embeddings
+
+- A complete point-group subgroup lattice and a physical material parent DAG answer different questions.
+  The former can be maintained offline as 32 class IDs plus parent-to-child cover edges and used for a
+  controlled all-ancestor expert-routing ablation; it must not be presented as evidence that every class
+  ancestor is a realizable structural parent for a particular material.
+- For class-level routing, persist only the current PG number with ordered sample IDs and dataset/DAG
+  hashes. Resolve the transitive reverse closure online, deduplicate multiple paths, and keep Hall setting,
+  symprec, atom mapping, Wyckoff splitting, residuals, and `max_parents` out of this data contract.
+- Keep current-only, class-DAG, and material-Hall routing mutually exclusive at the model boundary. This
+  makes predictions and benchmarks attributable and prevents a stale material cache from silently
+  influencing the static-DAG experiment.
+- A material parent-DAG must preserve its path structure through fusion. Flattening a DAG into a
+  deduplicated ancestor set and assigning `1/N` destroys both path multiplicity and material
+  compatibility information. Enumerate deterministic current-to-root Hall paths, assign an explicit
+  normalized path prior, apply material residual gates inside each path, and only then sum repeated
+  PG destinations. Keep the complete 32-class all-ancestor router as a separately labelled ablation;
+  it is not a substitute for physical Hall embeddings.
+
+## 2026-09-22 - Keep Hall edge instances, templates, and coordinates distinct
+
+- A material embedding checksum identifies one residual instance; it must not create one trainable
+  sigma per sample. A stable offline edge ID identifies the shared gate parameter used across
+  material instances of that concrete Hall-edge template.
+- Hall number alone is not a concrete DAG node. Traverse by Hall plus setting/orientation, otherwise
+  variants sharing one Hall number can be cross-combined into nonexistent chains.
+- Cartesian rotations used by the equivariant model and integer fractional rotations used by Hall
+  affine operations are distinct. Store both. Migrate legacy caches only through deterministic
+  lattice conjugation plus a strict near-integer check; never compare these representations directly.
+
+## 2026-09-22 - Match the symmetry level to the model's geometric inputs
+
+- A model that consumes only species-labelled relative vectors does not need space-group translations,
+  origins, Wyckoff mappings, or a material Hall registry to measure point-group breaking. Requiring
+  those fields overconstrains the router and duplicates information absent from the learned interface.
+- For relative-vector routing, the frozen point-group asset is sufficient when it retains full parent
+  rotations and every oriented maximal child subset. Compute residuals only on `parent \\ child`,
+  preserve species-pair labels during matching, and minimize across the finite stored orientations.
+- Cache material residuals, not repeated DAG operation tensors. Reconstruct the immutable DAG from its
+  asset hash on load, and change both schema and algorithm identity when the residual representation
+  changes so incompatible Hall-edge caches cannot be reused.

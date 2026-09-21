@@ -7,7 +7,7 @@ from .modules import (
     O3Adaptation,
     O3MessageBlock,
     RoutedO3Expert,
-    active_hall_numbers,
+    active_parent_point_group_numbers,
     hierarchical_fusion,
 )
 from .dispatcher import PointGroupTensorModel, default_hidden_layout
@@ -20,7 +20,7 @@ __all__ = [
     "O3MessageBlock",
     "PointGroupTensorModel",
     "RoutedO3Expert",
-    "active_hall_numbers",
+    "active_parent_point_group_numbers",
     "hierarchical_fusion",
     "default_hidden_layout",
 ]
