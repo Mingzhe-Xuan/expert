@@ -31,6 +31,9 @@
 - 2026-09-22: Formal job 478 produced its first 20.2 MB best checkpoint after about 23 minutes and
   remains healthy with no restart or error signature. Training/test/curve/comparison remain pending
   until the exact 200-epoch terminal artifacts are available.
+- 2026-09-22: At runtime 43 minutes, job 478 remained `RUNNING` with the exact 72-hour limit and no
+  traceback/OOM/non-finite signature. Its refreshed checkpoint is validation-best `step=2`; the
+  stored output mask has shape `(56,)`, confirming the live run uses `[8, 2, 2, 2, 2]`.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

@@ -5,8 +5,9 @@
 The requested production target is the reduced dielectric-total CGCNN feature model with
 `B+A+PGE+R/full_pg/full_o3`, the uniform `[8, 2, 2, 2, 2]` hidden layout, and material-specific
 relative-position point-group edge residuals with path-length priors and stick-breaking. The local
-implementation passes all 298 tests but is not yet committed on Guqq, so no training result may be
-claimed until the exact revision is pushed, pulled, smoke/preflight gated, and trained through Slurm.
+implementation and 56-dimensional checkpoint contract are accepted through smoke and full-split
+preflight. Formal Slurm job 478 is running the exact 200-epoch protocol at revision `2e48bcb`; no
+terminal metric will be claimed until its summary, JUnit, and ordered predictions pass validation.
 
 ## Current plan - 56D relative-PG parent-DAG training
 
@@ -44,6 +45,9 @@ claimed until the exact revision is pushed, pulled, smoke/preflight gated, and t
 - 2026-09-22: Job 478 crossed its first validation/checkpoint boundary after roughly 23 minutes and
   remains healthy on node221 under the verified 72-hour allocation. No terminal artifacts exist yet;
   monitoring continues without changing the fixed protocol.
+- 2026-09-22: At 43 minutes, job 478 remained healthy and wrote a second validation-best checkpoint.
+  A local read-only snapshot reports `step=2` and a 56-component output mask, directly confirming
+  that the running production model uses the requested `[8, 2, 2, 2, 2]` hidden layout.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

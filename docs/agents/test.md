@@ -1,5 +1,12 @@
 # Test plan and results
 
+## 2026-09-22 - Job 478 checkpoint progress record
+
+Documentation-only monitoring update. `git diff --check` passed for `docs/agents/state.md`,
+`docs/agents/update.md`, and `docs/agents/gpu.md`. The copied checkpoint was loaded locally with
+`torch.load(..., weights_only=True)` and reported `step=2`, `full_pg`, and output-mask shape `(56,)`.
+No source, launcher, configuration, or running server state changed.
+
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 
 Planned acceptance gates:

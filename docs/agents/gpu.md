@@ -2344,3 +2344,9 @@
   and no traceback/OOM/non-finite output. A 20,189,572-byte validation-best checkpoint appeared at
   06:16, about 23 minutes after start, proving the first train/validation/checkpoint cycle completed.
   The job remains unchanged; terminal summary/JUnit/predictions are not yet present.
+- 2026-09-22: Next continuation-monitor purpose: keep Guqq pinned to running revision `2e48bcb` via
+  the verified no-op bundle pull, then inspect only job 478 runtime, checkpoint timestamp/size and
+  bounded error output. Do not pull the newer documentation-only branch commit during training.
+- 2026-09-22: Checkpoint-refresh connection purpose: copy the newly updated job 478 checkpoint at
+  06:32 to the ignored local results directory and inspect only its scalar `step`; keep the running
+  job and the server worktree unchanged.
