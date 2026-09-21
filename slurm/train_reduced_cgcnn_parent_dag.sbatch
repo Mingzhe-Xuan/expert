@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
 #SBATCH --mem=48G
-#SBATCH --time=2-00:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --output=logs/slurm/reduced-cgcnn-pg-parent-dag-%j.out
 #SBATCH --error=logs/slurm/reduced-cgcnn-pg-parent-dag-%j.err
 

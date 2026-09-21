@@ -156,3 +156,4 @@ def test_parent_launcher_uses_offline_point_group_asset_without_hall_registry() 
     )
     assert "EXPERT_REDUCED_HALL_EMBEDDING_ROOT" not in launcher
     assert "--hall-embedding-root" not in launcher
+    assert "#SBATCH --time=3-00:00:00" in launcher

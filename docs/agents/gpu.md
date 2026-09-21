@@ -2310,3 +2310,20 @@
   Summary status is failed and no predictions/checkpoint exist. No production job was submitted.
   The edgeless relative-position contract will be corrected locally, tested, committed, synchronized,
   and smoke/full-preflight gates repeated from scratch while preserving job-475 evidence.
+- 2026-09-22: Guqq pulled exact edgeless-fix commit `e9c6f961ee10ecdc5902cedfaabeb2d622bfefb0` and
+  repeat smoke is Slurm job 476. Monitor purpose: pull first at the same revision and require the
+  original 7/7/7, JUnit, prediction, finite-metric, and relative-routing gates before resubmitting
+  full preflight. Job-475 failed artifacts remain untouched.
+- 2026-09-22: Repeat smoke 476 passed at exact commit `e9c6f96`: 7/7/7 splits, one epoch, seven
+  unique predictions, finite metrics, JUnit 1/0/0/0, and exact relative-PG routing. Repeat full-
+  preflight submission purpose: pull first, preserve all prior artifacts, reuse feature cache, and
+  submit exactly one full-split epoch. It must traverse the previously failing edgeless sample and
+  produce a complete cache plus 677 predictions before production is allowed.
+- 2026-09-22: Remote GitHub timed out before the first repeat-preflight submission, so no job was
+  created. A 10.5 KiB incremental bundle (`1479bb7..e9c6f96`, SHA-256 `2bb55513...61c1412a`)
+  was verified and used for a no-op pull at exact HEAD. Repeat full preflight is Slurm job 477.
+  Monitor only job 477 and require a complete routing cache plus every full-split acceptance gate.
+- 2026-09-22: User authorized a 72-hour formal wall-time. Current connection purpose: no-op pull
+  first at exact `e9c6f96`, inspect only repeat preflight 477 and its artifacts, and do not submit
+  production yet. If 477 passes, the locally tested three-day launcher must be committed and pulled
+  before formal submission; preflight 477 itself remains under its original allocation.

@@ -16,6 +16,12 @@
 - 2026-09-22: Implemented the explicit empty-observation RMS value `0.0`. Focused tests pass 61/61
   and the complete suite passes 301/301. Final static checks and synchronization precede repeated
   smoke/full preflight; job 475 remains preserved as failure evidence.
+- 2026-09-22: User authorized a 72-hour wall-time limit for formal training. Adding an exact launcher
+  contract for `3-00:00:00`; batch size, optimizer, LR schedule, epochs, resources, and acceptance
+  gates remain unchanged.
+- 2026-09-22: The launcher now requests exactly 72 hours. Its contract tests pass 11/11 and Bash
+  syntax passes; the change will be synchronized only after running preflight 477 exits, then used
+  for the formal 200-epoch submission.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

@@ -31,6 +31,9 @@ claimed until the exact revision is pushed, pulled, smoke/preflight gated, and t
   preparation and failed closed before training. Under the relative-position-only contract, an empty
   observation set supplies no evidence of parent-operation violation, so its incremental edge
   residuals must be zero. A regression-first correction is now in progress; production remains gated.
+- 2026-09-22: The user authorized raising the formal job wall-time ceiling from 48 to 72 hours.
+  The launcher will request exactly three days without changing the fixed 200-epoch optimization
+  protocol; this applies to the formal job submitted only after repeat preflight 477 passes.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

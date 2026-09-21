@@ -40,6 +40,14 @@ repository suite passed 301/301 in 350.87 seconds. The new regression constructs
 edge-vector tensor and verifies every complete-DAG incremental residual is exactly zero. Static
 compilation/diff checks and repeat Slurm gates remain pending before commit/submission.
 
+72-hour launcher change plan: require the production parent-DAG Slurm launcher to request exactly
+`3-00:00:00`, retain one GPU/48 GiB/eight CPUs and all existing training hyperparameters, pass
+`bash -n` plus its launcher contract test, and synchronize the change before the 200-epoch job.
+
+72-hour launcher result: focused reduced-benchmark tests passed 11/11 in 15.76 seconds and the
+training launcher passed `bash -n`. The only runtime-policy change is the exact Slurm limit
+`3-00:00:00`; model/training arguments and requested compute resources are unchanged.
+
 ## 2026-09-22 - Uniform `[8, 2, 2, 2, 2]` hidden irreps
 
 Planned checks:
