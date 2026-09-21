@@ -66,6 +66,9 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: Final manifest job 483 is gated on the conjunction of successful jobs 479/480/482.
   Once all three pass it will atomically record byte size and SHA-256 for 19 training, testing,
   comparison, curve, acceptance, revision/environment, and Slurm-log artifacts.
+- 2026-09-22: Job 478 reached validation-best `step=5` at runtime 1:34 with no error signature.
+  Five consecutive early epochs have improved the validation checkpoint; monitoring now moves to
+  coarser milestones while Slurm and the dependency chain remain stable.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

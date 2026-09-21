@@ -2405,3 +2405,9 @@
 - 2026-09-22: `scontrol` confirmed job 483 is pending on the full conjunction
   `afterok:479,afterok:480,afterok:482`. It will atomically hash 19 required final artifacts only
   after comparison, curve rendering, and terminal acceptance all succeed; no job was changed.
+- 2026-09-22: Checkpoint-cadence monitor purpose: first no-op pull the pinned `2e48bcb` bundle, then
+  inspect jobs 478--483, latest checkpoint scalar step/mtime, and bounded error output. Preserve the
+  training and all dependency jobs unchanged while healthy.
+- 2026-09-22: At runtime 1:34, checkpoint 478 advanced to validation-best `step=5` at 07:23 with the
+  expected 56-component mask. The bounded error scan remained empty and jobs 479/480/482/483 stayed
+  dependency-gated. Future checks will use coarser milestones unless scheduler state changes.

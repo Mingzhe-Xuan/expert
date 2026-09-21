@@ -52,6 +52,9 @@
 - 2026-09-22: Added final integrity staging: locally validated manifest payload job 483 is pending on
   all of jobs 479, 480, and 482. `scontrol` verified the complete dependency conjunction; on success
   it will emit one atomic path/size/SHA-256 manifest covering 19 final artifacts.
+- 2026-09-22: Job 478 advanced to best checkpoint `step=5` at runtime 1:34 with no error signature;
+  all four downstream jobs remain correctly gated. Early cadence is stable, so subsequent health
+  checks will be spaced at coarser milestones rather than every checkpoint.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across
