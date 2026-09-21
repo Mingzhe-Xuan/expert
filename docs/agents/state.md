@@ -54,6 +54,9 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: Curve-rendering job 480 is also pending on `afterok:478`. It dynamically hashes and
   validates accepted current-PG summary 458 and future relative-PG summary 478 before producing
   result-only SVG/PNG; the PNG still requires local visual QA before promotion into documentation.
+- 2026-09-22: Formal job 478 reached validation-best checkpoint `step=3` at runtime 1:04. The
+  checkpoint still carries the exact 56-dimensional model state; no error signature or dependency
+  drift is present, and no terminal artifact is expected this early in the 200-epoch run.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

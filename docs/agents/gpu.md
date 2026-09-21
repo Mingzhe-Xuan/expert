@@ -2368,3 +2368,12 @@
 - 2026-09-22: Two text-mode streaming attempts were safely rejected before job creation because
   PowerShell restored CRLF line endings. Base64-preserving the validated LF payload succeeded:
   curve job 480 is pending on `afterok:478`, alongside comparator 479; training 478 remains healthy.
+- 2026-09-22: Post-staging monitor purpose: first no-op pull the pinned `2e48bcb` bundle, then inspect
+  jobs 478--480, the latest checkpoint timestamp/size, and bounded error output. Preserve the running
+  training and both dependency jobs unchanged while their scheduler states are valid.
+- 2026-09-22: Checkpoint-scalar inspection purpose: first no-op pull `2e48bcb`, then use the recorded
+  environment for one short CPU-only `torch.load(weights_only=True)` of checkpoint 478 and print only
+  `step` plus the output-mask shape. Do not perform inference or modify any artifact.
+- 2026-09-22: At runtime 1:04, job 478 remained `RUNNING`; jobs 479/480 remained correctly pending
+  on `afterok:478`, and the error scan was empty. Checkpoint mtime advanced to 06:49 and a read-only
+  load confirmed validation-best `step=3` with the expected 56-component output mask.

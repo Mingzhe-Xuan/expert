@@ -16,6 +16,10 @@ Curve staging result: the exact streamed job script passed local `bash -n`. Slur
 with dependency `afterok:478`; it will compute both source hashes at runtime and the existing plotting
 loader will reject any non-passed, non-200-epoch, non-contiguous, or wrong-routing summary.
 
+Runtime checkpoint check: `torch.load(..., map_location="cpu", weights_only=True)` on Guqq reported
+`step=3` and output-mask shape `(56,)`; bounded stderr scanning found no traceback, OOM, CUDA error,
+NaN, or non-finite signature. This is progress evidence, not terminal metric acceptance.
+
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 
 Planned acceptance gates:

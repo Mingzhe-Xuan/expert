@@ -40,6 +40,9 @@
 - 2026-09-22: Submitted Slurm curve job 480 with `afterok:478`. The payload passed local `bash -n`
   and will validate both summary hashes before rendering SVG/PNG. Two earlier CRLF submissions were
   rejected by `sbatch` before creating jobs; Base64-preserved LF submission succeeded.
+- 2026-09-22: Job 478 remained healthy at runtime 1:04 and its best checkpoint advanced to `step=3`
+  at 06:49. A read-only load reconfirmed shape `(56,)`; jobs 479/480 retain the correct after-success
+  dependency, and the bounded training-error scan remains empty.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across
