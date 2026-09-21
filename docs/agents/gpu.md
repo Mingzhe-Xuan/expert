@@ -2362,3 +2362,9 @@
 - 2026-09-22: The four accepted baseline prediction files were found and SHA-256 verified. Slurm
   job 479 is the five-model comparator and is correctly pending on `afterok:478`; job 478 remains
   healthy and unchanged. The comparator will therefore run only after successful training completion.
+- 2026-09-22: Dependent-curve submission purpose: first no-op pull `2e48bcb`, then stream a locally
+  Bash-validated Slurm script directly to `sbatch --dependency=afterok:478`. It will hash-validate
+  summaries 458/478 and render result-only SVG/PNG without modifying the server worktree.
+- 2026-09-22: Two text-mode streaming attempts were safely rejected before job creation because
+  PowerShell restored CRLF line endings. Base64-preserving the validated LF payload succeeded:
+  curve job 480 is pending on `afterok:478`, alongside comparator 479; training 478 remains healthy.

@@ -37,6 +37,9 @@
 - 2026-09-22: Fixed the four historical comparator inputs by server path and SHA-256, then submitted
   Slurm job 479 with `afterok:478`. It will compare DPA4 job 451, GMTNet 443, current-PG 458, static
   parent-DAG 472, and relative-PG 478 only after the production run succeeds.
+- 2026-09-22: Submitted Slurm curve job 480 with `afterok:478`. The payload passed local `bash -n`
+  and will validate both summary hashes before rendering SVG/PNG. Two earlier CRLF submissions were
+  rejected by `sbatch` before creating jobs; Base64-preserved LF submission succeeded.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

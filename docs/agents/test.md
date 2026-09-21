@@ -12,6 +12,10 @@ SHA-256 `a8745811...36f5`, `484a4aa4...d64c`, `ee22d732...48b4`, and `ecfd8705..
 respectively. Slurm accepted comparator job 479 with dependency `afterok:478`; `squeue` reports it
 pending for `(Dependency)`, proving it cannot consume a partial job-478 prediction file.
 
+Curve staging result: the exact streamed job script passed local `bash -n`. Slurm accepted job 480
+with dependency `afterok:478`; it will compute both source hashes at runtime and the existing plotting
+loader will reject any non-passed, non-200-epoch, non-contiguous, or wrong-routing summary.
+
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 
 Planned acceptance gates:

@@ -51,6 +51,9 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: The immutable job 451/443/458/472 prediction inputs were path- and hash-verified on
   Guqq. Five-model comparison job 479 is pending on `afterok:478`, so successful terminal training
   will automatically trigger the exact ordered-ID/target-equivalence benchmark comparison.
+- 2026-09-22: Curve-rendering job 480 is also pending on `afterok:478`. It dynamically hashes and
+  validates accepted current-PG summary 458 and future relative-PG summary 478 before producing
+  result-only SVG/PNG; the PNG still requires local visual QA before promotion into documentation.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 
