@@ -19,6 +19,16 @@ Planned acceptance gates:
 Actual results: local implementation previously passed 298/298; production revision audit and all
 Slurm/result gates are pending.
 
+Smoke result: Guqq Slurm job 474 passed with exact 7/7/7 splits, one epoch, seven unique predictions,
+finite test RMSE `10.1975355` and Fnorm `29.8429527`, JUnit `1/0/0/0`, and exact relative-PG
+path-weighted routing metadata. Summary SHA-256 is `f0317db0...d4adaef1`; prediction SHA-256 is
+`d9841fbe...d5bebbec`. Full-split preflight remains pending.
+
+Reporting extension result: 18 focused history/comparator/launcher tests passed in 17.67 seconds and
+the comparison Slurm script passed `bash -n`. The reporting code now validates both historical static
+all-ancestor and new relative-PG path-fusion summaries, labels their curves distinctly, and supports
+a separate 56D relative-PG row without overwriting the accepted historical row.
+
 ## 2026-09-22 - Uniform `[8, 2, 2, 2, 2]` hidden irreps
 
 Planned checks:

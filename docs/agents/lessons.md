@@ -273,3 +273,10 @@ diagonal values so the convention cannot pass accidentally.
 - Cache material residuals, not repeated DAG operation tensors. Reconstruct the immutable DAG from its
   asset hash on load, and change both schema and algorithm identity when the residual representation
   changes so incompatible Hall-edge caches cannot be reused.
+# 2026-09-22 - PowerShell-to-SSH pull gates
+
+- A double-quoted PowerShell `ssh` command containing remote `$(...)` and escaped quotes is not a
+  stable transport contract: local and remote parsing can leave an unmatched quote even when the
+  intended Bash is valid. After repeated connection attempts, replace substitutions with fixed
+  arguments and quote the complete remote Bash program once with local single quotes. Use
+  `git rev-parse HEAD | grep -Fx <sha>` and a fixed scheduler user instead of nested substitutions.

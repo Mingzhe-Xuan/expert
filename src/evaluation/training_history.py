@@ -78,13 +78,34 @@ def load_parent_dag_history(
     payload = json.loads(source.read_text(encoding="utf-8"))
     if payload.get("status") != "passed":
         raise ValueError("training curve requires a passed parent-DAG summary")
-    if payload.get("routing") != "point_group_parent_dag_all_ancestors":
-        raise ValueError("training curve source is not all-ancestor point-group routing")
-    if "PG-parent-DAG all-ancestors" not in str(payload.get("model", "")):
-        raise ValueError("training curve source is not the parent-DAG CGCNN branch")
-    dag = payload.get("point_group_dag")
-    if not isinstance(dag, Mapping) or dag.get("activation") != "current_plus_all_transitive_parents":
-        raise ValueError("parent-DAG summary lacks the all-ancestor activation contract")
+    routing = payload.get("routing")
+    if routing == "point_group_parent_dag_all_ancestors":
+        if "PG-parent-DAG all-ancestors" not in str(payload.get("model", "")):
+            raise ValueError("training curve source is not the static parent-DAG CGCNN branch")
+        dag = payload.get("point_group_dag")
+        if (
+            not isinstance(dag, Mapping)
+            or dag.get("activation") != "current_plus_all_transitive_parents"
+        ):
+            raise ValueError("parent-DAG summary lacks the all-ancestor activation contract")
+    elif routing == "point_group_relative_edge_stick_breaking":
+        if "relative-position PG parent-DAG path-weighted" not in str(payload.get("model", "")):
+            raise ValueError("training curve source is not the relative-PG CGCNN branch")
+        detection = payload.get("parent_detection")
+        fusion = payload.get("path_fusion")
+        if (
+            not isinstance(detection, Mapping)
+            or detection.get("topology") != "offline_complete_oriented_point_group_paths"
+            or not isinstance(fusion, Mapping)
+            or fusion.get("path_definition") != "maximal_current_point_group_to_root"
+            or fusion.get("between_path_prior") != "node_count_normalized"
+            or fusion.get("within_path_weighting")
+            != "relative_vector_point_group_edge_stick_breaking"
+            or fusion.get("duplicate_destination_reduction") != "sum_then_normalize"
+        ):
+            raise ValueError("parent-DAG summary lacks the relative-PG path-fusion contract")
+    else:
+        raise ValueError("training curve source is not a supported parent-DAG routing mode")
     history = payload.get("history")
     if not isinstance(history, list) or len(history) != expected_epochs:
         raise ValueError(f"parent-DAG history must contain exactly {expected_epochs} epochs")
@@ -443,6 +464,9 @@ def render_routing_comparison_history(
     parent_best_mae = float(parent_summary["best_validation_mae"])
     current_lr = series(current, "learning_rate")
     parent_lr = series(parent, "learning_rate")
+    relative_route = parent_summary.get("routing") == "point_group_relative_edge_stick_breaking"
+    route_title = "relative-PG path-weighted" if relative_route else "all-ancestor PG-DAG"
+    parent_label = "relative-PG" if relative_route else "parent-DAG"
 
     plt.rcParams.update(
         {
@@ -463,18 +487,18 @@ def render_routing_comparison_history(
         sharex=True,
         gridspec_kw={"height_ratios": (1.25, 1.25, 0.65), "hspace": 0.16},
     )
-    figure.suptitle("current-pg vs all-ancestor PG-DAG — training history", fontsize=16, y=0.985)
+    figure.suptitle(f"current-pg vs {route_title} — training history", fontsize=16, y=0.985)
     figure.text(
         0.5,
         0.951,
-        "Reduced dielectric-total · matched CGCNN jobs 458 and 472 · 200 epochs",
+        "Reduced dielectric-total · matched CGCNN protocol · 200 epochs",
         ha="center",
         color="#53606B",
     )
 
     for label, history, color in (
         ("current-pg", current, colors["current"]),
-        ("parent-DAG", parent, colors["parent"]),
+        (parent_label, parent, colors["parent"]),
     ):
         axes[0].plot(epochs, series(history, "train_loss"), color=color, lw=1.8, label=f"{label} train")
         axes[0].plot(
@@ -501,7 +525,7 @@ def render_routing_comparison_history(
         series(parent, "validation_mae"),
         color=colors["parent"],
         lw=1.8,
-        label="parent-DAG validation MAE",
+        label=f"{parent_label} validation MAE",
     )
     axes[1].set_ylabel("Component MAE")
     axes[1].set_title("Validation metrics", loc="left")
@@ -523,7 +547,7 @@ def render_routing_comparison_history(
         lw=1.4,
         alpha=0.65,
         linestyle=":",
-        label="parent-DAG validation Fnorm",
+        label=f"{parent_label} validation Fnorm",
     )
     metric_right.set_ylabel("Fnorm", color=colors["fnorm"])
     handles_left, labels_left = axes[1].get_legend_handles_labels()
@@ -532,7 +556,7 @@ def render_routing_comparison_history(
 
     for epoch, mae, color, label, location in (
         (current_best, current_best_mae, colors["current"], "current-pg", (0.97, 0.86)),
-        (parent_best, parent_best_mae, colors["parent"], "parent-DAG", (0.57, 0.68)),
+        (parent_best, parent_best_mae, colors["parent"], parent_label, (0.57, 0.68)),
     ):
         axes[1].scatter([epoch], [mae], s=48, color=color, edgecolor="white", linewidth=0.8, zorder=5)
         axes[1].annotate(
@@ -560,7 +584,13 @@ def render_routing_comparison_history(
         label="Shared LR schedule" if shared_lr else "current-pg learning rate",
     )
     if not shared_lr:
-        axes[2].plot(epochs, parent_lr, color=colors["parent"], lw=1.6, label="parent-DAG learning rate")
+        axes[2].plot(
+            epochs,
+            parent_lr,
+            color=colors["parent"],
+            lw=1.6,
+            label=f"{parent_label} learning rate",
+        )
     axes[2].set_yscale("log")
     axes[2].set_ylabel("Learning rate")
     axes[2].set_xlabel("Epoch")
@@ -590,7 +620,7 @@ def render_routing_comparison_history(
         raise ValueError("training curve outputs must be SVG and PNG")
     svg.parent.mkdir(parents=True, exist_ok=True)
     png.parent.mkdir(parents=True, exist_ok=True)
-    title = "current-pg vs all-ancestor PG-DAG training history"
+    title = f"current-pg vs {route_title} training history"
     figure.savefig(svg, format="svg", metadata={"Date": None, "Title": title})
     svg_text = svg.read_text(encoding="utf-8")
     svg.write_text(

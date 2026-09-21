@@ -109,6 +109,7 @@ def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:
         [sys.executable, "-m", "src.cli.compare_reduced_benchmark", "--dpa4", str(dpa4),
          "--gmtnet", str(gmtnet), "--cgcnn-full-pg", str(cgcnn),
          "--cgcnn-parent-dag", str(parent),
+         "--cgcnn-relative-parent-dag", str(parent),
          "--summary", str(summary), "--table", str(table)],
         cwd=ROOT,
         check=True,
@@ -123,6 +124,9 @@ def test_comparison_cli_validates_common_ids_and_writes_table(tmp_path) -> None:
     assert report["metrics"][
         "CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors)"
     ]["rmse"] == 0.0
+    assert report["metrics"][
+        "CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, 56D)"
+    ]["rmse"] == 0.0
     assert "| Model | RMSE" in table.read_text(encoding="utf-8")
 
 
@@ -135,8 +139,13 @@ def test_comparison_launcher_requires_explicit_artifacts_and_job_scopes_outputs(
     assert "EXPERT_REDUCED_GMTNET_PREDICTIONS:?" in launcher
     assert "EXPERT_REDUCED_CGCNN_PREDICTIONS:?" in launcher
     assert "EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS:?" in launcher
+    assert "EXPERT_REDUCED_CGCNN_RELATIVE_PARENT_PREDICTIONS:?" in launcher
     assert '--cgcnn-full-pg "${EXPERT_REDUCED_CGCNN_PREDICTIONS}"' in launcher
     assert '--cgcnn-parent-dag "${EXPERT_REDUCED_CGCNN_PARENT_PREDICTIONS}"' in launcher
+    assert (
+        '--cgcnn-relative-parent-dag "${EXPERT_REDUCED_CGCNN_RELATIVE_PARENT_PREDICTIONS}"'
+        in launcher
+    )
     assert 'summary-${SLURM_JOB_ID}.json' in launcher
     assert 'table-${SLURM_JOB_ID}.md' in launcher
 

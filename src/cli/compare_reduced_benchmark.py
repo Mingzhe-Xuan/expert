@@ -45,13 +45,14 @@ def _write_atomic(path: Path, text: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Validate reduced current-only, all-ancestor PG-parent-DAG, and GMTNet predictions"
+            "Validate reduced current-only, static/relative PG-parent-DAG, and GMTNet predictions"
         )
     )
     parser.add_argument("--dpa4", type=Path, required=True)
     parser.add_argument("--gmtnet", type=Path, required=True)
     parser.add_argument("--cgcnn-full-pg", type=Path)
     parser.add_argument("--cgcnn-parent-dag", type=Path)
+    parser.add_argument("--cgcnn-relative-parent-dag", type=Path)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--table", type=Path, required=True)
     arguments = parser.parse_args()
@@ -108,6 +109,25 @@ def main() -> None:
             parent_prediction, parent_target, task="dielectric"
         )
         prediction_sha256["cgcnn_parent_dag"] = _sha256(arguments.cgcnn_parent_dag)
+    if arguments.cgcnn_relative_parent_dag is not None:
+        relative_ids, relative_prediction, relative_target = _load(
+            arguments.cgcnn_relative_parent_dag
+        )
+        if relative_ids != dpa_ids:
+            raise ValueError("CGCNN relative-PG parent-DAG and reference test IDs or order differ")
+        if not torch.allclose(
+            torch.linalg.eigvalsh(relative_target),
+            torch.linalg.eigvalsh(dpa_target),
+            atol=2.0e-4,
+            rtol=2.0e-5,
+        ):
+            raise ValueError("CGCNN relative-PG parent-DAG targets are not frame-equivalent")
+        metrics[
+            "CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, 56D)"
+        ] = tensor_benchmark_metrics(relative_prediction, relative_target, task="dielectric")
+        prediction_sha256["cgcnn_relative_parent_dag"] = _sha256(
+            arguments.cgcnn_relative_parent_dag
+        )
     report = {
         "schema_version": 1,
         "status": "passed",

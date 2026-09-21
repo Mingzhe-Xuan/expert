@@ -87,6 +87,29 @@ def _parent_summary(path: Path) -> Path:
     return path
 
 
+def _relative_parent_summary(path: Path) -> Path:
+    path = _parent_summary(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload.update(
+        {
+            "model": "CGCNN B+A+PGE+R full_pg relative-position PG parent-DAG path-weighted",
+            "routing": "point_group_relative_edge_stick_breaking",
+            "parent_detection": {
+                "topology": "offline_complete_oriented_point_group_paths"
+            },
+            "path_fusion": {
+                "path_definition": "maximal_current_point_group_to_root",
+                "between_path_prior": "node_count_normalized",
+                "within_path_weighting": "relative_vector_point_group_edge_stick_breaking",
+                "duplicate_destination_reduction": "sum_then_normalize",
+            },
+        }
+    )
+    payload.pop("point_group_dag")
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
 def test_current_group_history_validates_identity_and_complete_epochs(tmp_path) -> None:
     path = _summary(tmp_path / "summary.json")
     payload = load_current_group_history(path, expected_sha256=file_sha256(path))
@@ -146,7 +169,17 @@ def test_parent_dag_history_validates_hash_routing_and_best_epoch(tmp_path) -> N
     changed = json.loads(path.read_text(encoding="utf-8"))
     changed["routing"] = "material_parent_dag"
     path.write_text(json.dumps(changed), encoding="utf-8")
-    with pytest.raises(ValueError, match="all-ancestor"):
+    with pytest.raises(ValueError, match="supported parent-DAG"):
+        load_parent_dag_history(path)
+
+
+def test_relative_parent_history_requires_complete_path_fusion_contract(tmp_path) -> None:
+    path = _relative_parent_summary(tmp_path / "relative.json")
+    assert load_parent_dag_history(path)["routing"] == "point_group_relative_edge_stick_breaking"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["path_fusion"]["between_path_prior"] = "equal"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="path-fusion"):
         load_parent_dag_history(path)
 
 
@@ -172,3 +205,20 @@ def test_routing_comparison_render_is_labeled_and_parseable(tmp_path) -> None:
     assert data[:8] == b"\x89PNG\r\n\x1a\n"
     width, height = struct.unpack(">II", data[16:24])
     assert width >= 1500 and height >= 1200
+
+
+def test_relative_routing_comparison_uses_distinct_labels(tmp_path) -> None:
+    current_path = _summary(tmp_path / "current.json")
+    parent_path = _relative_parent_summary(tmp_path / "relative.json")
+    svg = tmp_path / "relative.svg"
+    png = tmp_path / "relative.png"
+    render_routing_comparison_history(
+        load_current_group_history(current_path),
+        load_parent_dag_history(parent_path),
+        svg_path=svg,
+        png_path=png,
+    )
+    ET.parse(svg)
+    text = svg.read_text(encoding="utf-8")
+    assert "current-pg vs relative-PG path-weighted" in text
+    assert "relative-PG best epoch 200" in text

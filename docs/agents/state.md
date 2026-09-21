@@ -10,8 +10,8 @@ claimed until the exact revision is pushed, pulled, smoke/preflight gated, and t
 
 ## Current plan - 56D relative-PG parent-DAG training
 
-1. [ ] Audit and selectively commit the current implementation, launcher, tests, and documentation.
-2. [ ] Push the exact revision; connect to Guqq under the pull-first/network-recovery protocol.
+1. [x] Audit and selectively commit the current implementation, launcher, tests, and documentation.
+2. [x] Push the exact revision; connect to Guqq under the pull-first/network-recovery protocol.
 3. [ ] Run a Slurm smoke and one-epoch full-split preflight, accepting exact split/JUnit/prediction
    and routing identities before the 200-epoch job.
 4. [ ] Run the fixed 200-epoch training/test job and verify terminal summary, best checkpoint,
@@ -24,6 +24,9 @@ claimed until the exact revision is pushed, pulled, smoke/preflight gated, and t
 - 2026-09-22: Started the production run requested by the user. The target is explicitly the new
   56-component relative-position path-weighted router, not job 472's historical 28-component static
   all-ancestor route. Local source and launch contracts are being audited before any server action.
+- 2026-09-22: Committed exact revision `1479bb7`, synchronized it to Guqq by a SHA-verified offline
+  Git bundle after remote GitHub timeouts, and passed Slurm smoke job 474. All smoke gates passed;
+  the next stage is a one-epoch full-split preflight before formal training.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

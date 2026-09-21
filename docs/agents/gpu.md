@@ -2271,3 +2271,33 @@
   `git pull --ff-only` before repository inspection, verify the pulled revision/environment/cache,
   and submit only a Slurm smoke initially. No training, inference, evaluation, or batch preprocessing
   may run directly on the login node; full training requires smoke and one-epoch full-split gates.
+- 2026-09-22: Initial pull connection reached only the Vlab banner and was terminated after a bounded
+  wait. The mandated `bash net.sh` recovery then succeeded and the full three-minute wait completed.
+  The first post-recovery session was closed before output; the next reached Guqq but a nested
+  PowerShell/SSH quote error stopped before pull. No repository query, scheduler query, or job
+  submission passed the `&&` gate. The next retry uses a single-quoted remote program without command
+  substitutions, per the new lesson, and still requires exact revision `1479bb7` before `sbatch`.
+- 2026-09-22: The quote-safe HTTP/1.1 pull reached the jump host but hit its remote 120-second timeout
+  without updating the worktree. Offline-sync purpose: create and hash a Git bundle containing only
+  the fast-forward range from server baseline `52d0c88` to `1479bb7`, SCP it to a distinct temporary
+  path, then in a new pull-first session run `git pull --ff-only <bundle> main`. Submit the one-epoch
+  smoke only after bundle verification and exact HEAD equality; preserve all existing caches/results.
+- 2026-09-22: Bundle SHA-256 `86b2161f...0920bba2` verified and Guqq fast-forwarded from
+  `52d0c88` to exact commit `1479bb7eb8759ab8f9792eb4da7d8221dfafd5d6`; the recorded environment
+  exists. A custom `squeue -o` format was split by the SSH transport, so the strict chain stopped
+  before `sbatch`. Retry purpose: pull the same bundle first (no-op), use default `squeue` output,
+  and submit only the 1-epoch 7/7/7 smoke with the recorded CGCNN environment.
+- 2026-09-22: The retry pull was current and Slurm smoke job 474 was submitted. Monitor connection
+  purpose: pull first from the verified bundle, inspect only job 474 state/log/terminal artifacts,
+  and accept it only with passed summary, exact 7/7/7 splits, zero-failure JUnit, finite metrics,
+  correct relative-PG routing identity, and seven predictions. Do not submit the full preflight until
+  every smoke gate passes.
+- 2026-09-22: Job 474 completed passed. Local copies verify exact 7/7/7 splits, one contiguous epoch,
+  seven unique predictions, finite RMSE/Fnorm, zero-failure JUnit, routing
+  `point_group_relative_edge_stick_breaking`, complete offline topology, node-count path priors, and
+  relative-vector edge stick-breaking. Full-preflight submission purpose: pull first from the verified
+  bundle, preserve caches/results, and submit exactly one epoch on the full 5,001/637/677 split.
+- 2026-09-22: Full-split preflight is Slurm job 475. Monitor connection purpose: pull first, inspect
+  only job 475 queue/log/artifacts, and accept it only with exact 5,001/637/677 splits, one epoch,
+  677 unique predictions, zero-failure JUnit, finite metrics, and the exact relative-PG routing/path
+  metadata. Do not submit 200 epochs while job 475 is running or before all gates pass.

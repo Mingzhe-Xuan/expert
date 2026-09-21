@@ -4,6 +4,12 @@
   relative-position parent-DAG model. The existing job-472 result is a historical static-router,
   old-width baseline and will not be relabelled. Next is a selective source audit/commit, followed by
   Slurm smoke and full-split preflight before the 200-epoch production run.
+- 2026-09-22: Revision `1479bb7` is synchronized on Guqq and smoke job 474 passed every gate:
+  7/7/7 splits, one epoch, seven unique predictions, finite metrics, zero JUnit failures/errors, and
+  exact complete-path relative-PG stick-breaking metadata. Submitting the one-epoch full preflight next.
+- 2026-09-22: While full preflight 475 runs, extended the strict result pipeline to accept and
+  distinctly label relative-PG path-weighted histories/predictions alongside the historical static
+  parent-DAG row. Focused tests pass 18/18 and comparison launcher syntax is valid.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across
