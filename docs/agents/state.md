@@ -69,6 +69,8 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: Job 478 reached validation-best `step=5` at runtime 1:34 with no error signature.
   Five consecutive early epochs have improved the validation checkpoint; monitoring now moves to
   coarser milestones while Slurm and the dependency chain remain stable.
+- 2026-09-22: The next health window found validation-best `step=6` at runtime 1:50, with the same
+  56-dimensional contract and no error signature. The full downstream dependency chain is stable.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

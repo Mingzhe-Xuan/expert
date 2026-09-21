@@ -2411,3 +2411,9 @@
 - 2026-09-22: At runtime 1:34, checkpoint 478 advanced to validation-best `step=5` at 07:23 with the
   expected 56-component mask. The bounded error scan remained empty and jobs 479/480/482/483 stayed
   dependency-gated. Future checks will use coarser milestones unless scheduler state changes.
+- 2026-09-22: Twenty-minute health-check purpose: first no-op pull `2e48bcb`, then inspect job 478
+  state, checkpoint scalar step/mtime, bounded error output, and downstream queue states. Preserve
+  every running or dependency-gated job unchanged while healthy.
+- 2026-09-22: At runtime 1:50, job 478 remained healthy and checkpoint advanced to validation-best
+  `step=6` at 07:39 with output mask `(56,)`. The bounded error scan was empty; jobs 479/480/482/483
+  remained dependency-gated and were not changed.

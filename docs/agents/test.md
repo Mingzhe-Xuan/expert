@@ -69,6 +69,8 @@ Later runtime check at 1:25 reported `step=4`, the same `(56,)` mask, an empty b
 and unchanged `afterok:478` dependencies for jobs 479/480/482. Terminal acceptance remains pending.
 The 1:34 check reported `step=5`, the same mask, no error signature, and all downstream jobs
 479/480/482/483 still dependency-gated; this remains non-terminal progress evidence.
+The 1:50 check reported `step=6`, output mask `(56,)`, an empty bounded error scan, and unchanged
+dependency gating. No terminal metric or completion claim is inferred from this checkpoint.
 
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 
