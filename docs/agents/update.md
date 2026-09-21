@@ -49,6 +49,9 @@
 - 2026-09-22: Formal training remained healthy at runtime 1:25; best checkpoint advanced to `step=4`
   with a 56-component output mask and no error signature. All three terminal jobs remain correctly
   dependency-gated; the observed early cadence remains compatible with the 72-hour allocation.
+- 2026-09-22: Added final integrity staging: locally validated manifest payload job 483 is pending on
+  all of jobs 479, 480, and 482. `scontrol` verified the complete dependency conjunction; on success
+  it will emit one atomic path/size/SHA-256 manifest covering 19 final artifacts.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

@@ -63,6 +63,9 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: Job 478 reached validation-best `step=4` at runtime 1:25. Early checkpoint intervals
   are approximately 16--17 minutes, consistent with completing 200 epochs inside 72 hours if the
   cadence remains stable; scheduler state and terminal artifacts remain authoritative.
+- 2026-09-22: Final manifest job 483 is gated on the conjunction of successful jobs 479/480/482.
+  Once all three pass it will atomically record byte size and SHA-256 for 19 training, testing,
+  comparison, curve, acceptance, revision/environment, and Slurm-log artifacts.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

@@ -1,5 +1,17 @@
 # Test plan and results
 
+## 2026-09-22 - Relative-PG final artifact manifest
+
+Plan: create an ignored, result-only Slurm payload; require local `bash -n`; then submit it with
+`afterok:479:480:482`. It must not run until comparison, curve, and terminal acceptance all pass.
+Expected output is an atomic `artifact-manifest-478.json` containing each required training/test,
+comparison, SVG/PNG, acceptance, environment/revision, and Slurm-log path with byte size and SHA-256.
+
+Result: local `bash -n` and direct AST parsing of the embedded Python both passed. Slurm accepted
+job 483; `scontrol` reports exact dependency conjunction
+`afterok:479(unfulfilled),afterok:480(unfulfilled),afterok:482(unfulfilled)`. It is therefore unable
+to publish a manifest unless comparison, curve rendering, and terminal acceptance all succeed.
+
 ## 2026-09-22 - Relative-PG terminal artifact acceptance job
 
 Plan: validate the ignored acceptance script with local `bash -n`, then run it through Slurm against

@@ -2396,3 +2396,12 @@
 - 2026-09-22: At runtime 1:25, job 478 remained healthy and validation-best checkpoint advanced to
   `step=4` at 07:06 with the expected 56-component mask. No error signature was present; jobs
   479/480/482 retained valid `afterok:478` dependencies and were left unchanged.
+- 2026-09-22: Final-manifest submission purpose: first no-op pull `2e48bcb`, then stream the locally
+  Bash- and embedded-Python-validated manifest payload to Slurm with `afterok:479:480:482`. It may
+  only hash final result/log artifacts and must not modify the tracked worktree or existing jobs.
+- 2026-09-22: Manifest-dependency verification purpose: first no-op pull `2e48bcb`, then read only
+  job 483's complete `scontrol` dependency field to confirm all of 479/480/482 are required. Do not
+  change or resubmit the job if the full conjunction is present.
+- 2026-09-22: `scontrol` confirmed job 483 is pending on the full conjunction
+  `afterok:479,afterok:480,afterok:482`. It will atomically hash 19 required final artifacts only
+  after comparison, curve rendering, and terminal acceptance all succeed; no job was changed.
