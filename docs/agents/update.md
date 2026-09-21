@@ -59,6 +59,9 @@
   U+2014/U+00B7 code points; only PowerShell rendering was corrupt. Added SVG assertions forbidding
   real U+FFFD corruption; all seven plotting tests, compilation, and whitespace checks pass. Curve
   job 480 remains valid and was not replaced.
+- 2026-09-22: Rendered and visually inspected a production-function relative-PG fixture PNG. The
+  three-panel layout, punctuation, legends, dual axes, best-epoch callouts, and LR plot are clear and
+  uncropped. This accepts the layout only; final visual QA still requires job 478's real history.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

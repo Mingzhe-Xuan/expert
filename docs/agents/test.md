@@ -12,6 +12,12 @@ Result: all seven plotting-history tests passed in 10.44 seconds, including the 
 SVG U+FFFD exclusion checks. `compileall` and scoped `git diff --check` passed. No plotting behavior,
 server source, or Slurm dependency changed.
 
+Visual preflight: rendered a 200-epoch relative-PG fixture through the production plotting function
+and inspected the original-resolution PNG. Title punctuation, all three panels, dual-axis legends,
+best-epoch annotations, and logarithmic LR axis are readable with no clipping or overlap. The first
+fixture invocation only lacked an explicit repository `PYTHONPATH`; the corrected invocation rendered
+successfully. Real job-478 PNG inspection remains a separate terminal requirement.
+
 ## 2026-09-22 - Relative-PG final artifact manifest
 
 Plan: create an ignored, result-only Slurm payload; require local `bash -n`; then submit it with
