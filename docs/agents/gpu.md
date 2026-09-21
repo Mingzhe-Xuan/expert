@@ -2390,3 +2390,9 @@
 - 2026-09-22: Slurm accepted formal artifact-audit job 482 with `afterok:478`. Jobs 479 (five-model
   comparison), 480 (curve), and 482 (terminal acceptance) are all pending on successful completion
   of healthy training job 478; none can consume partial output.
+- 2026-09-22: Formal-chain continuation monitor purpose: first no-op pull the verified `2e48bcb`
+  bundle, then inspect jobs 478/479/480/482, checkpoint mtime/size/scalar step, and bounded training
+  errors. Do not alter or resubmit any job while the chain remains healthy.
+- 2026-09-22: At runtime 1:25, job 478 remained healthy and validation-best checkpoint advanced to
+  `step=4` at 07:06 with the expected 56-component mask. No error signature was present; jobs
+  479/480/482 retained valid `afterok:478` dependencies and were left unchanged.

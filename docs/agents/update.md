@@ -46,6 +46,9 @@
 - 2026-09-22: Terminal acceptance preflight job 481 passed the completed full-split job-477 fixture
   in four seconds and emitted a hash-bearing audit JSON. Submitted the identical 200-epoch validator
   as job 482 with `afterok:478`; comparison 479 and curve 480 remain staged independently.
+- 2026-09-22: Formal training remained healthy at runtime 1:25; best checkpoint advanced to `step=4`
+  with a 56-component output mask and no error signature. All three terminal jobs remain correctly
+  dependency-gated; the observed early cadence remains compatible with the 72-hour allocation.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

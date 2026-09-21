@@ -60,6 +60,9 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: A combined terminal validator passed against accepted preflight 477 as Slurm job 481,
   then was submitted unchanged as formal `afterok:478` job 482. It covers exact revision and epochs,
   routing history, split, finite metrics/tensors, 677 unique IDs, JUnit, and artifact hashes.
+- 2026-09-22: Job 478 reached validation-best `step=4` at runtime 1:25. Early checkpoint intervals
+  are approximately 16--17 minutes, consistent with completing 200 epochs inside 72 hours if the
+  cadence remains stable; scheduler state and terminal artifacts remain authoritative.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

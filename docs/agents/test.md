@@ -35,6 +35,9 @@ Runtime checkpoint check: `torch.load(..., map_location="cpu", weights_only=True
 `step=3` and output-mask shape `(56,)`; bounded stderr scanning found no traceback, OOM, CUDA error,
 NaN, or non-finite signature. This is progress evidence, not terminal metric acceptance.
 
+Later runtime check at 1:25 reported `step=4`, the same `(56,)` mask, an empty bounded error scan,
+and unchanged `afterok:478` dependencies for jobs 479/480/482. Terminal acceptance remains pending.
+
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 
 Planned acceptance gates:
