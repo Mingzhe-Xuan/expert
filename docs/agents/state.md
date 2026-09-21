@@ -48,6 +48,9 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: At 43 minutes, job 478 remained healthy and wrote a second validation-best checkpoint.
   A local read-only snapshot reports `step=2` and a 56-component output mask, directly confirming
   that the running production model uses the requested `[8, 2, 2, 2, 2]` hidden layout.
+- 2026-09-22: The immutable job 451/443/458/472 prediction inputs were path- and hash-verified on
+  Guqq. Five-model comparison job 479 is pending on `afterok:478`, so successful terminal training
+  will automatically trigger the exact ordered-ID/target-equivalence benchmark comparison.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

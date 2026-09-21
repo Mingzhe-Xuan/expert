@@ -7,6 +7,11 @@ Documentation-only monitoring update. `git diff --check` passed for `docs/agents
 `torch.load(..., weights_only=True)` and reported `step=2`, `full_pg`, and output-mask shape `(56,)`.
 No source, launcher, configuration, or running server state changed.
 
+Comparison staging result: the accepted job 451/443/458/472 JSONLs were located on Guqq with
+SHA-256 `a8745811...36f5`, `484a4aa4...d64c`, `ee22d732...48b4`, and `ecfd8705...c6e2`,
+respectively. Slurm accepted comparator job 479 with dependency `afterok:478`; `squeue` reports it
+pending for `(Dependency)`, proving it cannot consume a partial job-478 prediction file.
+
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 
 Planned acceptance gates:

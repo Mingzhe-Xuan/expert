@@ -34,6 +34,9 @@
 - 2026-09-22: At runtime 43 minutes, job 478 remained `RUNNING` with the exact 72-hour limit and no
   traceback/OOM/non-finite signature. Its refreshed checkpoint is validation-best `step=2`; the
   stored output mask has shape `(56,)`, confirming the live run uses `[8, 2, 2, 2, 2]`.
+- 2026-09-22: Fixed the four historical comparator inputs by server path and SHA-256, then submitted
+  Slurm job 479 with `afterok:478`. It will compare DPA4 job 451, GMTNet 443, current-PG 458, static
+  parent-DAG 472, and relative-PG 478 only after the production run succeeds.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

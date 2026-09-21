@@ -2350,3 +2350,15 @@
 - 2026-09-22: Checkpoint-refresh connection purpose: copy the newly updated job 478 checkpoint at
   06:32 to the ignored local results directory and inspect only its scalar `step`; keep the running
   job and the server worktree unchanged.
+- 2026-09-22: Goal-continuation monitor purpose: first no-op pull the verified `2e48bcb` bundle,
+  then inspect only job 478 scheduler state, latest checkpoint metadata, and bounded error output.
+  Do not alter the healthy run or synchronize the newer monitoring-doc commit to Guqq.
+- 2026-09-22: Comparison-input audit connection purpose: first no-op pull the same verified bundle,
+  then locate and hash only the accepted job 451, 443, 458, and 472 prediction JSONLs needed by the
+  eventual five-model comparator. This is read-only and does not submit or alter any job.
+- 2026-09-22: Dependent-comparison submission purpose: first no-op pull `2e48bcb`, confirm there is
+  no existing pending five-model comparator for job 478, then submit the tested comparison launcher
+  with `afterok:478` and the four hash-fixed baseline paths plus future `predictions-478.jsonl`.
+- 2026-09-22: The four accepted baseline prediction files were found and SHA-256 verified. Slurm
+  job 479 is the five-model comparator and is correctly pending on `afterok:478`; job 478 remains
+  healthy and unchanged. The comparator will therefore run only after successful training completion.
