@@ -1,5 +1,20 @@
 # Test plan and results
 
+## 2026-09-22 - Relative-PG terminal artifact acceptance job
+
+Plan: validate the ignored acceptance script with local `bash -n`, then run it through Slurm against
+accepted one-epoch preflight job 477 using exact revision `e9c6f96`. Expected preflight result:
+passed relative-PG routing/history validation, exact 5,001/637/677 split, 677 unique finite 3x3
+prediction/target tensors, JUnit 1/0/0/0, finite five-metric test report, and atomic acceptance JSON.
+Only after that gate passes, submit the identical script for formal job 478 with expected 200 epochs,
+revision `2e48bcb`, and dependency `afterok:478`.
+
+Result: local `bash -n` passed. Slurm preflight job 481 completed in four seconds with exit `0:0` and
+generated `acceptance-477.json`: exact revision `e9c6f96`, one epoch/best epoch 1, exact split,
+677 unique finite 3x3 prediction/target pairs, JUnit 1/0/0/0, five finite metrics, and exact hashes
+(`summary=47f9c0c0...3829e51`, `predictions=8a6b2f35...1592d`). The identical formal validator is
+job 482, pending on `afterok:478` with exact 200 epochs and revision `2e48bcb`.
+
 ## 2026-09-22 - Job 478 checkpoint progress record
 
 Documentation-only monitoring update. `git diff --check` passed for `docs/agents/state.md`,

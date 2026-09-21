@@ -2377,3 +2377,16 @@
 - 2026-09-22: At runtime 1:04, job 478 remained `RUNNING`; jobs 479/480 remained correctly pending
   on `afterok:478`, and the error scan was empty. Checkpoint mtime advanced to 06:49 and a read-only
   load confirmed validation-best `step=3` with the expected 56-component output mask.
+- 2026-09-22: Acceptance-script preflight purpose: first no-op pull `2e48bcb`, then submit the locally
+  Bash-validated, result-only acceptance payload through Slurm against completed job 477 (one epoch,
+  revision `e9c6f96`). It must pass before an identical `afterok:478` acceptance job is submitted.
+- 2026-09-22: Acceptance-preflight monitor purpose: first no-op pull `2e48bcb`, then inspect only
+  Slurm job 481 state, its bounded stdout/stderr, and `acceptance-477.json` if terminal. Leave jobs
+  478--480 unchanged and do not submit formal acceptance until job 481 passes every gate.
+- 2026-09-22: Acceptance preflight 481 completed in four seconds with exit `0:0` and emitted passed
+  `acceptance-477.json`, validating revision/history/split/677 tensors/JUnit/metrics/hashes. Formal
+  submission purpose: no-op pull first, then submit the identical payload as `afterok:478` for exact
+  revision `2e48bcb` and 200 epochs; preserve all existing jobs and artifacts.
+- 2026-09-22: Slurm accepted formal artifact-audit job 482 with `afterok:478`. Jobs 479 (five-model
+  comparison), 480 (curve), and 482 (terminal acceptance) are all pending on successful completion
+  of healthy training job 478; none can consume partial output.

@@ -57,6 +57,9 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
 - 2026-09-22: Formal job 478 reached validation-best checkpoint `step=3` at runtime 1:04. The
   checkpoint still carries the exact 56-dimensional model state; no error signature or dependency
   drift is present, and no terminal artifact is expected this early in the 200-epoch run.
+- 2026-09-22: A combined terminal validator passed against accepted preflight 477 as Slurm job 481,
+  then was submitted unchanged as formal `afterok:478` job 482. It covers exact revision and epochs,
+  routing history, split, finite metrics/tensors, 677 unique IDs, JUnit, and artifact hashes.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

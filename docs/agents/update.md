@@ -43,6 +43,9 @@
 - 2026-09-22: Job 478 remained healthy at runtime 1:04 and its best checkpoint advanced to `step=3`
   at 06:49. A read-only load reconfirmed shape `(56,)`; jobs 479/480 retain the correct after-success
   dependency, and the bounded training-error scan remains empty.
+- 2026-09-22: Terminal acceptance preflight job 481 passed the completed full-split job-477 fixture
+  in four seconds and emitted a hash-bearing audit JSON. Submitted the identical 200-epoch validator
+  as job 482 with `afterok:478`; comparison 479 and curve 480 remain staged independently.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across
