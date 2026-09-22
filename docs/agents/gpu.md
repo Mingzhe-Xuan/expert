@@ -2429,3 +2429,9 @@
 - 2026-09-22: At runtime 2:22, job 478 remained healthy and validation-best checkpoint advanced to
   `step=8` at 08:13 with output mask `(56,)`. The error scan was empty and all four downstream jobs
   retained valid dependency waits.
+- 2026-09-22: Step-9 window purpose: after an eight-minute local no-SSH wait, first no-op pull the
+  pinned bundle, then inspect job 478 scalar checkpoint/mtime, scheduler/error state, and all staged
+  dependencies. Preserve the chain unchanged while healthy.
+- 2026-09-22: At runtime 2:39, job 478 remained healthy and validation-best checkpoint advanced to
+  `step=9` at 08:29 with output mask `(56,)`. The bounded error scan was empty and downstream jobs
+  remained dependency-gated. The next routine milestone is step 15 rather than every epoch.

@@ -75,6 +75,8 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
   checkpoint cadence and all downstream dependencies remain stable.
 - 2026-09-22: After a ten-minute no-SSH wait, job 478 reached validation-best `step=8` at runtime
   2:22. The 56-dimensional contract, error-free status, and downstream dependency chain are stable.
+- 2026-09-22: Job 478 reached validation-best `step=9` at runtime 2:39 with no error signature.
+  Routine monitoring now moves to step-15-or-state-change granularity.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 
