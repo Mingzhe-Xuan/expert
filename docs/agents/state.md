@@ -77,6 +77,8 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
   2:22. The 56-dimensional contract, error-free status, and downstream dependency chain are stable.
 - 2026-09-22: Job 478 reached validation-best `step=9` at runtime 2:39 with no error signature.
   Routine monitoring now moves to step-15-or-state-change granularity.
+- 2026-09-22: A timed intermediate audit confirmed validation-best `step=10` at runtime 2:54,
+  56-dimensional state, no error signature, and a stable dependency chain. Next routine audit: step 15.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

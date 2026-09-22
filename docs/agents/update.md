@@ -74,6 +74,9 @@
 - 2026-09-22: Job 478 reached best checkpoint `step=9` at runtime 2:39 with the 56-dimensional
   contract and no error signature. The dependency chain is stable; routine monitoring is reduced
   to step 15 or a scheduler-state change.
+- 2026-09-22: A timed step-10 intermediate audit passed at runtime 2:54. Checkpoint shape remains 56,
+  the bounded error scan is empty, and all four downstream jobs remain correctly gated. The next
+  routine remote audit remains step 15.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across

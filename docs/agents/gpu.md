@@ -2435,3 +2435,9 @@
 - 2026-09-22: At runtime 2:39, job 478 remained healthy and validation-best checkpoint advanced to
   `step=9` at 08:29 with output mask `(56,)`. The bounded error scan was empty and downstream jobs
   remained dependency-gated. The next routine milestone is step 15 rather than every epoch.
+- 2026-09-22: Timed step-10 audit purpose: after a ten-minute local no-SSH wait, first no-op pull
+  `2e48bcb`, then inspect checkpoint scalar/mtime, scheduler/errors, and the full dependency chain.
+  This is an intermediate cadence audit; preserve every job while healthy.
+- 2026-09-22: At runtime 2:54, step-10 audit passed: checkpoint advanced at 08:46 to `step=10` with
+  output mask `(56,)`, bounded error scanning was empty, and jobs 479/480/482/483 retained valid
+  dependency waits. The next routine remote audit remains step 15.

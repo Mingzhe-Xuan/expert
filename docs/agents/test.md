@@ -77,6 +77,8 @@ The 2:22 check reported `step=8`, output mask `(56,)`, no error signature, and u
 dependency waits after a ten-minute no-SSH interval. It remains non-terminal progress evidence.
 The 2:39 check reported `step=9`, the same mask, no error signature, and unchanged dependency waits.
 This is the final per-epoch checkpoint record before switching to coarser monitoring.
+A timed intermediate audit at 2:54 reported `step=10`, mask `(56,)`, no error signature, and stable
+dependencies. The next routine audit remains step 15; this is still non-terminal evidence.
 
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 
