@@ -73,6 +73,8 @@ The 1:50 check reported `step=6`, output mask `(56,)`, an empty bounded error sc
 dependency gating. No terminal metric or completion claim is inferred from this checkpoint.
 The 2:04 check reported `step=7`, the same mask, no error signature, and unchanged downstream
 dependency waits. It is also non-terminal progress evidence only.
+The 2:22 check reported `step=8`, output mask `(56,)`, no error signature, and unchanged downstream
+dependency waits after a ten-minute no-SSH interval. It remains non-terminal progress evidence.
 
 ## 2026-09-22 - 56D relative-PG parent-DAG production training
 

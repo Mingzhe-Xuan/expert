@@ -73,6 +73,8 @@ terminal metric will be claimed until its summary, JUnit, and ordered prediction
   56-dimensional contract and no error signature. The full downstream dependency chain is stable.
 - 2026-09-22: Job 478 reached validation-best `step=7` at runtime 2:04 with no error signature;
   checkpoint cadence and all downstream dependencies remain stable.
+- 2026-09-22: After a ten-minute no-SSH wait, job 478 reached validation-best `step=8` at runtime
+  2:22. The 56-dimensional contract, error-free status, and downstream dependency chain are stable.
 
 ## Current snapshot - uniform hidden irrep width (2026-09-22)
 

@@ -2423,3 +2423,9 @@
 - 2026-09-22: At runtime 2:04, job 478 remained healthy and validation-best checkpoint advanced to
   `step=7` at 07:56 with output mask `(56,)`. The error scan remained empty and all four downstream
   jobs retained valid dependency waits.
+- 2026-09-22: Timed checkpoint-window purpose: after a ten-minute local no-SSH wait, first no-op pull
+  `2e48bcb`, then inspect job 478 checkpoint scalar/mtime, scheduler state, bounded errors, and jobs
+  479/480/482/483. Preserve the full chain unchanged while healthy.
+- 2026-09-22: At runtime 2:22, job 478 remained healthy and validation-best checkpoint advanced to
+  `step=8` at 08:13 with output mask `(56,)`. The error scan was empty and all four downstream jobs
+  retained valid dependency waits.

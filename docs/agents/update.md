@@ -68,6 +68,9 @@
 - 2026-09-22: The next checkpoint window passed at runtime 2:04: best checkpoint advanced to
   `step=7`, retained the 56-dimensional mask, and produced no error signature. Downstream jobs
   479/480/482/483 remain correctly gated.
+- 2026-09-22: A timed ten-minute no-SSH window ended with job 478 healthy at runtime 2:22 and best
+  checkpoint `step=8`. The checkpoint remains 56-dimensional, stderr has no error signature, and
+  jobs 479/480/482/483 remain dependency-gated.
 
 - 2026-09-22: Started replacing the remaining full-PG hidden profile `[4, 1, 1, 1, 1]` with
   `[8, 2, 2, 2, 2]`. The implementation will make the default hidden O(3) layout uniform across
