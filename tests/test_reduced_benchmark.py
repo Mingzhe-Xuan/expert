@@ -54,6 +54,17 @@ def test_dpa4_launcher_separates_cache_partitions_from_concurrent_workers() -> N
     assert '--feature-shard-index "${shard_index}"' in launcher
 
 
+def test_dpa4_relative_pg_launcher_matches_gmtnet_and_archives_every_20_epochs() -> None:
+    launcher = (ROOT / "slurm" / "train_reduced_dpa4_relative_pg.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "src.cli.reduced_dpa4_relative_pg_train" in launcher
+    assert '--batch-size "${EXPERT_REDUCED_DPA4_BATCH_SIZE:-64}"' in launcher
+    assert '--seed "${EXPERT_REDUCED_DPA4_SEED:-42}"' in launcher
+    assert '--checkpoint-interval "${EXPERT_DPA4_CHECKPOINT_INTERVAL:-20}"' in launcher
+    assert "#SBATCH --time=3-00:00:00" in launcher
+
+
 @pytest.mark.parametrize(
     ("count", "index", "prepare_only", "message"),
     (

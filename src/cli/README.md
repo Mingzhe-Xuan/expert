@@ -50,6 +50,13 @@ optimizer, split, seed defaults, loss, schedule, checkpoint selection, and metri
 current-group-only run. On Guqq it is launched only by
 `slurm/train_reduced_cgcnn_parent_dag.sbatch`.
 
+`python -m src.cli.reduced_dpa4_relative_pg_train ...` composes the same relative-position
+point-group router with the manifest-pinned frozen DPA4 node features. Apart from that input
+representation, its training contract matches GMTNet: Cartesian Huber loss, AdamW, batch 64,
+seed 42, 200 epochs, per-step linear `1e-3 -> 1e-5` decay, and validation-component-MAE model
+selection. The best checkpoint is independent of exact epoch archives, which default to
+20/40/.../200 and include optimizer and normalizer state.
+
 `python -m src.cli.plot_training_history --summary ... --expected-sha256 ... --svg ... --png ...`
 validates and renders the accepted CGCNN current-group-only epoch history. It is visualization only:
 no prediction, target, or metric is recomputed.
@@ -58,6 +65,11 @@ recorded training Huber loss and validation MAE in that same figure.
 Alternatively, paired `--parent-dag-summary/--parent-dag-expected-sha256` arguments render a separate
 matched current-pg versus static all-ancestor PG-DAG figure with both models' complete recorded
 validation series. GMTNet and parent-DAG overlays are deliberately separate to keep the plots legible.
+
+`python -m src.cli.plot_all_training_histories --summary LABEL PATH SHA256 ... --svg ... --png ...`
+validates heterogeneous accepted summaries and puts every recorded experiment in one six-panel
+figure. It accepts the historical DPA4 coefficient-loss schema as well as GMTNet-style histories;
+an absent historical metric remains absent rather than being imputed or interpolated.
 
 `python -m src.cli.build_point_group_fixtures --output results/point-groups/...json --summary results/point-groups/summary.json --junit results/point-groups/junit.xml`
 scans the three frozen equilibrium structure sources and selects the canonical 32 fixtures.

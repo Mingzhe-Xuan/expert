@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -307,6 +308,44 @@ def test_cached_training_supports_gmtnet_optimization_protocol(tmp_path) -> None
     )
     assert report["test_loss"] >= 0.0
     assert report["test_mae"] >= 0.0
+
+
+def test_periodic_checkpoints_archive_exact_epochs_without_replacing_best(tmp_path) -> None:
+    unit, layout, examples = _cached_examples()
+    checkpoint = tmp_path / "best.pt"
+    report = train_cached_backbone_readout(
+        backbone_family="analytic-periodic",
+        unit=unit,
+        source_layout=layout,
+        train_examples=examples[:3],
+        validation_examples=examples[3:5],
+        test_examples=examples[5:],
+        checkpoint_path=checkpoint,
+        config=BenchmarkConfig(
+            max_epochs=4,
+            batch_size=2,
+            patience=4,
+            training_protocol="gmtnet",
+            checkpoint_interval=2,
+        ),
+        device="cpu",
+    )
+    assert checkpoint.is_file()
+    assert [row["epoch"] for row in report["periodic_checkpoints"]] == [2, 4]
+    assert [Path(row["path"]).name for row in report["periodic_checkpoints"]] == [
+        "best-epoch-002.pt",
+        "best-epoch-004.pt",
+    ]
+    for row in report["periodic_checkpoints"]:
+        path = Path(row["path"])
+        assert path.is_file()
+        assert path.stat().st_size == row["bytes"]
+        assert len(row["sha256"]) == 64
+
+
+def test_negative_periodic_checkpoint_interval_is_rejected() -> None:
+    with pytest.raises(ValueError, match="checkpoint_interval"):
+        BenchmarkConfig(checkpoint_interval=-1)
 
 
 def test_published_split_gate_rejects_current_14480_elastic_manifest() -> None:

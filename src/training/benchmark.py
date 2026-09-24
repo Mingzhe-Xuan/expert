@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import hashlib
 import json
 import os
 import random
@@ -64,6 +65,7 @@ class BenchmarkConfig:
     gradient_clip_norm: float = 10.0
     training_protocol: str = "coefficient_mse"
     end_learning_rate: float = 1.0e-5
+    checkpoint_interval: int = 0
 
     def __post_init__(self) -> None:
         if self.max_epochs < 1 or self.batch_size < 1 or self.patience < 1:
@@ -76,6 +78,8 @@ class BenchmarkConfig:
             raise ValueError("training_protocol must be coefficient_mse or gmtnet")
         if not 0 < self.end_learning_rate <= self.learning_rate:
             raise ValueError("end_learning_rate must be positive and no larger than learning_rate")
+        if self.checkpoint_interval < 0:
+            raise ValueError("checkpoint_interval must be non-negative")
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,6 +140,7 @@ class CachedBackboneTensorModel(nn.Module):
         architecture: ArchitectureConfig,
         task: str,
         expert_point_groups: tuple[str, ...],
+        material_edge_ids: tuple[str, ...] | None = None,
     ) -> None:
         super().__init__()
         hidden_layout = default_hidden_layout(architecture)
@@ -145,6 +150,7 @@ class CachedBackboneTensorModel(nn.Module):
             task,
             hidden_layout=hidden_layout,
             expert_point_groups=expert_point_groups,
+            material_edge_ids=material_edge_ids,
         )
 
     def forward(
@@ -525,6 +531,7 @@ def train_cached_backbone_readout(
     architecture: ArchitectureConfig | None = None,
     expert_point_groups: tuple[str, ...] = (),
     predictions_path: str | Path | None = None,
+    material_edge_ids: tuple[str, ...] | None = None,
 ) -> dict[str, object]:
     """Train a tensor architecture over a once-materialized frozen backbone tap."""
 
@@ -569,6 +576,7 @@ def train_cached_backbone_readout(
                 architecture,
                 unit.target,
                 expert_point_groups,
+                material_edge_ids,
             ).to(device)
     else:
         model = model_builder(source_layout, unit.target).to(device)
@@ -595,6 +603,7 @@ def train_cached_backbone_readout(
     best_epoch = 0
     stale = 0
     history = []
+    periodic_checkpoints = []
     training_batch_size = min(config.batch_size, len(train_examples))
     steps_per_epoch = (
         len(train_examples) // training_batch_size
@@ -684,6 +693,33 @@ def train_cached_backbone_readout(
             stale += 1
             if config.training_protocol == "coefficient_mse" and stale >= config.patience:
                 break
+        if config.checkpoint_interval and epoch % config.checkpoint_interval == 0:
+            checkpoint = Path(checkpoint_path)
+            periodic_path = checkpoint.with_name(
+                f"{checkpoint.stem}-epoch-{epoch:03d}{checkpoint.suffix}"
+            )
+            save_checkpoint(
+                periodic_path,
+                model=model,
+                optimizer=optimizer,
+                architecture=architecture,
+                unit=unit,
+                convention=convention,
+                normalizer=normalizer,
+                step=epoch,
+            )
+            digest = hashlib.sha256()
+            with periodic_path.open("rb") as stream:
+                for block in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(block)
+            periodic_checkpoints.append(
+                {
+                    "epoch": epoch,
+                    "path": str(periodic_path),
+                    "bytes": periodic_path.stat().st_size,
+                    "sha256": digest.hexdigest(),
+                }
+            )
     loaded = load_checkpoint(
         checkpoint_path,
         model=model,
@@ -757,6 +793,7 @@ def train_cached_backbone_readout(
         "predictions": None if predictions_path is None else str(predictions_path),
         "history": history,
         "checkpoint": str(checkpoint_path),
+        "periodic_checkpoints": periodic_checkpoints,
     }
     if unit.dataset == "jarvis_tensor":
         report["public_targets"] = PUBLIC_TARGETS[unit.target]

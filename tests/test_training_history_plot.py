@@ -9,10 +9,12 @@ import pytest
 
 from src.evaluation.training_history import (
     file_sha256,
+    load_experiment_history,
     load_current_group_history,
     load_gmtnet_history,
     load_parent_dag_history,
     render_current_group_history,
+    render_all_experiment_histories,
     render_routing_comparison_history,
 )
 
@@ -225,3 +227,31 @@ def test_relative_routing_comparison_uses_distinct_labels(tmp_path) -> None:
     assert "current-pg vs relative-PG path-weighted" in text
     assert "relative-PG best epoch 200" in text
     assert "\ufffd" not in text
+
+
+def test_all_experiment_history_plot_preserves_missing_metrics(tmp_path) -> None:
+    current_path = _summary(tmp_path / "current.json")
+    gmtnet_path = _gmtnet_summary(tmp_path / "gmtnet.json")
+    current = json.loads(current_path.read_text(encoding="utf-8"))
+    current["test_metrics"] = {"fnorm": 19.5}
+    current_path.write_text(json.dumps(current), encoding="utf-8")
+    gmtnet = json.loads(gmtnet_path.read_text(encoding="utf-8"))
+    gmtnet["test_metrics"] = {"fnorm": 19.1}
+    gmtnet_path.write_text(json.dumps(gmtnet), encoding="utf-8")
+    svg = tmp_path / "all.svg"
+    png = tmp_path / "all.png"
+    render_all_experiment_histories(
+        (
+            ("current-PG", load_experiment_history(current_path)),
+            ("GMTNet", load_experiment_history(gmtnet_path)),
+        ),
+        svg_path=svg,
+        png_path=png,
+    )
+    ET.parse(svg)
+    text = svg.read_text(encoding="utf-8")
+    assert "all recorded experiment histories" in text
+    assert "current-PG" in text and "GMTNet" in text
+    assert "historical gaps are not interpolated" in text
+    assert "\ufffd" not in text
+    assert png.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"

@@ -33,6 +33,12 @@ crystals cannot strand one monolithic or statically assigned worker. Each comple
 checked and reusable, and the final process restores the frozen manifest order before training.
 Smoke mode retains four partitions by default.
 
+`train_reduced_dpa4_relative_pg.sbatch` reuses those immutable DPA4 feature partitions, constructs
+its own relative-PG routing cache, and trains under the GMTNet-aligned 200-epoch protocol. It requests
+one GPU, eight CPUs, 48 GiB, and 72 hours; `EXPERT_DPA4_CHECKPOINT_INTERVAL` defaults to 20. Formal
+runs expect the 64 DPA4 partitions to exist and fail closed if any cache shard or provenance gate is
+missing. Smoke mode defaults to one independently cached partition.
+
 These non-interactive jobs are the only supported path for full tests, model inference,
 training smoke runs, and batch data processing on Guqq. Activate the recorded project
 backbone-specific virtual environments through `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,

@@ -1,5 +1,44 @@
 # Test plan and results
 
+## 2026-09-24 - DPA-relative-PG with periodic checkpoints and unified history
+
+Plan:
+
+- prove the shared DPA4 cache loader preserves exact split order, shard coverage, source layout,
+  checkpoint SHA, dataset SHA, and current DPA4 runner behavior;
+- prove the new DPA-relative CLI attaches complete point-group paths/residuals to every split, uses
+  DPA4 features, 56D hidden irreps, GMTNet-aligned Huber/AdamW/batch-64/seed-42/linear-decay settings,
+  and leaves feature extraction out of the training loop;
+- add generic trainer tests showing periodic checkpointing is opt-in, the main checkpoint remains
+  validation-best, epoch archives are written exactly at interval multiples, archive metadata and
+  SHA-256 are correct, and invalid intervals fail closed;
+- add launcher tests for one GPU/eight CPUs/48 GiB/72 hours, exact DPA environment activation,
+  independent result/cache namespaces, 200 epochs, interval 20, and no login-node computation;
+- add plotting tests for six accepted experiment identities, heterogeneous history keys, missing
+  historical series, contiguous epochs, source hashes, best-epoch markers, U+FFFD exclusion, and
+  deterministic SVG/PNG rendering;
+- before each commit run focused tests, compilation/Slurm syntax/scoped whitespace checks, and the
+  complete maintained `tests/` suite; before formal training require smoke and exact 5,001/637/677
+  one-epoch preflight with finite metrics, 677 ordered predictions, routing metadata, and clean JUnit.
+
+Expected result: a strictly GMTNet-trained DPA-relative-PG model with best plus ten periodic
+checkpoints and a single evidence-backed figure containing every completed reduced-dielectric
+training history.
+
+Actual result (implementation phase):
+
+- focused benchmark/history/launcher regression passes 33/33;
+- Python compilation passes for the modified trainer and both new CLIs;
+- periodic archive regression proves exact epochs 2/4, independent best checkpoint preservation,
+  on-disk byte metadata, and 64-character SHA-256 records;
+- the heterogeneous renderer accepts missing GMTNet validation-loss/Fnorm series and emits valid
+  SVG plus PNG without U+FFFD replacement characters;
+- direct `python -m ruff` and `uv run ruff` were unavailable because Ruff is not installed in the
+  local environment; scoped whitespace and the maintained full suite remain required before commit.
+- `bash -n` passes for the new 72-hour Slurm launcher; CLI `--help`, task-scoped `git diff --check`,
+  and the maintained `python -m pytest tests -q` suite pass, with the latter reporting 305/305 in
+  405.27 seconds. The 656 warnings are the repository's existing TorchScript/profiler deprecations.
+
 ## 2026-09-24 - Final artifact-manifest environment repair
 
 Plan:

@@ -1,5 +1,41 @@
 # Agent state
 
+## Current snapshot - DPA-relative-PG training (2026-09-24)
+
+The next experiment replaces the CGCNN input cache with frozen DPA4 features while preserving the
+56D relative-PG path router. Every optimization choice must match GMTNet: Cartesian Huber loss,
+AdamW, batch 64, seed 42, 200 epochs, `1e-3 -> 1e-5` per-step linear decay, and validation component
+MAE best-checkpoint selection. The run must additionally archive exact epoch 20/40/.../200 states.
+
+## Current plan - DPA-relative-PG training
+
+1. [x] Reuse the fail-closed DPA4 cache loader contract and add a dedicated relative-PG CLI/Slurm
+   entry without changing the accepted DPA4 current-group runner defaults.
+2. [x] Add opt-in periodic checkpoint archiving to the generic cached-feature trainer; preserve the
+   existing best checkpoint and record every archive epoch/path/hash in the summary.
+3. [x] Add a heterogeneous all-experiment history plot covering DPA4 current-PG, GMTNet, CGCNN
+   current-PG, static parent-DAG, CGCNN relative-PG, and DPA-relative-PG without fabricating missing
+   historical series.
+4. [ ] Pass focused/full local tests, push an isolated implementation commit, synchronize Guqq, and
+   run smoke plus exact-split preflight before the formal 200-epoch Slurm job.
+5. [ ] Strictly accept predictions/metrics/checkpoints, render and inspect the unified plot, update
+   the benchmark, and commit/push the final result.
+
+## Change log - DPA-relative-PG training
+
+- 2026-09-24: Audited the prior results and code. Job 478 retains only its validation-best epoch-28
+  state, so the earlier epoch-100 request cannot be answered from an existing checkpoint. The new
+  DPA-relative-PG run supersedes that one-off rerun and will retain every 20th epoch by construction.
+  DPA4 feature extraction/caches and relative-PG enrichment already exist independently; the active
+  implementation unit will compose them through a dedicated CLI and shared loader.
+- 2026-09-24: Implemented the dedicated DPA-relative-PG CLI, 72-hour Slurm launcher, generic opt-in
+  periodic archives, and heterogeneous six-panel plotter. Focused tests pass 33/33 and compilation
+  passes. Direct and `uv run` Ruff checks could not start because Ruff is not installed locally;
+  no lint standard was weakened, and remaining scoped/full tests precede the implementation commit.
+- 2026-09-24: The maintained local suite passes 305/305 in 405.27 seconds; Bash syntax, CLI import,
+  compilation, and scoped whitespace gates also pass. The implementation is ready for an isolated
+  commit/push, followed by pull-first Guqq synchronization and Slurm smoke/preflight.
+
 ## Current snapshot - 56D relative-PG terminal integration (2026-09-24)
 
 Formal Slurm training job 478 and post-processing jobs 479, 480, and 482 have completed. Strict

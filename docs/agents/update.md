@@ -1,5 +1,19 @@
 # Agent progress updates
 
+- 2026-09-24: Started DPA-relative-PG training work. The implementation will compose the accepted
+  DPA4 frozen-feature cache with the existing 56D relative-PG path router, use GMTNet's complete
+  optimization protocol, archive checkpoints every 20 epochs, and render all completed reduced
+  dielectric experiments in one heterogeneous multi-panel history figure. Test scope and fail-closed
+  acceptance gates are recorded before code changes.
+- 2026-09-24: Implemented DPA-relative-PG training over the existing manifest-gated DPA4 feature
+  shards with the 56D material-specific relative-PG router and exact GMTNet optimization defaults.
+  The generic trainer now optionally archives resumable exact-epoch checkpoints without replacing
+  validation-best weights; the new run defaults to every 20 epochs. Added a SHA-gated multi-panel
+  plotter that preserves missing historical metrics. Focused tests pass 33/33 and compilation passes.
+- 2026-09-24: Completed the pre-commit regression gate: 305/305 maintained tests pass in 405.27
+  seconds, alongside Bash syntax, CLI import/help, compilation, and scoped whitespace checks. The
+  implementation is ready for isolated staging without including unrelated user worktree changes.
+
 - 2026-09-24: Formal relative-PG job 478 completed all 200 epochs and strict job 482 acceptance
   passed with best epoch 28, exact 5,001/637/677 splits, 677 predictions, and clean JUnit. Five-model
   comparison 479 and curve rendering 480 also completed. Final manifest job 483 failed only because

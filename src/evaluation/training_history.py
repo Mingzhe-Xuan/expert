@@ -158,6 +158,136 @@ def load_gmtnet_history(
     return payload
 
 
+def load_experiment_history(
+    path: str | Path,
+    *,
+    expected_sha256: str | None = None,
+) -> dict[str, object]:
+    """Load a passed experiment while preserving genuinely missing history metrics."""
+
+    source = Path(path)
+    if expected_sha256 is not None and file_sha256(source) != expected_sha256.lower():
+        raise ValueError("experiment summary SHA-256 mismatch")
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    if payload.get("status") != "passed":
+        raise ValueError("training curve requires a passed experiment summary")
+    history = payload.get("history")
+    if not isinstance(history, list) or not history:
+        raise ValueError("experiment summary requires a non-empty history")
+    epochs = []
+    known_fields = {
+        "train_loss",
+        "training_loss",
+        "validation_loss",
+        "validation_mae",
+        "validation_fnorm",
+        "learning_rate",
+    }
+    for row in history:
+        if not isinstance(row, Mapping) or "epoch" not in row:
+            raise ValueError("experiment history row lacks epoch")
+        present = known_fields.intersection(row)
+        if not present:
+            raise ValueError("experiment history row lacks plottable metrics")
+        values = [float(row[field]) for field in present]
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("experiment history contains non-finite values")
+        epochs.append(int(row["epoch"]))
+    if epochs != list(range(1, len(history) + 1)):
+        raise ValueError("experiment history epochs must be contiguous and one-indexed")
+    return payload
+
+
+def render_all_experiment_histories(
+    summaries: Sequence[tuple[str, Mapping[str, object]]],
+    *,
+    svg_path: str | Path,
+    png_path: str | Path,
+) -> None:
+    """Render every recorded metric without fabricating absent historical series."""
+
+    if not summaries:
+        raise ValueError("at least one experiment summary is required")
+    import matplotlib
+
+    matplotlib.use("Agg")
+    from matplotlib import pyplot as plt
+
+    plt.rcParams.update(
+        {
+            "font.family": "DejaVu Sans",
+            "font.size": 8.5,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "svg.fonttype": "none",
+            "svg.hashsalt": "expert-all-training-histories-v1",
+        }
+    )
+    figure, axes = plt.subplots(2, 3, figsize=(15.5, 8.5), constrained_layout=True)
+    panels = (
+        (axes[0, 0], ("train_loss", "training_loss"), "Training objective"),
+        (axes[0, 1], ("validation_loss",), "Validation objective"),
+        (axes[0, 2], ("validation_mae",), "Validation component MAE"),
+        (axes[1, 0], ("validation_fnorm",), "Validation Fnorm"),
+        (axes[1, 1], ("learning_rate",), "Learning rate"),
+    )
+    palette = plt.get_cmap("tab10")
+    colors = {label: palette(index % 10) for index, (label, _) in enumerate(summaries)}
+    for axis, aliases, title in panels:
+        plotted = 0
+        for label, summary in summaries:
+            history: Sequence[Mapping[str, object]] = summary["history"]  # type: ignore[assignment]
+            field = next((name for name in aliases if name in history[0]), None)
+            if field is None:
+                continue
+            axis.plot(
+                [int(row["epoch"]) for row in history],
+                [float(row[field]) for row in history],
+                label=label,
+                color=colors[label],
+                linewidth=1.35,
+            )
+            plotted += 1
+        axis.set_title(title, loc="left", fontweight="bold")
+        axis.set_xlabel("Epoch")
+        axis.grid(alpha=0.18, linewidth=0.6)
+        if plotted == 0:
+            axis.text(0.5, 0.5, "Not recorded", ha="center", va="center", transform=axis.transAxes)
+    metric_axis = axes[1, 2]
+    metric_labels, metric_values, metric_colors = [], [], []
+    for label, summary in summaries:
+        metrics = summary.get("test_metrics")
+        if isinstance(metrics, Mapping) and "fnorm" in metrics:
+            metric_labels.append(label)
+            metric_values.append(float(metrics["fnorm"]))
+            metric_colors.append(colors[label])
+    positions = list(range(len(metric_labels)))
+    metric_axis.barh(positions, metric_values, color=metric_colors, alpha=0.85)
+    metric_axis.set_yticks(positions, metric_labels)
+    metric_axis.invert_yaxis()
+    metric_axis.set_xlabel("Fnorm (lower is better)")
+    metric_axis.set_title("Held-out test Fnorm", loc="left", fontweight="bold")
+    metric_axis.grid(axis="x", alpha=0.18, linewidth=0.6)
+    handles = [
+        plt.Line2D([0], [0], color=colors[label], linewidth=2, label=label)
+        for label, _ in summaries
+    ]
+    figure.legend(handles=handles, loc="outside lower center", ncol=min(4, len(handles)), frameon=False)
+    figure.suptitle("Reduced dielectric-total: all recorded experiment histories", fontsize=15, fontweight="bold")
+    figure.text(
+        0.5,
+        0.955,
+        "Only metrics present in each accepted summary are drawn; historical gaps are not interpolated.",
+        ha="center",
+        color="#53606B",
+    )
+    for target in (Path(svg_path), Path(png_path)):
+        target.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(svg_path, format="svg", bbox_inches="tight")
+    figure.savefig(png_path, format="png", dpi=180, bbox_inches="tight")
+    plt.close(figure)
+
+
 def render_current_group_history(
     summary: Mapping[str, object],
     *,

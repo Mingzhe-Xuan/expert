@@ -5,6 +5,11 @@ dataset-by-property unit independent. Checkpoints store model/optimizer state,
 train-split normalizers, configuration, and all numerical convention checksums; loading
 fails closed on incompatibility.
 
+`BenchmarkConfig.checkpoint_interval` is an opt-in exact-epoch archive. A positive interval writes
+`<best-stem>-epoch-NNN.pt` after that epoch while leaving the validation-selected checkpoint at its
+original path. Each archive contains the full resumable checkpoint payload, and the returned report
+records its epoch, path, byte size, and SHA-256. The default `0` preserves prior runner behavior.
+
 ```python
 losses = coefficient_loss(prediction, target, normalizer)
 ```
