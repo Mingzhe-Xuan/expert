@@ -10,6 +10,10 @@
   200-epoch SVG/PNG; updated the five-model benchmark with exact deltas and the cross-width caveat.
   Focused tests pass 18/18 and the maintained full suite passes 301/301; final isolated commit/push
   and requirement audit remain.
+- 2026-09-24: Final result commit `3a9e816` is pushed and the requirement-by-requirement audit passed:
+  training, test inference, strict acceptance, five-model comparison, deterministic curve, 19-file
+  integrity manifest, local visual/hash verification, 72-hour configuration, and remote revision are
+  all proven. The relative-PG training/test/reporting cycle is complete.
 
 - 2026-09-22: Began the requested training/test/curve/benchmark cycle for the new 56D full-PG
   relative-position parent-DAG model. The existing job-472 result is a historical static-router,

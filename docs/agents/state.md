@@ -15,7 +15,7 @@ payload did not activate the recorded Python environment; no training or accepte
    validate the ignored manifest payload locally, and submit a lightweight Slurm replacement.
 3. [x] Transfer and hash-check compact final artifacts, visually inspect the real training curve,
    update the tracked benchmark report, and run final focused/full checks before committing.
-4. [ ] Commit and push only the relative-PG final-report changes, then perform a requirement-by-
+4. [x] Commit and push only the relative-PG final-report changes, then perform a requirement-by-
    requirement completion audit without including unrelated user worktree changes.
 
 ## Change log - 56D relative-PG terminal integration
@@ -29,6 +29,11 @@ payload did not activate the recorded Python environment; no training or accepte
   original-resolution visual inspection; the five-model report and curve assets are updated;
   focused tests pass 18/18 and the complete maintained `tests/` suite passes 301/301. Only isolated
   staging, commit/push, and the final evidence audit remain.
+- 2026-09-24: Final report commit `3a9e816` was pushed to `experiment/relative-pg-56d`. The completion
+  audit reconfirmed 200 contiguous epochs, validation-MAE argmin epoch 28, exact split/JUnit/prediction
+  gates, finite metrics, five-model comparison coverage, 19/19 artifact hashes, accepted curve hashes,
+  the 72-hour launcher, and an identical local/remote commit. The training/test/reporting objective is
+  complete; unrelated user worktree changes remain unstaged.
 
 ## Current snapshot - 56D relative-PG parent-DAG training (2026-09-22)
 
