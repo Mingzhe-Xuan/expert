@@ -1,10 +1,12 @@
-# Reduced dielectric-total: current-pg, all-ancestor PG-DAG, DPA4, and GMTNet
+# Reduced dielectric-total: current-pg, parent-DAG variants, DPA4, and GMTNet
 
 ## Protocol
 
-> Historical-width note: the reported full-PG runs predate the 2026-09-22 change from
-> `[4, 1, 1, 1, 1]` to `[8, 2, 2, 2, 2]`. Their metrics remain valid for those immutable
-> checkpoints, but they are not results for the current 56-component full-PG configuration.
+> Width note: the DPA4, CGCNN current-pg, and static all-ancestor full-PG runs predate the
+> 2026-09-22 change from `[4, 1, 1, 1, 1]` to `[8, 2, 2, 2, 2]`. The relative-PG row is the first
+> accepted result for the current 56-component configuration. Consequently, comparisons with the
+> three historical full-PG rows measure the combined width-and-routing change, not a routing-only
+> ablation.
 
 - Dataset: `curated_reduced_total__dielectric`, 6,315 structures.
 - Frozen splits: 5,001 train / 637 validation / 677 test.
@@ -26,6 +28,13 @@
   activates its current point-group expert plus every transitive parent in the frozen 32-group/
   80-cover-edge class DAG, with deduplicated equal-weight fusion. Test samples activate 1--11 experts
   (mean `5.2009`). Its best checkpoint is epoch 122 at validation MAE `4.3411664963`.
+- CGCNN relative-PG parent-DAG uses the current 56-component hidden irreps and the same frozen data,
+  optimizer, seed, batch size, 200-epoch schedule, and validation-MAE checkpoint rule. The offline DAG
+  supplies every maximal current-PG-to-root path. Within each path, relative-position point-group
+  edge residuals produce stick-breaking weights; path priors are normalized by node count, and
+  duplicate destination PGs are summed then normalized. Test parent coverage is `86.71%`, with mean
+  `4.2009` candidate parents and `3.6765` maximal paths per sample. Its best checkpoint is epoch 28 at
+  validation MAE `4.3751330376`.
 - GMTNet model: pinned official dielectric implementation.
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
@@ -53,6 +62,19 @@ learning rate; it does not derive or smooth any series. Source summary SHA-256 v
 `7070c4f66d57d5573b58d95a3219f780b0b776a662eab11426903544966fb536` and
 `7c88bd2e7fd1eb9dd05f1dffe3f8f6cd05b5b73d06a218bf5d38f96fb9c37b50`.
 
+## CGCNN current-pg vs relative-PG path-weighted training history
+
+![CGCNN current-pg and relative-PG path-weighted 200-epoch training histories](cgcnn_relative_pg_56d_training_curve.svg)
+
+This overlay uses accepted current-pg job 458 and 56D relative-PG job 478. The relative-PG run
+selects epoch 28 at validation MAE `4.3751`; after that point its training objective continues to
+decrease while validation loss, MAE, and Fnorm rise, so reloading the early best checkpoint is
+material to the reported test result. The figure contains only recorded train/validation loss,
+validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/PNG SHA-256 values are
+`3be671cb61a2b9c066046891ca5d98701cb8de200a88e5afd9b4043e3571debc`,
+`d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
+`889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
+
 ## Metrics
 
 - RMSE: component-wise root mean squared error over the full test tensors.
@@ -68,6 +90,7 @@ learning rate; it does not derive or smooth any series. Source summary SHA-256 v
 | GMTNet | **25.449894** | **19.169209** | **53.03%** | **18.32%** | **7.39%** |
 | CGCNN B+A+PGE+R full_pg (current-group only) | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
 | CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors) | 26.144173 | 19.204304 | 41.51% | 11.52% | 4.87% |
+| CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
 
 GMTNet is best on every reported test metric under this frozen protocol. Relative to the DPA4 row,
 the additive CGCNN full-PG branch substantially improves Fnorm and every EwT threshold, while its
@@ -75,13 +98,20 @@ component RMSE is slightly higher (`+0.019705`). DPA4's best checkpoint was epoc
 (`validation_loss=0.9333040631`); GMTNet's was epoch 93 (`validation_mae=4.1132789`); CGCNN's was
 epoch 159 (`validation_mae=4.3647098541`) after completing all 200 epochs.
 
-Relative to the matched CGCNN current-pg run, all-ancestor routing improves every reported test
-metric: RMSE decreases by `0.041978`, Fnorm by `0.291799`, while EwT25/EwT10/EwT5 increase by
-`0.74`/`0.89`/`0.59` percentage points. The gains are consistent but small: the parent-DAG model
-remains behind GMTNet on all five metrics, although its Fnorm is only `0.035095` higher. This is
-evidence for a modest benefit from class-ancestor expert sharing under the matched protocol, not a
-large accuracy breakthrough. Because all ancestors are activated from class membership alone, the
-result does not establish that those ancestors are realizable structural parents for each material.
+Relative to the matched-width historical CGCNN current-pg run, static all-ancestor routing improves
+every metric: RMSE/Fnorm decrease by `0.041978`/`0.291799`, while EwT25/EwT10/EwT5 rise by
+`0.74`/`0.89`/`0.59` percentage points. This remains the strongest CGCNN parent result on Fnorm,
+EwT10, and EwT5, although it activates ancestors from class membership alone and does not establish
+material-specific structural realizability.
+
+The new 56D relative-PG result is mixed rather than uniformly better. Versus historical current-pg,
+Fnorm improves by `0.088693`, EwT25 by `1.62` points, and EwT5 by `0.30` points, while RMSE worsens by
+`0.073184` and EwT10 by `0.59` points. Versus static all-ancestor routing, it gains `0.89` points on
+EwT25 but worsens RMSE/Fnorm by `0.115162`/`0.203105` and EwT10/EwT5 by `1.48`/`0.30` points. It is
+substantially better than DPA4 on Fnorm and all EwT thresholds, but GMTNet remains best on all five
+metrics; the relative-PG gaps to GMTNet are `+0.809441` RMSE, `+0.238200` Fnorm, and
+`-10.64`/`-8.27`/`-2.81` EwT percentage points. Because the new run also doubles the hidden irrep
+multiplicities, these cross-width deltas cannot isolate the causal effect of residual path weighting.
 
 ## Errors by source space group
 
@@ -142,6 +172,14 @@ than stable rankings.
   1/0/0/0; exact 5,001/637/677 splits; 677 predictions; routing identity and DAG asset hash verified.
 - Strict four-model comparator Slurm job 473: status `passed`; all four prediction files contain the
   identical ordered 677 IDs and pass the symmetric target eigenvalue-equivalence gate.
+- Relative-PG Slurm job 478: status `passed`; 200/200 contiguous epochs; best epoch 28; exact
+  5,001/637/677 splits; 677 predictions; JUnit 1/0/0/0; finite five-metric report; routing identity,
+  complete offline path topology, edge stick-breaking, path prior, and duplicate-PG reduction
+  metadata verified by strict acceptance job 482.
+- Five-model comparator job 479: status `passed`; all five files contain the identical ordered 677
+  IDs and pass the symmetric target eigenvalue-equivalence gate. Curve job 480 produced the accepted
+  SVG/PNG. Replacement manifest job 484 (for the environment-only failure of job 483) completed with
+  empty stderr and atomically verified 19/19 final artifact sizes and SHA-256 values.
 - DPA4 prediction SHA-256:
   `a8745811e2f67a5810a2b862336898b0fb93049fb6905afaa58445a4e67436f5`.
 - GMTNet prediction SHA-256:
@@ -160,6 +198,16 @@ than stable rankings.
 - Four-model comparison JSON and table SHA-256:
   `d270599d45deaf2e98d51177c0b1c2f4eb47f0ae62fa7d5ed5b27c7a67fb2d58` and
   `2f6a02468f39eae24d280dcdae16f2e14c5121bc2b1a4eade9c76b9aae68d8e2`.
+- Relative-PG prediction, summary, JUnit, and acceptance SHA-256:
+  `666c32a449372998182143e5dec26f87ed3e09bf887efda73a681dd0eb31dec5`,
+  `3be671cb61a2b9c066046891ca5d98701cb8de200a88e5afd9b4043e3571debc`,
+  `93eb6b1943f9f741ccf4adfa9eb152331772a46e5ba78562aae91999211ae91c`, and
+  `022cbf0edc64d9387d5eda5d979859b174278463ee56b3b25961647b118cf49d`.
+- Five-model comparison JSON and table SHA-256:
+  `ddf28f44be8f9272fb39ee6c813081f242c38c69cc39e7a6dd402be9e23f426e` and
+  `f8751f301500a9d3c14d7d074a2c6351f59b4dc45ee3e65974dbc291d409f0ea`.
+- Final 19-artifact manifest SHA-256:
+  `06973993e5a43f6627fba07a2a77f958e452b6d974e4183ab6688adc14e7a01e`.
 - Parent-DAG routing-comparison SVG/PNG SHA-256:
   `8d74a18cc87b9de49fb86fa7f037305a12995975abcfdb286ef7c2f849294226` and
   `c6499e9662e8f2d5eae7dca7c25872824d57739fa39d072b0024de7716d3e542`.
@@ -171,5 +219,6 @@ than stable rankings.
   `ef37f3bfcec074a433344e8cbda304e431bafc5eca0b9921f8a08dbbf8a04da2`, and
   `c052615fbfb7bc0d415a92ec492f7f3b4b1df8ee27dc81e84dd6bee4e8e89519`.
 
-Generated evidence remains under ignored `results/reduced-benchmark/` on Guqq. Metric definitions
-follow the [GMTNet paper](../ref/GMTNet.pdf).
+Raw generated evidence remains under ignored `results/reduced-benchmark/` on Guqq; all 19 final
+artifacts were independently hash-checked after local transfer, and the accepted relative-PG curve
+was promoted beside this report. Metric definitions follow the [GMTNet paper](../ref/GMTNet.pdf).

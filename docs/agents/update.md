@@ -1,5 +1,16 @@
 # Agent progress updates
 
+- 2026-09-24: Formal relative-PG job 478 completed all 200 epochs and strict job 482 acceptance
+  passed with best epoch 28, exact 5,001/637/677 splits, 677 predictions, and clean JUnit. Five-model
+  comparison 479 and curve rendering 480 also completed. Final manifest job 483 failed only because
+  its isolated payload omitted activation of the recorded Python environment; a Slurm-only repair is
+  now planned, with all accepted outputs preserved byte-for-byte.
+- 2026-09-24: Manifest replacement job 484 passed and all 19 final artifacts independently match
+  their recorded sizes/SHA-256 values after local transfer. Promoted and visually accepted the real
+  200-epoch SVG/PNG; updated the five-model benchmark with exact deltas and the cross-width caveat.
+  Focused tests pass 18/18 and the maintained full suite passes 301/301; final isolated commit/push
+  and requirement audit remain.
+
 - 2026-09-22: Began the requested training/test/curve/benchmark cycle for the new 56D full-PG
   relative-position parent-DAG model. The existing job-472 result is a historical static-router,
   old-width baseline and will not be relabelled. Next is a selective source audit/commit, followed by

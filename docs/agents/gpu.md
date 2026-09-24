@@ -2441,3 +2441,19 @@
 - 2026-09-22: At runtime 2:54, step-10 audit passed: checkpoint advanced at 08:46 to `step=10` with
   output mask `(56,)`, bounded error scanning was empty, and jobs 479/480/482/483 retained valid
   dependency waits. The next routine remote audit remains step 15.
+- 2026-09-24: Formal-run terminal progress audit purpose: first no-op pull the pinned training commit
+  `2e48bcb` from `/home/xmz/expert-transfer-2e48bcb.bundle`, then read only Slurm jobs 478--483,
+  checkpoint/result metadata, and bounded logs. If the dependency chain has completed, collect its
+  acceptance evidence without modifying or resubmitting any server job.
+- 2026-09-24: Final-manifest replacement purpose: first no-op pull the pinned `2e48bcb` bundle, then
+  stream the locally Bash/AST-validated result-only payload to `sbatch`. The replacement may only
+  hash the same 19 accepted artifacts and atomically create `artifact-manifest-478.json`; it must not
+  regenerate training, predictions, metrics, curves, or tracked server files.
+- 2026-09-24: Final-artifact transfer purpose: first no-op pull the pinned bundle, then use `scp` to
+  retrieve only compact job-478 acceptance/report/curve/provenance/log artifacts and the passed
+  manifest for independent local hash and visual verification. The 20 MiB checkpoint remains on
+  Guqq and is covered by the server-generated SHA-256 manifest.
+- 2026-09-24: Replacement job 484 completed with empty stderr and published a passed 19-artifact
+  manifest. A compressed keepalive SCP also retrieved the checkpoint, so local verification covered
+  all 19/19 files rather than relying on the remote checkpoint digest alone; every size and SHA-256
+  matched. No server source or accepted training artifact was modified.

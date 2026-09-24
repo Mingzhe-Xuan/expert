@@ -1,5 +1,35 @@
 # Agent state
 
+## Current snapshot - 56D relative-PG terminal integration (2026-09-24)
+
+Formal Slurm training job 478 and post-processing jobs 479, 480, and 482 have completed. Strict
+acceptance reports 200 epochs, best epoch 28, exact 5,001/637/677 splits, 677 predictions, a clean
+JUnit result, and finite benchmark metrics. Final manifest job 483 alone failed because its result-only
+payload did not activate the recorded Python environment; no training or accepted artifact failed.
+
+## Current plan - 56D relative-PG terminal integration
+
+1. [x] Confirm the pinned training revision and inspect the terminal training, comparison, curve, and
+   acceptance artifacts.
+2. [x] Add the same recorded environment activation used by the accepted post-processing jobs,
+   validate the ignored manifest payload locally, and submit a lightweight Slurm replacement.
+3. [x] Transfer and hash-check compact final artifacts, visually inspect the real training curve,
+   update the tracked benchmark report, and run final focused/full checks before committing.
+4. [ ] Commit and push only the relative-PG final-report changes, then perform a requirement-by-
+   requirement completion audit without including unrelated user worktree changes.
+
+## Change log - 56D relative-PG terminal integration
+
+- 2026-09-24: Resumed terminal audit after the 72-hour-cap run. Jobs 478/479/480/482 produced passed
+  artifacts at 14:29--14:30; job 483 failed immediately with `python: command not found`. The failure
+  is isolated to final integrity-manifest generation. Next step is a locally validated environment
+  activation fix and Slurm-only retry; accepted training outputs remain immutable.
+- 2026-09-24: Environment-fixed manifest job 484 passed with empty stderr. All 19 final files were
+  transferred and independently matched by byte size and SHA-256. The real 200-epoch PNG passed
+  original-resolution visual inspection; the five-model report and curve assets are updated;
+  focused tests pass 18/18 and the complete maintained `tests/` suite passes 301/301. Only isolated
+  staging, commit/push, and the final evidence audit remain.
+
 ## Current snapshot - 56D relative-PG parent-DAG training (2026-09-22)
 
 The requested production target is the reduced dielectric-total CGCNN feature model with

@@ -1,5 +1,36 @@
 # Test plan and results
 
+## 2026-09-24 - Final artifact-manifest environment repair
+
+Plan:
+
+- add the recorded `gmtnet-py310` environment activation to the ignored, result-only manifest Slurm
+  payload without changing its 19 required paths or accepted artifacts;
+- run `bash -n` and parse the embedded Python with `ast.parse` locally before submission;
+- submit the lightweight hashing operation through Slurm rather than running it on the login node;
+- require replacement job success, atomic `artifact-manifest-478.json`, `status=passed`, exactly 19
+  unique entries, matching byte sizes/SHA-256 values, and coverage of all training/test, comparison,
+  curve, acceptance, provenance, environment, and relevant log artifacts.
+
+Expected result: the retry corrects only the missing interpreter environment and publishes a fully
+verified final manifest; no training, inference, evaluation, or accepted artifact is regenerated.
+
+Actual result:
+
+- local `bash -n`, embedded-Python `ast.parse`, and scoped `git diff --check` passed before submission;
+- original job 483's only error was `python: command not found`; the environment-fixed payload ran as
+  Slurm job 484, completed with empty stderr, and atomically wrote a `status=passed`, 19-entry manifest;
+- all 19 artifacts, including the 20,189,572-byte checkpoint, were transferred and independently
+  matched the manifest's byte counts and SHA-256 values (`19 MATCH`, `0 MISSING/MISMATCH`);
+- the accepted real PNG was inspected at original resolution: all three panels, legends, dual axes,
+  best-epoch annotations, punctuation, and logarithmic LR schedule are legible without clipping;
+- the benchmark report has seven valid local links, its SVG has zero U+FFFD replacement characters,
+  and task-scoped whitespace checks pass;
+- focused history/comparator tests pass 18/18; the maintained top-level `tests/` suite passes 301/301
+  in 728.38 seconds. An initial unscoped repository-root invocation collected vendored MatTen tests
+  and hit its external `torch_spline_conv` DLL mismatch; rerunning the established project scope
+  `pytest tests` passed without lowering coverage.
+
 ## 2026-09-22 - Training-curve Unicode audit
 
 Plan: inspect title/subtitle code points rather than trusting the current PowerShell rendering, add
