@@ -28,6 +28,11 @@ the identical grouped semantics with a deterministic synchronous fallback.
   weighted original-order scatter, cached per-expert CUDA streams, explicit producer/join waits, and
   synchronous CPU fallback. The full maintained suite passes 309/309 in 605.23 seconds. DPA CUDA
   runs now fail closed unless runtime summary statistics prove distinct asynchronous expert streams.
+- 2026-09-25: Guqq smoke job 485 reached the real DPA relative-routing training call, then failed
+  before its first optimizer step because `CachedBackboneTensorModel.forward` did not accept the
+  trainer's `point_group_numbers` keyword. The wrapper now forwards the full routing interface and a
+  dedicated generic cached-backbone relative-PG regression passes. The complete maintained suite now
+  passes 310/310 in 429.89 seconds; the repair is ready to commit, sync, and rerun as a new smoke job.
 
 ## Current snapshot - DPA-relative-PG training (2026-09-24)
 

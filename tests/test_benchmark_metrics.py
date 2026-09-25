@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,6 +14,7 @@ from src.evaluation import tensor_benchmark_metrics
 from src.experts import default_hidden_layout
 from src.heads import TensorReadout, cartesian_to_irreps, irreps_to_cartesian
 from src.irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
+from src.symmetry import ParentDAGSpec, PointGroupRegistry
 from src.training import (
     BenchmarkConfig,
     FrozenFeatureExample,
@@ -275,6 +277,47 @@ def test_cached_training_supports_full_pg_architecture_with_interface(tmp_path) 
     assert report["architecture"] == architecture.to_dict()
     assert report["expert_point_groups"] == list(groups)
     assert report["routing"] == "current_group_only"
+
+
+def test_cached_backbone_wrapper_forwards_relative_pg_routing_inputs(tmp_path) -> None:
+    unit, layout, examples = _cached_examples()
+    registry = PointGroupRegistry()
+    enriched = tuple(
+        replace(
+            example,
+            parent_dag=ParentDAGSpec(
+                material_id=example.sample_id,
+                current_point_group_number=registry[
+                    example.symmetry.current_point_group
+                ].number,
+                embeddings=(),
+            ),
+            parent_residuals={},
+        )
+        for example in examples
+    )
+    architecture = ArchitectureConfig(
+        "B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg"
+    )
+    groups = tuple(
+        dict.fromkeys(example.symmetry.current_point_group for example in enriched)
+    )
+    report = train_cached_backbone_readout(
+        backbone_family="analytic-relative-pg",
+        unit=unit,
+        source_layout=layout,
+        train_examples=enriched[:3],
+        validation_examples=enriched[3:5],
+        test_examples=enriched[5:],
+        checkpoint_path=tmp_path / "relative-pg.pt",
+        config=BenchmarkConfig(max_epochs=1, batch_size=2, patience=1),
+        architecture=architecture,
+        expert_point_groups=groups,
+        material_edge_ids=(),
+        device="cpu",
+    )
+    assert report["routing"] == "point_group_relative_edge_stick_breaking"
+    assert report["last_dispatch_stats"]["expert_buckets"] == 1
 
 
 def test_cached_training_supports_gmtnet_optimization_protocol(tmp_path) -> None:

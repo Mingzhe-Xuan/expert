@@ -10,6 +10,12 @@
   explicit joins, and weighted results scatter to original nodes. Numerical/gradient equivalence,
   PGE/O3 batching, mixed routing, runtime fail-closed checks, and all 309 maintained tests pass. The
   next gate is an isolated commit/push followed by Guqq Slurm CUDA smoke evidence.
+- 2026-09-25: Synced `40b90c4` to Guqq by verified incremental bundle after GitHub pull remained
+  unresponsive following the required network recovery. Smoke job 485 failed before training on a
+  missing `point_group_numbers` keyword in the generic DPA cached-backbone wrapper. Added full routing
+  argument passthrough and a direct relative-PG wrapper regression; focused tests pass 2/2 and the
+  full maintained suite passes 310/310 in 429.89 seconds. The isolated repair will be synchronized
+  before submitting a replacement smoke; job 485 remains immutable failure evidence.
 
 - 2026-09-24: Started DPA-relative-PG training work. The implementation will compose the accepted
   DPA4 frozen-feature cache with the existing 56D relative-PG path router, use GMTNet's complete

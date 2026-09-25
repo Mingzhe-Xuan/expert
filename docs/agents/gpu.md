@@ -2457,3 +2457,9 @@
   manifest. A compressed keepalive SCP also retrieved the checkpoint, so local verification covered
   all 19/19 files rather than relying on the remote checkpoint digest alone; every size and SHA-256
   matched. No server source or accepted training artifact was modified.
+- 2026-09-25: DPA-relative-PG expert-batched CUDA smoke purpose: connect to Guqq, make
+  `git pull --ff-only` in `/home/xmz/expert` the first remote operation, verify revision `40b90c4`,
+  then inspect scheduler availability and submit only `slurm/train_reduced_dpa4_relative_pg.sbatch`
+  in smoke mode through Slurm. The smoke must prove exact grouped expert execution at runtime:
+  multiple expert buckets, one distinct CUDA stream per bucket, asynchronous dispatch, finite metrics,
+  clean JUnit, periodic checkpoint metadata, and no login-node training or server source edits.

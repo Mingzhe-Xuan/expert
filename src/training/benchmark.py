@@ -154,7 +154,14 @@ class CachedBackboneTensorModel(nn.Module):
         )
 
     def forward(
-        self, features, graph, symmetries, *, parent_dags=None, parent_residuals=None
+        self,
+        features,
+        graph,
+        symmetries,
+        *,
+        parent_dags=None,
+        parent_residuals=None,
+        point_group_numbers=None,
     ):
         return self.downstream(
             self.interface(features),
@@ -162,6 +169,7 @@ class CachedBackboneTensorModel(nn.Module):
             symmetries,
             parent_dags=parent_dags,
             parent_residuals=parent_residuals,
+            point_group_numbers=point_group_numbers,
         )
 
 

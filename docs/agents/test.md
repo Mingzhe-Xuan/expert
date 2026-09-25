@@ -35,6 +35,14 @@ Actual result (local phase):
 Pending GPU result: Guqq Slurm smoke must report `asynchronous_cuda=true`, at least two expert
 buckets, and `cuda_streams == expert_buckets` before the full-split preflight is authorized.
 
+GPU smoke attempt 485 result: failed cleanly before training with
+`CachedBackboneTensorModel.forward() got an unexpected keyword argument 'point_group_numbers'`.
+This exposed a missing test combination: relative routing through the generic frozen-backbone wrapper
+rather than the already-covered CGCNN wrapper. The fix forwards `point_group_numbers` unchanged; a
+new one-epoch cached-backbone relative-PG regression plus the prior current-group interface test pass
+2/2 in 56.02 seconds. Compilation and scoped whitespace pass, and the complete maintained suite passes
+310/310 in 429.89 seconds. The replacement smoke may be submitted only from the repaired revision.
+
 ## 2026-09-24 - DPA-relative-PG with periodic checkpoints and unified history
 
 Plan:
