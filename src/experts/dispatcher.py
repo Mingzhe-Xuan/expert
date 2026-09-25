@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import copy
+from contextlib import nullcontext
 from typing import Mapping
 
 import torch
 from torch import nn
 
 from ..configs import ArchitectureConfig
-from ..graphs import PeriodicGraph
+from ..graphs import PeriodicGraph, collate_periodic_graphs
 from ..heads import TensorPrediction, TensorReadout
 from ..irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
 from ..symmetry import (
@@ -25,7 +26,6 @@ from .modules import (
     O3Adaptation,
     RoutedO3Expert,
     active_parent_point_group_numbers,
-    hierarchical_fusion,
     material_point_group_stick_breaking_weights,
 )
 
@@ -103,6 +103,8 @@ class PointGroupTensorModel(nn.Module):
         self.expert_point_groups = selected
         self.point_group_parent_dag = point_group_parent_dag
         self.material_edge_ids = material_edge_ids
+        self._cuda_expert_streams: dict[tuple[int, int], torch.cuda.Stream] = {}
+        self.last_dispatch_stats: dict[str, int | bool] = {}
 
         self.adaptation = (
             O3Adaptation(
@@ -182,9 +184,14 @@ class PointGroupTensorModel(nn.Module):
         residuals: tuple[Mapping[str, torch.Tensor | float] | None, ...],
         point_group_numbers: tuple[int | None, ...],
     ) -> torch.Tensor:
-        output = torch.empty_like(features)
+        node_indices_by_graph = []
+        local_graphs = []
+        weights_by_graph = []
+        expert_buckets: dict[int, list[int]] = {}
         for graph_index, symmetry in enumerate(symmetries):
             node_indices, local_graph = _extract_graph(graph, graph_index)
+            node_indices_by_graph.append(node_indices)
+            local_graphs.append(local_graph)
             local_features = features[node_indices]
             point_group_number = point_group_numbers[graph_index]
             if point_group_number is not None:
@@ -198,7 +205,6 @@ class PointGroupTensorModel(nn.Module):
                 active_ids = self.point_group_parent_dag.ancestors(current)
                 weight = local_features.new_tensor(1.0 / len(active_ids))
                 weights = {number: weight for number in active_ids}
-                group_numbers = {number: number for number in active_ids}
             else:
                 if self.point_group_parent_dag is not None:
                     raise ValueError("offline parent-DAG model requires a point-group number")
@@ -220,21 +226,84 @@ class PointGroupTensorModel(nn.Module):
                         material_dag, supplied, self.edge_gate
                     )
                 active_ids = tuple(sorted(weights))
-                group_numbers = {number: number for number in active_ids}
-            branches = {}
+            stacked_weights = torch.stack(
+                [torch.as_tensor(weights[active_id]).to(local_features) for active_id in active_ids]
+            )
+            if bool((stacked_weights < 0).any()) or not torch.allclose(
+                stacked_weights.sum(),
+                stacked_weights.new_ones(()),
+                atol=1.0e-6,
+                rtol=1.0e-6,
+            ):
+                raise ValueError("fusion weights must be non-negative and normalized")
+            weights_by_graph.append(weights)
             for active_id in active_ids:
-                group = self.registry[group_numbers[active_id]]
+                group = self.registry[active_id]
                 symbol = group.symbol
                 if symbol not in self.expert_point_groups:
                     raise ValueError(f"point-group expert {symbol!r} was not instantiated")
-                key = _expert_key(group.number)
-                if self.o3_experts is not None:
-                    branches[active_id] = self.o3_experts[key](local_features, local_graph)
-                else:
-                    branches[active_id] = self.pg_experts[key](local_features)
-            output[node_indices] = hierarchical_fusion(
-                branches, weights, self.hidden_layout
+                expert_buckets.setdefault(active_id, []).append(graph_index)
+
+        output = torch.zeros_like(features)
+        pending = []
+        current_stream = torch.cuda.current_stream(features.device) if features.is_cuda else None
+        for active_id in sorted(expert_buckets):
+            graph_indices = expert_buckets[active_id]
+            node_indices = torch.cat(
+                [node_indices_by_graph[graph_index] for graph_index in graph_indices]
             )
+            expert_features = features[node_indices]
+            expert_graph = (
+                collate_periodic_graphs(
+                    local_graphs[graph_index] for graph_index in graph_indices
+                )
+                if self.o3_experts is not None
+                else None
+            )
+            key = _expert_key(active_id)
+
+            stream = None
+            if current_stream is not None:
+                device_index = features.device.index
+                if device_index is None:
+                    device_index = torch.cuda.current_device()
+                stream_key = (device_index, active_id)
+                stream = self._cuda_expert_streams.get(stream_key)
+                if stream is None:
+                    stream = torch.cuda.Stream(device=features.device)
+                    self._cuda_expert_streams[stream_key] = stream
+                stream.wait_stream(current_stream)
+            context = torch.cuda.stream(stream) if stream is not None else nullcontext()
+            with context:
+                if self.o3_experts is not None:
+                    expert_output = self.o3_experts[key](expert_features, expert_graph)
+                else:
+                    expert_output = self.pg_experts[key](expert_features)
+            pending.append(
+                (active_id, graph_indices, node_indices, expert_output, stream)
+            )
+
+        for active_id, graph_indices, node_indices, expert_output, stream in pending:
+            if current_stream is not None:
+                current_stream.wait_stream(stream)
+                expert_output.record_stream(current_stream)
+            node_weights = torch.cat(
+                [
+                    torch.as_tensor(weights_by_graph[graph_index][active_id])
+                    .to(expert_output)
+                    .expand(node_indices_by_graph[graph_index].numel())
+                    for graph_index in graph_indices
+                ]
+            ).unsqueeze(-1)
+            output = output.index_add(0, node_indices, expert_output * node_weights)
+        self.last_dispatch_stats = {
+            "expert_buckets": len(expert_buckets),
+            "max_structures_per_expert": max(map(len, expert_buckets.values())),
+            "asynchronous_cuda": current_stream is not None and len(expert_buckets) > 1,
+            "cuda_streams": len(
+                {id(stream) for *_, stream in pending if stream is not None}
+            ),
+        }
         return output
 
     def forward(

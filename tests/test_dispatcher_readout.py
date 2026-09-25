@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import inspect
 
 import pytest
@@ -13,6 +14,7 @@ from src.configs import (
 )
 from src.data import TrainingUnit
 from src.experts import PointGroupTensorModel, default_hidden_layout
+from src.experts.dispatcher import _extract_graph
 from src.graphs import build_periodic_graph, collate_periodic_graphs
 from src.heads import TARGET_LAYOUTS, TensorReadout, target_representation
 from src.irreps import ConventionMetadata, IrrepLayout, IrrepTerm, O3FeatureBatch
@@ -86,6 +88,149 @@ def test_active_expert_counts_distinguish_expert_free_and_routed_samples() -> No
     )
     assert direct.active_expert_counts(symmetries) == (0, 0)
     assert routed.active_expert_counts(symmetries) == (1, 1)
+
+
+def test_dispatch_batches_same_expert_once_and_matches_serial_gradients() -> None:
+    torch.manual_seed(19)
+    config = ArchitectureConfig("B+PGE+R", "none", "none", "full_o3", "full_pg")
+    grouped = PointGroupTensorModel(
+        config,
+        "bec",
+        hidden_layout=SMALL_LAYOUT,
+        expert_point_groups=("2/m",),
+        cutoff=1.4,
+    )
+    serial = copy.deepcopy(grouped)
+    graph = _graph()
+    symmetries = (_record("2/m"), _record("2/m"))
+    grouped_values = torch.randn(
+        graph.num_nodes, SMALL_LAYOUT.dimension, requires_grad=True
+    )
+    serial_values = grouped_values.detach().clone().requires_grad_(True)
+    calls = []
+    handle = grouped.pg_experts["pg05"].register_forward_hook(
+        lambda _module, inputs, _output: calls.append(inputs[0].shape[0])
+    )
+    grouped_prediction = grouped(
+        O3FeatureBatch(grouped_values, SMALL_LAYOUT, graph.node_batch),
+        graph,
+        symmetries,
+    )
+    handle.remove()
+
+    serial_outputs = []
+    for graph_index, symmetry in enumerate(symmetries):
+        node_indices, local_graph = _extract_graph(graph, graph_index)
+        serial_outputs.append(
+            serial(
+                O3FeatureBatch(
+                    serial_values[node_indices], SMALL_LAYOUT, local_graph.node_batch
+                ),
+                local_graph,
+                (symmetry,),
+            ).raw_cartesian
+        )
+    serial_cartesian = torch.cat(serial_outputs)
+    assert calls == [graph.num_nodes]
+    assert grouped.last_dispatch_stats == {
+        "expert_buckets": 1,
+        "max_structures_per_expert": 2,
+        "asynchronous_cuda": False,
+        "cuda_streams": 0,
+    }
+    assert torch.allclose(
+        grouped_prediction.raw_cartesian, serial_cartesian, atol=1.0e-6, rtol=1.0e-6
+    )
+
+    grouped_prediction.raw_cartesian.square().sum().backward()
+    serial_cartesian.square().sum().backward()
+    assert torch.allclose(grouped_values.grad, serial_values.grad, atol=2.0e-6, rtol=2.0e-6)
+    grouped_gradients = {
+        name: parameter.grad for name, parameter in grouped.named_parameters()
+    }
+    for name, parameter in serial.named_parameters():
+        assert grouped_gradients[name] is not None and parameter.grad is not None
+        assert torch.allclose(
+            grouped_gradients[name], parameter.grad, atol=2.0e-6, rtol=2.0e-6
+        )
+
+
+def test_dispatch_collates_same_o3_expert_graphs_into_one_call() -> None:
+    config = ArchitectureConfig(
+        "B+A+O3E+R", "full_o3", "full_o3", "full_o3", "none"
+    )
+    model = PointGroupTensorModel(
+        config,
+        "bec",
+        hidden_layout=SMALL_LAYOUT,
+        expert_point_groups=("2/m",),
+        cutoff=1.4,
+    )
+    graph = _graph()
+    calls = []
+    handle = model.o3_experts["pg05"].register_forward_hook(
+        lambda _module, inputs, _output: calls.append(
+            (inputs[0].shape[0], inputs[1].num_graphs)
+        )
+    )
+    prediction = model(
+        O3FeatureBatch(
+            torch.randn(graph.num_nodes, SMALL_LAYOUT.dimension),
+            SMALL_LAYOUT,
+            graph.node_batch,
+        ),
+        graph,
+        (_record("2/m"), _record("2/m")),
+    )
+    handle.remove()
+    assert calls == [(graph.num_nodes, graph.num_graphs)]
+    assert torch.isfinite(prediction.raw_cartesian).all()
+
+
+def test_dispatch_separates_experts_and_restores_mixed_structure_order() -> None:
+    config = ArchitectureConfig("B+PGE+R", "none", "none", "full_o3", "full_pg")
+    grouped = PointGroupTensorModel(
+        config,
+        "bec",
+        hidden_layout=SMALL_LAYOUT,
+        expert_point_groups=("1", "2"),
+        cutoff=1.4,
+    )
+    serial = copy.deepcopy(grouped)
+    graph = _graph()
+    symmetries = (_record("1"), _record("2"))
+    values = torch.randn(graph.num_nodes, SMALL_LAYOUT.dimension)
+    calls = {"pg01": [], "pg03": []}
+    handles = [
+        grouped.pg_experts[key].register_forward_hook(
+            lambda _module, inputs, _output, key=key: calls[key].append(inputs[0].shape[0])
+        )
+        for key in calls
+    ]
+    actual = grouped(
+        O3FeatureBatch(values, SMALL_LAYOUT, graph.node_batch), graph, symmetries
+    ).raw_cartesian
+    for handle in handles:
+        handle.remove()
+
+    expected = []
+    for graph_index, symmetry in enumerate(symmetries):
+        node_indices, local_graph = _extract_graph(graph, graph_index)
+        expected.append(
+            serial(
+                O3FeatureBatch(values[node_indices], SMALL_LAYOUT, local_graph.node_batch),
+                local_graph,
+                (symmetry,),
+            ).raw_cartesian
+        )
+    assert calls == {"pg01": [2], "pg03": [1]}
+    assert grouped.last_dispatch_stats == {
+        "expert_buckets": 2,
+        "max_structures_per_expert": 1,
+        "asynchronous_cuda": False,
+        "cuda_streams": 0,
+    }
+    assert torch.allclose(actual, torch.cat(expected), atol=1.0e-6, rtol=1.0e-6)
 
 
 def test_three_readouts_have_correct_scope_constraints_and_no_bec_pi_g() -> None:

@@ -1,5 +1,40 @@
 # Test plan and results
 
+## 2026-09-25 - Expert-batched asynchronous dispatch
+
+Plan:
+
+- compare grouped dispatcher outputs and input/parameter gradients against the prior per-structure
+  semantics for current-group and multi-parent weighted routing;
+- instrument experts to prove structures assigned to the same expert are concatenated into one call,
+  different experts receive only their own structures, and weighted scatter restores original nodes;
+- exercise variable node/edge counts and edgeless structures through the O(3)-expert graph collation
+  path, plus the graph-free full-PG path used by DPA-relative-PG;
+- verify CPU uses the same grouped algorithm synchronously and add a CUDA-gated runtime assertion in
+  the Guqq smoke job that distinct non-empty experts receive distinct streams with explicit joins;
+- rerun compilation, Bash syntax, scoped whitespace, focused dispatcher/training tests, and the full
+  maintained suite before committing; no production training may start from `e35f1b8`.
+
+Expected result: one batched call per active expert per input batch, concurrent CUDA execution across
+experts, numerically equivalent routing/fusion, finite backward gradients, and unchanged public model
+outputs/checkpoint compatibility.
+
+Actual result (local phase):
+
+- grouped full-PG outputs, input gradients, and every parameter gradient match a per-structure
+  reference within `2e-6`; two structures assigned to one expert produce exactly one three-node call;
+- O3 expert instrumentation observes one call over a two-graph collated sub-batch with variable node
+  counts, while mixed `1`/`2` experts receive only their 2-node/1-node structures and restore order;
+- route reports expose bucket count, maximum structures per expert, asynchronous-CUDA status, and
+  distinct stream count; the DPA CLI rejects missing, serial, single-bucket, or stream-reused evidence;
+- the initial O3 contract test used the nonexistent branch name `B+O3E+R`; correcting the test to the
+  frozen legal `B+A+O3E+R` branch resolved the sole failure without changing implementation behavior;
+- focused checks pass 17/17 plus the dedicated launcher/runtime checks 2/2; compilation, scoped
+  whitespace checks, and the complete maintained suite pass, with 309/309 in 605.23 seconds.
+
+Pending GPU result: Guqq Slurm smoke must report `asynchronous_cuda=true`, at least two expert
+buckets, and `cuda_streams == expert_buckets` before the full-split preflight is authorized.
+
 ## 2026-09-24 - DPA-relative-PG with periodic checkpoints and unified history
 
 Plan:

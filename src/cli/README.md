@@ -55,7 +55,9 @@ point-group router with the manifest-pinned frozen DPA4 node features. Apart fro
 representation, its training contract matches GMTNet: Cartesian Huber loss, AdamW, batch 64,
 seed 42, 200 epochs, per-step linear `1e-3 -> 1e-5` decay, and validation-component-MAE model
 selection. The best checkpoint is independent of exact epoch archives, which default to
-20/40/.../200 and include optimizer and normalizer state.
+20/40/.../200 and include optimizer and normalizer state. CUDA runs fail acceptance unless the
+final test batch reports at least two expert buckets, one distinct stream per bucket, and an explicit
+asynchronous join; this prevents the grouped execution contract from silently falling back to serial.
 
 `python -m src.cli.plot_training_history --summary ... --expected-sha256 ... --svg ... --png ...`
 validates and renders the accepted CGCNN current-group-only epoch history. It is visualization only:

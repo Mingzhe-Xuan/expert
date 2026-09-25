@@ -147,6 +147,16 @@ class _FiniteGroupBlock(nn.Module):
         self.gate_gain = nn.Parameter(torch.ones(len(copy_slices)))
         self.gate_bias = nn.Parameter(torch.zeros(len(copy_slices)))
         self.copy_slices = copy_slices
+        self.trivial_copies = tuple(
+            representation[:, copy_slice, copy_slice].shape[1] == 1
+            and torch.allclose(
+                representation[:, copy_slice, copy_slice],
+                torch.ones_like(representation[:, copy_slice, copy_slice]),
+                atol=1.0e-8,
+                rtol=1.0e-8,
+            )
+            for copy_slice in copy_slices
+        )
         nn.init.xavier_uniform_(self.weight)
 
     def forward(self, features: torch.Tensor) -> torch.Tensor:
@@ -159,11 +169,7 @@ class _FiniteGroupBlock(nn.Module):
         gated = []
         for index, copy_slice in enumerate(self.copy_slices):
             block = hidden[:, copy_slice]
-            block_representation = representation[:, copy_slice, copy_slice]
-            trivial = block.shape[1] == 1 and torch.allclose(
-                block_representation, torch.ones_like(block_representation), atol=1e-8, rtol=1e-8
-            )
-            if trivial:
+            if self.trivial_copies[index]:
                 gated.append(torch.nn.functional.silu(block))
             else:
                 norm = torch.linalg.vector_norm(block, dim=-1, keepdim=True)

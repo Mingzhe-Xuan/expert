@@ -1,5 +1,34 @@
 # Agent state
 
+## Current snapshot - expert-batched asynchronous dispatch (2026-09-25)
+
+The DPA-relative-PG experiment must not execute experts structure-by-structure. For each input batch,
+the dispatcher will first compute every structure's active expert weights, bucket all participating
+structures by expert, execute each expert once over its collated sub-batch, and scatter the weighted
+outputs back to original node order. Distinct expert buckets use independent CUDA streams; CPU keeps
+the identical grouped semantics with a deterministic synchronous fallback.
+
+## Current plan - expert-batched asynchronous dispatch
+
+1. [x] Separate routing-plan construction from expert execution without changing current/static-DAG/
+   relative-DAG weights or gradients.
+2. [x] Add multi-graph expert sub-batching and CUDA-stream scheduling with explicit stream dependency
+   and lifetime handling; keep one expert call per non-empty bucket.
+3. [x] Prove grouped output/gradients match per-structure semantics, expert call sizes are correct,
+   mixed expert assignments restore original node order, and CPU fallback is deterministic.
+4. [ ] Re-run focused/full tests, update execution documentation, then push and use only the revised
+   commit for Guqq smoke/preflight/formal training.
+
+## Change log - expert-batched asynchronous dispatch
+
+- 2026-09-25: User refined the execution requirement before remote synchronization. Commit `e35f1b8`
+  contains the DPA-relative-PG/checkpoint/plot foundation but has not been pushed or trained. Remote
+  work is paused until expert-batched execution is implemented and revalidated.
+- 2026-09-25: Implemented one-call-per-expert sub-batches, variable-size O3 graph collation,
+  weighted original-order scatter, cached per-expert CUDA streams, explicit producer/join waits, and
+  synchronous CPU fallback. The full maintained suite passes 309/309 in 605.23 seconds. DPA CUDA
+  runs now fail closed unless runtime summary statistics prove distinct asynchronous expert streams.
+
 ## Current snapshot - DPA-relative-PG training (2026-09-24)
 
 The next experiment replaces the CGCNN input cache with frozen DPA4 features while preserving the

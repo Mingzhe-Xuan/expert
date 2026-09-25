@@ -13,6 +13,7 @@ from src.cli.reduced_dpa4_train import (
     _shard_sample_ids,
     _validate_shard_arguments,
 )
+from src.cli.reduced_dpa4_relative_pg_train import _require_cuda_expert_dispatch
 from src.cli.reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratified_smoke_ids
 from src.data import TrainingUnit, load_training_dataset
 
@@ -63,6 +64,24 @@ def test_dpa4_relative_pg_launcher_matches_gmtnet_and_archives_every_20_epochs()
     assert '--seed "${EXPERT_REDUCED_DPA4_SEED:-42}"' in launcher
     assert '--checkpoint-interval "${EXPERT_DPA4_CHECKPOINT_INTERVAL:-20}"' in launcher
     assert "#SBATCH --time=3-00:00:00" in launcher
+
+
+def test_dpa4_relative_pg_requires_observed_distinct_cuda_streams() -> None:
+    _require_cuda_expert_dispatch(
+        {
+            "expert_buckets": 3,
+            "max_structures_per_expert": 4,
+            "asynchronous_cuda": True,
+            "cuda_streams": 3,
+        }
+    )
+    for stats in (
+        None,
+        {"expert_buckets": 1, "asynchronous_cuda": False, "cuda_streams": 1},
+        {"expert_buckets": 3, "asynchronous_cuda": True, "cuda_streams": 2},
+    ):
+        with pytest.raises(RuntimeError, match="expert-stream dispatch"):
+            _require_cuda_expert_dispatch(stats)
 
 
 @pytest.mark.parametrize(

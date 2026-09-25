@@ -790,11 +790,22 @@ def train_cached_backbone_readout(
         "test_irrep_metrics": irrep_metrics,
         "expert_point_groups": list(expert_point_groups),
         "routing": routing,
+        "expert_execution": {
+            "assignment": "per_structure_active_experts",
+            "same_expert": "single_collated_sub_batch",
+            "different_experts_cuda": "independent_streams_with_explicit_join",
+            "cpu_fallback": "grouped_synchronous",
+            "reduction": "weighted_scatter_to_original_node_order",
+        },
         "predictions": None if predictions_path is None else str(predictions_path),
         "history": history,
         "checkpoint": str(checkpoint_path),
         "periodic_checkpoints": periodic_checkpoints,
     }
+    dispatcher = getattr(model, "downstream", model)
+    dispatch_stats = getattr(dispatcher, "last_dispatch_stats", None)
+    if dispatch_stats:
+        report["last_dispatch_stats"] = dict(dispatch_stats)
     if unit.dataset == "jarvis_tensor":
         report["public_targets"] = PUBLIC_TARGETS[unit.target]
         report["exceeds_public_target"] = benchmark_target_comparison(unit.target, test_metrics)

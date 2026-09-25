@@ -300,6 +300,13 @@ def test_cached_training_supports_gmtnet_optimization_protocol(tmp_path) -> None
     assert report["training_protocol"] == "gmtnet"
     assert report["training_loss_function"] == "cartesian_huber_delta_1"
     assert report["checkpoint_selection_metric"] == "validation_component_mae"
+    assert report["expert_execution"] == {
+        "assignment": "per_structure_active_experts",
+        "same_expert": "single_collated_sub_batch",
+        "different_experts_cuda": "independent_streams_with_explicit_join",
+        "cpu_fallback": "grouped_synchronous",
+        "reduction": "weighted_scatter_to_original_node_order",
+    }
     assert report["test_indicators"] == ["rmse", "fnorm", "ewt_25", "ewt_10", "ewt_5"]
     assert len(report["history"]) == 2  # GMTNet protocol does not early-stop.
     assert report["history"][-1]["learning_rate"] == pytest.approx(1.0e-5)

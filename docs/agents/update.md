@@ -1,5 +1,16 @@
 # Agent progress updates
 
+- 2026-09-25: Paused DPA-relative-PG remote synchronization to incorporate the refined execution
+  contract. The dispatcher will plan routes per structure, collate all structures assigned to each
+  expert into one expert call, run distinct GPU expert buckets on separate CUDA streams, and scatter
+  weighted results back in original order. CPU remains a deterministic grouped fallback; equivalence,
+  call-count, graph-collation, ordering, gradient, and stream behavior are now explicit test gates.
+- 2026-09-25: Completed local expert-batched dispatcher implementation and validation. Same-expert
+  structures run as one collated call, different CUDA experts use persistent independent streams with
+  explicit joins, and weighted results scatter to original nodes. Numerical/gradient equivalence,
+  PGE/O3 batching, mixed routing, runtime fail-closed checks, and all 309 maintained tests pass. The
+  next gate is an isolated commit/push followed by Guqq Slurm CUDA smoke evidence.
+
 - 2026-09-24: Started DPA-relative-PG training work. The implementation will compose the accepted
   DPA4 frozen-feature cache with the existing 56D relative-PG path router, use GMTNet's complete
   optimization protocol, archive checkpoints every 20 epochs, and render all completed reduced

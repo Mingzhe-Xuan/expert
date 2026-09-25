@@ -33,3 +33,11 @@ For the offline class-DAG ablation, the dispatcher instead accepts one validated
 looks up current plus every transitive parent class, executes every deduplicated expert, and fuses
 them with equal weights in the shared O(3) layout. Residual-weighted and static PG inputs are mutually
 exclusive, and current-only routing retains the original interface.
+
+Execution is expert-batched rather than structure-serial. The dispatcher first plans every
+structure's active experts and weights, then collates all structures assigned to the same expert
+into one node/graph sub-batch. Each non-empty expert therefore runs once per input batch. Weighted
+outputs are scattered back to the original node order before readout. On CUDA, distinct expert
+buckets are launched on persistent per-expert streams with explicit producer and join dependencies;
+on CPU, the same grouped algorithm runs synchronously and deterministically. Routing weights and
+checkpoint parameters are unchanged by this scheduling policy.

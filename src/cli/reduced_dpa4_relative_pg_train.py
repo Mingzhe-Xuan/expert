@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import time
 
+import torch
+
 from ..backbones import BackboneResourceRegistry
 from ..configs import ArchitectureConfig
 from ..data import TrainingUnit, load_training_dataset
@@ -33,6 +35,16 @@ from .reporting import execution_metadata, write_single_case_junit
 
 ARCHITECTURE = ArchitectureConfig("B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg")
 MODEL_NAME = "DPA4 B+A+PGE+R full_pg relative-position PG parent-DAG path-weighted"
+
+
+def _require_cuda_expert_dispatch(stats) -> None:
+    if (
+        not isinstance(stats, dict)
+        or int(stats.get("expert_buckets", 0)) < 2
+        or stats.get("asynchronous_cuda") is not True
+        or int(stats.get("cuda_streams", 0)) != int(stats["expert_buckets"])
+    ):
+        raise RuntimeError("DPA-relative-PG CUDA expert-stream dispatch was not observed")
 
 
 def _load_feature_splits(arguments, unit, dataset, selected_ids, dataset_sha256, resource):
@@ -251,6 +263,8 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         ),
         device=arguments.device,
     )
+    if torch.device(arguments.device).type == "cuda":
+        _require_cuda_expert_dispatch(report.get("last_dispatch_stats"))
     report.update(common)
     report["expert_point_groups"] = list(expert_point_groups)
     report["source_retained_point_groups"] = list(expert_point_groups)
