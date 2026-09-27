@@ -1,6 +1,6 @@
 # Agent state
 
-## Current snapshot - expert-batched asynchronous dispatch (2026-09-25)
+## Current snapshot - expert-batched asynchronous dispatch (2026-09-28)
 
 The DPA-relative-PG experiment must not execute experts structure-by-structure. For each input batch,
 the dispatcher will first compute every structure's active expert weights, bucket all participating
@@ -16,7 +16,7 @@ the identical grouped semantics with a deterministic synchronous fallback.
    and lifetime handling; keep one expert call per non-empty bucket.
 3. [x] Prove grouped output/gradients match per-structure semantics, expert call sizes are correct,
    mixed expert assignments restore original node order, and CPU fallback is deterministic.
-4. [ ] Re-run focused/full tests, update execution documentation, then push and use only the revised
+4. [x] Re-run focused/full tests, update execution documentation, then push and use only the revised
    commit for Guqq smoke/preflight/formal training.
 
 ## Change log - expert-batched asynchronous dispatch
@@ -33,6 +33,20 @@ the identical grouped semantics with a deterministic synchronous fallback.
   trainer's `point_group_numbers` keyword. The wrapper now forwards the full routing interface and a
   dedicated generic cached-backbone relative-PG regression passes. The complete maintained suite now
   passes 310/310 in 429.89 seconds; the repair is ready to commit, sync, and rerun as a new smoke job.
+- 2026-09-25: Replacement smoke job 486 completed `0:0` in 15 seconds at revision `06abf0b`.
+  Strict acceptance proved 15 expert buckets on 15 distinct CUDA streams, maximum seven structures
+  batched into one expert, exact 7/7/7 splits, seven predictions, clean JUnit, finite metrics, and a
+  byte/SHA-matched epoch-1 archive. The next gate is a one-epoch exact-split preflight.
+- 2026-09-28: Full preflight job 487 passed exact 5,001/637/677 and ordered-677 acceptance. It used
+  15/15 distinct CUDA expert streams, batched up to 37 structures per expert, produced a verified
+  epoch-1 archive, and persisted all three full DPA routing caches. Formal 200-epoch training with
+  interval-20 archives is now authorized at the same revision and protocol.
+- 2026-09-28: Initial SSH attempts ran inside a restricted execution identity without the user's
+  host aliases and therefore never reached Guqq. With approved host access, `bash net.sh` succeeded;
+  after the full three-minute wait, the bundle pull confirmed `06abf0b` and formal job 488 was
+  submitted. It is running on node221 under the accepted 200-epoch/interval-20 configuration. The
+  training process is CPU/GPU-active and produced its 19,422,870-byte best checkpoint after the first
+  validation, proving that the cached full-split optimization loop is live.
 
 ## Current snapshot - DPA-relative-PG training (2026-09-24)
 

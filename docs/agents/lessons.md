@@ -280,3 +280,12 @@ diagonal values so the convention cannot pass accidentally.
   intended Bash is valid. After repeated connection attempts, replace substitutions with fixed
   arguments and quote the complete remote Bash program once with local single quotes. Use
   `git rev-parse HEAD | grep -Fx <sha>` and a fixed scheduler user instead of nested substitutions.
+
+## 2026-09-28 - Verify the SSH execution identity before diagnosing hostname failure
+
+- A restricted command identity can lack the user's SSH config and report both `Guqq` and `vlab` as
+  unresolved literal hostnames. Check `ssh -G`: if it shows the sandbox user and leaves aliases
+  unexpanded, this is execution isolation rather than evidence about the actual network or servers.
+- Re-run through approved host access instead of trying alternate addresses. The first real Guqq
+  command must still obey the recovery contract; in this case `bash net.sh`, a full three-minute wait,
+  then the mandatory pull and guarded Slurm submission.

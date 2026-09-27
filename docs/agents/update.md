@@ -16,6 +16,20 @@
   argument passthrough and a direct relative-PG wrapper regression; focused tests pass 2/2 and the
   full maintained suite passes 310/310 in 429.89 seconds. The isolated repair will be synchronized
   before submitting a replacement smoke; job 485 remains immutable failure evidence.
+- 2026-09-25: Pushed/synchronized repair `06abf0b`; replacement smoke job 486 completed `0:0` and
+  passed strict acceptance. Its seven-structure test batch formed 15 expert buckets on 15 distinct
+  CUDA streams, with up to seven structures processed in one expert call. Split, prediction, metric,
+  JUnit, and epoch-1 checkpoint hash gates all passed. Proceeding to one-epoch full-split preflight.
+- 2026-09-28: Full preflight job 487 completed and passed strict 5,001/637/677, ordered prediction,
+  finite metric/history, JUnit, checkpoint hash, routing identity, and 15/15 asynchronous CUDA-stream
+  gates. It persisted train/validation/test full DPA routing caches; formal 200-epoch training at the
+  same revision is now authorized with exact interval-20 checkpoint retention.
+- 2026-09-28: The apparent hostname failure was isolated to a restricted local execution identity,
+  not Guqq. Approved host access restored the configured aliases; `bash net.sh` completed, the full
+  three-minute recovery interval elapsed, and the guarded bundle pull confirmed exact `06abf0b`.
+  Formal 200-epoch job 488 is now running on node221 with interval-20 archive retention. Its process
+  is active at about 104% CPU with 1.8 GiB GPU memory in the sampled window, and the first validation
+  wrote a 19,422,870-byte best checkpoint; no traceback is present.
 
 - 2026-09-24: Started DPA-relative-PG training work. The implementation will compose the accepted
   DPA4 frozen-feature cache with the existing 56D relative-PG path router, use GMTNet's complete

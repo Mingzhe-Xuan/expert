@@ -43,6 +43,21 @@ new one-epoch cached-backbone relative-PG regression plus the prior current-grou
 2/2 in 56.02 seconds. Compilation and scoped whitespace pass, and the complete maintained suite passes
 310/310 in 429.89 seconds. The replacement smoke may be submitted only from the repaired revision.
 
+GPU replacement smoke 486 result: Slurm reports `COMPLETED`, `ExitCode=0:0`, revision `06abf0b`,
+and 15-second runtime on RTX 5090. The read-only acceptance script passed all gates: 7/7/7 splits,
+seven predictions, finite metrics, zero JUnit failures/errors, `expert_buckets=15`,
+`cuda_streams=15`, `asynchronous_cuda=true`, `max_structures_per_expert=7`, and an epoch-1 archive
+of 19,436,436 bytes whose recomputed SHA-256 is
+`4242ad750cda1bfba7a0a6b11cfbe7a5e8c3a2ddad4c95c2238ebc220a773a8a`.
+
+Full preflight 487 result: strict generic acceptance passed at revision `06abf0b` with exact
+5,001/637/677 splits, manifest-ordered 677 predictions, finite one-epoch history/test metrics,
+validation-MAE best epoch 1, clean JUnit, and summary SHA-256
+`671181582395abc03d8cd9ffbf1258ae832d028d6bb59f972b7e1d66736da361`. Runtime dispatch reported
+15 expert buckets, 15 distinct CUDA streams, asynchronous execution, and a maximum 37 structures in
+one expert sub-batch. The epoch-1 archive passed byte/SHA verification. All three provenance-gated
+full DPA routing caches exist, so the formal job must load rather than recompute them.
+
 ## 2026-09-24 - DPA-relative-PG with periodic checkpoints and unified history
 
 Plan:

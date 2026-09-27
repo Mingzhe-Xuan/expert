@@ -1,5 +1,20 @@
 # GPU / server activity
 
+## 2026-09-28 - DPA-relative-PG formal submission connectivity result
+
+- Intended connection: synchronize exact revision `06abf0b` from the verified local bundle and
+  submit the accepted 200-epoch DPA-relative-PG configuration with interval-20 archives.
+- Initial result: three attempts from the restricted execution identity could resolve neither alias
+  and never reached either server. Static inspection then proved that identity did not have the
+  user's SSH configuration, so this was not treated as Guqq network evidence.
+- Authorized host-access result: `bash net.sh` was the first remote command and succeeded. After a
+  measured three-minute no-connection interval, a new connection first pulled the verified bundle,
+  confirmed exact revision `06abf0b`, and submitted formal job 488. The job entered `RUNNING` on
+  node221 with the accepted 72-hour resource envelope; early stderr contains only known TorchScript
+  initialization warnings and no traceback. A Slurm-allocation diagnostic found the live Python
+  process at about 104% CPU, 4.14 GiB RSS, and 1.8 GiB GPU memory. At 00:42 the first validation wrote
+  `checkpoint-488.pt` (19,422,870 bytes), proving the formal optimization loop is advancing.
+
 ## 2026-09-17 — resume blocked job-458 verification
 
 - Five-hour health connection purpose: best checkpoint has not improved for about 47 minutes while
@@ -2463,3 +2478,16 @@
   in smoke mode through Slurm. The smoke must prove exact grouped expert execution at runtime:
   multiple expert buckets, one distinct CUDA stream per bucket, asynchronous dispatch, finite metrics,
   clean JUnit, periodic checkpoint metadata, and no login-node training or server source edits.
+- 2026-09-25: DPA-relative-PG exact-split preflight purpose: after smoke job 486 completed `0:0` and
+  strict read-only acceptance proved 15/15 distinct expert streams, make a no-op bundle pull the first
+  remote operation and submit a one-epoch full 5,001/637/677 run through Slurm. It may reuse the 64
+  provenance-gated DPA4 feature shards and create only ignored full routing/results caches. Acceptance
+  requires exact split counts, 677 ordered predictions, finite metrics, clean JUnit, asynchronous
+  multi-expert stream evidence, and a hash-matched epoch-1 archive before formal training is allowed.
+- 2026-09-28: Formal DPA-relative-PG training purpose: after strict acceptance of full preflight 487
+  and confirmation that train/validation/test full routing caches are complete, make the verified
+  bundle no-op pull the first remote operation and submit exactly one 200-epoch Slurm job at revision
+  `06abf0b`. Use GMTNet-aligned batch 64/seed 42/Huber/AdamW/linear LR settings, one GPU/eight CPUs/
+  48 GiB/72 hours, and checkpoint interval 20. No login-node compute or server source edit is allowed;
+  terminal acceptance must verify ten periodic archives, best checkpoint, ordered 677 predictions,
+  async expert-stream evidence, finite metrics, clean JUnit, and exact provenance.
