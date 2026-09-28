@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-28: Started the authorized `[8,3,3,3,3]`/80D DPA-relative-PG queueing task. It will use
+  an isolated launcher/result identity, the dataset-derived 24-edge/199,754-parameter contract, and
+  every other job-505 training setting unchanged; submission remains gated on local tests and push.
+- 2026-09-28: Implemented the isolated 80D launcher/result namespace and exact dataset-specific
+  parameter test. Focused tests pass 21/21, plus Bash syntax and whitespace checks; ready for an
+  isolated commit/push and pull-first Slurm queue submission.
+
 - 2026-09-28: Started the `[16,2,2,2,2]` DPA-relative-PG ablation as a separate experiment. The
   implementation will keep the accepted job-488 defaults/artifacts unchanged, add an explicit 64D
   hidden-layout override plus isolated Slurm outputs, and require the same smoke/preflight/formal
@@ -27,6 +34,13 @@
   protocol; focused tests pass 19/19 and the maintained suite passes 323/323. Strict job-504
   acceptance also passed all split, prediction, finite-value, JUnit, async-dispatch, revision, and
   checkpoint-hash gates. Formal 200-epoch training is now authorized after commit/push/sync.
+- 2026-09-28: Pushed correction `f2f93b2`, synchronized Guqq with the required pull-first gate, and
+  submitted the single formal 200-epoch 64D run as Slurm job 505. It uses 64 cached DPA shards,
+  batch 64, seed 42, unchanged GMTNet training protocol, and checkpoint interval 20.
+- 2026-09-28: Formal job 505 is healthy after 4:17:42 and has written exact epoch-20 through
+  epoch-100 archives. It is currently between epochs 101 and 119 of 200; no traceback is present,
+  only the known non-fatal TorchScript warnings. Recent checkpoint cadence is about 47 minutes per
+  20 epochs, so the remaining runtime is roughly four hours.
 
 - 2026-09-28: Started the DPA-embedded GMTNet ablation. The official GMTNet body and complete
   optimization protocol remain fixed. Frozen DPA4 O(3) features will be converted to 640 per-copy

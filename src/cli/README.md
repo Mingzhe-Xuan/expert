@@ -62,6 +62,9 @@ The optional `--hidden-multiplicities L0 L1 L2 L3 L4` argument is explicit exper
 omitting it preserves `[8,2,2,2,2]`. The scalar-width ablation is launched only by
 `slurm/train_reduced_dpa4_relative_pg_64d.sbatch`, which fixes `[16,2,2,2,2]` and writes to the
 separate `dpa4-relative-pg-64d` result directory so accepted 56D artifacts cannot be overwritten.
+The higher-order-width ablation uses `slurm/train_reduced_dpa4_relative_pg_80d.sbatch`, fixes
+`[8,3,3,3,3]`, and writes only to `dpa4-relative-pg-80d`; it does not share outputs with either the
+56D baseline or 64D scalar-width run.
 
 `python -m src.cli.reduced_dpa4_gmtnet_train ...` trains the pinned official GMTNet with the
 already-cached frozen DPA4 representation as its atom input. It loads all 64 provenance-gated

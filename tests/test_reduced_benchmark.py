@@ -88,7 +88,31 @@ def test_dpa4_relative_pg_64d_launcher_is_isolated_and_protocol_matched() -> Non
     assert 'run_root="results/reduced-benchmark/dpa4-relative-pg"' not in launcher
 
 
-def test_scalar_widened_relative_pg_has_dataset_layout_and_parameter_count() -> None:
+def test_dpa4_relative_pg_80d_launcher_is_isolated_and_protocol_matched() -> None:
+    launcher = (ROOT / "slurm" / "train_reduced_dpa4_relative_pg_80d.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "src.cli.reduced_dpa4_relative_pg_train" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg-80d"' in launcher
+    assert "--hidden-multiplicities 8 3 3 3 3" in launcher
+    assert '--batch-size "${EXPERT_REDUCED_DPA4_80D_BATCH_SIZE:-64}"' in launcher
+    assert '--seed "${EXPERT_REDUCED_DPA4_80D_SEED:-42}"' in launcher
+    assert '--checkpoint-interval "${EXPERT_DPA4_80D_CHECKPOINT_INTERVAL:-20}"' in launcher
+    assert "#SBATCH --time=3-00:00:00" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg"' not in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg-64d"' not in launcher
+
+
+@pytest.mark.parametrize(
+    ("multiplicities", "expected_dimension", "expected_parameters"),
+    (
+        ((16, 2, 2, 2, 2), 64, 130_196),
+        ((8, 3, 3, 3, 3), 80, 199_754),
+    ),
+)
+def test_widened_relative_pg_has_dataset_layout_and_parameter_count(
+    multiplicities, expected_dimension, expected_parameters
+) -> None:
     source_layout = IrrepLayout(
         tuple(
             IrrepTerm(64, degree, parity, f"dpa4_l{degree}_{parity}")
@@ -96,7 +120,7 @@ def test_scalar_widened_relative_pg_has_dataset_layout_and_parameter_count() -> 
             for parity in ("e", "o")
         )
     )
-    hidden_layout = hidden_layout_from_multiplicities((16, 2, 2, 2, 2))
+    hidden_layout = hidden_layout_from_multiplicities(multiplicities)
     groups = (
         "2/m", "mm2", "mmm", "4/m", "4mm", "-42m", "4/mmm", "-3m",
         "6/m", "6mm", "-6m2", "6/mmm", "m-3", "-43m", "m-3m",
@@ -126,12 +150,12 @@ def test_scalar_widened_relative_pg_has_dataset_layout_and_parameter_count() -> 
     )
     assert DEFAULT_HIDDEN_MULTIPLICITIES == (8, 2, 2, 2, 2)
     assert len(edge_ids) == 24
-    assert tuple(term.multiplicity for term in hidden_layout.terms) == (16, 2, 2, 2, 2)
-    assert hidden_layout.dimension == 64
-    assert sum(parameter.numel() for parameter in model.parameters()) == 130_196
+    assert tuple(term.multiplicity for term in hidden_layout.terms) == multiplicities
+    assert hidden_layout.dimension == expected_dimension
+    assert sum(parameter.numel() for parameter in model.parameters()) == expected_parameters
     assert sum(
         parameter.numel() for parameter in model.parameters() if parameter.requires_grad
-    ) == 130_196
+    ) == expected_parameters
 
 
 @pytest.mark.parametrize(

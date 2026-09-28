@@ -2783,3 +2783,24 @@
   hashing. After consulting and updating `lessons.md`, reconnect pull-first and use a locally
   round-trip-decoded minimal payload only for history length/epochs and prediction ID uniqueness;
   use separate quote-free NaN/Infinity checks and exact-path SHA-256 for all remaining evidence.
+- 2026-09-28: Formal 64D DPA-relative-PG training purpose: job 504 and the corrected 24-edge test
+  contract have passed strict acceptance; focused/maintained suites pass and correction commit
+  `f2f93b2c03ddb9528e45baa20a33bbbf2476efcd` is pushed. Connect to Guqq, verify the repository,
+  make an explicit-proxy `git pull --ff-only` the first repository operation, require that exact
+  revision, inspect scheduler availability, and submit exactly one default 200-epoch job using the
+  dedicated 64D launcher, 64 feature shards, and the recorded DPA4 environment. Preserve batch 64,
+  seed 42, GMTNet optimizer/schedule, interval-20 archives, and isolated results; do not run login-
+  node compute or resubmit if a job ID is returned.
+- 2026-09-28: Formal job 505 initial monitoring purpose: the mandatory pull fast-forwarded Guqq to
+  exact `f2f93b2`, node221 was idle, and one formal 200-epoch job was submitted successfully. On the
+  next connection, pull first again, then inspect only job 505's live queue state and bounded
+  `logs/slurm/dpa4-relative-pg-64d-505.{out,err}` tails; do not submit a second job.
+- 2026-09-28: Formal job 505 user-requested progress check purpose: connect to Guqq, verify the task
+  repository, and make an explicit-proxy `git pull --ff-only` the first repository operation. Then
+  read only job 505's live Slurm state, bounded correct-path log tails, and root-level interval-20
+  checkpoint filenames/timestamps to report the latest completed epoch; do not modify artifacts or
+  submit/restart any job.
+- 2026-09-28: Formal job 505 progress result: job 505 is running on node221 at 4:17:42 and has
+  root-level 25,312,660-byte archives for epochs 20, 40, 60, 80, and 100. Logs show only known
+  TorchScript annotation warnings and no traceback; no artifact was modified and no job was
+  submitted. The next check should remain pull-first and look for epoch 120 or terminal state.

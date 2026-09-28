@@ -1,5 +1,31 @@
 # Agent state
 
+## Current snapshot - 80D higher-order-widened DPA-relative-PG (2026-09-28)
+
+Queue a second isolated ablation with hidden multiplicities `[8, 3, 3, 3, 3]`. This is an
+80-component O(3) layout and, for the frozen seven-current-PG/24-edge dataset contract, has 199,754
+trainable parameters. It must preserve job 505's frozen DPA features, routing, split, optimizer,
+batch size, seed, 200 epochs, and interval-20 checkpoint protocol while writing to a distinct result
+directory and waiting behind the active 64D job.
+
+## Current plan - 80D higher-order-widened DPA-relative-PG
+
+1. [x] Add a dedicated 80D Slurm launcher with isolated result/log identity and fixed
+   `[8,3,3,3,3]`; do not change any existing launcher or default.
+2. [x] Prove exact 80D/199,754 dataset-specific construction, launcher isolation, and matched
+   training settings with focused tests and static checks.
+3. [ ] Commit/push only task files, pull-first synchronize Guqq, and submit exactly one formal
+   200-epoch Slurm job so it queues behind job 505.
+4. [ ] After completion, apply the same strict acceptance and add it to the unified comparison.
+
+## Change log - 80D higher-order-widened DPA-relative-PG
+
+- 2026-09-28: User authorized queueing `[8,3,3,3,3]` alongside the active 64D experiment. Chosen
+  isolation is `dpa4-relative-pg-80d`; no 64D artifact or launcher will be reused as an output.
+- 2026-09-28: Added the dedicated 80D launcher and dataset-derived exact parameter assertion.
+  Focused tests pass 21/21; Bash syntax and scoped whitespace checks pass. The next step is an
+  isolated commit/push followed by pull-first queued Slurm submission.
+
 ## Current snapshot - 64D scalar-widened DPA-relative-PG (2026-09-28)
 
 The active experiment keeps job 488's frozen DPA4 features, material-specific point-group DAG,
@@ -55,6 +81,15 @@ Existing job-488 artifacts and defaults must remain immutable.
   predictions, clean JUnit, 15/15 async CUDA streams, and an independently SHA-matched archive at
   revision `b8b2507`. The formal 200-epoch job is authorized after committing and pushing this
   dataset-specific test/documentation correction.
+- 2026-09-28: Correction commit `f2f93b2` was pushed and pull-first synchronized to Guqq. The sole
+  formal 200-epoch run is Slurm job 505 on the idle compute partition, using the dedicated 64D
+  launcher and interval-20 retention. Monitor it to terminal completion before strict acceptance,
+  result transfer, unified-plot regeneration, and final comparison.
+- 2026-09-28: User-requested progress check found job 505 healthy on node221 after 4:17:42. Exact
+  interval archives exist through epoch 100 (20/40/60/80/100), each 25,312,660 bytes; the job is
+  therefore in epochs 101--119 of 200. Logs contain only the known TorchScript annotation warnings
+  and no traceback. The observed 20-epoch cadence is about 47 minutes, giving a rough four-hour
+  remaining estimate if throughput stays stable.
 
 ## Current snapshot - DPA-embedded GMTNet (2026-09-28)
 

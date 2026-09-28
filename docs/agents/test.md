@@ -1,5 +1,25 @@
 # Test plan and results
 
+## 2026-09-28 - 80D higher-order-widened DPA-relative-PG
+
+Plan:
+
+- derive the frozen dataset's 24 material edges from `REDUCED_POINT_GROUPS` plus the offline DAG and
+  prove `[8,3,3,3,3]` has dimension 80 and exactly 199,754 registered/trainable parameters;
+- require a dedicated `dpa4-relative-pg-80d` result directory and launcher identity, fixed hidden
+  profile, batch 64, seed 42, 200 epochs, interval-20 checkpoints, one GPU/eight CPUs/48 GiB/72 h;
+- prove the 80D launcher cannot write to either the accepted 56D directory or active 64D directory;
+- run the focused reduced-benchmark tests, Python compilation/Bash syntax/scoped whitespace checks,
+  and do not submit until every gate passes.
+
+Expected result: one isolated 80D Slurm job queued behind job 505 with all scientific settings except
+the requested hidden multiplicities identical to the accepted DPA-relative-PG protocol.
+
+Result: the focused reduced-benchmark suite passes 21/21 in 33.24 seconds. It constructs the exact
+frozen dataset 24-edge model at 80 components and 199,754 registered/trainable parameters, proves
+the 80D result directory cannot alias the 56D or 64D directories, and checks matched batch/seed/time/
+checkpoint settings. Bash syntax and scoped `git diff --check` pass.
+
 ## 2026-09-28 - 64D scalar-widened DPA-relative-PG
 
 Plan:
