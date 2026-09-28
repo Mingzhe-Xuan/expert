@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-28 - DPA-embedded GMTNet
+
+Plan:
+
+- prove DPA scalarization emits exactly one finite norm per irrep copy, is invariant under O(3)
+  representation transforms, preserves node order, and rejects layout/width/non-finite drift;
+- prove the GMTNet runner replaces only `atom_embedding`, validates exact sample IDs and per-sample
+  node counts, keeps baseline defaults unchanged, and reports embedding provenance;
+- cover cache reuse, smoke/full split selection, CLI failure reports, Slurm resource/environment
+  gates, periodic checkpoint metadata, and plot ingestion;
+- run focused tests, the full maintained suite, compilation, Bash syntax, scoped whitespace, then a
+  real Guqq smoke and exact-split preflight before authorizing 200 epochs.
+
+Expected result: a directly comparable GMTNet run whose only representation change is a frozen,
+O(3)-invariant 640D DPA4 node embedding projected to GMTNet's existing 128D hidden width.
+
+Local result: the maintained suite passed 315/315 in 339.74 seconds. After the final checkpoint
+provenance and isolated-layer assertion, the affected scalarization, alignment, launcher,
+reduced-benchmark, and heterogeneous-history suite passed 27/27 in 17.85 seconds. Signed even
+scalars remain exact, all other per-copy norms are
+unchanged by orthogonal representation transforms, malformed widths/non-finite inputs fail closed,
+the original graph cache is not mutated, sample/atom-order drift is rejected, and every GMTNet
+module outside `atom_embedding` retains object identity. Compilation, Bash syntax, CLI help, and
+scoped whitespace checks pass. Remaining acceptance is the real Guqq smoke and full-split preflight.
+
 ## 2026-09-28 - Unified history final rendering
 
 Plan: after accepting formal job 488, render all six accepted histories from SHA-pinned summaries;

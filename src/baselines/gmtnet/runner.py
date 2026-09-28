@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import hashlib
 import importlib
 import json
 import os
@@ -10,7 +11,7 @@ import subprocess
 import sys
 from types import SimpleNamespace
 from types import ModuleType
-from typing import Sequence
+from typing import Mapping, Sequence
 
 import numpy as np
 import torch
@@ -18,6 +19,9 @@ from torch import nn
 
 from ...data import IndependentTensorDataset, TensorSample
 from ...evaluation import tensor_benchmark_metrics
+from ...features import cgcnn_node_features
+from ...irreps import IrrepLayout
+from ...training.benchmark import FrozenFeatureExample
 
 
 GMTNET_OFFICIAL_COMMIT = "7a606a459ee48a320ed38450e391811fb43d5e19"
@@ -31,6 +35,7 @@ class GMTNetConfig:
     end_learning_rate: float = 1.0e-5
     weight_decay: float = 1.0e-5
     seed: int = 42
+    checkpoint_interval: int = 0
 
     def __post_init__(self) -> None:
         if self.epochs < 1 or self.batch_size < 1:
@@ -39,6 +44,86 @@ class GMTNetConfig:
             raise ValueError("learning-rate range is invalid")
         if self.weight_decay < 0:
             raise ValueError("weight decay must be non-negative")
+        if self.checkpoint_interval < 0:
+            raise ValueError("checkpoint interval must be non-negative")
+
+
+def dpa4_invariant_node_embedding(
+    features: torch.Tensor,
+    layout: IrrepLayout,
+) -> torch.Tensor:
+    """Reduce each O(3) irrep copy to one invariant scalar for GMTNet input."""
+
+    if features.ndim != 2 or features.shape[1] != layout.dimension:
+        raise ValueError("DPA4 features do not match the declared O(3) layout")
+    if not torch.isfinite(features).all():
+        raise ValueError("DPA4 features must be finite")
+    blocks = []
+    offset = 0
+    for term in layout.terms:
+        width = 2 * term.degree + 1
+        stop = offset + term.multiplicity * width
+        block = features[:, offset:stop].reshape(features.shape[0], term.multiplicity, width)
+        if term.degree == 0 and term.parity == "e":
+            invariant = block.squeeze(-1)
+        else:
+            invariant = torch.linalg.vector_norm(block, dim=-1)
+        blocks.append(invariant)
+        offset = stop
+    embedding = torch.cat(blocks, dim=-1)
+    if embedding.shape[1] != sum(term.multiplicity for term in layout.terms):
+        raise RuntimeError("DPA4 invariant embedding width is inconsistent with its layout")
+    return embedding
+
+
+def _attach_dpa4_node_embeddings(
+    graph_splits: Mapping[str, Sequence[dict[str, object]]],
+    feature_splits: Mapping[str, Sequence[FrozenFeatureExample]],
+    layout: IrrepLayout,
+) -> dict[str, list[dict[str, object]]]:
+    if set(graph_splits) != {"train", "validation", "test"} or set(feature_splits) != set(graph_splits):
+        raise ValueError("GMTNet and DPA4 inputs must contain the same three splits")
+    output: dict[str, list[dict[str, object]]] = {}
+    for split in ("train", "validation", "test"):
+        graph_rows = graph_splits[split]
+        feature_rows = feature_splits[split]
+        if len(graph_rows) != len(feature_rows):
+            raise ValueError(f"GMTNet and DPA4 {split} counts differ")
+        attached = []
+        for graph_row, feature_row in zip(graph_rows, feature_rows):
+            if graph_row["sample_id"] != feature_row.sample_id:
+                raise ValueError(f"GMTNet and DPA4 {split} sample order differs")
+            graph = dict(graph_row["graph"])
+            original = graph.get("x")
+            if not isinstance(original, torch.Tensor):
+                raise ValueError("GMTNet graph lacks tensor node attributes")
+            expected = cgcnn_node_features(feature_row.graph.atomic_numbers).to(original)
+            if original.shape != expected.shape or not torch.allclose(original, expected, atol=1e-6, rtol=1e-6):
+                raise ValueError("GMTNet graph and DPA4 cache node ordering differ")
+            embedding = dpa4_invariant_node_embedding(feature_row.features, layout)
+            if embedding.shape[0] != original.shape[0]:
+                raise ValueError("GMTNet graph and DPA4 embedding node counts differ")
+            graph["x"] = embedding.to(dtype=original.dtype)
+            row = dict(graph_row)
+            row["graph"] = graph
+            attached.append(row)
+        output[split] = attached
+    return output
+
+
+def _replace_atom_embedding(model: nn.Module, input_dimension: int) -> None:
+    """Replace only GMTNet's scalar atom projection while preserving its output width."""
+
+    original = getattr(model, "atom_embedding", None)
+    if not isinstance(original, nn.Linear):
+        raise TypeError("official GMTNet atom_embedding is no longer a linear layer")
+    model.atom_embedding = nn.Linear(
+        input_dimension,
+        original.out_features,
+        bias=original.bias is not None,
+        device=original.weight.device,
+        dtype=original.weight.dtype,
+    )
 
 
 def _load_official_modules(official_root: Path):
@@ -219,6 +304,8 @@ def run_gmtnet_benchmark(
     config: GMTNetConfig = GMTNetConfig(),
     device: str | torch.device = "cuda",
     split_ids: dict[str, tuple[str, ...]] | None = None,
+    dpa4_feature_layout: IrrepLayout | None = None,
+    dpa4_feature_splits: Mapping[str, Sequence[FrozenFeatureExample]] | None = None,
 ) -> dict[str, object]:
     if dataset.unit.namespace != "curated_reduced_total__dielectric":
         raise ValueError("GMTNet reduced benchmark received the wrong training unit")
@@ -240,6 +327,26 @@ def run_gmtnet_benchmark(
     splits = _prepare_cache(
         dataset, root, Path(cache_path), dataset_sha256, selected_ids
     )
+    if (dpa4_feature_layout is None) != (dpa4_feature_splits is None):
+        raise ValueError("DPA4 layout and feature splits must be supplied together")
+    input_embedding = {
+        "kind": "jarvis_cgcnn",
+        "input_dimension": 92,
+        "output_dimension": 128,
+    }
+    if dpa4_feature_layout is not None and dpa4_feature_splits is not None:
+        splits = _attach_dpa4_node_embeddings(
+            splits,
+            dpa4_feature_splits,
+            dpa4_feature_layout,
+        )
+        input_embedding = {
+            "kind": "frozen_dpa4_o3_invariant_per_copy",
+            "input_dimension": sum(term.multiplicity for term in dpa4_feature_layout.terms),
+            "output_dimension": 128,
+            "source_dimension": dpa4_feature_layout.dimension,
+            "scalarization": "signed_0e_else_irrep_l2_norm",
+        }
     official_model, official_graphs, _ = _load_official_modules(root)
     data_type = official_graphs.Data
     batch_type = importlib.import_module("torch_geometric.data.batch").Batch
@@ -251,6 +358,8 @@ def run_gmtnet_benchmark(
     model = official_model.GMTNet(
         SimpleNamespace(target="dielectric", use_mask=True, reduce_cell=False)
     ).to(device)
+    if dpa4_feature_layout is not None:
+        _replace_atom_embedding(model, int(input_embedding["input_dimension"]))
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay
     )
@@ -261,8 +370,21 @@ def run_gmtnet_benchmark(
     best_mae = float("inf")
     best_epoch = 0
     history = []
+    periodic_checkpoints = []
     checkpoint = Path(checkpoint_path)
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
+
+    def checkpoint_payload(epoch: int) -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "official_commit": GMTNET_OFFICIAL_COMMIT,
+            "dataset_sha256": dataset_sha256,
+            "config": asdict(config),
+            "input_embedding": input_embedding,
+            "epoch": epoch,
+            "model_state": model.state_dict(),
+        }
+
     step = 0
     for epoch in range(1, config.epochs + 1):
         model.train()
@@ -295,9 +417,15 @@ def run_gmtnet_benchmark(
                         "validation_mae": validation_mae, "learning_rate": optimizer.param_groups[0]["lr"]})
         if validation_mae < best_mae:
             best_mae, best_epoch = validation_mae, epoch
-            torch.save({"schema_version": 1, "official_commit": GMTNET_OFFICIAL_COMMIT,
-                        "dataset_sha256": dataset_sha256, "config": asdict(config),
-                        "epoch": epoch, "model_state": model.state_dict()}, checkpoint)
+            torch.save(checkpoint_payload(epoch), checkpoint)
+        if config.checkpoint_interval and epoch % config.checkpoint_interval == 0:
+            periodic_path = checkpoint.with_name(
+                f"{checkpoint.stem}-epoch-{epoch:03d}{checkpoint.suffix}"
+            )
+            torch.save(checkpoint_payload(epoch), periodic_path)
+            digest = hashlib.sha256(periodic_path.read_bytes()).hexdigest()
+            periodic_checkpoints.append({"epoch": epoch, "path": str(periodic_path),
+                                         "bytes": periodic_path.stat().st_size, "sha256": digest})
         print(json.dumps(history[-1], sort_keys=True), flush=True)
     saved = torch.load(checkpoint, map_location=device, weights_only=True)
     if saved.get("official_commit") != GMTNET_OFFICIAL_COMMIT or saved.get("dataset_sha256") != dataset_sha256:
@@ -323,7 +451,8 @@ def run_gmtnet_benchmark(
     return {
         "schema_version": 1,
         "status": "passed",
-        "model": "GMTNet",
+        "model": "DPA4-embedded GMTNet" if dpa4_feature_layout is not None else "GMTNet",
+        "input_embedding": input_embedding,
         "official_commit": GMTNET_OFFICIAL_COMMIT,
         "dataset_sha256": dataset_sha256,
         "training_unit": dataset.unit.namespace,
@@ -338,4 +467,5 @@ def run_gmtnet_benchmark(
         "checkpoint": str(checkpoint),
         "predictions": str(prediction_file),
         "history": history,
+        "periodic_checkpoints": periodic_checkpoints,
     }

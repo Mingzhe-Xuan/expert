@@ -59,6 +59,14 @@ selection. The best checkpoint is independent of exact epoch archives, which def
 final test batch reports at least two expert buckets, one distinct stream per bucket, and an explicit
 asynchronous join; this prevents the grouped execution contract from silently falling back to serial.
 
+`python -m src.cli.reduced_dpa4_gmtnet_train ...` trains the pinned official GMTNet with the
+already-cached frozen DPA4 representation as its atom input. It loads all 64 provenance-gated
+feature shards in frozen split order, reduces the 1600D O(3) layout to 640 invariant values per
+node, and substitutes a learned `640 -> 128` layer for GMTNet's original `92 -> 128` CGCNN atom
+embedding. No other GMTNet component or optimization choice changes. The default full protocol is
+200 epochs, batch 64, seed 42, Cartesian Huber, AdamW, per-step linear `1e-3 -> 1e-5` decay,
+validation-MAE selection, and exact epoch archives every 20 epochs.
+
 `python -m src.cli.plot_training_history --summary ... --expected-sha256 ... --svg ... --png ...`
 validates and renders the accepted CGCNN current-group-only epoch history. It is visualization only:
 no prediction, target, or metric is recomputed.

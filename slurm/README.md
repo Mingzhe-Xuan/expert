@@ -39,6 +39,13 @@ one GPU, eight CPUs, 48 GiB, and 72 hours; `EXPERT_DPA4_CHECKPOINT_INTERVAL` def
 runs expect the 64 DPA4 partitions to exist and fail closed if any cache shard or provenance gate is
 missing. Smoke mode defaults to one independently cached partition.
 
+`train_reduced_dpa4_gmtnet.sbatch` is the matched DPA-input GMTNet ablation. It requires both
+`EXPERT_GMTNET_VENV` and the pinned `EXPERT_GMTNET_ROOT`, reuses the accepted GMTNet graph cache and
+the full 64-shard DPA4 feature cache, and writes into the independent
+`results/reduced-benchmark/dpa4-gmtnet/` namespace. Full runs default to the accepted GMTNet
+200-epoch/batch-64/seed-42 protocol and archive epochs 20/40/.../200; smoke mode selects the frozen
+point-group coverage subset and defaults to an epoch-1 archive.
+
 These non-interactive jobs are the only supported path for full tests, model inference,
 training smoke runs, and batch data processing on Guqq. Activate the recorded project
 backbone-specific virtual environments through `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,

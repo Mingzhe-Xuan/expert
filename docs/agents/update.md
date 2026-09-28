@@ -1,5 +1,15 @@
 # Agent progress updates
 
+- 2026-09-28: Started the DPA-embedded GMTNet ablation. The official GMTNet body and complete
+  optimization protocol remain fixed. Frozen DPA4 O(3) features will be converted to 640 per-copy
+  invariant norms and replace only the original 92D CGCNN atom input before the existing 128D
+  embedding; provenance/alignment/invariance and real Slurm smoke are mandatory before full training.
+- 2026-09-28: Implemented the frozen-DPA4 input path, strict cache/sample/atom alignment, dedicated
+  CLI/Slurm launcher, and interval checkpoint evidence. The input is 640 O(3)-invariant values per
+  node and only the official `atom_embedding` input width changes. The maintained suite passes
+  315/315, the final affected focused suite passes 27/27, and all static gates pass. The next gates
+  are an isolated commit/push, Guqq smoke, and exact-split preflight.
+
 - 2026-09-25: Paused DPA-relative-PG remote synchronization to incorporate the refined execution
   contract. The dispatcher will plan routes per structure, collate all structures assigned to each
   expert into one expert call, run distinct GPU expert buckets on separate CUDA streams, and scatter

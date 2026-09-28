@@ -16,3 +16,14 @@ a type annotation; when that retired extension is absent, the adapter provides
 an inert annotation placeholder and no sparse operation is replaced.
 The curated split and labels are never regenerated. Predictions are exported by
 record ID and scored by `src.evaluation.tensor_benchmark_metrics`.
+
+
+The runner also supports the explicit DPA4-input ablation used by
+`src.cli.reduced_dpa4_gmtnet_train`. It reuses the frozen pre-interface DPA4 O(3)
+feature cache and converts each irrep copy into one scalar: even degree-zero copies
+retain their signed value, while every other copy contributes its Euclidean norm.
+The resulting 640 invariant scalars replace only GMTNet's 92D CGCNN atom input;
+the original atom projection output remains 128D and the official graph, message
+passing, symmetry masks, tensor readout, loss, optimizer, schedule, and split stay
+unchanged. Sample IDs, atom order, source width, cache checkpoint hash, and dataset
+hash are validated before training.

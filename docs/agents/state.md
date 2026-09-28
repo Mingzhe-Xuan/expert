@@ -1,5 +1,43 @@
 # Agent state
 
+## Current snapshot - DPA-embedded GMTNet (2026-09-28)
+
+The requested ablation keeps the pinned official GMTNet graph, message passing, tensor mask/readout,
+Huber/AdamW schedule, frozen 5,001/637/677 split, seed, batch size, and 200 epochs. Its sole model
+change is the atomic input: each frozen 1600D DPA4 O(3) feature retains signed even scalars and uses
+one invariant norm for every other irrep copy (640 scalars), then passes through a trainable
+`640 -> 128` atom embedding in place of GMTNet's CGCNN `92 -> 128` layer. Raw non-scalar irrep
+components must never be treated as scalars.
+
+## Current plan - DPA-embedded GMTNet
+
+1. [x] Add and test deterministic O(3)-invariant DPA scalarization, strict sample/node alignment, and
+   an opt-in GMTNet input override without changing the accepted baseline defaults.
+2. [x] Add a dedicated CLI/Slurm launcher that reuses the provenance-gated 64-shard DPA cache and
+   accepted GMTNet graph cache; document inputs, outputs, protocol identity, and failure gates.
+3. [ ] Pass focused/full local tests, commit/push, synchronize Guqq under the current SOCKS rules,
+   then run real smoke and exact-split preflight before formal 200-epoch training.
+4. [ ] Strictly accept predictions/metrics/history, add the experiment to the unified plot, compare
+   against GMTNet and DPA-relative-PG, update documentation, and commit/push the final evidence.
+
+## Change log - DPA-embedded GMTNet
+
+- 2026-09-28: Audited the interface boundary. Official GMTNet accepts scalar node attributes through
+  `Linear(92, 128)`, while frozen DPA4 exposes 64 copies for each degree 0--4 and both O(3) parities.
+  The implementation will use per-copy irrep norms (640 invariant scalars) and preserve every other
+  accepted GMTNet training/model choice; direct flattening of orientation components is rejected.
+- 2026-09-28: Implemented the opt-in runner path, strict sample/atom-order checks, 64-shard cache
+  loader, dedicated CLI/Slurm launcher, and epoch-interval archives. Focused scalarization,
+  attachment, isolated-layer override, launcher, reduced-benchmark, and heterogeneous-plot tests
+  pass 27/27. The first local attempt exposed only the installed e3nn/PyTorch 2.6 constants-loader
+  incompatibility; the test now
+  directly applies orthogonal transformations to every irrep copy and covers the same invariant
+  contract without importing e3nn.
+- 2026-09-28: The maintained full suite passed 315/315 in 339.74 seconds. After adding checkpoint
+  embedding provenance and a direct assertion that the override preserves the remaining GMTNet
+  modules, the affected focused suite passed 27/27. Compilation, CLI help, Bash syntax, and scoped
+  whitespace gates also pass; the implementation is ready for isolated commit and Guqq smoke.
+
 ## Current snapshot - expert-batched asynchronous dispatch (2026-09-28)
 
 The DPA-relative-PG experiment must not execute experts structure-by-structure. For each input batch,
