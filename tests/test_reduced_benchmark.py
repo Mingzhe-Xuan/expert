@@ -22,6 +22,7 @@ from src.cli.reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratifie
 from src.data import TrainingUnit, load_training_dataset
 from src.experts import hidden_layout_from_multiplicities
 from src.irreps import IrrepLayout, IrrepTerm
+from src.symmetry import PointGroupAncestorDAG, build_point_group_parent_dag
 from src.training.benchmark import CachedBackboneTensorModel
 
 
@@ -87,7 +88,7 @@ def test_dpa4_relative_pg_64d_launcher_is_isolated_and_protocol_matched() -> Non
     assert 'run_root="results/reduced-benchmark/dpa4-relative-pg"' not in launcher
 
 
-def test_scalar_widened_relative_pg_has_expected_layout_and_parameter_count() -> None:
+def test_scalar_widened_relative_pg_has_dataset_layout_and_parameter_count() -> None:
     source_layout = IrrepLayout(
         tuple(
             IrrepTerm(64, degree, parity, f"dpa4_l{degree}_{parity}")
@@ -100,14 +101,17 @@ def test_scalar_widened_relative_pg_has_expected_layout_and_parameter_count() ->
         "2/m", "mm2", "mmm", "4/m", "4mm", "-42m", "4/mmm", "-3m",
         "6/m", "6mm", "-6m2", "6/mmm", "m-3", "-43m", "m-3m",
     )
-    edge_ids = (
-        "pg08-to-pg05", "pg08-to-pg07", "pg11-to-pg05", "pg13-to-pg07",
-        "pg14-to-pg07", "pg15-to-pg08", "pg15-to-pg11", "pg15-to-pg13",
-        "pg15-to-pg14", "pg20-to-pg05", "pg20-to-pg19", "pg23-to-pg05",
-        "pg25-to-pg07", "pg25-to-pg19", "pg26-to-pg07", "pg26-to-pg19",
-        "pg27-to-pg08", "pg27-to-pg20", "pg27-to-pg23", "pg27-to-pg25",
-        "pg27-to-pg26", "pg29-to-pg08", "pg31-to-pg14", "pg31-to-pg19",
-        "pg32-to-pg15", "pg32-to-pg20", "pg32-to-pg29", "pg32-to-pg31",
+    class_dag = PointGroupAncestorDAG.from_path()
+    edge_ids = tuple(
+        sorted(
+            {
+                embedding.edge_id
+                for point_group in REDUCED_POINT_GROUPS
+                for embedding in build_point_group_parent_dag(
+                    f"test-{point_group}", class_dag.number(point_group), class_dag
+                ).embeddings
+            }
+        )
     )
     architecture = ArchitectureConfig(
         "B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg"
@@ -121,12 +125,13 @@ def test_scalar_widened_relative_pg_has_expected_layout_and_parameter_count() ->
         hidden_layout,
     )
     assert DEFAULT_HIDDEN_MULTIPLICITIES == (8, 2, 2, 2, 2)
+    assert len(edge_ids) == 24
     assert tuple(term.multiplicity for term in hidden_layout.terms) == (16, 2, 2, 2, 2)
     assert hidden_layout.dimension == 64
-    assert sum(parameter.numel() for parameter in model.parameters()) == 130_200
+    assert sum(parameter.numel() for parameter in model.parameters()) == 130_196
     assert sum(
         parameter.numel() for parameter in model.parameters() if parameter.requires_grad
-    ) == 130_200
+    ) == 130_196
 
 
 @pytest.mark.parametrize(

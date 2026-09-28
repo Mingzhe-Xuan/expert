@@ -289,3 +289,15 @@ diagonal values so the convention cannot pass accidentally.
 - Re-run through approved host access instead of trying alternate addresses. The first real Guqq
   command must still obey the recovery contract; in this case `bash net.sh`, a full three-minute wait,
   then the mandatory pull and guarded Slurm submission.
+
+## 2026-09-28 - Keep PowerShell-to-SSH artifact verifiers mechanically transportable
+
+- Nested `python -c` quoting is not stable through PowerShell, Windows OpenSSH, and remote Bash; a
+  syntactically valid local string can arrive with the Python program split into shell tokens.
+- For a nontrivial read-only verifier, encode the exact locally reviewed source mechanically and
+  stream it through `base64 -d | python -`. Do not manually rewrite or shorten the encoded payload:
+  one damaged character can produce a valid but wrong program. Prefer a minimal verifier and use
+  quote-free shell checks (`wc`, exact-path `sha256sum`, separate `grep NaN`/`grep Infinity`) for the
+  rest. Keep `set -e` so a failed verifier cannot accidentally certify later checks.
+- A checkpoint path reported in the summary is authoritative. Hash that exact path; do not infer a
+  `checkpoints/` subdirectory or use a broad wildcard merely because another launcher uses one.

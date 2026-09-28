@@ -2661,3 +2661,125 @@
   48 GiB/72 hours, and checkpoint interval 20. No login-node compute or server source edit is allowed;
   terminal acceptance must verify ten periodic archives, best checkpoint, ordered 677 predictions,
   async expert-stream evidence, finite metrics, clean JUnit, and exact provenance.
+- 2026-09-28: Job 488/498 runtime and parameter audit purpose: connect to Guqq, make an
+  explicit-proxy `git pull --ff-only` in `/home/xmz/expert` the first repository operation, then
+  perform only lightweight read-only inspection of Slurm accounting, artifact timestamps, and the
+  two accepted checkpoints. Count trainable tensor elements from optimizer state without running
+  either model, modifying server source, or submitting/restarting any job.
+- 2026-09-28: Job 488/498 audit follow-up connection purpose: the first connection fast-forwarded
+  to `860eed8`, but this cluster has Slurm accounting storage disabled and the guessed job-498
+  checkpoint directory was wrong. After another no-op explicit-proxy pull, locate only the two
+  accepted artifacts/logs and read their timestamps/checkpoint dictionaries; make no mutations.
+- 2026-09-28: Job 488/498 checkpoint audit connection purpose: after another no-op explicit-proxy
+  pull, use the task virtual environment for a lightweight `torch.load` of the two accepted best
+  checkpoints and print only dictionary keys plus optimizer-state tensor counts. This derives exact
+  trainable parameter totals without model forward execution or artifact modification.
+- 2026-09-28: Job 488/498 checkpoint audit retry purpose: the prior read-only attempt failed before
+  loading because the repository has no `.venv`. After another no-op explicit-proxy pull, use the
+  documented `/home/xmz/expert-envs/dpa4-py310` interpreter and repeat the same bounded metadata-only
+  inspection; do not alter environments or artifacts.
+- 2026-09-28: Job 488/498 checkpoint audit final retry purpose: the second attempt was stopped by a
+  local reverse-forward bind conflict before any remote command output. Reconnect with
+  `ExitOnForwardFailure=no` as documented, reuse the existing loopback proxy for the mandatory first
+  pull, then inspect the two checkpoint dictionaries with the recorded DPA4 interpreter only.
+- 2026-09-28: Job 488/498 checkpoint audit forwarding-disabled connection purpose: the explicit
+  `ExitOnForwardFailure=no` override still exited at the inherited reverse-forward conflict before
+  executing a remote command. Connect with `ClearAllForwardings=yes`, reuse the already-listening
+  server loopback proxy for the mandatory first pull, and perform the same bounded read-only audit.
+- 2026-09-28: Job 488/498 checkpoint audit quoting-safe connection purpose: after consulting the
+  recorded PowerShell-to-SSH lesson, pass the complete fixed remote Bash program in one local
+  single-quoted argument and use a semicolon-free Python expression. Keep the mandatory proxy pull
+  first and print only the job-488 checkpoint key set.
+- 2026-09-28: 64D DPA-relative-PG CUDA smoke purpose: connect to Guqq, first check that
+  `/home/xmz/expert` is the task repository, then make an explicit-proxy `git pull --ff-only` its
+  first repository operation and require exact revision `27532e3`. Inspect scheduler availability
+  and submit only the dedicated 1-epoch, 7/7/7 smoke through
+  `slurm/train_reduced_dpa4_relative_pg_64d.sbatch`, with interval-1 checkpointing and the recorded
+  DPA4 environment. Do not run compute on the login node or modify server source/artifacts.
+- 2026-09-28: 64D smoke submission retry purpose: the preceding connection successfully pulled
+  `27532e3` but stopped before scheduler inspection/submission because the locally supplied full-SHA
+  guard was mistyped; no Slurm job was created. Reconnect, make another explicit-proxy no-op pull
+  first, verify the correct full SHA `27532e34daacf8b81315ae64ecfab565ec6163bc`, and submit the same
+  bounded smoke only.
+- 2026-09-28: 64D smoke fixed-scheduler-query retry purpose: the correct revision guard passed, but
+  PowerShell stripped the custom `sinfo -o` format quotes and remote Bash treated its pipes as
+  commands, stopping before `sbatch`; still no job exists. Reconnect with the mandatory no-op pull,
+  use plain `sinfo` without shell metacharacters, recheck the fixed SHA, and submit the same smoke.
+- 2026-09-28: 64D smoke submission result: the mandatory pull was current at full revision
+  `27532e34daacf8b81315ae64ecfab565ec6163bc`, `compute` was available on mixed-use node221, and the
+  dedicated one-epoch 7/7/7 CUDA smoke was submitted as Slurm job 503. Follow-up connection purpose:
+  first no-op pull again, then read only job 503 scheduler state, bounded logs, summary/JUnit,
+  prediction count, 64D/130,200 provenance, stream-dispatch evidence, and epoch-1 archive metadata.
+- 2026-09-28: Job 503 completed its one-epoch run and emitted a passed-looking report; its 130,196
+  trainable count was correctly explained by 24 smoke edge gates versus 28 in the full split, not by
+  frozen weights. Smoke terminal-audit connection purpose: first no-op pull, then inspect fixed-path
+  summary/JUnit/prediction/archive files, hashes, exact 64D metadata, and async stream evidence only.
+- 2026-09-28: Job 503 terminal-audit retry purpose: the previous connection's no-op pull succeeded,
+  then `squeue` returned invalid-job because completed jobs leave this cluster's live queue and
+  `set -e` stopped before artifact reads. Reconnect pull-first, tolerate only that expected queue
+  absence, and perform the same fixed-path read-only artifact audit.
+- 2026-09-28: Job 503 compact-summary audit purpose: fixed-path inspection proved a clean JUnit,
+  seven predictions, exact `[16,2,2,2,2]`/64D provenance, pinned revision/GPU/runtime, and an epoch-1
+  archive SHA-256 of `ccd297b4...3524fa`. Reconnect pull-first and print only the compact 8 KiB
+  summary for strict checks of stream dispatch, periodic metadata/hash, finite metrics, and model
+  identity; do not transfer checkpoints or modify remote artifacts.
+- 2026-09-28: 64D DPA-relative-PG exact-split preflight purpose: after strict smoke acceptance,
+  connect to Guqq, verify `/home/xmz/expert`, and make an explicit-proxy `git pull --ff-only` the
+  first repository operation. Require corrective revision `b8b2507e843351624b4b8c5cdcb35b438f1e013f`,
+  inspect scheduler availability, and submit exactly one one-epoch full 5,001/637/677 run through
+  `slurm/train_reduced_dpa4_relative_pg_64d.sbatch` with 64 feature shards and interval-1 checkpoint
+  retention. Reuse accepted caches, run no compute on the login node, and require 130,200 parameters,
+  ordered predictions, finite metrics, clean JUnit, 15-stream async dispatch, and a hash-matched
+  epoch-1 archive before formal training.
+- 2026-09-28: 64D preflight submission proxy-recovery purpose: the preceding connection failed on
+  its mandatory first `git pull` because `ClearAllForwardings=yes` prevented a new reverse tunnel
+  while Guqq had no listener at `127.0.0.1:1080`; no scheduler query or submission occurred. Open a
+  normal `ssh Guqq` connection so it can bind the configured loopback-only reverse proxy, then repeat
+  the pull-first revision guard, plain scheduler inspection, and the same single bounded preflight.
+- 2026-09-28: 64D preflight job 504 monitoring purpose: the normal connection restored the reverse
+  proxy, the mandatory pull was current at `b8b2507`, and the single full-split one-epoch job was
+  submitted successfully. On the next connection, pull first again, then inspect only job 504's live
+  queue state and bounded stdout/stderr tail; do not modify artifacts or submit another job.
+- 2026-09-28: 64D preflight job 504 second monitoring purpose: the first check found job 504
+  running on node221 at 1:04 with no emitted error/output tail. Pull first again, then inspect only
+  current queue state and bounded logs; if it has completed, switch to fixed-path read-only artifact
+  acceptance without submitting any replacement.
+- 2026-09-28: 64D preflight job 504 corrected-log monitoring purpose: the second check found it still
+  running at 2:54; the empty tail was due to querying `logs/` instead of the launcher's declared
+  `logs/slurm/` path. Pull first, then read only the live queue and bounded tails of
+  `logs/slurm/dpa4-relative-pg-64d-504.{out,err}`.
+- 2026-09-28: 64D preflight job 504 progress monitoring purpose: corrected logs show only the known
+  TorchScript annotation warnings and no traceback while the job remains active at 3:46. Pull first
+  again, inspect the live queue and short correct-path tails, and perform no mutation/submission.
+- 2026-09-28: 64D preflight job 504 late-progress monitoring purpose: job 504 remains active at 4:44
+  with only the same non-fatal TorchScript warnings. After the mandatory no-op pull, inspect its live
+  state and bounded correct-path logs only; if terminal, begin fixed-artifact acceptance.
+- 2026-09-28: 64D preflight job 504 terminal-transition monitoring purpose: it remains active at
+  6:07 without traceback or new warning class. Pull first, then check only queue state and concise
+  log tails; do not submit another job while 504 is live.
+- 2026-09-28: 64D preflight job 504 bounded recurring-monitor purpose: it remains active at 7:27
+  with no traceback. After pull-first, poll only `squeue` at 30-second intervals within one bounded
+  SSH session until it leaves the live queue or the bounded loop ends; then print short log tails.
+- 2026-09-28: 64D preflight job 504 post-interruption status purpose: the bounded read-only monitor
+  observed job 504 live at 8:52, then the SSH transport closed; the Slurm job itself was not changed.
+  Reconnect, pull first, check current queue state and concise logs, and if terminal audit the fixed
+  summary/JUnit/prediction/archive artifacts without mutation.
+- 2026-09-28: 64D preflight job 504 strict-artifact audit purpose: the job has left the live queue
+  and its summary reports passed 5,001/637/677 output. After pull-first, inspect only fixed job-504
+  files: compact summary provenance/history/metrics/dispatch/checkpoint metadata, JUnit, prediction
+  count/uniqueness, file listing, and independent SHA-256. Treat 24 edges/130,196 parameters as the
+  corrected dataset-specific contract; do not alter or rerun artifacts.
+- 2026-09-28: Job 504 strict-audit quoting-safe retry purpose: the preceding SSH payload failed at
+  remote shell parse time because Windows stripped nested `python -c` quotes; even the first pull did
+  not execute and no artifact was touched. Reconnect and use only fixed-path, quote-free lightweight
+  `grep`, `wc`, `find`, `cat`, and `sha256sum` commands after the mandatory pull.
+- 2026-09-28: Job 504 strict-audit finalization purpose: quote-free inspection confirmed passed
+  5,001/637/677, 64D/130,196, 15/15 async streams, 677 predictions, clean JUnit, exact revision 504,
+  and the reported epoch-1 archive metadata; only the hash glob used a nonexistent subdirectory.
+  Pull first, then stream a base64-encoded read-only verifier through Python stdin to check finite
+  contiguous history and unique finite predictions, and hash the exact root-level archive path.
+- 2026-09-28: Job 504 strict-audit mechanically-verified retry purpose: the prior verifier reached
+  Python but a manually damaged base64 character changed `value` to `valu`; `set -e` stopped before
+  hashing. After consulting and updating `lessons.md`, reconnect pull-first and use a locally
+  round-trip-decoded minimal payload only for history length/epochs and prediction ID uniqueness;
+  use separate quote-free NaN/Infinity checks and exact-path SHA-256 for all remaining evidence.

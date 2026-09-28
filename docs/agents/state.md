@@ -14,8 +14,9 @@ Existing job-488 artifacts and defaults must remain immutable.
    preserving the default interface and checkpoint compatibility.
 2. [x] CLI/Slurm module: add a dedicated `[16,2,2,2,2]` experiment identity and isolated result
    directory; reuse the accepted DPA/routing caches and retain checkpoints every 20 epochs.
-3. [x] Test module: prove exact 64D layout, 130,200 full-split trainable parameters, default 56D preservation,
-   launcher isolation, report provenance, and smoke forward/checkpoint behavior.
+3. [x] Test module: prove exact 64D layout, dataset-derived 24-edge/130,196 trainable parameters,
+   default 56D preservation, launcher isolation, report provenance, and smoke forward/checkpoint
+   behavior.
 4. [ ] Run focused and maintained local checks, commit/push only task changes, then pull-first sync
    Guqq and submit smoke, exact-split preflight, and the formal 200-epoch Slurm job.
 5. [ ] Apply the same strict artifact/metric acceptance as job 488, add the accepted history and
@@ -36,6 +37,24 @@ Existing job-488 artifacts and defaults must remain immutable.
   assertion disproved the initial frozen-constant interpretation: the formal 28-edge configuration
   has 130,200 trainable parameters, while the 7/7/7 smoke material union activates only 24 distinct
   edge-sigma parameters. This data-dependent four-gate difference is now recorded explicitly.
+- 2026-09-28: Strict smoke acceptance passed: exact 7/7/7 splits, 15 expert buckets on 15 CUDA
+  streams, finite history/metrics, clean JUnit, seven predictions, and an independently SHA-matched
+  epoch-1 archive. The next gate is a one-epoch exact 5,001/637/677 preflight at corrective revision
+  `b8b2507`; formal 200-epoch training remains blocked until that preflight passes.
+- 2026-09-28: Exact-split preflight job 504 was submitted through Slurm at revision `b8b2507` with
+  64 DPA feature shards, one epoch, and interval-1 retention. It is now the only active gate before
+  authorizing the dedicated 200-epoch formal job.
+- 2026-09-28: Job 504 completed with a passed exact-split summary, but disproved the planned
+  130,200-parameter acceptance value: the seven retained current PGs induce 24 unique routing edges
+  and therefore 130,196 parameters. The 28-edge/130,200 construction in the test covered all 15
+  executable expert PGs, not the frozen dataset's material-route union. Adjust the test and prose to
+  the exact dataset-derived 24-edge contract, rerun gates, then finish artifact acceptance before
+  authorizing formal training.
+- 2026-09-28: Corrected acceptance now passes 19/19 focused and 323/323 maintained tests. Job 504
+  strictly passes one contiguous finite epoch, exact 5,001/637/677 counts, 677 unique finite
+  predictions, clean JUnit, 15/15 async CUDA streams, and an independently SHA-matched archive at
+  revision `b8b2507`. The formal 200-epoch job is authorized after committing and pushing this
+  dataset-specific test/documentation correction.
 
 ## Current snapshot - DPA-embedded GMTNet (2026-09-28)
 
@@ -213,6 +232,33 @@ payload did not activate the recorded Python environment; no training or accepte
   gates, finite metrics, five-model comparison coverage, 19/19 artifact hashes, accepted curve hashes,
   the 72-hour launcher, and an identical local/remote commit. The training/test/reporting objective is
   complete; unrelated user worktree changes remain unstaged.
+
+## Current snapshot - illustrative paper-results package (2026-09-23)
+
+Completed a self-contained `expected_result/` package demonstrating how the paper's Results section
+could be organized. Accepted historical benchmark values are distinguishable from hypothetical
+projections; every synthetic value and figure carries a non-empirical watermark and must not be cited
+as an experiment. The package contains reproducible plotting/validation code, tabular data, four
+publication-style figures, two tables, captions, and a Results-section outline.
+
+## Current plan - illustrative paper-results package
+
+1. [x] Freeze an explicit provenance/status schema separating accepted and illustrative rows.
+2. [x] Create deterministic CSV inputs and a plotting script for the main comparison, routing
+   ablation, stratified benefit, and accuracy-efficiency trade-off.
+3. [x] Write figure captions and a Results organization draft that states hypotheses, statistical
+   tests, limitations, and the evidence required to replace placeholders.
+4. [x] Regenerate artifacts, validate CSV/SVG/PNG/Markdown paths and labels, and visually inspect the
+   figures at original resolution.
+
+## Change log - illustrative paper-results package
+
+- 2026-09-23: Started the user-requested expected-results mock-up. Scope is local documentation and
+  deterministic visualization only; no synthetic number will be represented as a completed run.
+- 2026-09-23: Completed four SVG/PNG figures, two generated Markdown tables, source CSVs, captions,
+  Results narrative, and an independent validator. After removing SVG timestamp metadata, consecutive
+  regeneration is byte-deterministic; validation, compilation, link/XML/image/status checks, scoped
+  whitespace checks, and original-resolution visual inspection all pass.
 
 ## Current snapshot - 56D relative-PG parent-DAG training (2026-09-22)
 

@@ -6,8 +6,8 @@ Plan:
 
 - prove an explicit cached-backbone hidden layout reaches the interface, adaptation, all 15 experts,
   router, and readout while the omitted override remains exactly `[8,2,2,2,2]`/56D;
-- assert `[16,2,2,2,2]` has dimension 64 and exactly 130,200 trainable parameters under the formal
-  15-expert/28-edge configuration;
+- assert `[16,2,2,2,2]` has dimension 64 and exactly 130,196 trainable parameters under the frozen
+  dataset's 15-expert/24-edge routing configuration;
 - require the widened CLI summary/checkpoint provenance to record exact multiplicities/dimension and
   reject malformed or non-positive five-entry profiles;
 - require a dedicated Slurm launcher and result directory so job 488 artifacts cannot be overwritten,
@@ -22,9 +22,10 @@ Expected result: a separately reproducible 64D DPA-relative-PG experiment whose 
 change from job 488 is doubling the `0e` hidden multiplicity from 8 to 16.
 
 Local result: focused reduced-benchmark/trainer coverage passed 33/33; after tightening integer
-validation, the seven new/affected core cases passed 7/7. The exact formal configuration constructs
-a 64-component `[16,2,2,2,2]` model with 130,200 trainable parameters, while the default constant
-remains `[8,2,2,2,2]`. The complete maintained suite passed 323/323 in 357.52 seconds. Python
+validation, the seven new/affected core cases passed 7/7. The initial broader 28-edge superset
+constructed a 64-component `[16,2,2,2,2]` model with 130,200 trainable parameters; the corrected
+frozen dataset union contains 24 edges and 130,196 parameters, while the default constant remains
+`[8,2,2,2,2]`. The complete maintained suite passed 323/323 in 357.52 seconds. Python
 compilation, CLI help, dedicated-launcher Bash syntax, and scoped whitespace checks also pass.
 Remaining acceptance is the real Guqq smoke, full one-epoch preflight, and formal 200-epoch run.
 
@@ -33,6 +34,35 @@ assertion incorrectly attributed the four-parameter difference to frozen readout
 failed (`130200 != 130196`). Direct `requires_grad` inspection proved all 130,200 formal-model
 parameters trainable; smoke's 24 material edge IDs simply instantiate four fewer scalar gates than
 the full split's 28. The corrected exact-count assertion passed 1/1 before preflight.
+
+Guqq smoke result: job 503 passed at revision `27532e3` with exact 7/7/7 splits, seven predictions,
+finite one-epoch history/test metrics, and zero JUnit failures/errors. Runtime evidence records the
+exact `[16,2,2,2,2]`/64D layout and grouped asynchronous execution with 15 expert buckets on 15
+distinct CUDA streams. The reported epoch-1 archive is 25,312,660 bytes; independent SHA-256
+recomputation produced `ccd297b40afddc7396e2568fcc40a196b657e0a3ebb68419793f00ddcc3524fa`,
+matching the summary. Full-split preflight must reproduce the same dataset-derived 24 material edge
+gates and report 130,196 trainable parameters before formal training is submitted.
+
+Preflight parameter-correction result: job 504's passed full-split summary also reports 130,196,
+which proves the smoke/full equality is intentional. Direct construction from the frozen
+`REDUCED_POINT_GROUPS` and the offline class DAG yields exactly 24 unique edge IDs; the previous
+28-edge test list was the broader union implied by all 15 executable expert PGs. The acceptance test
+must therefore derive the 24-edge union from the same frozen dataset PG contract and require 130,196
+parameters. The 28-edge/130,200 value remains only a theoretical superset, not this experiment's
+registered model.
+
+Correction-test result: the dataset-derived focused suite passes 19/19. An initial unscoped
+`python -m pytest -q` invocation was invalid for the maintained-suite gate because it recursively
+collected vendored/upstream suites under `data/sources`, `data/vendor`, and generated result trees;
+it stopped with 60 third-party environment/permission collection errors in 217.45 seconds. This is
+a scope error, not an accepted test result. The unchanged maintained standard is the repository's
+own `python -m pytest tests -q` suite, which is rerun before commit.
+
+Final correction gate: `python -m pytest tests -q` passes 323/323 in 788.83 seconds. Job 504 has one
+contiguous finite history epoch, exact 5,001/637/677 splits, 677 unique prediction IDs with no
+serialized NaN/Infinity, clean JUnit, 15 expert buckets on 15 CUDA streams, and exact
+`[16,2,2,2,2]`/64D/130,196 provenance. Its 25,312,660-byte epoch-1 archive independently hashes to
+`9fa335f58813469235aa4986e5cb60224533d0c6c3b8d3aab631c7c9f83b90f4`, matching the summary.
 
 ## 2026-09-28 - DPA-embedded GMTNet
 
@@ -235,6 +265,39 @@ Actual result:
   in 728.38 seconds. An initial unscoped repository-root invocation collected vendored MatTen tests
   and hit its external `torch_spline_conv` DLL mismatch; rerunning the established project scope
   `pytest tests` passed without lowering coverage.
+
+## 2026-09-23 - Illustrative paper-results package
+
+Plan:
+
+- require every CSV row to carry `status` and `source`, and reject an illustrative row presented as
+  accepted evidence;
+- generate SVG and PNG figures deterministically from tracked CSV files using a headless backend;
+- verify all figures contain a visible `ILLUSTRATIVE / NOT EXPERIMENTAL` notice and accessible labels;
+- validate finite numeric values, confidence-interval ordering, expected method/ablation coverage,
+  and consistency between tables and plotted data;
+- check Markdown links, captions, UTF-8 text, SVG XML validity, PNG dimensions, Python compilation,
+  and task-scoped whitespace before completion;
+- visually inspect every PNG at original resolution for clipping, overlap, contrast, and legibility.
+
+Expected result: a publication-style organizational mock-up that is safe to use for planning but
+cannot be mistaken for completed experimental evidence.
+
+Actual result:
+
+- `python expected_result/generate_expected_results.py` completed and generated four SVG/PNG pairs
+  plus two Markdown tables from four tracked CSV inputs;
+- `python expected_result/validate_expected_results.py` passed before and after regeneration,
+  covering provenance/status fields, accepted historical Fnorm locks, SVG XML and watermark text,
+  U+FFFD exclusion, PNG dimensions, Markdown links, table labels, and evidence-status separation;
+- Python compilation passed for both generation and validation scripts;
+- the first byte-determinism comparison identified only SVGs as changing because Matplotlib emitted
+  creation timestamps; setting SVG `Date` metadata to `None` fixed the issue, and a delayed second
+  regeneration preserved every figure/table SHA-256 exactly;
+- task-scoped `git diff --check` passed with only existing LF-to-CRLF notices;
+- all four original-resolution PNGs were visually inspected after two layout iterations: titles,
+  axes, uncertainty intervals, legends, annotations, and watermarks are legible without clipping or
+  overlap. Projected values remain visibly marked as non-experimental.
 
 ## 2026-09-22 - Training-curve Unicode audit
 

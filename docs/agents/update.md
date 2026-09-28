@@ -12,6 +12,21 @@
   trainable parameters. Follow-up inspection showed this is the 24-edge smoke model; the formal
   28-edge model has 130,200 trainable parameters. The four-parameter delta is material-edge coverage,
   not frozen weights. The corrected assertion precedes full preflight.
+- 2026-09-28: Strict job-503 acceptance passed: exact smoke splits/predictions, finite metrics,
+  clean JUnit, 15-way asynchronous CUDA expert dispatch, and an independently SHA-matched epoch-1
+  archive. Proceeding to the one-epoch full 5,001/637/677 preflight at revision `b8b2507`; the
+  200-epoch job will be submitted only after exact 130,200-parameter and artifact acceptance.
+- 2026-09-28: Submitted full-split one-epoch preflight as Slurm job 504 at exact revision `b8b2507`.
+  It reuses the accepted 64-shard DPA/routing caches and writes only to the isolated 64D result
+  directory; formal training remains gated on terminal artifact acceptance.
+- 2026-09-28: Job 504 completed with passed 5,001/637/677 output and exposed a test-contract error:
+  both smoke and full data activate the same 24 unique material edges, so the actual 64D model has
+  130,196 parameters. The earlier 28-edge/130,200 assertion represented the wider 15-expert DAG
+  superset. Correcting the dataset-specific test and documentation before formal submission.
+- 2026-09-28: Corrected the 64D test to derive the exact 24-edge union from the frozen seven-PG
+  protocol; focused tests pass 19/19 and the maintained suite passes 323/323. Strict job-504
+  acceptance also passed all split, prediction, finite-value, JUnit, async-dispatch, revision, and
+  checkpoint-hash gates. Formal 200-epoch training is now authorized after commit/push/sync.
 
 - 2026-09-28: Started the DPA-embedded GMTNet ablation. The official GMTNet body and complete
   optimization protocol remain fixed. Frozen DPA4 O(3) features will be converted to 640 per-copy
@@ -101,6 +116,14 @@
   training, test inference, strict acceptance, five-model comparison, deterministic curve, 19-file
   integrity manifest, local visual/hash verification, 72-hour configuration, and remote revision are
   all proven. The relative-PG training/test/reporting cycle is complete.
+
+- 2026-09-23: Started a reproducible `expected_result/` paper-layout prototype. It will preserve
+  accepted historical benchmark values, label all projected values as illustrative, and provide
+  figures/tables/captions plus a Results-section narrative without claiming new experimental evidence.
+- 2026-09-23: Completed the expected-results package with four publication-style SVG/PNG figures,
+  two generated tables, four provenance-labelled CSV inputs, a claim/evidence Results outline, and
+  generation/validation scripts. All hypothetical content is visibly watermarked; deterministic
+  regeneration, validation, compilation, whitespace checks, and visual QA pass.
 
 - 2026-09-22: Began the requested training/test/curve/benchmark cycle for the new 56D full-PG
   relative-position parent-DAG model. The existing job-472 result is a historical static-router,
