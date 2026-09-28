@@ -78,6 +78,81 @@
   acceptance passed all 677 IDs in exact frozen-manifest order, finite prediction/target components,
   clean JUnit, `[128, 640]` checkpoint weight shape, and epoch-1 archive SHA-256
   `e175b8d6...6403e37`. Formal training is authorized after the corrected provenance/evidence commit.
+- Formal-submission connection purpose: pull evidence revision `2d80145` first, verify that it
+  contains implementation parent `6e3d26a` and that jobs 496/497 remain terminal, then submit the
+  200-epoch DPA-embedded GMTNet configuration with batch 64, seed 42, GMTNet learning-rate/loss
+  protocol, and exact interval-20 checkpoints through Slurm. No compute will run on the login node.
+- Formal-submission first result: pull fast-forwarded to `2d80145`, but the manually supplied full
+  SHA assertion contained the wrong suffix and correctly failed before `sbatch`; no job was submitted.
+  Follow-up connection purpose: pull first, verify the locally obtained exact full SHA
+  `2d8014557916fa9e0dfdb3f777cac3cced4e859e` and implementation ancestry, then submit the unchanged
+  formal configuration.
+- Formal-submission result: exact SHA and implementation-ancestry checks passed; Slurm accepted
+  formal job `498` with 200 epochs and interval-20 archives. Follow-up connection purpose: pull first
+  and inspect only job 498 queue state, process/resource activity, bounded logs, and checkpoint
+  timestamps to confirm that formal optimization has started without error.
+- Initial formal progress result: job 498 was `RUNNING` on node221 at 00:59 and had completed epochs
+  1--2, with finite losses and a 3,006,080-byte best checkpoint. Bounded stderr contains only known
+  annotation/CUDA-context warnings and no traceback. Follow-up connection purpose: pull first, then
+  read only current queue state, latest epoch lines, interval archives, and bounded stderr for job 498.
+- Subsequent query result: a new SSH again found occupied 1080 forwarding and its bounded proxy pull
+  exited nonzero before scheduler/log inspection; job 498 was untouched. Follow-up connection purpose:
+  inspect current-user SSH/pull processes and 1080 listener only, identify any task-owned orphan, and
+  restore a fresh forwarding session without affecting the Slurm allocation.
+- Listener inspection result: the only stale task connection is `sshd: xmz@notty` PID `3436638`,
+  created by this task's 13:00 progress query; no orphaned Git child remains. Job 498's separate Slurm
+  shell/Python PIDs are healthy and must not be touched. Follow-up connection purpose: terminate only
+  stale SSH PID 3436638, verify port 1080 is released, and leave the training allocation unchanged.
+- Cleanup result: PID 3436638 disappeared, port 1080 was released, and job 498 remained `RUNNING` at
+  07:11 on node221. Follow-up connection purpose: establish one hidden local `ssh -N` proxy-holder
+  session with `ExitOnForwardFailure=yes`, as required by the updated network guidance, so later
+  short monitoring connections reuse a live listener instead of leaving unusable forwarding stubs.
+- Proxy-holder result: hidden local SSH PID `30764` remains active after startup. Follow-up connection
+  purpose: reuse its expected occupied-1080 listener, prove proxy health with a bounded request, make
+  explicit-proxy pull the first repository operation, then read only job 498's latest epochs and
+  archives. The holder will remain active while formal training is monitored.
+- Holder-backed progress result: the proxy returned HTTP 200, pull succeeded, and job 498 was healthy
+  at epoch 51 after 09:02 with exact epoch-20/40 archives present. Training loss was finite and had
+  fallen from `5.2311` at epoch 1 to `2.9622` at epoch 51. Follow-up connection purpose: pull first
+  through the same live holder, then inspect only latest epochs, queue state, archives, and stderr.
+- Mid-run result: job 498 reached epoch 93 at 15:46 with finite training/validation values and exact
+  epoch-20/40/60/80 archives. Bounded stderr remains limited to known warnings. Follow-up connection
+  purpose: reuse the live holder, pull first, and read only later epoch/archive/queue health evidence.
+- Next progress connection purpose: reuse the verified live holder, make explicit-proxy pull the
+  first repository operation, then read only job 498's queue state, latest contiguous epoch lines,
+  interval archive list, and bounded stderr. Do not alter the allocation or its outputs.
+- Queue query result: pull succeeded, and `squeue` returned `Invalid job id specified`, indicating
+  job 498 had already left active scheduler state; `set -e` stopped before log reads. Follow-up
+  connection purpose: pull first, then inspect only completion artifacts, summary tail, archive list,
+  prediction count, JUnit, and bounded stderr before retrieving results for local strict acceptance.
+- Completion-artifact query result: local holder PID 30764 had exited between tool sessions while its
+  remote listener remained occupied; the bounded pull therefore exited before artifact reads. Job 498
+  is already terminal and untouched. Follow-up connection purpose: inspect current-user SSH processes
+  to identify only the holder's stale remote PID, release it, and then use one fresh connection for
+  pull-first completion inspection.
+- Holder inspection result: the sole stale task forwarding process is remote `sshd: xmz@notty` PID
+  `3455229`, started at 14:14 by the failed holder-backed query; no Slurm training process remains.
+  Follow-up connection purpose: terminate only PID 3455229, verify 1080 is free, and disconnect before
+  the final fresh pull/inspection connection.
+- Holder cleanup result: PID 3455229 disappeared and port 1080 is free. Final inspection connection
+  purpose: establish a fresh tunnel, prove proxy health, make explicit-proxy pull the first repository
+  operation, then read only job 498 completion artifacts, archives, prediction count, JUnit, and
+  bounded logs before result transfer.
+- Final inspection result: fresh proxy returned HTTP 200, pull succeeded, and job 498 has a passed
+  200-epoch summary, exact 5,001/637/677 splits, 677 predictions, all ten 20--200 archives, and no
+  traceback. Preliminary test metrics are RMSE `23.795513`, Fnorm `17.019165`, EwT25 `64.4018%`,
+  EwT10 `25.8493%`, and EwT5 `9.6012%`. Result-transfer connection purpose: retrieve only files
+  matching `*498*` into ignored local `tmp/dpa4-gmtnet-498/` for complete hash/order/JUnit/checkpoint
+  acceptance and seven-experiment plotting.
+- First result transfer was closed by Vlab after completing epoch-20 through epoch-180 archives;
+  epoch-200 is partial and the remaining small artifacts were not started. Server artifacts are
+  unchanged. Retry connection purpose: transfer only epoch-200, validation-best checkpoint, and
+  non-checkpoint `*498*` files into the same ignored directory, replacing the partial local file.
+- Retry transfer result: all remaining files arrived successfully. Local strict acceptance passed
+  200 contiguous finite epochs, best epoch 196, exact split/order/Git/official/DPA provenance, ten
+  archive byte/SHA/embedded-epoch checks, `[128, 640]` best-checkpoint weight shape, 677 finite
+  symmetric predictions, exact metric recomputation, and clean JUnit. Summary/prediction SHA-256 are
+  `4e554775...c176b31` and `de9c4406...69e0f42`; formal experiment acceptance is complete.
 
 ## 2026-09-28 - Formal job 488 progress query
 

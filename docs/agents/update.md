@@ -17,6 +17,11 @@
   predictions, finite tensors/metrics, clean JUnit, `[128, 640]` atom-embedding checkpoint shape,
   and SHA-matched archive. Formal 200-epoch training with interval-20 checkpoints is authorized once
   the corrected 3200D parity-completed provenance and preflight evidence are committed and synced.
+- 2026-09-28: Formal DPA-embedded GMTNet job 498 completed 200/200 and passed strict acceptance with
+  best epoch 196, ten verified archives, 677 ordered finite predictions, clean JUnit, and exact
+  recomputed metrics. It is best among all seven experiments on every held-out metric: RMSE 23.7955,
+  Fnorm 17.0192, EwT25 64.40%, EwT10 25.85%, EwT5 9.60%. Regenerated and visually accepted the
+  seven-experiment figure with explicit contiguous-series semantics and updated the benchmark report.
 
 - 2026-09-25: Paused DPA-relative-PG remote synchronization to incorporate the refined execution
   contract. The dispatcher will plan routes per structure, collate all structures assigned to each

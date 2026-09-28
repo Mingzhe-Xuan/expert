@@ -40,6 +40,13 @@
   by expert, executes each expert once over its collated sub-batch, and launches the 15 active expert
   buckets on 15 distinct CUDA streams. Job 488 completed 200 epochs, selected epoch 95 at validation
   MAE `4.3895916939`, and retained exact epoch-20 through epoch-200 archives.
+- DPA-embedded GMTNet keeps the pinned official GMTNet graph, message passing, symmetry masks,
+  tensor readout, Huber/AdamW schedule, batch size, seed, split, and 200 epochs. Its sole model-input
+  change is replacing the fixed 92D CGCNN descriptor with the frozen parity-completed DPA4 feature:
+  signed even scalars and one norm per other irrep copy reduce `3200 -> 640`, followed by a learned
+  `640 -> 128` atom projection. This adds 70,144 projection parameters versus `92 -> 128`, so the
+  experiment is architecture/training matched but not parameter-count matched. Job 498 selected
+  epoch 196 at validation MAE `4.0616760254` and retained exact epoch-20 through epoch-200 archives.
 - GMTNet model: pinned official dielectric implementation.
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
@@ -80,16 +87,19 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories through DPA relative-PG
+## All accepted training histories through DPA-embedded GMTNet
 
-![All six accepted experiment histories](all_experiment_training_history.svg)
+![All seven accepted experiment histories](all_experiment_training_history.svg)
 
-The six-panel figure draws only fields actually present in each SHA-pinned summary and does not
-interpolate historical gaps. DPA relative-PG converges much more stably than CGCNN relative-PG:
+The six-panel figure covers seven experiments, draws only fields actually present in each SHA-pinned
+summary, and does not interpolate historical gaps. Every drawn line contains contiguous epochs;
+distinct line styles/markers expose exact overlaps that previously looked like broken curves.
+DPA relative-PG converges much more stably than CGCNN relative-PG:
 after its epoch-95 selection point, validation Fnorm changes only from `25.4673` to `25.6309` by
 epoch 200, whereas CGCNN relative-PG selects epoch 28 and ends at `27.7946`. GMTNet still shows the
 largest train/validation separation, but its historical runner did not record validation loss or
-validation Fnorm, so those series are intentionally absent.
+validation Fnorm, so those series are intentionally absent. DPA-embedded GMTNet uses that same
+history schema; it selects epoch 196 at validation MAE `4.0617`, below original GMTNet's `4.1133`.
 
 ## Metrics
 
@@ -103,14 +113,21 @@ validation Fnorm, so those series are intentionally absent.
 | Model | RMSE ↓ | Fnorm ↓ | EwT 25% ↑ | EwT 10% ↑ | EwT 5% ↑ |
 |---|---:|---:|---:|---:|---:|
 | DPA4 B+A+PGE+R full_pg (current-group only) | 26.166445 | 31.539129 | 12.26% | 2.51% | 1.03% |
-| GMTNet | 25.449894 | 19.169209 | **53.03%** | **18.32%** | **7.39%** |
+| GMTNet | 25.449894 | 19.169209 | 53.03% | 18.32% | 7.39% |
 | CGCNN B+A+PGE+R full_pg (current-group only) | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
 | CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors) | 26.144173 | 19.204304 | 41.51% | 11.52% | 4.87% |
 | CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | **25.168913** | **18.816113** | 46.68% | 14.48% | 5.76% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
+| DPA-embedded GMTNet | **23.795513** | **17.019165** | **64.40%** | **25.85%** | **9.60%** |
 
-The DPA relative-PG run is best on RMSE and Fnorm, while GMTNet remains best on all three relative
-EwT thresholds. Relative to the DPA4 current-group row, DPA relative-PG reduces RMSE/Fnorm by
+The DPA-embedded GMTNet run ranks first on all five held-out metrics. Relative to original GMTNet,
+RMSE/Fnorm fall by `1.654383`/`2.150045`, while EwT25/EwT10/EwT5 rise by
+`11.37`/`7.53`/`2.22` percentage points. Relative to DPA relative-PG, RMSE/Fnorm fall by
+`1.373400`/`1.796947`, and the three EwT rates rise by `17.73`/`11.37`/`3.84` points. This directly
+supports using frozen DPA features inside GMTNet, although the wider atom projection adds 70,144
+trainable weights and prevents a strictly parameter-matched attribution.
+
+Relative to the DPA4 current-group row, DPA relative-PG reduces RMSE/Fnorm by
 `0.997532`/`12.723013` and raises EwT25/EwT10/EwT5 by `34.42`/`11.96`/`4.73` percentage points.
 DPA4 current-group's best checkpoint was epoch 12
 (`validation_loss=0.9333040631`); GMTNet's was epoch 93 (`validation_mae=4.1132789`); CGCNN's was
@@ -206,6 +223,10 @@ than stable rankings.
   ten byte/SHA-verified interval archives, and 15/15 asynchronous CUDA expert streams with up to 37
   structures in one expert sub-batch. Slurm accounting is disabled, so terminal status is established
   by the complete accepted artifact set rather than `sacct`.
+- DPA-embedded GMTNet Slurm job 498: local strict acceptance passed 200/200 contiguous epochs, best
+  epoch 196, exact 5,001/637/677 splits, 677 manifest-ordered finite symmetric predictions, clean
+  JUnit, recomputed metrics, `[128, 640]` atom-projection checkpoint shape, and ten byte/SHA-verified
+  interval archives. Its source/input/output provenance is `3200 -> 640 -> 128`.
 - Five-model comparator job 479: status `passed`; all five files contain the identical ordered 677
   IDs and pass the symmetric target eigenvalue-equivalence gate. Curve job 480 produced the accepted
   SVG/PNG. Replacement manifest job 484 (for the environment-only failure of job 483) completed with
@@ -236,9 +257,12 @@ than stable rankings.
 - DPA relative-PG prediction and summary SHA-256:
   `f9b11754e213d773887fccb04f0231ecc7dcd8f9ea9469db1a4fecc5f1764ecb` and
   `7d1ec3aa604fa5885164232b2bc77276f4f177bd1ef8ef44519638db6614ed93`.
-- Unified six-model history SVG/PNG SHA-256:
-  `5005c6a4a7e3cf663c2a06069a1335b9b1e3ad154481507e325b2824ab7fdcba` and
-  `70bb6f69f38a170840a1b5280f4098377df40dc9addbea8a64e376b71cbdf6fc`.
+- DPA-embedded GMTNet prediction and summary SHA-256:
+  `de9c44069b4e595b0a8c24d9ce7cc13b1ac4ed2b3382136fdf05fe0ac69e0f42` and
+  `4e554775dacd000297f8b6ca0fcaf1b2fe3c522785302c33751dc0201c176b31`.
+- Unified seven-model history SVG/PNG SHA-256:
+  `9a647175d127890034ae77350299fea21207ad80f065d4799da078965642d51a` and
+  `1a715b047124fbb6598e4576c7d8f410043f6d3a2d03ad0c1737be621d34c50f`.
 - Five-model comparison JSON and table SHA-256:
   `ddf28f44be8f9272fb39ee6c813081f242c38c69cc39e7a6dd402be9e23f426e` and
   `f8751f301500a9d3c14d7d074a2c6351f59b4dc45ee3e65974dbc291d409f0ea`.

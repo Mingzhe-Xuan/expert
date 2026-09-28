@@ -10,6 +10,8 @@ Plan:
   node counts, keeps baseline defaults unchanged, and reports embedding provenance;
 - cover cache reuse, smoke/full split selection, CLI failure reports, Slurm resource/environment
   gates, periodic checkpoint metadata, and plot ingestion;
+- render the unified figure with distinct line styles/markers and an explicit contiguous-series note
+  so exact overlap or absent historical fields cannot be mistaken for broken epoch sequences;
 - run focused tests, the full maintained suite, compilation, Bash syntax, scoped whitespace, then a
   real Guqq smoke and exact-split preflight before authorizing 200 epochs.
 
@@ -37,6 +39,23 @@ match frozen test-manifest order. Every prediction/target component is finite, J
 failures/errors, and checkpoint metadata matches the reported `3200 -> 640 -> 128` representation.
 The saved `atom_embedding.weight` is exactly `[128, 640]`; the 3,008,170-byte epoch-1 archive matches
 SHA-256 `e175b8d632dfac13396689b32fb5f9a8547a0f149712ab42977ee34116403e37`.
+
+Unified-plot readability change result: distinct line styles and sparse markers now supplement color,
+and the subtitle explicitly states that every drawn series is contiguous while absent historical
+metrics are not interpolated and exact overlaps may occlude a line. The affected suite passed 14/14;
+the full maintained suite passed 316/316 in 335.88 seconds.
+
+Six-source preflight rendering produced a valid SVG/PNG and was inspected at original resolution.
+Line identities remain distinguishable where colors overlap, the 42-epoch historical DPA series ends
+honestly rather than being extended, the missing GMTNet validation-objective/Fnorm fields remain
+absent, and the title, subtitle, six panels, bars, and two-row legend do not overlap.
+
+Formal job 498 acceptance result: all 200 history epochs are contiguous and finite; best epoch 196
+equals the minimum validation MAE; all ten epoch-20 archives match recorded byte counts/SHA-256 and
+embedded epochs; the best checkpoint records `[128, 640]`; all 677 predictions match frozen manifest
+order and are finite/symmetric; recomputed test metrics exactly match the summary; and JUnit is clean.
+Final seven-source SHA-gated rendering produced valid SVG/PNG, was inspected at original resolution,
+and keeps every legend entry, panel, marker, bar, title, and explanatory subtitle legible.
 
 ## 2026-09-28 - Unified history final rendering
 

@@ -252,6 +252,7 @@ def test_all_experiment_history_plot_preserves_missing_metrics(tmp_path) -> None
     text = svg.read_text(encoding="utf-8")
     assert "all recorded experiment histories" in text
     assert "current-PG" in text and "GMTNet" in text
-    assert "historical gaps are not interpolated" in text
+    assert "Every drawn series has contiguous epochs" in text
+    assert "exact overlaps may occlude a line" in text
     assert "\ufffd" not in text
     assert png.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"

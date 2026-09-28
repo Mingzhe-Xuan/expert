@@ -233,6 +233,12 @@ def render_all_experiment_histories(
     )
     palette = plt.get_cmap("tab10")
     colors = {label: palette(index % 10) for index, (label, _) in enumerate(summaries)}
+    line_styles = ("-", "--", "-.", ":", (0, (5, 1)), (0, (3, 1, 1, 1)), (0, (1, 1)))
+    markers = ("o", "s", "^", "D", "v", "P", "X")
+    styles = {
+        label: (line_styles[index % len(line_styles)], markers[index % len(markers)])
+        for index, (label, _) in enumerate(summaries)
+    }
     for axis, aliases, title in panels:
         plotted = 0
         for label, summary in summaries:
@@ -245,6 +251,10 @@ def render_all_experiment_histories(
                 [float(row[field]) for row in history],
                 label=label,
                 color=colors[label],
+                linestyle=styles[label][0],
+                marker=styles[label][1],
+                markersize=2.4,
+                markevery=max(1, len(history) // 8),
                 linewidth=1.35,
             )
             plotted += 1
@@ -269,7 +279,16 @@ def render_all_experiment_histories(
     metric_axis.set_title("Held-out test Fnorm", loc="left", fontweight="bold")
     metric_axis.grid(axis="x", alpha=0.18, linewidth=0.6)
     handles = [
-        plt.Line2D([0], [0], color=colors[label], linewidth=2, label=label)
+        plt.Line2D(
+            [0],
+            [0],
+            color=colors[label],
+            linestyle=styles[label][0],
+            marker=styles[label][1],
+            markersize=3.0,
+            linewidth=2,
+            label=label,
+        )
         for label, _ in summaries
     ]
     figure.legend(handles=handles, loc="outside lower center", ncol=min(4, len(handles)), frameon=False)
@@ -282,7 +301,8 @@ def render_all_experiment_histories(
     figure.text(
         0.5,
         1.005,
-        "Only metrics present in each accepted summary are drawn; historical gaps are not interpolated.",
+        "Every drawn series has contiguous epochs; absent historical metrics are not interpolated, "
+        "and exact overlaps may occlude a line.",
         ha="center",
         color="#53606B",
     )

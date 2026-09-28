@@ -17,7 +17,7 @@ components must never be treated as scalars.
    accepted GMTNet graph cache; document inputs, outputs, protocol identity, and failure gates.
 3. [x] Pass focused/full local tests, commit/push, synchronize Guqq under the current SOCKS rules,
    then run real smoke and exact-split preflight before formal 200-epoch training.
-4. [ ] Strictly accept predictions/metrics/history, add the experiment to the unified plot, compare
+4. [x] Strictly accept predictions/metrics/history, add the experiment to the unified plot, compare
    against GMTNet and DPA-relative-PG, update documentation, and commit/push the final evidence.
 
 ## Change log - DPA-embedded GMTNet
@@ -46,6 +46,12 @@ components must never be treated as scalars.
   equality for all 677 test predictions, finite tensors, clean JUnit, and a SHA-verified archive.
   Checkpoint inspection proves the sole input override has weight shape `[128, 640]`. The formal
   200-epoch, interval-20 run is authorized after committing the corrected provenance documentation.
+- 2026-09-28: Formal job 498 completed and passed strict local acceptance: 200 contiguous epochs,
+  best epoch 196, ordered 677 finite symmetric predictions, clean JUnit, recomputed metrics, exact
+  `[128, 640]` checkpoint input shape, and ten byte/SHA-matched archives. It ranks first across all
+  seven experiments on RMSE `23.795513`, Fnorm `17.019165`, EwT25 `64.40%`, EwT10 `25.85%`, and
+  EwT5 `9.60%`. The unified seven-experiment figure now uses distinct line styles/markers, explicitly
+  states the contiguous/missing/overlap semantics, and passed original-resolution visual inspection.
 
 ## Current snapshot - expert-batched asynchronous dispatch (2026-09-28)
 
