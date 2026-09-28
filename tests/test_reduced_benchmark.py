@@ -124,6 +124,9 @@ def test_scalar_widened_relative_pg_has_expected_layout_and_parameter_count() ->
     assert tuple(term.multiplicity for term in hidden_layout.terms) == (16, 2, 2, 2, 2)
     assert hidden_layout.dimension == 64
     assert sum(parameter.numel() for parameter in model.parameters()) == 130_200
+    assert sum(
+        parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+    ) == 130_200
 
 
 @pytest.mark.parametrize(

@@ -14,7 +14,7 @@ Existing job-488 artifacts and defaults must remain immutable.
    preserving the default interface and checkpoint compatibility.
 2. [x] CLI/Slurm module: add a dedicated `[16,2,2,2,2]` experiment identity and isolated result
    directory; reuse the accepted DPA/routing caches and retain checkpoints every 20 epochs.
-3. [x] Test module: prove exact 64D layout, 130,200 trainable parameters, default 56D preservation,
+3. [x] Test module: prove exact 64D layout, 130,200 full-split trainable parameters, default 56D preservation,
    launcher isolation, report provenance, and smoke forward/checkpoint behavior.
 4. [ ] Run focused and maintained local checks, commit/push only task changes, then pull-first sync
    Guqq and submit smoke, exact-split preflight, and the formal 200-epoch Slurm job.
@@ -32,6 +32,10 @@ Existing job-488 artifacts and defaults must remain immutable.
   launcher/result directory. Focused tests pass 33/33, the new/affected core checks pass 7/7, and
   the complete maintained suite passes 323/323 in 357.52 seconds. Compilation, CLI help, Bash syntax,
   and scoped whitespace checks pass; next is an isolated commit/push and real Guqq CUDA smoke.
+- 2026-09-28: Real smoke job 503 completed with 130,196 trainable parameters. A corrective local
+  assertion disproved the initial frozen-constant interpretation: the formal 28-edge configuration
+  has 130,200 trainable parameters, while the 7/7/7 smoke material union activates only 24 distinct
+  edge-sigma parameters. This data-dependent four-gate difference is now recorded explicitly.
 
 ## Current snapshot - DPA-embedded GMTNet (2026-09-28)
 

@@ -28,6 +28,12 @@ remains `[8,2,2,2,2]`. The complete maintained suite passed 323/323 in 357.52 se
 compilation, CLI help, dedicated-launcher Bash syntax, and scoped whitespace checks also pass.
 Remaining acceptance is the real Guqq smoke, full one-epoch preflight, and formal 200-epoch run.
 
+Smoke parameter-audit result: job 503 reported 130,196 trainable parameters. The first follow-up
+assertion incorrectly attributed the four-parameter difference to frozen readout constants and
+failed (`130200 != 130196`). Direct `requires_grad` inspection proved all 130,200 formal-model
+parameters trainable; smoke's 24 material edge IDs simply instantiate four fewer scalar gates than
+the full split's 28. The corrected exact-count assertion passed 1/1 before preflight.
+
 ## 2026-09-28 - DPA-embedded GMTNet
 
 Plan:

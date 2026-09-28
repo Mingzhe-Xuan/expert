@@ -8,6 +8,10 @@
   validation, exact trainable-parameter reporting, and dedicated cache-reusing Slurm launcher. The
   focused suite passes 33/33 and the full maintained suite passes 323/323; compilation, CLI help,
   Bash syntax, and scoped whitespace gates pass. Next is isolated commit/push and Guqq smoke.
+- 2026-09-28: CUDA smoke job 503 completed and reported the intended 64D layout plus 130,196
+  trainable parameters. Follow-up inspection showed this is the 24-edge smoke model; the formal
+  28-edge model has 130,200 trainable parameters. The four-parameter delta is material-edge coverage,
+  not frozen weights. The corrected assertion precedes full preflight.
 
 - 2026-09-28: Started the DPA-embedded GMTNet ablation. The official GMTNet body and complete
   optimization protocol remain fixed. Frozen DPA4 O(3) features will be converted to 640 per-copy
