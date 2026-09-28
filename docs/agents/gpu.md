@@ -1,5 +1,84 @@
 # GPU / server activity
 
+## 2026-09-28 - DPA-embedded GMTNet smoke submission
+
+- Connection purpose: connect under the current RemoteForward SOCKS policy, make the first repository
+  operation an explicit-proxy `git pull`, verify revision `6e3d26a`, inspect only the recorded GMTNet
+  environment/cache paths and lightweight scheduler state, then submit the one-epoch DPA-embedded
+  GMTNet CUDA smoke through Slurm. No model computation may run on the login node.
+- First connection result: the explicit-proxy pull succeeded and verified exact revision `6e3d26a`,
+  but a subsequent fail-closed environment/source/cache path assertion returned nonzero before
+  `sinfo` or `sbatch`; no job was submitted. Follow-up connection purpose: pull first, then use only
+  lightweight `test`/directory inspection to identify the stale recorded path and submit only after
+  all prerequisites are explicit.
+- Second connection result: pull was already current; the GMTNet venv, smoke graph cache, and 64 DPA
+  shard directory exist, while the recorded `/home/xmz/expert-data/vendor/GMTNet` checkout path no
+  longer exists. No job was submitted. Follow-up connection purpose: pull first, perform a bounded
+  read-only search under `/home/xmz` for the pinned `gmtnet.py` checkout, verify its Git revision,
+  and submit the smoke only if the official commit matches.
+- Third connection result: the bounded search found the retained task-owned checkout at
+  `/home/xmz/expert-data/vendor/GMTNet-pinned-7a606a4`. Follow-up connection purpose: pull first,
+  verify that checkout resolves to the required full commit, inspect `sinfo`, and submit the
+  one-epoch smoke through Slurm with the corrected source path.
+- Fourth connection result: the new session reported the expected occupied-1080 forwarding warning,
+  but the explicit-proxy pull then stalled for over 90 seconds and was interrupted before any commit
+  check or submission. Local `ssh -G Guqq` confirms `RemoteForward 127.0.0.1:1080` and
+  `ExitOnForwardFailure no`. Follow-up connection purpose: inspect the remote 1080 listener and test
+  a bounded proxy request as network troubleshooting, then make `git pull` the first repository
+  operation and submit only if connectivity and pinned-source checks pass.
+- Fifth connection result: remote `ss` confirmed a listener on `127.0.0.1:1080`, but an explicit
+  SOCKS GitHub HEAD request timed out at 15 seconds, proving the occupied listener is not forwarding.
+  The fail-closed shell exited before its repository operation or submission. Follow-up connection
+  purpose: inspect only the current user's SSH/session processes and listener ownership so the stale
+  forwarding session can be identified without terminating an unrelated process.
+- Sixth connection result: process inspection identified task-owned stale session PID `3430706`
+  (created by this task at 12:38) and its orphaned pull shell PID `3430912`; the latter is still
+  blocked in `git-remote-https`. No unrelated process owns this task's forwarding chain. Follow-up
+  connection purpose: terminate only these two explicit stale task PIDs, verify the 1080 listener is
+  released, and disconnect so a fresh SSH session can establish the configured RemoteForward.
+- Seventh connection result: only PIDs `3430912` and `3430706` were terminated; both disappeared and
+  `ss` confirmed no remaining 1080 listener. Follow-up connection purpose: establish the fresh
+  RemoteForward, prove it with a bounded explicit-SOCKS request, make explicit-proxy `git pull` the
+  first repository operation, verify both project and official commits, then submit the smoke.
+- Eighth connection result: the fresh tunnel returned GitHub HTTP 200, the proxy pull was current at
+  `6e3d26a`, the retained GMTNet checkout matched full commit `7a606a459...`, and Slurm accepted smoke
+  job `496` on the available compute partition. Follow-up connection purpose: pull first, inspect
+  only job 496 queue/accounting state plus bounded stdout/stderr and its compact artifacts, then run
+  read-only smoke acceptance if the job is terminal.
+- Ninth connection result: job 496 left the queue and wrote passed summary/JUnit, 7 predictions,
+  best and epoch-1 checkpoints, and finite metrics. Its runtime metadata correctly reports a 3200D
+  parity-completed DPA source layout reduced to 640 invariant scalars and projected to 128D; this
+  exposed a documentation-only 1600D assumption that must be corrected locally. Follow-up connection
+  purpose: pull first and run a lightweight read-only JSON/XML/hash/order acceptance of job 496; no
+  checkpoint loading, inference, or training will run on the login node.
+- Tenth connection result: the pull succeeded, but PowerShell-to-SSH quoting corrupted the inline
+  Python acceptance expression and produced a `SyntaxError` before reading artifacts. This is a
+  command-transport failure, not an experiment failure. Follow-up connection purpose: pull first and
+  rerun the identical read-only acceptance encoded as base64 to eliminate shell quoting ambiguity.
+- Eleventh connection result: the base64 payload itself was valid, but nested SSH quoting still
+  failed before Python execution; the pull again succeeded and artifacts remained untouched. Rather
+  than retry a third inline transport, follow-up connection purpose: use `scp` only to retrieve job
+  496's compact summary, predictions, JUnit, Git fingerprint, and epoch-1 archive into the local
+  ignored `tmp/dpa4-gmtnet-496/` directory, then perform acceptance locally.
+- Twelfth connection/result transfer: the 5.9 MiB job directory copied successfully. Local strict
+  acceptance passed exact 7/7/7 counts, seven unique predictions, finite history/metrics, clean
+  JUnit, exact Git fingerprint, `3200 -> 640 -> 128` embedding provenance, and epoch-1 archive hash
+  `f4b1d1c...f314485`. Follow-up connection purpose: pull first, verify exact `6e3d26a`, then submit
+  a one-epoch full 5,001/637/677 preflight through Slurm using the same environment/source/caches.
+- Thirteenth connection result: pull and exact revision check passed; Slurm accepted full-split
+  one-epoch preflight job `497`. Follow-up connection purpose: pull first and inspect only job 497's
+  queue state, bounded logs, and compact artifacts; if terminal, retrieve them for local strict
+  split/order/checkpoint/JUnit acceptance before any formal 200-epoch submission.
+- Fourteenth connection result: job 497 is terminal with a passed 5,001/637/677 summary, 677-row
+  predictions, clean-looking JUnit, finite one-epoch metrics, and no traceback in bounded stderr.
+  Follow-up connection purpose: retrieve the task-owned DPA-GMTNet result directory into a separate
+  ignored local folder, then verify manifest order, embedding provenance, JUnit, and archive hash
+  locally before authorizing the formal run.
+- Fifteenth connection/result transfer: the result directory copied successfully and local strict
+  acceptance passed all 677 IDs in exact frozen-manifest order, finite prediction/target components,
+  clean JUnit, `[128, 640]` checkpoint weight shape, and epoch-1 archive SHA-256
+  `e175b8d6...6403e37`. Formal training is authorized after the corrected provenance/evidence commit.
+
 ## 2026-09-28 - Formal job 488 progress query
 
 - Connection purpose: pull the latest tracked documentation first, then read only Slurm state,

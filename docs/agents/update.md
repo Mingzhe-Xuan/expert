@@ -9,6 +9,14 @@
   node and only the official `atom_embedding` input width changes. The maintained suite passes
   315/315, the final affected focused suite passes 27/27, and all static gates pass. The next gates
   are an isolated commit/push, Guqq smoke, and exact-split preflight.
+- 2026-09-28: Guqq smoke job 496 passed every strict artifact gate at revision `6e3d26a`, including
+  7/7/7 splits, seven unique predictions, clean JUnit, finite metrics, and a SHA-matched epoch-1
+  checkpoint. Runtime provenance clarified that parity completion doubles the 1600D SO(3) tap to a
+  3200D O(3) source before the intended 640D invariant reduction. Proceeding to full-split preflight.
+- 2026-09-28: One-epoch full-split preflight job 497 passed exact counts, manifest-ordered 677
+  predictions, finite tensors/metrics, clean JUnit, `[128, 640]` atom-embedding checkpoint shape,
+  and SHA-matched archive. Formal 200-epoch training with interval-20 checkpoints is authorized once
+  the corrected 3200D parity-completed provenance and preflight evidence are committed and synced.
 
 - 2026-09-25: Paused DPA-relative-PG remote synchronization to incorporate the refined execution
   contract. The dispatcher will plan routes per structure, collate all structures assigned to each

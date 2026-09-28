@@ -25,6 +25,19 @@ the original graph cache is not mutated, sample/atom-order drift is rejected, an
 module outside `atom_embedding` retains object identity. Compilation, Bash syntax, CLI help, and
 scoped whitespace checks pass. Remaining acceptance is the real Guqq smoke and full-split preflight.
 
+Guqq smoke result: job 496 passed at revision `6e3d26a` with exact 7/7/7 point-group smoke splits,
+seven unique predictions, finite one-epoch history/test metrics, zero JUnit failures/errors, and the
+reported `3200 -> 640 -> 128` embedding path. The 3,008,170-byte epoch-1 archive recomputes to
+SHA-256 `f4b1d1c88d37928cf5a637fe3fe78cc0136a83667b60100d5b438927ff314485`, matching the summary.
+The source is 3200D because parity completion doubles DPA4's 1600D SO(3) tap; the intended invariant
+input remains 640D. The next gate is a one-epoch exact 5,001/637/677 preflight.
+
+Full preflight result: job 497 passed exact 5,001/637/677 splits and all 677 prediction IDs exactly
+match frozen test-manifest order. Every prediction/target component is finite, JUnit has zero
+failures/errors, and checkpoint metadata matches the reported `3200 -> 640 -> 128` representation.
+The saved `atom_embedding.weight` is exactly `[128, 640]`; the 3,008,170-byte epoch-1 archive matches
+SHA-256 `e175b8d632dfac13396689b32fb5f9a8547a0f149712ab42977ee34116403e37`.
+
 ## 2026-09-28 - Unified history final rendering
 
 Plan: after accepting formal job 488, render all six accepted histories from SHA-pinned summaries;

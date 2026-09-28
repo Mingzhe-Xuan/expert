@@ -4,7 +4,7 @@
 
 The requested ablation keeps the pinned official GMTNet graph, message passing, tensor mask/readout,
 Huber/AdamW schedule, frozen 5,001/637/677 split, seed, batch size, and 200 epochs. Its sole model
-change is the atomic input: each frozen 1600D DPA4 O(3) feature retains signed even scalars and uses
+change is the atomic input: each frozen 3200D parity-completed DPA4 O(3) feature retains signed even scalars and uses
 one invariant norm for every other irrep copy (640 scalars), then passes through a trainable
 `640 -> 128` atom embedding in place of GMTNet's CGCNN `92 -> 128` layer. Raw non-scalar irrep
 components must never be treated as scalars.
@@ -15,7 +15,7 @@ components must never be treated as scalars.
    an opt-in GMTNet input override without changing the accepted baseline defaults.
 2. [x] Add a dedicated CLI/Slurm launcher that reuses the provenance-gated 64-shard DPA cache and
    accepted GMTNet graph cache; document inputs, outputs, protocol identity, and failure gates.
-3. [ ] Pass focused/full local tests, commit/push, synchronize Guqq under the current SOCKS rules,
+3. [x] Pass focused/full local tests, commit/push, synchronize Guqq under the current SOCKS rules,
    then run real smoke and exact-split preflight before formal 200-epoch training.
 4. [ ] Strictly accept predictions/metrics/history, add the experiment to the unified plot, compare
    against GMTNet and DPA-relative-PG, update documentation, and commit/push the final evidence.
@@ -37,6 +37,15 @@ components must never be treated as scalars.
   embedding provenance and a direct assertion that the override preserves the remaining GMTNet
   modules, the affected focused suite passed 27/27. Compilation, CLI help, Bash syntax, and scoped
   whitespace gates also pass; the implementation is ready for isolated commit and Guqq smoke.
+- 2026-09-28: Guqq smoke job 496 passed at exact implementation revision `6e3d26a`: 7/7/7 splits,
+  seven unique predictions, clean JUnit, finite history/metrics, and a byte/SHA-verified epoch-1
+  archive. Runtime layout evidence corrected the prose-only source-width assumption: DPA4's 1600D
+  SO(3) tap becomes 3200D after even/odd parity completion, then the implemented per-copy reduction
+  produces the intended 640D invariant GMTNet input. No code or result dimension was incorrect.
+- 2026-09-28: Full-split one-epoch preflight job 497 passed exact 5,001/637/677 counts, manifest-order
+  equality for all 677 test predictions, finite tensors, clean JUnit, and a SHA-verified archive.
+  Checkpoint inspection proves the sole input override has weight shape `[128, 640]`. The formal
+  200-epoch, interval-20 run is authorized after committing the corrected provenance documentation.
 
 ## Current snapshot - expert-batched asynchronous dispatch (2026-09-28)
 

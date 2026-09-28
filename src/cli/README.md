@@ -61,7 +61,7 @@ asynchronous join; this prevents the grouped execution contract from silently fa
 
 `python -m src.cli.reduced_dpa4_gmtnet_train ...` trains the pinned official GMTNet with the
 already-cached frozen DPA4 representation as its atom input. It loads all 64 provenance-gated
-feature shards in frozen split order, reduces the 1600D O(3) layout to 640 invariant values per
+feature shards in frozen split order, reduces the 3200D parity-completed O(3) layout to 640 invariant values per
 node, and substitutes a learned `640 -> 128` layer for GMTNet's original `92 -> 128` CGCNN atom
 embedding. No other GMTNet component or optimization choice changes. The default full protocol is
 200 epochs, batch 64, seed 42, Cartesian Huber, AdamW, per-step linear `1e-3 -> 1e-5` decay,
