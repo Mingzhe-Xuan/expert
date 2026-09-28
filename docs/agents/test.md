@@ -1,5 +1,22 @@
 # Test plan and results
 
+## 2026-09-28 - Unified history final rendering
+
+Plan: after accepting formal job 488, render all six accepted histories from SHA-pinned summaries;
+run the focused plotting tests, verify SVG/PNG creation and source hashes, and inspect the PNG at
+original resolution. The figure must preserve missing historical series without interpolation and
+must show non-overlapping title, subtitle, panels, and legend.
+
+Expected result: one readable six-panel SVG/PNG comparison whose held-out Fnorm bars and training
+curves include DPA-relative-PG job 488 without changing any recorded metrics.
+
+Actual result: job 488 strict acceptance passed ten archive hashes, best epoch 95, ordered 677
+predictions, clean JUnit, finite metrics, and 15/15 asynchronous CUDA streams. The focused plotting
+suite passed 8/8 in 10.04 seconds. SHA-gated regeneration produced a valid XML SVG and 2810x1608 PNG;
+their hashes are `5005c6a4...fdcba` and `70bb6f69...bdf6fc`. Original-resolution inspection found
+the first title/subtitle placement too tight; after separating them, all panels, labels, bars, and
+the legend are clear. Scoped whitespace, report paths, and asset existence checks pass.
+
 ## 2026-09-25 - Expert-batched asynchronous dispatch
 
 Plan:

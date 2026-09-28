@@ -48,7 +48,7 @@ the identical grouped semantics with a deterministic synchronous fallback.
   training process is CPU/GPU-active and produced its 19,422,870-byte best checkpoint after the first
   validation, proving that the cached full-split optimization loop is live.
 
-## Current snapshot - DPA-relative-PG training (2026-09-24)
+## Current snapshot - DPA-relative-PG training (2026-09-28)
 
 The next experiment replaces the CGCNN input cache with frozen DPA4 features while preserving the
 56D relative-PG path router. Every optimization choice must match GMTNet: Cartesian Huber loss,
@@ -64,9 +64,9 @@ MAE best-checkpoint selection. The run must additionally archive exact epoch 20/
 3. [x] Add a heterogeneous all-experiment history plot covering DPA4 current-PG, GMTNet, CGCNN
    current-PG, static parent-DAG, CGCNN relative-PG, and DPA-relative-PG without fabricating missing
    historical series.
-4. [ ] Pass focused/full local tests, push an isolated implementation commit, synchronize Guqq, and
+4. [x] Pass focused/full local tests, push an isolated implementation commit, synchronize Guqq, and
    run smoke plus exact-split preflight before the formal 200-epoch Slurm job.
-5. [ ] Strictly accept predictions/metrics/checkpoints, render and inspect the unified plot, update
+5. [x] Strictly accept predictions/metrics/checkpoints, render and inspect the unified plot, update
    the benchmark, and commit/push the final result.
 
 ## Change log - DPA-relative-PG training
@@ -83,6 +83,11 @@ MAE best-checkpoint selection. The run must additionally archive exact epoch 20/
 - 2026-09-24: The maintained local suite passes 305/305 in 405.27 seconds; Bash syntax, CLI import,
   compilation, and scoped whitespace gates also pass. The implementation is ready for an isolated
   commit/push, followed by pull-first Guqq synchronization and Slurm smoke/preflight.
+- 2026-09-28: Formal job 488 completed all 200 epochs and strict artifact acceptance. Best epoch 95,
+  ten interval archives, ordered 677 predictions, clean JUnit, finite metrics, and 15/15 asynchronous
+  expert streams all pass. The accepted test Fnorm/RMSE are `18.816113`/`25.168913`. The unified
+  six-model figure was regenerated after fixing title spacing, passed 8/8 focused tests and format/
+  hash checks, and was visually accepted at 2810x1608; the benchmark now records the comparison.
 
 ## Current snapshot - 56D relative-PG terminal integration (2026-09-24)
 

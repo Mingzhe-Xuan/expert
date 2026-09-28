@@ -30,6 +30,12 @@
   Formal 200-epoch job 488 is now running on node221 with interval-20 archive retention. Its process
   is active at about 104% CPU with 1.8 GiB GPU memory in the sampled window, and the first validation
   wrote a 19,422,870-byte best checkpoint; no traceback is present.
+- 2026-09-28: Formal job 488 finished 200/200 epochs and passed strict artifact acceptance: best
+  epoch 95, exact 5,001/637/677 splits, 677 ordered predictions, clean JUnit, ten SHA-verified
+  epoch-20 archives, finite metrics, and 15 expert buckets on 15 CUDA streams. DPA relative-PG reaches
+  test Fnorm `18.816113` and RMSE `25.168913`, beating GMTNet on both absolute-error metrics while
+  remaining behind its EwT rates. Generated and visually inspected the SHA-pinned six-model history
+  figure, fixed title spacing, passed 8/8 plotting tests, and updated the benchmark comparison.
 
 - 2026-09-24: Started DPA-relative-PG training work. The implementation will compose the accepted
   DPA4 frozen-feature cache with the existing 56D relative-PG path router, use GMTNet's complete

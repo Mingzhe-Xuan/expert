@@ -35,6 +35,11 @@
   duplicate destination PGs are summed then normalized. Test parent coverage is `86.71%`, with mean
   `4.2009` candidate parents and `3.6765` maximal paths per sample. Its best checkpoint is epoch 28 at
   validation MAE `4.3751330376`.
+- DPA relative-PG uses the identical 56-component expert/router and GMTNet optimization protocol,
+  replacing only the input representation with frozen DPA4 features. Per batch it groups structures
+  by expert, executes each expert once over its collated sub-batch, and launches the 15 active expert
+  buckets on 15 distinct CUDA streams. Job 488 completed 200 epochs, selected epoch 95 at validation
+  MAE `4.3895916939`, and retained exact epoch-20 through epoch-200 archives.
 - GMTNet model: pinned official dielectric implementation.
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
@@ -75,6 +80,17 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
+## All accepted training histories through DPA relative-PG
+
+![All six accepted experiment histories](all_experiment_training_history.svg)
+
+The six-panel figure draws only fields actually present in each SHA-pinned summary and does not
+interpolate historical gaps. DPA relative-PG converges much more stably than CGCNN relative-PG:
+after its epoch-95 selection point, validation Fnorm changes only from `25.4673` to `25.6309` by
+epoch 200, whereas CGCNN relative-PG selects epoch 28 and ends at `27.7946`. GMTNet still shows the
+largest train/validation separation, but its historical runner did not record validation loss or
+validation Fnorm, so those series are intentionally absent.
+
 ## Metrics
 
 - RMSE: component-wise root mean squared error over the full test tensors.
@@ -87,14 +103,16 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 | Model | RMSE ↓ | Fnorm ↓ | EwT 25% ↑ | EwT 10% ↑ | EwT 5% ↑ |
 |---|---:|---:|---:|---:|---:|
 | DPA4 B+A+PGE+R full_pg (current-group only) | 26.166445 | 31.539129 | 12.26% | 2.51% | 1.03% |
-| GMTNet | **25.449894** | **19.169209** | **53.03%** | **18.32%** | **7.39%** |
+| GMTNet | 25.449894 | 19.169209 | **53.03%** | **18.32%** | **7.39%** |
 | CGCNN B+A+PGE+R full_pg (current-group only) | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
 | CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors) | 26.144173 | 19.204304 | 41.51% | 11.52% | 4.87% |
 | CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | **25.168913** | **18.816113** | 46.68% | 14.48% | 5.76% |
 
-GMTNet is best on every reported test metric under this frozen protocol. Relative to the DPA4 row,
-the additive CGCNN full-PG branch substantially improves Fnorm and every EwT threshold, while its
-component RMSE is slightly higher (`+0.019705`). DPA4's best checkpoint was epoch 12
+The DPA relative-PG run is best on RMSE and Fnorm, while GMTNet remains best on all three relative
+EwT thresholds. Relative to the DPA4 current-group row, DPA relative-PG reduces RMSE/Fnorm by
+`0.997532`/`12.723013` and raises EwT25/EwT10/EwT5 by `34.42`/`11.96`/`4.73` percentage points.
+DPA4 current-group's best checkpoint was epoch 12
 (`validation_loss=0.9333040631`); GMTNet's was epoch 93 (`validation_mae=4.1132789`); CGCNN's was
 epoch 159 (`validation_mae=4.3647098541`) after completing all 200 epochs.
 
@@ -108,10 +126,17 @@ The new 56D relative-PG result is mixed rather than uniformly better. Versus his
 Fnorm improves by `0.088693`, EwT25 by `1.62` points, and EwT5 by `0.30` points, while RMSE worsens by
 `0.073184` and EwT10 by `0.59` points. Versus static all-ancestor routing, it gains `0.89` points on
 EwT25 but worsens RMSE/Fnorm by `0.115162`/`0.203105` and EwT10/EwT5 by `1.48`/`0.30` points. It is
-substantially better than DPA4 on Fnorm and all EwT thresholds, but GMTNet remains best on all five
-metrics; the relative-PG gaps to GMTNet are `+0.809441` RMSE, `+0.238200` Fnorm, and
+substantially better than DPA4 on Fnorm and all EwT thresholds, but among the five pre-existing rows
+GMTNet remains best on all five metrics; the CGCNN relative-PG gaps to GMTNet are `+0.809441` RMSE, `+0.238200` Fnorm, and
 `-10.64`/`-8.27`/`-2.81` EwT percentage points. Because the new run also doubles the hidden irrep
 multiplicities, these cross-width deltas cannot isolate the causal effect of residual path weighting.
+
+DPA relative-PG improves on CGCNN relative-PG across all five metrics: RMSE/Fnorm fall by
+`1.090422`/`0.591297`, while EwT25/EwT10/EwT5 rise by `4.28`/`4.43`/`1.18` percentage points. Versus
+GMTNet it improves RMSE by `0.280983` and Fnorm by `0.353098`, but remains lower on EwT25/EwT10/EwT5
+by `6.35`/`3.84`/`1.62` points. Thus the absolute-error ranking and relative-error ranking differ:
+the new model reduces large absolute tensor errors, while GMTNet still places more samples below
+each target-normalized error threshold.
 
 ## Errors by source space group
 
@@ -176,6 +201,11 @@ than stable rankings.
   5,001/637/677 splits; 677 predictions; JUnit 1/0/0/0; finite five-metric report; routing identity,
   complete offline path topology, edge stick-breaking, path prior, and duplicate-PG reduction
   metadata verified by strict acceptance job 482.
+- DPA relative-PG Slurm job 488: artifact-driven strict acceptance passed 200/200 contiguous epochs,
+  best epoch 95, exact 5,001/637/677 splits, 677 ordered predictions, JUnit 1/0/0/0, finite metrics,
+  ten byte/SHA-verified interval archives, and 15/15 asynchronous CUDA expert streams with up to 37
+  structures in one expert sub-batch. Slurm accounting is disabled, so terminal status is established
+  by the complete accepted artifact set rather than `sacct`.
 - Five-model comparator job 479: status `passed`; all five files contain the identical ordered 677
   IDs and pass the symmetric target eigenvalue-equivalence gate. Curve job 480 produced the accepted
   SVG/PNG. Replacement manifest job 484 (for the environment-only failure of job 483) completed with
@@ -203,6 +233,12 @@ than stable rankings.
   `3be671cb61a2b9c066046891ca5d98701cb8de200a88e5afd9b4043e3571debc`,
   `93eb6b1943f9f741ccf4adfa9eb152331772a46e5ba78562aae91999211ae91c`, and
   `022cbf0edc64d9387d5eda5d979859b174278463ee56b3b25961647b118cf49d`.
+- DPA relative-PG prediction and summary SHA-256:
+  `f9b11754e213d773887fccb04f0231ecc7dcd8f9ea9469db1a4fecc5f1764ecb` and
+  `7d1ec3aa604fa5885164232b2bc77276f4f177bd1ef8ef44519638db6614ed93`.
+- Unified six-model history SVG/PNG SHA-256:
+  `5005c6a4a7e3cf663c2a06069a1335b9b1e3ad154481507e325b2824ab7fdcba` and
+  `70bb6f69f38a170840a1b5280f4098377df40dc9addbea8a64e376b71cbdf6fc`.
 - Five-model comparison JSON and table SHA-256:
   `ddf28f44be8f9272fb39ee6c813081f242c38c69cc39e7a6dd402be9e23f426e` and
   `f8751f301500a9d3c14d7d074a2c6351f59b4dc45ee3e65974dbc291d409f0ea`.

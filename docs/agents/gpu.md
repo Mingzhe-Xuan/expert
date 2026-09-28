@@ -1,5 +1,21 @@
 # GPU / server activity
 
+## 2026-09-28 - Formal job 488 progress query
+
+- Connection purpose: pull the latest tracked documentation first, then read only Slurm state,
+  checkpoint/archive timestamps, and bounded stdout/stderr for formal DPA-relative-PG job 488. Do
+  not modify or interrupt the running job and do not execute model computation on the login node.
+- Query result: job 488 has left the active queue after producing all ten exact interval archives
+  through epoch 200, plus summary, 677-record predictions, and JUnit at 08:32. Slurm accounting is
+  disabled, so terminal acceptance must be artifact-driven. Follow-up connection purpose: pull first
+  from the verified local bundle, then run only the existing read-only JSON/checkpoint/hash acceptance
+  script for job 488 before retrieving compact results for the unified comparison plot.
+- Acceptance result: the read-only acceptance script passed best epoch 95, all ten archive hashes,
+  ordered 677 predictions, clean JUnit, finite metrics, exact split/protocol provenance, and runtime
+  dispatch evidence (`expert_buckets=15`, `cuda_streams=15`, `asynchronous_cuda=true`, maximum 37
+  structures per expert sub-batch). Summary SHA-256 is
+  `7d1ec3aa604fa5885164232b2bc77276f4f177bd1ef8ef44519638db6614ed93`.
+
 ## 2026-09-28 - DPA-relative-PG formal submission connectivity result
 
 - Intended connection: synchronize exact revision `06abf0b` from the verified local bundle and

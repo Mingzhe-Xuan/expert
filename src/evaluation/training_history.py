@@ -273,17 +273,29 @@ def render_all_experiment_histories(
         for label, _ in summaries
     ]
     figure.legend(handles=handles, loc="outside lower center", ncol=min(4, len(handles)), frameon=False)
-    figure.suptitle("Reduced dielectric-total: all recorded experiment histories", fontsize=15, fontweight="bold")
+    figure.suptitle(
+        "Reduced dielectric-total: all recorded experiment histories",
+        fontsize=15,
+        fontweight="bold",
+        y=1.035,
+    )
     figure.text(
         0.5,
-        0.955,
+        1.005,
         "Only metrics present in each accepted summary are drawn; historical gaps are not interpolated.",
         ha="center",
         color="#53606B",
     )
-    for target in (Path(svg_path), Path(png_path)):
+    svg_target = Path(svg_path)
+    png_target = Path(png_path)
+    for target in (svg_target, png_target):
         target.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(svg_path, format="svg", bbox_inches="tight")
+    svg_text = svg_target.read_text(encoding="utf-8")
+    svg_target.write_text(
+        "\n".join(line.rstrip() for line in svg_text.splitlines()) + "\n",
+        encoding="utf-8",
+    )
     figure.savefig(png_path, format="png", dpi=180, bbox_inches="tight")
     plt.close(figure)
 
