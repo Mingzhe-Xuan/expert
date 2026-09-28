@@ -1,5 +1,38 @@
 # Agent state
 
+## Current snapshot - 64D scalar-widened DPA-relative-PG (2026-09-28)
+
+The active experiment keeps job 488's frozen DPA4 features, material-specific point-group DAG,
+15-expert asynchronous dispatcher, optimizer, split, seed, batch size, and evaluation protocol. Its
+only model change is the hidden multiplicity profile `[8, 2, 2, 2, 2] -> [16, 2, 2, 2, 2]`, which
+widens the even scalar channel from 8 to 16 and the total O(3) layout from 56 to 64 components.
+Existing job-488 artifacts and defaults must remain immutable.
+
+## Current plan - 64D scalar-widened DPA-relative-PG
+
+1. [x] Training module: add an explicit hidden-layout override to the cached-backbone trainer while
+   preserving the default interface and checkpoint compatibility.
+2. [x] CLI/Slurm module: add a dedicated `[16,2,2,2,2]` experiment identity and isolated result
+   directory; reuse the accepted DPA/routing caches and retain checkpoints every 20 epochs.
+3. [x] Test module: prove exact 64D layout, 130,200 trainable parameters, default 56D preservation,
+   launcher isolation, report provenance, and smoke forward/checkpoint behavior.
+4. [ ] Run focused and maintained local checks, commit/push only task changes, then pull-first sync
+   Guqq and submit smoke, exact-split preflight, and the formal 200-epoch Slurm job.
+5. [ ] Apply the same strict artifact/metric acceptance as job 488, add the accepted history and
+   held-out metrics to the unified all-experiment figure, and document the comparison.
+
+## Change log - 64D scalar-widened DPA-relative-PG
+
+- 2026-09-28: Started the requested scalar-width ablation. Direct construction at job 488's exact
+  15-expert/28-edge configuration predicts 130,200 trainable parameters versus 99,696 for the 56D
+  baseline and 738,664 for DPA-embedded GMTNet. Implementation will expose the width explicitly
+  rather than changing the repository-wide default.
+- 2026-09-28: Implemented the explicit cached-trainer hidden-layout interface, fail-closed five-
+  multiplicity builder, 64D CLI provenance, exact trainable-parameter reporting, and isolated Slurm
+  launcher/result directory. Focused tests pass 33/33, the new/affected core checks pass 7/7, and
+  the complete maintained suite passes 323/323 in 357.52 seconds. Compilation, CLI help, Bash syntax,
+  and scoped whitespace checks pass; next is an isolated commit/push and real Guqq CUDA smoke.
+
 ## Current snapshot - DPA-embedded GMTNet (2026-09-28)
 
 The requested ablation keeps the pinned official GMTNet graph, message passing, tensor mask/readout,

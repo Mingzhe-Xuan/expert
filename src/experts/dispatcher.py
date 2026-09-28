@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import copy
 from contextlib import nullcontext
-from typing import Mapping
+from numbers import Integral
+from typing import Mapping, Sequence
 
 import torch
 from torch import nn
@@ -30,8 +31,14 @@ from .modules import (
 )
 
 
-def default_hidden_layout(config: ArchitectureConfig) -> IrrepLayout:
-    multiplicities = (8, 2, 2, 2, 2)
+def hidden_layout_from_multiplicities(multiplicities: Sequence[int]) -> IrrepLayout:
+    supplied = tuple(multiplicities)
+    if len(supplied) != 5 or any(
+        isinstance(value, bool) or not isinstance(value, Integral) or value <= 0
+        for value in supplied
+    ):
+        raise ValueError("hidden multiplicities must contain five positive integers")
+    values = tuple(int(value) for value in supplied)
     return IrrepLayout(
         tuple(
             IrrepTerm(
@@ -40,9 +47,13 @@ def default_hidden_layout(config: ArchitectureConfig) -> IrrepLayout:
                 "e" if degree % 2 == 0 else "o",
                 f"hidden_l{degree}",
             )
-            for degree, multiplicity in enumerate(multiplicities)
+            for degree, multiplicity in enumerate(values)
         )
     )
+
+
+def default_hidden_layout(config: ArchitectureConfig) -> IrrepLayout:
+    return hidden_layout_from_multiplicities((8, 2, 2, 2, 2))
 
 
 def _expert_key(number: int) -> str:

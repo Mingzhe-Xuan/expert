@@ -58,6 +58,10 @@ selection. The best checkpoint is independent of exact epoch archives, which def
 20/40/.../200 and include optimizer and normalizer state. CUDA runs fail acceptance unless the
 final test batch reports at least two expert buckets, one distinct stream per bucket, and an explicit
 asynchronous join; this prevents the grouped execution contract from silently falling back to serial.
+The optional `--hidden-multiplicities L0 L1 L2 L3 L4` argument is explicit experiment provenance;
+omitting it preserves `[8,2,2,2,2]`. The scalar-width ablation is launched only by
+`slurm/train_reduced_dpa4_relative_pg_64d.sbatch`, which fixes `[16,2,2,2,2]` and writes to the
+separate `dpa4-relative-pg-64d` result directory so accepted 56D artifacts cannot be overwritten.
 
 `python -m src.cli.reduced_dpa4_gmtnet_train ...` trains the pinned official GMTNet with the
 already-cached frozen DPA4 representation as its atom input. It loads all 64 provenance-gated

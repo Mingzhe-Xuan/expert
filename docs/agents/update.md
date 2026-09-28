@@ -1,5 +1,14 @@
 # Agent progress updates
 
+- 2026-09-28: Started the `[16,2,2,2,2]` DPA-relative-PG ablation as a separate experiment. The
+  implementation will keep the accepted job-488 defaults/artifacts unchanged, add an explicit 64D
+  hidden-layout override plus isolated Slurm outputs, and require the same smoke/preflight/formal
+  acceptance and unified-plot evaluation path.
+- 2026-09-28: Implemented the 64D hidden-layout injection and provenance, strict multiplicity
+  validation, exact trainable-parameter reporting, and dedicated cache-reusing Slurm launcher. The
+  focused suite passes 33/33 and the full maintained suite passes 323/323; compilation, CLI help,
+  Bash syntax, and scoped whitespace gates pass. Next is isolated commit/push and Guqq smoke.
+
 - 2026-09-28: Started the DPA-embedded GMTNet ablation. The official GMTNet body and complete
   optimization protocol remain fixed. Frozen DPA4 O(3) features will be converted to 640 per-copy
   invariant norms and replace only the original 92D CGCNN atom input before the existing 128D

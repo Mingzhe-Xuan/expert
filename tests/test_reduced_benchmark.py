@@ -8,14 +8,21 @@ from types import SimpleNamespace
 
 import pytest
 
+from src.configs import ArchitectureConfig
 from src.cli.reduced_dpa4_train import (
     _merge_sharded_examples,
     _shard_sample_ids,
     _validate_shard_arguments,
 )
-from src.cli.reduced_dpa4_relative_pg_train import _require_cuda_expert_dispatch
+from src.cli.reduced_dpa4_relative_pg_train import (
+    DEFAULT_HIDDEN_MULTIPLICITIES,
+    _require_cuda_expert_dispatch,
+)
 from src.cli.reduced_protocol import REDUCED_POINT_GROUPS, point_group_stratified_smoke_ids
 from src.data import TrainingUnit, load_training_dataset
+from src.experts import hidden_layout_from_multiplicities
+from src.irreps import IrrepLayout, IrrepTerm
+from src.training.benchmark import CachedBackboneTensorModel
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,6 +71,68 @@ def test_dpa4_relative_pg_launcher_matches_gmtnet_and_archives_every_20_epochs()
     assert '--seed "${EXPERT_REDUCED_DPA4_SEED:-42}"' in launcher
     assert '--checkpoint-interval "${EXPERT_DPA4_CHECKPOINT_INTERVAL:-20}"' in launcher
     assert "#SBATCH --time=3-00:00:00" in launcher
+
+
+def test_dpa4_relative_pg_64d_launcher_is_isolated_and_protocol_matched() -> None:
+    launcher = (ROOT / "slurm" / "train_reduced_dpa4_relative_pg_64d.sbatch").read_text(
+        encoding="utf-8"
+    )
+    assert "src.cli.reduced_dpa4_relative_pg_train" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg-64d"' in launcher
+    assert "--hidden-multiplicities 16 2 2 2 2" in launcher
+    assert '--batch-size "${EXPERT_REDUCED_DPA4_64D_BATCH_SIZE:-64}"' in launcher
+    assert '--seed "${EXPERT_REDUCED_DPA4_64D_SEED:-42}"' in launcher
+    assert '--checkpoint-interval "${EXPERT_DPA4_64D_CHECKPOINT_INTERVAL:-20}"' in launcher
+    assert "#SBATCH --time=3-00:00:00" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg"' not in launcher
+
+
+def test_scalar_widened_relative_pg_has_expected_layout_and_parameter_count() -> None:
+    source_layout = IrrepLayout(
+        tuple(
+            IrrepTerm(64, degree, parity, f"dpa4_l{degree}_{parity}")
+            for degree in range(5)
+            for parity in ("e", "o")
+        )
+    )
+    hidden_layout = hidden_layout_from_multiplicities((16, 2, 2, 2, 2))
+    groups = (
+        "2/m", "mm2", "mmm", "4/m", "4mm", "-42m", "4/mmm", "-3m",
+        "6/m", "6mm", "-6m2", "6/mmm", "m-3", "-43m", "m-3m",
+    )
+    edge_ids = (
+        "pg08-to-pg05", "pg08-to-pg07", "pg11-to-pg05", "pg13-to-pg07",
+        "pg14-to-pg07", "pg15-to-pg08", "pg15-to-pg11", "pg15-to-pg13",
+        "pg15-to-pg14", "pg20-to-pg05", "pg20-to-pg19", "pg23-to-pg05",
+        "pg25-to-pg07", "pg25-to-pg19", "pg26-to-pg07", "pg26-to-pg19",
+        "pg27-to-pg08", "pg27-to-pg20", "pg27-to-pg23", "pg27-to-pg25",
+        "pg27-to-pg26", "pg29-to-pg08", "pg31-to-pg14", "pg31-to-pg19",
+        "pg32-to-pg15", "pg32-to-pg20", "pg32-to-pg29", "pg32-to-pg31",
+    )
+    architecture = ArchitectureConfig(
+        "B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg"
+    )
+    model = CachedBackboneTensorModel(
+        source_layout,
+        architecture,
+        "dielectric",
+        groups,
+        edge_ids,
+        hidden_layout,
+    )
+    assert DEFAULT_HIDDEN_MULTIPLICITIES == (8, 2, 2, 2, 2)
+    assert tuple(term.multiplicity for term in hidden_layout.terms) == (16, 2, 2, 2, 2)
+    assert hidden_layout.dimension == 64
+    assert sum(parameter.numel() for parameter in model.parameters()) == 130_200
+
+
+@pytest.mark.parametrize(
+    "values",
+    ((8, 2, 2, 2), (8, 2, 0, 2, 2), (8, 2, -1, 2, 2), (8, 2, 2.5, 2, 2)),
+)
+def test_hidden_multiplicity_profiles_fail_closed(values) -> None:
+    with pytest.raises(ValueError, match="five positive integers"):
+        hidden_layout_from_multiplicities(values)
 
 
 def test_dpa4_relative_pg_requires_observed_distinct_cuda_streams() -> None:

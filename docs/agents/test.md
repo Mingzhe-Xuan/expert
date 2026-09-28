@@ -1,5 +1,33 @@
 # Test plan and results
 
+## 2026-09-28 - 64D scalar-widened DPA-relative-PG
+
+Plan:
+
+- prove an explicit cached-backbone hidden layout reaches the interface, adaptation, all 15 experts,
+  router, and readout while the omitted override remains exactly `[8,2,2,2,2]`/56D;
+- assert `[16,2,2,2,2]` has dimension 64 and exactly 130,200 trainable parameters under the formal
+  15-expert/28-edge configuration;
+- require the widened CLI summary/checkpoint provenance to record exact multiplicities/dimension and
+  reject malformed or non-positive five-entry profiles;
+- require a dedicated Slurm launcher and result directory so job 488 artifacts cannot be overwritten,
+  while preserving batch 64, seed 42, 200 epochs, linear LR, and interval-20 checkpoints;
+- run focused CLI/trainer/launcher/checkpoint tests, Python compilation, Bash syntax, scoped
+  whitespace checks, and the complete maintained suite before commit;
+- on Guqq, require a real CUDA smoke and one-epoch 5,001/637/677 preflight before formal training;
+  terminal acceptance must match job 488's history, prediction order, finite metric, JUnit,
+  asynchronous 15-stream, and ten archive hash gates.
+
+Expected result: a separately reproducible 64D DPA-relative-PG experiment whose only scientific
+change from job 488 is doubling the `0e` hidden multiplicity from 8 to 16.
+
+Local result: focused reduced-benchmark/trainer coverage passed 33/33; after tightening integer
+validation, the seven new/affected core cases passed 7/7. The exact formal configuration constructs
+a 64-component `[16,2,2,2,2]` model with 130,200 trainable parameters, while the default constant
+remains `[8,2,2,2,2]`. The complete maintained suite passed 323/323 in 357.52 seconds. Python
+compilation, CLI help, dedicated-launcher Bash syntax, and scoped whitespace checks also pass.
+Remaining acceptance is the real Guqq smoke, full one-epoch preflight, and formal 200-epoch run.
+
 ## 2026-09-28 - DPA-embedded GMTNet
 
 Plan:

@@ -10,7 +10,7 @@ import torch
 from ..backbones import BackboneResourceRegistry
 from ..configs import ArchitectureConfig
 from ..data import TrainingUnit, load_training_dataset
-from ..experts import default_hidden_layout
+from ..experts import default_hidden_layout, hidden_layout_from_multiplicities
 from ..models import build_backbone_adapter
 from ..symmetry import PointGroupAncestorDAG, parent_detection_config_sha256
 from ..training import (
@@ -35,6 +35,7 @@ from .reporting import execution_metadata, write_single_case_junit
 
 ARCHITECTURE = ArchitectureConfig("B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg")
 MODEL_NAME = "DPA4 B+A+PGE+R full_pg relative-position PG parent-DAG path-weighted"
+DEFAULT_HIDDEN_MULTIPLICITIES = (8, 2, 2, 2, 2)
 
 
 def _require_cuda_expert_dispatch(stats) -> None:
@@ -160,6 +161,8 @@ def _load_feature_splits(arguments, unit, dataset, selected_ids, dataset_sha256,
 
 
 def run(arguments: argparse.Namespace) -> dict[str, object]:
+    hidden_layout = hidden_layout_from_multiplicities(arguments.hidden_multiplicities)
+    hidden_multiplicities = tuple(term.multiplicity for term in hidden_layout.terms)
     unit = TrainingUnit("curated_reduced_total", "dielectric")
     dataset = load_training_dataset(unit, manifest_path=arguments.manifest)
     expected = {"train": 5001, "validation": 637, "test": 677}
@@ -201,7 +204,13 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
     common = {
         "schema_version": 1,
         "status": "passed",
-        "model": MODEL_NAME,
+        "model": (
+            MODEL_NAME
+            if hidden_multiplicities == DEFAULT_HIDDEN_MULTIPLICITIES
+            else f"{MODEL_NAME} hidden={list(hidden_multiplicities)}"
+        ),
+        "hidden_multiplicities": list(hidden_multiplicities),
+        "hidden_dimension": hidden_layout.dimension,
         "routing": "point_group_relative_edge_stick_breaking",
         "training_unit": unit.namespace,
         "dataset_sha256": dataset_sha256,
@@ -250,6 +259,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         architecture=ARCHITECTURE,
         expert_point_groups=expert_point_groups,
         material_edge_ids=material_edge_ids,
+        hidden_layout=hidden_layout,
         config=BenchmarkConfig(
             max_epochs=arguments.epochs,
             batch_size=arguments.batch_size,
@@ -293,6 +303,13 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-interval", type=int, default=20)
+    parser.add_argument(
+        "--hidden-multiplicities",
+        type=int,
+        nargs=5,
+        default=DEFAULT_HIDDEN_MULTIPLICITIES,
+        metavar=("L0", "L1", "L2", "L3", "L4"),
+    )
     parser.add_argument("--feature-shards", type=int, default=64)
     parser.add_argument("--feature-shard-index", type=int)
     parser.add_argument("--prepare-only", action="store_true")

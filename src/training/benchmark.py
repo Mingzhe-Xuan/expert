@@ -141,9 +141,10 @@ class CachedBackboneTensorModel(nn.Module):
         task: str,
         expert_point_groups: tuple[str, ...],
         material_edge_ids: tuple[str, ...] | None = None,
+        hidden_layout: IrrepLayout | None = None,
     ) -> None:
         super().__init__()
-        hidden_layout = default_hidden_layout(architecture)
+        hidden_layout = hidden_layout or default_hidden_layout(architecture)
         self.interface = O3InterfaceProjector(source_layout, hidden_layout)
         self.downstream = PointGroupTensorModel(
             architecture,
@@ -540,6 +541,7 @@ def train_cached_backbone_readout(
     expert_point_groups: tuple[str, ...] = (),
     predictions_path: str | Path | None = None,
     material_edge_ids: tuple[str, ...] | None = None,
+    hidden_layout: IrrepLayout | None = None,
 ) -> dict[str, object]:
     """Train a tensor architecture over a once-materialized frozen backbone tap."""
 
@@ -585,8 +587,11 @@ def train_cached_backbone_readout(
                 unit.target,
                 expert_point_groups,
                 material_edge_ids,
+                hidden_layout,
             ).to(device)
     else:
+        if hidden_layout is not None:
+            raise ValueError("hidden_layout cannot be combined with a custom model_builder")
         model = model_builder(source_layout, unit.target).to(device)
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay
@@ -768,6 +773,12 @@ def train_cached_backbone_readout(
         "backbone": backbone_family,
         "training_unit": unit.namespace,
         "architecture": architecture.to_dict(),
+        "hidden_layout": list(
+            getattr(getattr(model, "downstream", model), "hidden_layout", source_layout).to_spec()
+        ),
+        "trainable_parameters": sum(
+            parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+        ),
         "source_layout": list(source_layout.to_spec()),
         "config": asdict(config),
         "split_counts": {

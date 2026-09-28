@@ -10,7 +10,11 @@ from .modules import (
     active_parent_point_group_numbers,
     hierarchical_fusion,
 )
-from .dispatcher import PointGroupTensorModel, default_hidden_layout
+from .dispatcher import (
+    PointGroupTensorModel,
+    default_hidden_layout,
+    hidden_layout_from_multiplicities,
+)
 
 __all__ = [
     "A1PointGroupExpert",
@@ -23,4 +27,5 @@ __all__ = [
     "active_parent_point_group_numbers",
     "hierarchical_fusion",
     "default_hidden_layout",
+    "hidden_layout_from_multiplicities",
 ]

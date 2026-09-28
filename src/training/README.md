@@ -10,6 +10,12 @@ fails closed on incompatibility.
 original path. Each archive contains the full resumable checkpoint payload, and the returned report
 records its epoch, path, byte size, and SHA-256. The default `0` preserves prior runner behavior.
 
+`train_cached_backbone_readout(..., hidden_layout=...)` optionally injects an explicit downstream
+O(3) layout into the cached-feature interface, adaptation, routed experts, and readout. `None`
+preserves `default_hidden_layout`; combining the override with `model_builder` is rejected because
+the generic trainer cannot prove that a custom builder consumed it. Reports record the effective
+layout and exact trainable-parameter count.
+
 ```python
 losses = coefficient_loss(prediction, target, normalizer)
 ```

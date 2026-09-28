@@ -11,7 +11,7 @@ import torch
 from src.configs import ArchitectureConfig
 from src.data import TensorSample, TrainingUnit
 from src.evaluation import tensor_benchmark_metrics
-from src.experts import default_hidden_layout
+from src.experts import default_hidden_layout, hidden_layout_from_multiplicities
 from src.heads import TensorReadout, cartesian_to_irreps, irreps_to_cartesian
 from src.irreps import IrrepLayout, IrrepTerm, O3FeatureBatch
 from src.symmetry import ParentDAGSpec, PointGroupRegistry
@@ -261,6 +261,7 @@ def test_cached_training_supports_full_pg_architecture_with_interface(tmp_path) 
         "B+A+PGE+R", "full_o3", "none", "full_o3", "full_pg"
     )
     groups = tuple(dict.fromkeys(row.symmetry.current_point_group for row in examples))
+    hidden_layout = hidden_layout_from_multiplicities((2, 1, 1, 1, 1))
     report = train_cached_backbone_readout(
         backbone_family="analytic",
         unit=unit,
@@ -272,11 +273,32 @@ def test_cached_training_supports_full_pg_architecture_with_interface(tmp_path) 
         config=BenchmarkConfig(max_epochs=1, batch_size=2, patience=1),
         architecture=architecture,
         expert_point_groups=groups,
+        hidden_layout=hidden_layout,
         device="cpu",
     )
     assert report["architecture"] == architecture.to_dict()
+    assert report["hidden_layout"] == list(hidden_layout.to_spec())
+    assert report["trainable_parameters"] > 0
     assert report["expert_point_groups"] == list(groups)
     assert report["routing"] == "current_group_only"
+
+
+def test_hidden_layout_override_rejects_custom_builder(tmp_path) -> None:
+    unit, layout, examples = _cached_examples()
+    with pytest.raises(ValueError, match="custom model_builder"):
+        train_cached_backbone_readout(
+            backbone_family="analytic-invalid-override",
+            unit=unit,
+            source_layout=layout,
+            train_examples=examples[:3],
+            validation_examples=examples[3:5],
+            test_examples=examples[5:],
+            checkpoint_path=tmp_path / "invalid.pt",
+            config=BenchmarkConfig(max_epochs=1, batch_size=2, patience=1),
+            model_builder=lambda source, task: TensorReadout(source, task, "full_o3"),
+            hidden_layout=hidden_layout_from_multiplicities((2, 1, 1, 1, 1)),
+            device="cpu",
+        )
 
 
 def test_cached_backbone_wrapper_forwards_relative_pg_routing_inputs(tmp_path) -> None:
