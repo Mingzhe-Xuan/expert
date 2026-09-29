@@ -6,6 +6,12 @@
 - 2026-09-30: Implemented the decoupled LR horizon and dual-selector runner/CLI/report contract plus
   isolated Slurm launcher. Focused tests pass 19/19; exact first-200 stepwise LR equality, constant
   tail, compatibility, compilation, Bash syntax, and whitespace checks pass. Ready to publish/submit.
+- 2026-09-30: Local commit `a1464c0` is ready, but GitHub port 443 failed after one push retry.
+  Switching to the documented hash-verified incremental-bundle pull-first path for Guqq submission.
+- 2026-09-30: Guqq synchronized exact `a1464c0` through the verified incremental bundle and Slurm
+  accepted the single formal Job-498-schedule dual-selector run as job 515.
+- 2026-09-30 02:21 +08:00: Job 515 is RUNNING on node221 with one GPU, eight CPUs, 64 GiB, and a
+  72-hour limit. Exact local/remote temporary bundles were removed; no duplicate job was submitted.
 
 - 2026-09-30: Started the requested additional 300-epoch DPA-GMTNet run with
   `use_equiv_attn=True`. The already accepted opt-in attention path will be exercised through a new

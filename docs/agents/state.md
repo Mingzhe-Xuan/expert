@@ -11,7 +11,7 @@ validation-MAE and validation-Fnorm best checkpoints and evaluate both on the sa
 1. [x] Extend the GMTNet runner with an optional finite LR-decay horizon while preserving defaults.
 2. [x] Add opt-in validation-Fnorm checkpoint/prediction selection beside the legacy MAE result.
 3. [x] Add CLI, isolated Slurm launcher, compatibility/protocol tests, and module documentation.
-4. [ ] Run focused/static acceptance, publish task-only changes, pull-first on Guqq, and submit one
+4. [x] Run focused/static acceptance, publish task-only changes, pull-first on Guqq, and submit one
    formal training job; after completion strictly compare both selection rules with jobs 498/512.
 
 ## Change log - Job-498 schedule continuation with dual selection
@@ -23,6 +23,14 @@ validation-MAE and validation-Fnorm best checkpoints and evaluate both on the sa
   paths, and an isolated production launcher. Focused GMTNet/DPA4 tests pass 19/19; the exact
   first-200 per-step LR equality, constant tail, opt-in path contract, launcher, compilation, Bash
   syntax, and scoped whitespace checks pass. Next is task-only publication and Guqq submission.
+- 2026-09-30: Committed the implementation as `a1464c0`. GitHub port 443 failed after one retry, so
+  Guqq synchronization will use a SHA-verified incremental bundle and pull-first gate; no training
+  submission has occurred yet.
+- 2026-09-30: Guqq pulled exact `a1464c0` from the verified bundle and Slurm accepted exactly one
+  formal run as job 515. Queue/resource verification and exact temporary-bundle cleanup remain.
+- 2026-09-30 02:21 +08:00: Job 515 is RUNNING on node221 with 1 GPU, 8 CPUs, 64 GiB, and a 72-hour
+  limit from the exact launcher/worktree. Both temporary bundles were removed. GitHub remains at
+  `9606729` because port 443 is unavailable; Guqq and local `main` are at `a1464c0`.
 
 ## Current snapshot - 300-epoch attention DPA-GMTNet (2026-09-30)
 

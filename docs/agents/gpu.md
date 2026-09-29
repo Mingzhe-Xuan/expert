@@ -1,5 +1,25 @@
 # GPU / server activity
 
+## 2026-09-30 - Job-498-schedule dual-selector DPA-GMTNet submission
+
+- Bundle-transfer connection purpose: GitHub push of local `a1464c0` failed on port 443 after one
+  bounded retry. Create and hash one incremental bundle containing only `origin/main..a1464c0`, then
+  transfer it to `/home/xmz/expert-data/job498-lr-dual-submit.bundle` without accessing the remote
+  repository. Submission connection will make `git pull --ff-only` from that verified bundle the
+  first repository operation, require exact `a1464c0`, verify the recorded environment/checkout and
+  caches, reject a same-name live job, and submit exactly one formal Slurm run.
+- Bundle SHA-256 is `9023e3f9c05d1ee2ec37c7526eead3354e25d2d7006fcc1f518f65809418646f`
+  for 8,358 bytes; transfer succeeded. The first submission connection failed before any repository
+  operation because nested quoting made `cut` reject its delimiter. Retry purpose: use quote-free
+  fixed-hash grep, then perform the same bundle pull-first/environment/cache/unique-job gates.
+- Retry result: bundle hash/pull/exact revision/environment/pinned checkout/cache/unique-name gates
+  passed, and Slurm accepted the sole formal run as job 515. Queue-audit/cleanup connection purpose:
+  pull first from the same verified bundle, inspect only job 515's `squeue`/`scontrol` allocation,
+  then remove exactly `/home/xmz/expert-data/job498-lr-dual-submit.bundle`; do not alter the job.
+- Queue audit result: job 515 is RUNNING on node221 from the exact launcher/worktree with 1 GPU,
+  8 CPUs, 64 GiB, and `3-00:00:00`. Its isolated stdout/stderr use
+  `dpa4-gmtnet-job498-lr-300e-dual-515`; the exact remote and local temporary bundles were removed.
+
 ## 2026-09-30 - 300-epoch attention DPA-GMTNet submission
 
 - Connection purpose: verify `/home/xmz/expert` exists, make `git pull --ff-only` the first
