@@ -1,5 +1,29 @@
 # Agent state
 
+## Current snapshot - Job-498 schedule continuation with dual selection (2026-09-30)
+
+Train one isolated non-attention DPA-GMTNet run for 300 epochs. Epochs 1--200 must use the exact
+Job-498 per-step linear `1e-3 -> 1e-5` schedule; epochs 201--300 hold `1e-5`. Maintain independent
+validation-MAE and validation-Fnorm best checkpoints and evaluate both on the same frozen test set.
+
+## Current plan - Job-498 schedule continuation with dual selection
+
+1. [x] Extend the GMTNet runner with an optional finite LR-decay horizon while preserving defaults.
+2. [x] Add opt-in validation-Fnorm checkpoint/prediction selection beside the legacy MAE result.
+3. [x] Add CLI, isolated Slurm launcher, compatibility/protocol tests, and module documentation.
+4. [ ] Run focused/static acceptance, publish task-only changes, pull-first on Guqq, and submit one
+   formal training job; after completion strictly compare both selection rules with jobs 498/512.
+
+## Change log - Job-498 schedule continuation with dual selection
+
+- 2026-09-30: User requested a 300-epoch experiment that preserves Job 498's first-200 learning-rate
+  trajectory, then holds `1e-5`, with separate MAE- and Fnorm-selected checkpoints. This is one
+  training run with two validation selectors, not two independently optimized runs.
+- 2026-09-30: Implemented an optional decay horizon, independent Fnorm selector/report, both CLI
+  paths, and an isolated production launcher. Focused GMTNet/DPA4 tests pass 19/19; the exact
+  first-200 per-step LR equality, constant tail, opt-in path contract, launcher, compilation, Bash
+  syntax, and scoped whitespace checks pass. Next is task-only publication and Guqq submission.
+
 ## Current snapshot - 300-epoch attention DPA-GMTNet (2026-09-30)
 
 Queue one isolated DPA-embedded GMTNet run with `use_equiv_attn=True` for exactly 300 epochs. Reuse

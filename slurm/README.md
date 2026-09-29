@@ -71,6 +71,12 @@ receiver-normalized invariant attention in all three GMTNet tensor-product layer
 separate `results/reduced-benchmark/dpa4-gmtnet-equiv-attn-300e/` namespace and matching logs, so it
 cannot overwrite either the accepted 200-epoch run or the non-attention 300-epoch run.
 
+`train_reduced_dpa4_gmtnet_job498_lr_300e_dual.sbatch` is the schedule-continuation ablation. Its
+first 200 epochs use Job 498's exact per-step linear `1e-3 -> 1e-5` trajectory; epochs 201--300 hold
+`1e-5`. A single training trajectory independently saves validation-MAE and validation-Fnorm best
+checkpoints and exports one test prediction file for each selector. Its result/log namespace is
+isolated from jobs 498, 512, and the attention run.
+
 These non-interactive jobs are the only supported path for full tests, model inference,
 training smoke runs, and batch data processing on Guqq. Activate the recorded project
 backbone-specific virtual environments through `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,

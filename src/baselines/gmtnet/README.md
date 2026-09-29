@@ -50,6 +50,13 @@ Every validation epoch records both component MAE and the mean per-sample
 Frobenius distance (`validation_fnorm`) using that same dielectric metric
 implementation. Best-checkpoint selection remains based on validation MAE.
 
+`GMTNetConfig.learning_rate_decay_epochs` optionally decouples the linear decay horizon from the
+total training horizon. The default `None` preserves decay across all epochs; setting it to 200 in a
+300-epoch run reproduces the 200-epoch schedule and holds the endpoint LR for the remaining epochs.
+`select_validation_fnorm=True`, together with distinct Fnorm checkpoint and prediction paths, adds
+an independent Fnorm selector while retaining the legacy top-level MAE-selected report fields.
+Both selectors are also recorded under `checkpoint_selections` with their own held-out metrics.
+
 
 The runner also supports the explicit DPA4-input ablation used by
 `src.cli.reduced_dpa4_gmtnet_train`. It reuses the frozen pre-interface DPA4 O(3)

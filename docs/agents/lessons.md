@@ -1,5 +1,12 @@
 # Agent lessons
 
+## 2026-09-30 - preserving a shorter-run learning-rate trajectory
+
+- A longer GMTNet run must decouple the LR decay horizon from total epochs to reproduce a shorter
+  run's optimization path; merely setting `epochs=300` stretches every first-200 LR value.
+- Multiple validation selectors should share one trajectory but own separate checkpoint/prediction
+  paths, while legacy top-level report fields retain their original MAE-selected meaning.
+
 ## 2026-09-13 — Long-tail feature extraction needs fine-grained recovery units
 
 - Equal record counts do not imply equal accelerator work for periodic equivariant models. Crystal

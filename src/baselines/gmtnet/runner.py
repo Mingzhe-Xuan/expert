@@ -38,6 +38,8 @@ class GMTNetConfig:
     weight_decay: float = 1.0e-5
     seed: int = 42
     checkpoint_interval: int = 0
+    learning_rate_decay_epochs: int | None = None
+    select_validation_fnorm: bool = False
     use_equiv_attn: bool = False
 
     def __post_init__(self) -> None:
@@ -49,6 +51,29 @@ class GMTNetConfig:
             raise ValueError("weight decay must be non-negative")
         if self.checkpoint_interval < 0:
             raise ValueError("checkpoint interval must be non-negative")
+        if self.learning_rate_decay_epochs is not None and not (
+            1 <= self.learning_rate_decay_epochs <= self.epochs
+        ):
+            raise ValueError("learning-rate decay epochs must be within the training horizon")
+
+
+def _learning_rate_after_step(
+    config: GMTNetConfig,
+    *,
+    step: int,
+    steps_per_epoch: int,
+) -> float:
+    """Return the post-step LR, optionally holding the endpoint after a fixed horizon."""
+
+    if step < 1 or steps_per_epoch < 1:
+        raise ValueError("learning-rate step and steps per epoch must be positive")
+    decay_epochs = config.learning_rate_decay_epochs or config.epochs
+    decay_steps = steps_per_epoch * decay_epochs
+    fraction = min(step, decay_steps) / decay_steps
+    return (
+        (config.learning_rate - config.end_learning_rate) * (1.0 - fraction)
+        + config.end_learning_rate
+    )
 
 
 def dpa4_invariant_node_embedding(
@@ -310,6 +335,35 @@ def _predict(model, rows, batch_size, data_type, batch_type, device):
     return torch.cat(predictions)
 
 
+def _write_predictions(
+    path: str | Path,
+    rows: Sequence[dict[str, object]],
+    predictions: torch.Tensor,
+) -> None:
+    prediction_file = Path(path)
+    prediction_file.parent.mkdir(parents=True, exist_ok=True)
+    temporary = prediction_file.with_name(f".{prediction_file.name}.tmp")
+    try:
+        with temporary.open("w", encoding="utf-8", newline="\n") as stream:
+            for row, prediction in zip(rows, predictions):
+                stream.write(
+                    json.dumps(
+                        {
+                            "sample_id": row["sample_id"],
+                            "prediction": prediction.tolist(),
+                            "target": row["target"].tolist(),
+                        },
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                )
+        os.replace(temporary, prediction_file)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
 def run_gmtnet_benchmark(
     dataset: IndependentTensorDataset,
     *,
@@ -317,6 +371,8 @@ def run_gmtnet_benchmark(
     cache_path: str | Path,
     checkpoint_path: str | Path,
     predictions_path: str | Path,
+    fnorm_checkpoint_path: str | Path | None = None,
+    fnorm_predictions_path: str | Path | None = None,
     config: GMTNetConfig = GMTNetConfig(),
     device: str | torch.device = "cuda",
     split_ids: dict[str, tuple[str, ...]] | None = None,
@@ -325,6 +381,18 @@ def run_gmtnet_benchmark(
 ) -> dict[str, object]:
     if dataset.unit.namespace != "curated_reduced_total__dielectric":
         raise ValueError("GMTNet reduced benchmark received the wrong training unit")
+    fnorm_paths = (fnorm_checkpoint_path, fnorm_predictions_path)
+    if any(path is not None for path in fnorm_paths) != all(
+        path is not None for path in fnorm_paths
+    ) or config.select_validation_fnorm != all(path is not None for path in fnorm_paths):
+        raise ValueError(
+            "Fnorm selection requires both checkpoint and prediction paths, and explicit opt-in"
+        )
+    if config.select_validation_fnorm and (
+        Path(fnorm_checkpoint_path).resolve() == Path(checkpoint_path).resolve()
+        or Path(fnorm_predictions_path).resolve() == Path(predictions_path).resolve()
+    ):
+        raise ValueError("Fnorm selection paths must be isolated from MAE selection paths")
     dataset_sha256 = str(dataset[0].source["manifest_sha256"])
     root = Path(official_root)
     selected_ids = split_ids or {
@@ -383,14 +451,18 @@ def run_gmtnet_benchmark(
     )
     training_batch_size = min(config.batch_size, len(splits["train"]))
     steps_per_epoch = len(splits["train"]) // training_batch_size
-    total_steps = steps_per_epoch * config.epochs
     criterion = nn.HuberLoss()
     best_mae = float("inf")
     best_epoch = 0
+    best_fnorm = float("inf")
+    best_fnorm_epoch = 0
     history = []
     periodic_checkpoints = []
     checkpoint = Path(checkpoint_path)
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    if config.select_validation_fnorm:
+        Path(fnorm_checkpoint_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(fnorm_predictions_path).parent.mkdir(parents=True, exist_ok=True)
 
     def checkpoint_payload(epoch: int) -> dict[str, object]:
         return {
@@ -420,8 +492,11 @@ def run_gmtnet_benchmark(
             loss.backward()
             optimizer.step()
             step += 1
-            fraction = min(step, total_steps) / total_steps
-            lr = (config.learning_rate - config.end_learning_rate) * (1.0 - fraction) + config.end_learning_rate
+            lr = _learning_rate_after_step(
+                config,
+                step=step,
+                steps_per_epoch=steps_per_epoch,
+            )
             for group in optimizer.param_groups:
                 group["lr"] = lr
             total_loss += float(loss.detach()) * len(batch_rows)
@@ -440,6 +515,10 @@ def run_gmtnet_benchmark(
         if validation_mae < best_mae:
             best_mae, best_epoch = validation_mae, epoch
             torch.save(checkpoint_payload(epoch), checkpoint)
+        validation_fnorm = validation_metrics["validation_fnorm"]
+        if config.select_validation_fnorm and validation_fnorm < best_fnorm:
+            best_fnorm, best_fnorm_epoch = validation_fnorm, epoch
+            torch.save(checkpoint_payload(epoch), Path(fnorm_checkpoint_path))
         if config.checkpoint_interval and epoch % config.checkpoint_interval == 0:
             periodic_path = checkpoint.with_name(
                 f"{checkpoint.stem}-epoch-{epoch:03d}{checkpoint.suffix}"
@@ -449,28 +528,55 @@ def run_gmtnet_benchmark(
             periodic_checkpoints.append({"epoch": epoch, "path": str(periodic_path),
                                          "bytes": periodic_path.stat().st_size, "sha256": digest})
         print(json.dumps(history[-1], sort_keys=True), flush=True)
-    saved = torch.load(checkpoint, map_location=device, weights_only=True)
-    if saved.get("official_commit") != GMTNET_OFFICIAL_COMMIT or saved.get("dataset_sha256") != dataset_sha256:
-        raise ValueError("GMTNet checkpoint provenance mismatch")
-    model.load_state_dict(saved["model_state"], strict=True)
-    test_prediction = _predict(model, splits["test"], config.batch_size, data_type, batch_type, device)
     test_target = torch.stack([row["target"] for row in splits["test"]])
-    metrics = tensor_benchmark_metrics(test_prediction, test_target, task="dielectric")
-    prediction_file = Path(predictions_path)
-    prediction_file.parent.mkdir(parents=True, exist_ok=True)
-    temporary = prediction_file.with_name(f".{prediction_file.name}.tmp")
-    try:
-        with temporary.open("w", encoding="utf-8", newline="\n") as stream:
-            for row, prediction in zip(splits["test"], test_prediction):
-                stream.write(json.dumps({"sample_id": row["sample_id"],
-                                         "prediction": prediction.tolist(),
-                                         "target": row["target"].tolist()},
-                                        sort_keys=True, separators=(",", ":")) + "\n")
-        os.replace(temporary, prediction_file)
-    finally:
-        if temporary.exists():
-            temporary.unlink()
-    return {
+    selection_specs = {
+        "validation_mae": {
+            "checkpoint": checkpoint,
+            "predictions": Path(predictions_path),
+            "best_epoch": best_epoch,
+            "best_value": best_mae,
+        }
+    }
+    if config.select_validation_fnorm:
+        selection_specs["validation_fnorm"] = {
+            "checkpoint": Path(fnorm_checkpoint_path),
+            "predictions": Path(fnorm_predictions_path),
+            "best_epoch": best_fnorm_epoch,
+            "best_value": best_fnorm,
+        }
+    selections = {}
+    for metric_name, selection in selection_specs.items():
+        saved = torch.load(selection["checkpoint"], map_location=device, weights_only=True)
+        if (
+            saved.get("official_commit") != GMTNET_OFFICIAL_COMMIT
+            or saved.get("dataset_sha256") != dataset_sha256
+            or saved.get("epoch") != selection["best_epoch"]
+        ):
+            raise ValueError(f"GMTNet {metric_name} checkpoint provenance mismatch")
+        model.load_state_dict(saved["model_state"], strict=True)
+        test_prediction = _predict(
+            model, splits["test"], config.batch_size, data_type, batch_type, device
+        )
+        metrics = tensor_benchmark_metrics(test_prediction, test_target, task="dielectric")
+        _write_predictions(selection["predictions"], splits["test"], test_prediction)
+        selections[metric_name] = {
+            "best_epoch": selection["best_epoch"],
+            "best_value": selection["best_value"],
+            "checkpoint": str(selection["checkpoint"]),
+            "predictions": str(selection["predictions"]),
+            "test_metrics": metrics,
+        }
+    mae_selection = selections["validation_mae"]
+    protocol_repairs = [
+        "no_wandb",
+        "explicit_paths",
+        "complete_validation_and_test_batches",
+        "best_validation_mae_from_epoch_1",
+        "pyg_scatter_compatibility_if_torch_scatter_unavailable",
+    ]
+    if config.select_validation_fnorm:
+        protocol_repairs.append("independent_validation_mae_and_fnorm_selection")
+    report = {
         "schema_version": 1,
         "status": "passed",
         "model": "DPA4-embedded GMTNet" if dpa4_feature_layout is not None else "GMTNet",
@@ -480,14 +586,17 @@ def run_gmtnet_benchmark(
         "training_unit": dataset.unit.namespace,
         "split_counts": {name: len(rows) for name, rows in splits.items()},
         "config": asdict(config),
-        "protocol_repairs": ["no_wandb", "explicit_paths", "complete_validation_and_test_batches",
-                             "best_validation_mae_from_epoch_1",
-                             "pyg_scatter_compatibility_if_torch_scatter_unavailable"],
+        "protocol_repairs": protocol_repairs,
         "best_epoch": best_epoch,
         "best_validation_mae": best_mae,
-        "test_metrics": metrics,
+        "test_metrics": mae_selection["test_metrics"],
         "checkpoint": str(checkpoint),
-        "predictions": str(prediction_file),
+        "predictions": str(predictions_path),
         "history": history,
         "periodic_checkpoints": periodic_checkpoints,
+        "checkpoint_selections": selections,
     }
+    if config.select_validation_fnorm:
+        report["best_fnorm_epoch"] = best_fnorm_epoch
+        report["best_validation_fnorm"] = best_fnorm
+    return report

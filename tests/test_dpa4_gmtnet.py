@@ -9,9 +9,11 @@ import torch
 from src.baselines.gmtnet.runner import (
     GMTNetConfig,
     _attach_dpa4_node_embeddings,
+    _learning_rate_after_step,
     _replace_atom_embedding,
     _validation_history_metrics,
     dpa4_invariant_node_embedding,
+    run_gmtnet_benchmark,
 )
 from src.evaluation import tensor_benchmark_metrics
 from src.features import cgcnn_node_features
@@ -195,3 +197,84 @@ def test_dpa4_gmtnet_equiv_attn_300e_launcher_is_isolated_and_matched() -> None:
     assert "#SBATCH --time=3-00:00:00" in launcher
     assert 'run_root="results/reduced-benchmark/dpa4-gmtnet-300e"' not in launcher
     assert 'run_root="results/reduced-benchmark/dpa4-gmtnet"' not in launcher
+
+
+def test_job498_learning_rate_trajectory_is_reused_then_held() -> None:
+    steps_per_epoch = 5001 // 64
+    baseline = GMTNetConfig(epochs=200)
+    continued = GMTNetConfig(epochs=300, learning_rate_decay_epochs=200)
+    for step in range(1, steps_per_epoch * 200 + 1):
+        assert _learning_rate_after_step(
+            continued, step=step, steps_per_epoch=steps_per_epoch
+        ) == _learning_rate_after_step(
+            baseline, step=step, steps_per_epoch=steps_per_epoch
+        )
+    assert _learning_rate_after_step(
+        continued,
+        step=steps_per_epoch * 200,
+        steps_per_epoch=steps_per_epoch,
+    ) == pytest.approx(1.0e-5)
+    assert _learning_rate_after_step(
+        continued,
+        step=steps_per_epoch * 300,
+        steps_per_epoch=steps_per_epoch,
+    ) == pytest.approx(1.0e-5)
+    stretched = GMTNetConfig(epochs=300)
+    assert _learning_rate_after_step(
+        stretched,
+        step=steps_per_epoch * 200,
+        steps_per_epoch=steps_per_epoch,
+    ) > 1.0e-5
+
+
+@pytest.mark.parametrize("decay_epochs", (0, 301))
+def test_learning_rate_decay_horizon_is_bounded(decay_epochs: int) -> None:
+    with pytest.raises(ValueError, match="decay epochs"):
+        GMTNetConfig(epochs=300, learning_rate_decay_epochs=decay_epochs)
+
+
+def test_fnorm_selector_requires_complete_explicit_paths(tmp_path: Path) -> None:
+    dataset = SimpleNamespace(
+        unit=SimpleNamespace(namespace="curated_reduced_total__dielectric")
+    )
+    common = {
+        "official_root": tmp_path,
+        "cache_path": tmp_path / "cache.pt",
+        "checkpoint_path": tmp_path / "mae.pt",
+        "predictions_path": tmp_path / "mae.jsonl",
+    }
+    with pytest.raises(ValueError, match="Fnorm selection"):
+        run_gmtnet_benchmark(
+            dataset,
+            **common,
+            config=GMTNetConfig(select_validation_fnorm=True),
+        )
+    with pytest.raises(ValueError, match="Fnorm selection"):
+        run_gmtnet_benchmark(
+            dataset,
+            **common,
+            fnorm_checkpoint_path=tmp_path / "fnorm.pt",
+            config=GMTNetConfig(),
+        )
+
+
+def test_job498_schedule_dual_selector_launcher_is_isolated() -> None:
+    launcher = (
+        ROOT / "slurm" / "train_reduced_dpa4_gmtnet_job498_lr_300e_dual.sbatch"
+    ).read_text(encoding="utf-8")
+    assert "src.cli.reduced_dpa4_gmtnet_train" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-gmtnet-job498-lr-300e-dual"' in launcher
+    assert "--epochs 300" in launcher
+    assert "--learning-rate 0.001" in launcher
+    assert "--end-learning-rate 0.00001" in launcher
+    assert "--learning-rate-decay-epochs 200" in launcher
+    assert "--select-validation-fnorm" in launcher
+    assert "validation-mae.pt" in launcher
+    assert "validation-mae.jsonl" in launcher
+    assert "validation-fnorm.pt" in launcher
+    assert "validation-fnorm.jsonl" in launcher
+    assert "--checkpoint-interval 20" in launcher
+    assert "--batch-size 64" in launcher
+    assert "--seed 42" in launcher
+    assert "--use-equiv-attn" not in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-gmtnet-300e"' not in launcher

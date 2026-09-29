@@ -1,5 +1,26 @@
 # Test plan and results
 
+## 2026-09-30 - Job-498 schedule continuation with dual selection
+
+Plan:
+
+- prove the optional decay horizon reproduces the 200-epoch Job-498 per-step LR formula exactly and
+  remains `1e-5` for epochs 201--300, while omitted configuration preserves legacy behavior;
+- prove MAE and Fnorm selectors can choose different epochs, write isolated checkpoints/predictions,
+  reload each strictly, and report independently recomputed test metrics without changing legacy keys;
+- require CLI fail-closed argument combinations and a dedicated Slurm result/log namespace with
+  300 epochs, decay horizon 200, interval 20, both selectors, and all other Job-498 settings fixed;
+- run focused GMTNet/DPA4 tests, Python/Bash/static checks, and only submit after all pass.
+
+Expected result: one reproducible run yields two selection-specific held-out reports while its first
+200 learning-rate values exactly match Job 498 and no existing artifact namespace is overwritten.
+
+Local result: focused GMTNet/DPA4 tests pass 19/19. The test iterates all 15,600 first-200 update
+steps (`5001 // 64 = 78` per epoch) and proves exact equality with the Job-498 formula, endpoint
+`1e-5` at epoch 200, and a constant endpoint through epoch 300. It also proves bounded decay-horizon
+validation, fail-closed dual-selector paths, launcher isolation and literal protocol. Python
+compilation, Bash syntax, and scoped whitespace checks pass; only documented dependency warnings remain.
+
 ## 2026-09-30 - 300-epoch attention DPA-GMTNet
 
 Plan:

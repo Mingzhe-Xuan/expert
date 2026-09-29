@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-30: Started the requested Job-498-schedule 300-epoch DPA-GMTNet experiment. It will use one
+  training trajectory, constant `1e-5` after epoch 200, and independent validation-MAE/Fnorm best
+  checkpoints plus test predictions in a new namespace.
+- 2026-09-30: Implemented the decoupled LR horizon and dual-selector runner/CLI/report contract plus
+  isolated Slurm launcher. Focused tests pass 19/19; exact first-200 stepwise LR equality, constant
+  tail, compatibility, compilation, Bash syntax, and whitespace checks pass. Ready to publish/submit.
+
 - 2026-09-30: Started the requested additional 300-epoch DPA-GMTNet run with
   `use_equiv_attn=True`. The already accepted opt-in attention path will be exercised through a new
   fixed-protocol launcher and isolated output namespace; job 512 remains untouched.

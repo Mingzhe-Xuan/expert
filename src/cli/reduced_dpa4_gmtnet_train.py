@@ -87,6 +87,8 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         cache_path=arguments.cache,
         checkpoint_path=arguments.checkpoint,
         predictions_path=arguments.predictions,
+        fnorm_checkpoint_path=arguments.fnorm_checkpoint,
+        fnorm_predictions_path=arguments.fnorm_predictions,
         config=GMTNetConfig(
             epochs=arguments.epochs,
             batch_size=arguments.batch_size,
@@ -95,6 +97,8 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             weight_decay=arguments.weight_decay,
             seed=arguments.seed,
             checkpoint_interval=arguments.checkpoint_interval,
+            learning_rate_decay_epochs=arguments.learning_rate_decay_epochs,
+            select_validation_fnorm=arguments.select_validation_fnorm,
             use_equiv_attn=getattr(arguments, "use_equiv_attn", False),
         ),
         device=arguments.device,
@@ -123,6 +127,8 @@ def main() -> None:
     parser.add_argument("--feature-shards", type=int, default=64)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--predictions", type=Path, required=True)
+    parser.add_argument("--fnorm-checkpoint", type=Path)
+    parser.add_argument("--fnorm-predictions", type=Path)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--junit", type=Path, required=True)
     parser.add_argument("--device", default="cuda")
@@ -133,6 +139,8 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-interval", type=int, default=20)
+    parser.add_argument("--learning-rate-decay-epochs", type=int)
+    parser.add_argument("--select-validation-fnorm", action="store_true")
     parser.add_argument("--use-equiv-attn", action="store_true")
     parser.add_argument(
         "--smoke",
