@@ -16,6 +16,9 @@ a type annotation; when that retired extension is absent, the adapter provides
 an inert annotation placeholder and no sparse operation is replaced.
 The curated split and labels are never regenerated. Predictions are exported by
 record ID and scored by `src.evaluation.tensor_benchmark_metrics`.
+Every validation epoch records both component MAE and the mean per-sample
+Frobenius distance (`validation_fnorm`) using that same dielectric metric
+implementation. Best-checkpoint selection remains based on validation MAE.
 
 
 The runner also supports the explicit DPA4-input ablation used by

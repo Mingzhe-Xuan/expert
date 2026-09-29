@@ -141,11 +141,21 @@ def load_gmtnet_history(
     history = payload.get("history")
     if not isinstance(history, list) or len(history) != expected_epochs:
         raise ValueError(f"GMTNet history must contain exactly {expected_epochs} epochs")
+    fnorm_presence = [
+        isinstance(row, Mapping) and "validation_fnorm" in row for row in history
+    ]
+    if any(fnorm_presence) and not all(fnorm_presence):
+        raise ValueError(
+            "GMTNet validation Fnorm must be present for every epoch or absent"
+        )
+    history_fields = GMTNET_HISTORY_FIELDS + (
+        ("validation_fnorm",) if all(fnorm_presence) else ()
+    )
     epochs = []
     for row in history:
         if not isinstance(row, Mapping) or any(field not in row for field in GMTNET_HISTORY_FIELDS):
             raise ValueError("GMTNet history row lacks required fields")
-        values = [float(row[field]) for field in GMTNET_HISTORY_FIELDS]
+        values = [float(row[field]) for field in history_fields]
         if not all(math.isfinite(value) for value in values):
             raise ValueError("GMTNet history contains non-finite values")
         epochs.append(int(row["epoch"]))
@@ -348,6 +358,11 @@ def render_current_group_history(
         gmtnet_train_loss = [float(row["training_loss"]) for row in gmtnet_history]
         gmtnet_validation_mae = [float(row["validation_mae"]) for row in gmtnet_history]
         gmtnet_learning_rate = [float(row["learning_rate"]) for row in gmtnet_history]
+        gmtnet_validation_fnorm = (
+            [float(row["validation_fnorm"]) for row in gmtnet_history]
+            if all("validation_fnorm" in row for row in gmtnet_history)
+            else None
+        )
         gmtnet_best_epoch = int(gmtnet_summary["best_epoch"])
         gmtnet_best_mae = float(gmtnet_summary["best_validation_mae"])
 
@@ -455,6 +470,16 @@ def render_current_group_history(
         alpha=0.9,
         label="current-pg validation Fnorm",
     )
+    if gmtnet_summary is not None and gmtnet_validation_fnorm is not None:
+        metric_right.plot(
+            epochs,
+            gmtnet_validation_fnorm,
+            color=colors["gmt"],
+            linewidth=1.6,
+            linestyle=(0, (2, 2)),
+            alpha=0.9,
+            label="GMTNet validation Fnorm",
+        )
     metric_right.set_ylabel("Fnorm", color=colors["fnorm"])
     handles_left, labels_left = axes[1].get_legend_handles_labels()
     handles_right, labels_right = metric_right.get_legend_handles_labels()

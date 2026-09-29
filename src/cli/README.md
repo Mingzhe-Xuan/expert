@@ -78,7 +78,9 @@ validation-MAE selection, and exact epoch archives every 20 epochs.
 validates and renders the accepted CGCNN current-group-only epoch history. It is visualization only:
 no prediction, target, or metric is recomputed.
 Optional paired `--gmtnet-summary/--gmtnet-expected-sha256` arguments overlay GMTNet's natively
-recorded training Huber loss and validation MAE in that same figure.
+recorded training Huber loss, validation MAE, and (for newly generated summaries) validation
+Fnorm in that same figure. Historical GMTNet summaries without per-epoch Fnorm remain valid and
+omit only that curve; missing values are never imputed.
 Alternatively, paired `--parent-dag-summary/--parent-dag-expected-sha256` arguments render a separate
 matched current-pg versus static all-ancestor PG-DAG figure with both models' complete recorded
 validation series. GMTNet and parent-DAG overlays are deliberately separate to keep the plots legible.

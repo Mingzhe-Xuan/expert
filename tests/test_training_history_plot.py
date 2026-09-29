@@ -43,7 +43,7 @@ def _summary(path: Path) -> Path:
     return path
 
 
-def _gmtnet_summary(path: Path) -> Path:
+def _gmtnet_summary(path: Path, *, include_validation_fnorm: bool = False) -> Path:
     history = [
         {
             "epoch": epoch,
@@ -53,6 +53,9 @@ def _gmtnet_summary(path: Path) -> Path:
         }
         for epoch in range(1, 201)
     ]
+    if include_validation_fnorm:
+        for row in history:
+            row["validation_fnorm"] = 12.0 / row["epoch"]
     payload = {
         "status": "passed",
         "model": "GMTNet",
@@ -129,7 +132,9 @@ def test_current_group_history_validates_identity_and_complete_epochs(tmp_path) 
 def test_training_history_render_writes_parseable_labeled_svg_and_png(tmp_path) -> None:
     path = _summary(tmp_path / "summary.json")
     payload = load_current_group_history(path)
-    gmtnet_path = _gmtnet_summary(tmp_path / "gmtnet.json")
+    gmtnet_path = _gmtnet_summary(
+        tmp_path / "gmtnet.json", include_validation_fnorm=True
+    )
     gmtnet = load_gmtnet_history(
         gmtnet_path, expected_sha256=file_sha256(gmtnet_path)
     )
@@ -145,6 +150,7 @@ def test_training_history_render_writes_parseable_labeled_svg_and_png(tmp_path) 
     assert "current-pg train Huber" in svg_text
     assert "current-pg best epoch 200" in svg_text
     assert "GMTNet best epoch 200" in svg_text
+    assert "GMTNet validation Fnorm" in svg_text
     assert "Shared LR schedule (both models)" in svg_text
     assert "\ufffd" not in svg_text
     assert all(line == line.rstrip() for line in svg_text.splitlines())
@@ -161,6 +167,27 @@ def test_gmtnet_history_rejects_wrong_model_and_epoch_gaps(tmp_path) -> None:
     payload["model"] = "not-gmtnet"
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="passed GMTNet"):
+        load_gmtnet_history(path)
+
+
+def test_gmtnet_history_accepts_legacy_missing_fnorm_and_rejects_partial_or_nonfinite(
+    tmp_path,
+) -> None:
+    legacy_path = _gmtnet_summary(tmp_path / "legacy.json")
+    assert "validation_fnorm" not in load_gmtnet_history(legacy_path)["history"][0]
+
+    path = _gmtnet_summary(tmp_path / "current.json", include_validation_fnorm=True)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["history"][0].pop("validation_fnorm")
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="present for every epoch or absent"):
+        load_gmtnet_history(path)
+
+    path = _gmtnet_summary(tmp_path / "nonfinite.json", include_validation_fnorm=True)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["history"][0]["validation_fnorm"] = float("nan")
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="non-finite"):
         load_gmtnet_history(path)
 
 

@@ -1,5 +1,14 @@
 # Agent progress updates
 
+- 2026-09-29: Started adding validation Fnorm to the shared GMTNet runner used by original and
+  DPA-embedded GMTNet. New histories will record the exact full-validation benchmark metric;
+  historical job 443/498 summaries remain backward-compatible and will not be backfilled or
+  interpolated.
+- 2026-09-29: Finished the GMTNet-family validation-Fnorm implementation. Both input variants now
+  persist benchmark-consistent per-epoch Fnorm, plotting exposes the curve when present, and legacy
+  summaries omit it cleanly. Focused tests pass 18/18, the maintained suite passes 329/329, and
+  compilation/whitespace checks pass; checkpoint selection is still based only on validation MAE.
+
 - 2026-09-28: Started the authorized `[8,3,3,3,3]`/80D DPA-relative-PG queueing task. It will use
   an isolated launcher/result identity, the dataset-derived 24-edge/199,754-parameter contract, and
   every other job-505 training setting unchanged; submission remains gated on local tests and push.
@@ -1232,3 +1241,6 @@
   superseded and will not be committed or trained. Asset audit confirms the class/orientation layer
   exists but the physical Hall translation/origin embedding registry must be supplied separately;
   implementation will enforce that boundary fail closed.
+
+- 2026-09-29 10:39 +08:00：开始 Guqq 上 DPA-GMTNet 与 GMTNet checkpoint 的只读盘点；已记录
+  连接用途，待完成 pull-first 门禁后检查已知结果目录。

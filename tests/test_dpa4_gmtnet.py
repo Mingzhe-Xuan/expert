@@ -10,8 +10,10 @@ from src.baselines.gmtnet.runner import (
     GMTNetConfig,
     _attach_dpa4_node_embeddings,
     _replace_atom_embedding,
+    _validation_history_metrics,
     dpa4_invariant_node_embedding,
 )
+from src.evaluation import tensor_benchmark_metrics
 from src.features import cgcnn_node_features
 from src.irreps import IrrepLayout, IrrepTerm
 
@@ -25,6 +27,32 @@ LAYOUT = IrrepLayout(
         IrrepTerm(1, 2, "o", "tensor_odd"),
     )
 )
+
+
+def test_validation_history_metrics_match_common_dielectric_definition() -> None:
+    prediction = torch.tensor(
+        [[[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 3.0]],
+         [[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]]
+    )
+    target = torch.zeros_like(prediction)
+    actual = _validation_history_metrics(prediction, target)
+    expected = tensor_benchmark_metrics(prediction, target, task="dielectric")
+    assert actual["validation_mae"] == pytest.approx(float(prediction.abs().mean()))
+    assert actual["validation_fnorm"] == pytest.approx(expected["fnorm"])
+
+
+@pytest.mark.parametrize(
+    ("prediction", "target"),
+    (
+        (torch.zeros((2, 3, 3)), torch.zeros((1, 3, 3))),
+        (torch.full((2, 3, 3), torch.nan), torch.zeros((2, 3, 3))),
+    ),
+)
+def test_validation_history_metrics_reject_invalid_tensors(
+    prediction: torch.Tensor, target: torch.Tensor
+) -> None:
+    with pytest.raises(ValueError):
+        _validation_history_metrics(prediction, target)
 
 
 def test_dpa4_scalarization_is_o3_invariant_and_preserves_signed_even_scalars() -> None:

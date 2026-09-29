@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-29 - GMTNet validation Fnorm history
+
+Plan:
+
+- prove the shared validation helper returns component MAE plus benchmark-consistent mean per-sample
+  Frobenius norm and rejects non-finite/mismatched tensors;
+- prove every new GMTNet epoch history row contains finite `validation_fnorm` for both input variants,
+  without changing best-checkpoint selection by validation MAE;
+- require `load_gmtnet_history` to accept either all-old rows without Fnorm or all-new rows with it,
+  reject mixed/non-finite optional schemas, and preserve SHA/epoch/best-epoch checks;
+- prove overlay and all-experiment renderers draw real GMTNet validation Fnorm when present and omit
+  it for historical summaries without interpolation;
+- run focused GMTNet/history tests, compilation, scoped whitespace checks, and the maintained suite
+  before commit.
+
+Expected result: future original and DPA-embedded GMTNet runs record comparable validation Fnorm each
+epoch, while job 443/498 remain honestly missing that historical series until explicitly rerun.
+
+Result: the focused GMTNet/history suite passes 18/18 in 23.82 seconds. The helper exactly matches
+`tensor_benchmark_metrics(..., task="dielectric")`, invalid tensors are rejected, new all-epoch
+Fnorm histories validate and render, partial/non-finite histories fail, and legacy histories without
+Fnorm still load. `python -m pytest tests -q` passes 329/329 in 394.34 seconds. Python compilation
+and scoped `git diff --check` pass. The environment does not provide Ruff, so the attempted optional
+Ruff check could not run; it was not part of the repository's maintained acceptance gate.
+
 ## 2026-09-28 - 80D higher-order-widened DPA-relative-PG
 
 Plan:

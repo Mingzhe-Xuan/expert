@@ -76,6 +76,19 @@ def dpa4_invariant_node_embedding(
     return embedding
 
 
+def _validation_history_metrics(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+) -> dict[str, float]:
+    """Return the validation metrics persisted by every GMTNet variant."""
+
+    benchmark = tensor_benchmark_metrics(prediction, target, task="dielectric")
+    return {
+        "validation_mae": float((prediction - target).abs().mean()),
+        "validation_fnorm": float(benchmark["fnorm"]),
+    }
+
+
 def _attach_dpa4_node_embeddings(
     graph_splits: Mapping[str, Sequence[dict[str, object]]],
     feature_splits: Mapping[str, Sequence[FrozenFeatureExample]],
@@ -412,9 +425,13 @@ def run_gmtnet_benchmark(
             model, splits["validation"], config.batch_size, data_type, batch_type, device
         )
         validation_target = torch.stack([row["target"] for row in splits["validation"]])
-        validation_mae = float((validation_prediction - validation_target).abs().mean())
+        validation_metrics = _validation_history_metrics(
+            validation_prediction, validation_target
+        )
+        validation_mae = validation_metrics["validation_mae"]
         history.append({"epoch": epoch, "training_loss": total_loss / seen,
-                        "validation_mae": validation_mae, "learning_rate": optimizer.param_groups[0]["lr"]})
+                        **validation_metrics,
+                        "learning_rate": optimizer.param_groups[0]["lr"]})
         if validation_mae < best_mae:
             best_mae, best_epoch = validation_mae, epoch
             torch.save(checkpoint_payload(epoch), checkpoint)

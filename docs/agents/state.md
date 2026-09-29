@@ -1,5 +1,34 @@
 # Agent state
 
+## Current snapshot - GMTNet validation Fnorm history (2026-09-29)
+
+Both official-CGCNN-input GMTNet and DPA-embedded GMTNet use
+`src.baselines.gmtnet.runner.run_gmtnet_benchmark`. Extend that shared epoch validation path to
+record full-validation-set Fnorm alongside component MAE. Preserve the checkpoint-selection metric
+(validation MAE), optimizer, schedule, and historical-summary compatibility; old job 443/498 files
+must continue to load without fabricated Fnorm values.
+
+## Current plan - GMTNet validation Fnorm history
+
+1. [x] Add one shared finite validation-metric helper and persist `validation_fnorm` in every new
+   GMTNet-family history row without changing checkpoint selection.
+2. [x] Update history validation/rendering so new GMTNet Fnorm is plotted while historical summaries
+   that genuinely lack the field remain valid and visibly absent.
+3. [x] Add focused metric/schema/render regressions, update module documentation, and run affected
+   plus maintained checks before isolated commit/push.
+4. [x] Preserve historical job 443/498 as honestly missing per-epoch Fnorm; a future explicit rerun
+   is required to produce those curves rather than interpolating or fabricating them.
+
+## Change log - GMTNet validation Fnorm history
+
+- 2026-09-29: Started the requested GMTNet-family validation-Fnorm change. The shared runner makes
+  one implementation cover both original and DPA-input GMTNet; backward-compatible plotting is an
+  explicit gate because accepted historical summaries do not contain per-epoch Fnorm.
+- 2026-09-29: Implemented benchmark-consistent validation Fnorm in the shared runner, strict
+  all-epochs-or-absent schema validation, conditional overlay rendering, and documentation. Focused
+  tests pass 18/18, the maintained suite passes 329/329, and compilation/whitespace checks pass.
+  Best-checkpoint selection remains validation MAE; no historical curve was fabricated or rerun.
+
 ## Current snapshot - 80D higher-order-widened DPA-relative-PG (2026-09-28)
 
 Queue a second isolated ablation with hidden multiplicities `[8, 3, 3, 3, 3]`. This is an
@@ -1591,3 +1620,17 @@ per-space-group accuracy claim has been made yet.
 - 2026-09-21: Result integration is complete. Slurm comparator 473 passed, the matched current-pg/
   parent-DAG curve is deterministic and visually accepted, the benchmark report contains the final
   four-model table and interpretation, focused tests pass 15/15, and the full suite passes 269/269.
+
+## 当前状态（2026-09-29 10:39 +08:00）
+
+- 正在执行一次 Guqq 只读盘点，以确认 DPA-GMTNet 与 GMTNet 的 checkpoint 是否仍存在。
+
+## 当前计划（2026-09-29 10:39 +08:00）
+
+- 按规定先在 Guqq 仓库执行显式代理的 `git pull --ff-only`，随后仅检查两类模型已知结果目录中的
+  checkpoint 文件名、大小和时间戳；不加载权重、不运行计算、不修改远端文件。
+
+## 变更记录（追加）
+
+- 2026-09-29 10:39 +08:00：进入 checkpoint 盘点阶段。下一步是完成 pull-first 门禁并读取两类
+  checkpoint 的存在性证据。
