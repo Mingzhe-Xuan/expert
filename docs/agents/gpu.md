@@ -2804,3 +2804,61 @@
   root-level 25,312,660-byte archives for epochs 20, 40, 60, 80, and 100. Logs show only known
   TorchScript annotation warnings and no traceback; no artifact was modified and no job was
   submitted. The next check should remain pull-first and look for epoch 120 or terminal state.
+- 2026-09-28: 80D DPA-relative-PG queue-submission purpose: the isolated `[8,3,3,3,3]` launcher,
+  exact 80D/199,754 test, and documentation passed 21/21 focused tests plus Bash/whitespace checks;
+  commit `31349910394c7d2cee6a83315ad1d991714a44f2` is pushed. Connect to Guqq, verify the repository,
+  make explicit-proxy `git pull --ff-only` the first repository operation, require that exact
+  revision, inspect job 505/current scheduler state, and submit exactly one formal 200-epoch 80D
+  job with `afterok:505`, 64 feature shards, the recorded DPA4 environment, and interval-20 archives.
+  Do not alter job 505 or run compute on the login node.
+- 2026-09-28: 80D queue submission result: Guqq fast-forwarded to exact `3134991`, job 505 remained
+  active, and the single formal 80D run was submitted as job 506 with `afterok:505`. Queue-verification
+  purpose: reconnect pull-first, then read only jobs 505/506 from `squeue` to confirm 506 is pending
+  on the intended dependency; do not update, release, cancel, or duplicate either job.
+- 2026-09-28: Queue verification confirmed job 506 is `PD (Dependency)` at 0:00 while job 505 is
+  running on node221. The intended `afterok:505` ordering is active; neither job was modified.
+- 2026-09-29: Formal 64D job 505 terminal-evaluation purpose: user reports completion. Connect to
+  Guqq, verify `/home/xmz/expert`, and make explicit-proxy `git pull --ff-only` the first repository
+  operation. Then read only jobs 505/506 scheduler state, job-505 summary/JUnit/prediction counts,
+  200-epoch history/provenance/metrics, async-dispatch evidence, and all interval-20 checkpoint
+  metadata/hashes. Confirm whether dependent 80D job 506 started; do not modify artifacts or jobs.
+- 2026-09-29: Job 505 terminal-evaluation reconnect purpose: the preceding SSH transport was closed
+  by the Vlab jump host before any remote output or command execution. Reconnect, repeat the mandatory
+  pull-first gate, then perform the same fixed-path read-only artifact audit and job-506 status check.
+- 2026-09-29: Job 505 terminal-evaluation forwarding-disabled retry purpose: the Vlab jump host
+  closed a second connection before command execution. Reconnect with `ClearAllForwardings=yes` to
+  avoid requesting the already-held reverse port, reuse Guqq's existing loopback proxy for the
+  mandatory first pull, and perform the same read-only audit. Stop blind retries if this also fails.
+- 2026-09-29: Job 505 evaluation network-recovery purpose: the third connection reached Guqq but its
+  mandatory pull failed with GnuTLS `-110` while forwardings were disabled, so no artifact audit ran.
+  After consulting the recorded SSH/outbound-network lessons and a meaningful retry interval, open a
+  normal SSH connection so it can re-establish the loopback reverse proxy, use a one-shot
+  `git -c http.version=HTTP/1.1 pull --ff-only` as the first repository operation, and proceed only
+  if that gate succeeds. Otherwise stop and report the external network blocker.
+- 2026-09-29: Guqq loopback-proxy diagnosis purpose: the meaningful recovery still reported the
+  reverse port occupied and Git TLS handshake termination. Local `ssh -G Guqq` confirms user `xmz`,
+  target `211.86.155.221`, loopback-only remote SOCKS forwarding to `127.0.0.1:1080`, and
+  `ExitOnForwardFailure no`. Connect only to check repository existence plus the Guqq listener/process
+  owning port 1080; do not read experiment artifacts or perform compute while pull remains blocked.
+- 2026-09-29: Proxy diagnosis result: Guqq has a loopback-only 1080 listener, and local process-tree
+  inspection identifies the holder as an interactive VS Code terminal `ssh Guqq` PID 32052 with
+  Vlab jump child PID 37608, created 2026-09-28 23:46:10. Because this is a user-owned terminal
+  session, do not terminate it without explicit authorization. Job-505 artifact evaluation remains
+  paused before the mandatory pull and before any result read.
+- 2026-09-29: Job 505 evaluation resume purpose: user reports the stale interactive SSH session is
+  closed. Confirm PIDs 32052/37608 are gone, open a normal `ssh Guqq` connection to bind the now-free
+  loopback 1080 proxy, make explicit-proxy `git pull --ff-only` the first repository operation, then
+  resume the fixed-path read-only terminal audit of job 505 and status check of dependent job 506.
+- 2026-09-29: Job 505 remote acceptance result: the stale processes were gone, a normal connection
+  rebound the proxy, and the mandatory pull succeeded. Fixed-path audit proved 200 contiguous finite
+  epochs, best epoch 69, exact splits, 677 unique finite predictions, clean JUnit, 15/15 async streams,
+  and ten archive hashes matching summary metadata. Job 506 is running on node221 at 7:13:47.
+- 2026-09-29: Job 505 compact-artifact retrieval purpose: after the successful pull-first acceptance
+  connection, copy only `summary-505.json`, `predictions-505.jsonl`, and `junit-505.xml` by SCP into
+  the ignored local 64D result directory. Verify local byte hashes against the accepted remote values;
+  do not transfer checkpoints or alter either remote job/result directory.
+- 2026-09-29: Job 505 local verification result: all three transferred hashes match remote evidence;
+  prediction IDs exactly follow the frozen manifest, target eigenvalues are frame-equivalent, and
+  float32 metric recomputation is exact. Unified-plot source retrieval purpose: copy only the
+  previously accepted `dpa4-gmtnet/summary-498.json` into its ignored local result directory so the
+  seven SHA-pinned historical sources plus job 505 can be rendered together; do not alter job 506.

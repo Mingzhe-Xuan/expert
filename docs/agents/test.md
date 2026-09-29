@@ -51,9 +51,9 @@ Remaining acceptance is the real Guqq smoke, full one-epoch preflight, and forma
 
 Smoke parameter-audit result: job 503 reported 130,196 trainable parameters. The first follow-up
 assertion incorrectly attributed the four-parameter difference to frozen readout constants and
-failed (`130200 != 130196`). Direct `requires_grad` inspection proved all 130,200 formal-model
-parameters trainable; smoke's 24 material edge IDs simply instantiate four fewer scalar gates than
-the full split's 28. The corrected exact-count assertion passed 1/1 before preflight.
+failed (`130200 != 130196`). Direct `requires_grad` inspection proved all 130,200 parameters in the
+broader 15-expert/28-edge theoretical superset trainable; the frozen dataset instantiates 24 material
+edge IDs and 130,196 parameters in both smoke and full runs. The corrected assertion passed 1/1.
 
 Guqq smoke result: job 503 passed at revision `27532e3` with exact 7/7/7 splits, seven predictions,
 finite one-epoch history/test metrics, and zero JUnit failures/errors. Runtime evidence records the
@@ -83,6 +83,32 @@ contiguous finite history epoch, exact 5,001/637/677 splits, 677 unique predicti
 serialized NaN/Infinity, clean JUnit, 15 expert buckets on 15 CUDA streams, and exact
 `[16,2,2,2,2]`/64D/130,196 provenance. Its 25,312,660-byte epoch-1 archive independently hashes to
 `9fa335f58813469235aa4986e5cb60224533d0c6c3b8d3aab631c7c9f83b90f4`, matching the summary.
+
+Formal job-505 remote acceptance: summary status is passed at revision `f2f93b2`; all 200 history
+epochs are contiguous/finite and best epoch 69 equals the minimum validation-MAE epoch. Exact split
+counts are 5,001/637/677; all 677 prediction IDs are unique and serialized values finite; JUnit has
+zero failures/errors; dispatch records 15 expert buckets, 15 CUDA streams, and asynchronous joining.
+All ten 25,312,660-byte epoch-20 archives independently reproduce their recorded SHA-256 values.
+Remaining local gates are frozen-manifest prediction ordering, metric recomputation, and plot render.
+
+Local job-505 verification: transferred summary/prediction/JUnit hashes exactly match the accepted
+remote values. All 677 IDs equal the frozen test manifest in order; prediction tensors are symmetric
+within maximum absolute float noise `3.31e-6`; target eigenvalues are source-frame equivalent within
+the comparator tolerance (maximum absolute delta `5.20e-5`). Float32 metric recomputation matches
+every reported value exactly. The first diagnostic used an unnecessarily strict `1e-10` symmetry
+tolerance and float64 metric arithmetic; decomposed evidence confirmed no artifact discrepancy.
+
+Eight-model plot result: all eight SHA-pinned summaries loaded successfully, SVG/PNG rendering
+completed, and original-resolution inspection found the title, subtitle, six panels, held-out bars,
+two-row legend, markers, and labels legible with no overlap. Every drawn series remains contiguous;
+missing historical fields are still omitted rather than interpolated. The rendered SVG/PNG hashes
+are `0ba65013...fef78f` and `58855451...60b5d9`.
+
+Final plot checks: `tests/test_training_history_plot.py` passes 8/8 in 20.19 seconds; scoped
+`git diff --check`, SVG XML parsing, and PNG magic-byte validation pass. An initial ad-hoc PNG
+one-liner double-escaped `\\x89` through PowerShell and failed its literal comparison; the
+unambiguous hexadecimal signature check (`89504e470d0a1a0a`) passed and agrees with the maintained
+test's native byte assertion.
 
 ## 2026-09-28 - DPA-embedded GMTNet
 

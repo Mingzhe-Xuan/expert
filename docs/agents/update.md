@@ -6,6 +6,9 @@
 - 2026-09-28: Implemented the isolated 80D launcher/result namespace and exact dataset-specific
   parameter test. Focused tests pass 21/21, plus Bash syntax and whitespace checks; ready for an
   isolated commit/push and pull-first Slurm queue submission.
+- 2026-09-28: Pushed/synchronized `3134991` and submitted formal 80D job 506 with an explicit
+  `afterok:505` dependency. The queued job preserves 64 cached feature shards, batch 64, seed 42,
+  200 epochs, the GMTNet-aligned optimizer/schedule, and interval-20 checkpoint retention.
 
 - 2026-09-28: Started the `[16,2,2,2,2]` DPA-relative-PG ablation as a separate experiment. The
   implementation will keep the accepted job-488 defaults/artifacts unchanged, add an explicit 64D
@@ -37,6 +40,19 @@
 - 2026-09-28: Pushed correction `f2f93b2`, synchronized Guqq with the required pull-first gate, and
   submitted the single formal 200-epoch 64D run as Slurm job 505. It uses 64 cached DPA shards,
   batch 64, seed 42, unchanged GMTNet training protocol, and checkpoint interval 20.
+- 2026-09-29: Began job-505 terminal evaluation, but stopped before artifact access because the
+  mandatory pull repeatedly failed through Guqq's occupied 1080 tunnel. Local/remote diagnostics
+  traced the listener to an interactive VS Code `ssh Guqq` session (PID 32052/child 37608) running
+  since the prior night. User action or explicit authority to close that exact session is required
+  before a fresh proxy can bind and evaluation can resume.
+- 2026-09-29: User closed the stale SSH tunnel; proxy recovery and mandatory pull succeeded. Formal
+  64D job 505 passed remote artifact acceptance with best epoch 69, RMSE 24.567671, Fnorm 18.150909,
+  EwT25/10/5 47.12%/14.48%/5.32%, exact splits/predictions, clean JUnit, 15-stream dispatch, and ten
+  independently hash-matched archives. Proceeding to local order/metric verification and plotting.
+- 2026-09-29: Completed local job-505 acceptance and regenerated the unified eight-model figure from
+  exact SHA-pinned summaries. The 64D model reaches RMSE/Fnorm 24.567671/18.150909, improving the
+  56D run by 0.601242/0.665203, with EwT25 +0.44 points, EwT10 unchanged, and EwT5 -0.44 points.
+  Visual inspection passed and benchmark documentation now records the full comparison/evidence.
 - 2026-09-28: Formal job 505 is healthy after 4:17:42 and has written exact epoch-20 through
   epoch-100 archives. It is currently between epochs 101 and 119 of 200; no traceback is present,
   only the known non-fatal TorchScript warnings. Recent checkpoint cadence is about 47 minutes per

@@ -14,7 +14,7 @@ directory and waiting behind the active 64D job.
    `[8,3,3,3,3]`; do not change any existing launcher or default.
 2. [x] Prove exact 80D/199,754 dataset-specific construction, launcher isolation, and matched
    training settings with focused tests and static checks.
-3. [ ] Commit/push only task files, pull-first synchronize Guqq, and submit exactly one formal
+3. [x] Commit/push only task files, pull-first synchronize Guqq, and submit exactly one formal
    200-epoch Slurm job so it queues behind job 505.
 4. [ ] After completion, apply the same strict acceptance and add it to the unified comparison.
 
@@ -25,6 +25,9 @@ directory and waiting behind the active 64D job.
 - 2026-09-28: Added the dedicated 80D launcher and dataset-derived exact parameter assertion.
   Focused tests pass 21/21; Bash syntax and scoped whitespace checks pass. The next step is an
   isolated commit/push followed by pull-first queued Slurm submission.
+- 2026-09-28: Pushed commit `3134991`, pull-first synchronized Guqq, and submitted the sole formal
+  80D run as job 506 with `afterok:505`. It will remain pending until the active 64D job completes
+  successfully, then run 200 epochs with interval-20 retention in its isolated result namespace.
 
 ## Current snapshot - 64D scalar-widened DPA-relative-PG (2026-09-28)
 
@@ -43,9 +46,9 @@ Existing job-488 artifacts and defaults must remain immutable.
 3. [x] Test module: prove exact 64D layout, dataset-derived 24-edge/130,196 trainable parameters,
    default 56D preservation, launcher isolation, report provenance, and smoke forward/checkpoint
    behavior.
-4. [ ] Run focused and maintained local checks, commit/push only task changes, then pull-first sync
+4. [x] Run focused and maintained local checks, commit/push only task changes, then pull-first sync
    Guqq and submit smoke, exact-split preflight, and the formal 200-epoch Slurm job.
-5. [ ] Apply the same strict artifact/metric acceptance as job 488, add the accepted history and
+5. [x] Apply the same strict artifact/metric acceptance as job 488, add the accepted history and
    held-out metrics to the unified all-experiment figure, and document the comparison.
 
 ## Change log - 64D scalar-widened DPA-relative-PG
@@ -54,6 +57,22 @@ Existing job-488 artifacts and defaults must remain immutable.
   15-expert/28-edge configuration predicts 130,200 trainable parameters versus 99,696 for the 56D
   baseline and 738,664 for DPA-embedded GMTNet. Implementation will expose the width explicitly
   rather than changing the repository-wide default.
+- 2026-09-29: Terminal evaluation is temporarily blocked before artifact reads: job 505 is reported
+  complete, but the mandatory Guqq pull cannot complete through the stale 1080 tunnel. Diagnostics
+  identify a user-owned VS Code terminal `ssh Guqq` process (PID 32052, jump child 37608) holding the
+  remote port since 2026-09-28 23:46. Await closing that session or explicit permission to terminate
+  those exact processes, then reconnect/pull and resume strict acceptance.
+- 2026-09-29: After the user closed the stale tunnel, the mandatory pull recovered and remote strict
+  acceptance passed. Job 505 has 200 contiguous finite epochs, best epoch 69 at validation MAE
+  4.256511, exact 5,001/637/677 splits, 677 unique finite predictions, clean JUnit, 15/15 async CUDA
+  streams, and ten independently SHA-matched epoch-20 archives. Test RMSE/Fnorm are
+  24.567671/18.150909 with EwT25/10/5 of 47.12%/14.48%/5.32%. Retrieve compact artifacts for local
+  order/metric verification and unified plotting. Dependent 80D job 506 is running on node221.
+- 2026-09-29: Local acceptance completed: artifact hashes match remote evidence, all prediction IDs
+  follow the frozen manifest, targets are frame-equivalent, and float32 metrics reproduce exactly.
+  The eight-model unified SVG/PNG was regenerated from SHA-pinned summaries and visually accepted.
+  The 64D run improves RMSE/Fnorm over 56D by 0.601242/0.665203, but strict EwT5 falls 0.44 points;
+  DPA-GMTNet remains best overall. The 64D experiment is complete while job 506 continues.
 - 2026-09-28: Implemented the explicit cached-trainer hidden-layout interface, fail-closed five-
   multiplicity builder, 64D CLI provenance, exact trainable-parameter reporting, and isolated Slurm
   launcher/result directory. Focused tests pass 33/33, the new/affected core checks pass 7/7, and
