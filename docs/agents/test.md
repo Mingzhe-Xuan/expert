@@ -1,5 +1,24 @@
 # Test plan and results
 
+## 2026-09-30 - 300-epoch DPA-GMTNet rerun
+
+Plan:
+
+- require a dedicated launcher/result/log namespace that cannot overwrite accepted job-498 files;
+- require literal 300 epochs, batch 64, seed 42, 64 frozen feature shards, the matched Huber/AdamW
+  `1e-3 -> 1e-5` schedule, checkpoint interval 20, and the recorded GMTNet environment/checkout;
+- require reuse of the accepted GMTNet graph and DPA4 feature caches without changing model code;
+- run focused DPA-GMTNet launcher tests, Bash syntax, Python compilation where applicable, and scoped
+  whitespace checks before commit and Slurm submission.
+
+Expected result: exactly one isolated formal job produces 300 contiguous epochs and fifteen
+epoch-20 archives, while the accepted 200-epoch DPA-GMTNet artifacts remain unchanged.
+
+Local result: `python -m pytest tests/test_dpa4_gmtnet.py -q` passes 10/10. The new regression proves
+the dedicated result/log namespace, literal 300 epochs, matched feature/batch/seed/optimizer/LR
+settings, interval 20, required recorded environment, and 72-hour Slurm allocation. `bash -n`,
+Python compilation, and scoped `git diff --check` also pass.
+
 ## 2026-09-29 - scalar-heavy 80D DPA-relative-PG
 
 Plan:

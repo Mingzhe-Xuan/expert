@@ -1,5 +1,30 @@
 # Agent state
 
+## Current snapshot - 300-epoch DPA-GMTNet rerun (2026-09-30)
+
+Run one isolated rerun of the accepted DPA-embedded GMTNet experiment for exactly 300 epochs. Keep
+the frozen 5,001/637/677 split, DPA4 and GMTNet identities, 64 feature shards, batch 64, seed 42,
+Huber/AdamW optimization, per-step linear `1e-3 -> 1e-5` schedule, validation-MAE checkpoint
+selection, and interval-20 archives unchanged. Use a distinct result/log namespace so job 498 and
+its accepted 200-epoch artifacts remain immutable.
+
+## Current plan - 300-epoch DPA-GMTNet rerun
+
+1. [x] Add a dedicated fixed-300-epoch Slurm launcher and document its isolated inputs/outputs.
+2. [x] Add protocol-isolation regression coverage and run focused/static acceptance before commit.
+3. [ ] Synchronize Guqq pull-first and submit exactly one formal Slurm job; evaluate and add it to
+   the unified comparison after completion.
+
+## Change log - 300-epoch DPA-GMTNet rerun
+
+- 2026-09-30: User requested a 300-epoch DPA-GMTNet rerun. The implementation unit is limited to an
+  isolated launcher plus its regression/documentation contract; the model and training runner stay
+  unchanged, and all computation will run through Slurm.
+- 2026-09-30: Added the fixed `train_reduced_dpa4_gmtnet_300e.sbatch` launcher with an isolated
+  `dpa4-gmtnet-300e` namespace and literal matched protocol. Focused tests pass 10/10; Bash syntax,
+  Python compilation, and scoped whitespace checks pass. Next is a task-only commit and pull-first
+  Guqq synchronization before the sole formal submission.
+
 ## Current snapshot - scalar-heavy 80D DPA-relative-PG (2026-09-29)
 
 Run a new isolated ablation with hidden multiplicities `[32,2,2,2,2]`. Under the frozen

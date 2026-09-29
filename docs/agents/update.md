@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-30: Started the requested 300-epoch DPA-GMTNet rerun. It will preserve job 498's model,
+  data, seed, batch, optimizer, endpoint learning rates, caches, checkpoint selection, and interval-20
+  retention while using a dedicated launcher and output namespace.
+- 2026-09-30: Implemented and locally accepted the isolated 300-epoch launcher. Focused tests pass
+  10/10 and Bash/Python/whitespace checks pass; the next phase is a task-only commit, Guqq pull-first
+  synchronization, and exactly one formal Slurm submission.
+
 - 2026-09-29: Started the authorized scalar-heavy 80D DPA-relative-PG experiment with
   `[32,2,2,2,2]` and exact production parameter count 203,492. It will use a dedicated launcher and
   output namespace while preserving job 505's complete data, routing, optimization, dispatch, and

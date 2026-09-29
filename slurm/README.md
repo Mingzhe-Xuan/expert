@@ -53,6 +53,12 @@ the full 64-shard DPA4 feature cache, and writes into the independent
 200-epoch/batch-64/seed-42 protocol and archive epochs 20/40/.../200; smoke mode selects the frozen
 point-group coverage subset and defaults to an epoch-1 archive.
 
+`train_reduced_dpa4_gmtnet_300e.sbatch` is the isolated 300-epoch continuation ablation. It fixes
+the same accepted full split, graph/DPA4 caches, batch 64, seed 42, Huber/AdamW settings, and linear
+`1e-3 -> 1e-5` endpoint schedule, while extending the schedule to exactly 300 epochs and archiving
+epochs 20/40/.../300. It writes only to `results/reduced-benchmark/dpa4-gmtnet-300e/` and matching
+`dpa4-gmtnet-300e-*` logs, so the accepted 200-epoch artifacts are never overwritten.
+
 These non-interactive jobs are the only supported path for full tests, model inference,
 training smoke runs, and batch data processing on Guqq. Activate the recorded project
 backbone-specific virtual environments through `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,
