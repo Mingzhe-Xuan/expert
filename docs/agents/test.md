@@ -1,5 +1,31 @@
 # Test plan and results
 
+## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 514
+
+Plan:
+
+- require terminal-success evidence for job 514, exact `use_equiv_attn=true` protocol, 300 contiguous
+  finite epochs, matching split/config/provenance, clean JUnit, and the finite-history validation-MAE
+  minimum to equal the embedded best-checkpoint epoch;
+- require 677 unique finite predictions in frozen-manifest order, frame-equivalent targets, and exact
+  independent float32 recomputation of RMSE, Fnorm, and EwT25/10/5;
+- require every epoch-20 archive recorded by the summary to exist and independently match its byte
+  count, SHA-256, and embedded epoch;
+- retrieve only compact job-514 evidence, then add the run to the SHA-pinned unified comparison,
+  regenerate SVG/PNG, visually inspect the figure, and run focused/static checks before publication.
+
+Expected result: the attention run is accepted as a new experiment only if every invariant passes;
+otherwise existing benchmark results remain unchanged and the failed invariant is reported.
+
+Result: passed. The summary has 300 contiguous finite epochs and exact minimum-MAE epoch 163;
+all fifteen interval archives match recorded sizes/SHA-256 values and embedded epochs, while the
+best checkpoint embeds epoch 163, `[128,640]` atom projection, and twelve attention parameter tensors.
+All 677 predictions match the frozen ID order and job-512 targets exactly; repository metric code
+recomputes RMSE/Fnorm `23.0930976868`/`17.1217308044` and EwT25/10/5
+`54.80%`/`19.94%`/`7.98%`. JUnit and logs are clean. Submission/runtime revisions `4730847` and
+`9606729` differ only in job-record documentation. The twelve-history SVG parses without replacement
+characters; the 2810x1608 PNG passed visual inspection. Plot tests pass 9/9 and scoped checks pass.
+
 ## 2026-09-30 - Job-498 schedule continuation with dual selection
 
 Plan:

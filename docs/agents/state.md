@@ -45,7 +45,7 @@ non-attention 300-epoch job 512.
 1. [x] Add a dedicated fixed-protocol launcher whose only model change is `--use-equiv-attn`.
 2. [x] Prove launcher isolation and run focused attention/DPA-GMTNet plus static checks.
 3. [x] Commit/push, pull-first on Guqq, and submit exactly one formal Slurm job.
-4. [ ] After completion, strictly evaluate and add the attention ablation to the unified comparison.
+4. [x] After completion, strictly evaluate and add the attention ablation to the unified comparison.
 
 ## Change log - 300-epoch attention DPA-GMTNet
 
@@ -58,6 +58,13 @@ non-attention 300-epoch job 512.
 - 2026-09-30 01:08 +08:00: Published `4730847`, synchronized Guqq by verified pull, and submitted
   exactly one formal run as job 514. It is RUNNING on node221 with 1 GPU, 8 CPUs, 64 GiB, and a
   72-hour limit. The remaining phase is post-completion strict evaluation and unified comparison.
+- 2026-09-30: User reported job 514 complete. Entered strict terminal acceptance: verify scheduler
+  and artifact identity, all 300 finite epochs, MAE-selected checkpoint, interval archives, frozen
+  test ordering and independently recomputed metrics before changing the unified comparison.
+- 2026-09-30: Job 514 passed strict local acceptance and is now the twelfth unified history. It
+  selected epoch 163 and achieved test RMSE/Fnorm `23.093098`/`17.121731`; attention gives the best
+  RMSE overall but is worse than job 498 on Fnorm and every EwT threshold. Plot tests pass 9/9 and
+  the regenerated 2810x1608 figure passed visual/static QA.
 
 ## Current snapshot - 300-epoch DPA-GMTNet rerun (2026-09-30)
 

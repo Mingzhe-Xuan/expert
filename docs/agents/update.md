@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-30: Started strict terminal evaluation of completed attention DPA-GMTNet job 514. The
+  acceptance gate covers scheduler/artifact identity, 300 epochs, best and interval checkpoints,
+  frozen prediction order, independent metrics, and SHA-pinned unified-history regeneration.
+- 2026-09-30: Job 514 passed strict acceptance and was added as the twelfth unified history. It has
+  the best overall RMSE (`23.093098`) but trails job 498 on Fnorm and all EwT thresholds. All fifteen
+  archives, 677 predictions, clean JUnit/logs, plot tests, and visual/static figure checks pass.
+
 - 2026-09-30: Started the requested Job-498-schedule 300-epoch DPA-GMTNet experiment. It will use one
   training trajectory, constant `1e-5` after epoch 200, and independent validation-MAE/Fnorm best
   checkpoints plus test predictions in a new namespace.

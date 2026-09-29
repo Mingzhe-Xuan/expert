@@ -1,5 +1,34 @@
 # GPU / server activity
 
+## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 514
+
+- Connection purpose: make `git pull --ff-only` the first repository operation, then perform bounded
+  read-only inspection of scheduler job 514 and its isolated
+  `results/reduced-benchmark/dpa4-gmtnet-equiv-attn-300e` artifacts. Verify terminal state, exact
+  revision/protocol, history/summary, predictions, JUnit, logs, and checkpoint inventory. Do not run
+  model computation, modify remote artifacts, submit jobs, or inspect unrelated experiment outputs.
+- First connection result: the end-to-end GitHub check through loopback 1080 timed out, so the
+  fail-closed command stopped before `git pull`, scheduler inspection, or artifact reads. Diagnosis
+  connection purpose: inspect only the 1080 listener/current-user SSH session metadata and correlate
+  it with the two local `ssh.exe` processes started on 2026-09-29; do not inspect job results until a
+  healthy proxy or verified offline pull source restores the repository gate.
+- Diagnosis result: 1080 is listening but cannot reach GitHub; the local holder is a pre-existing
+  `ssh Guqq`/jump pair from 2026-09-29 and is not safe to terminate as part of this task. Offline-gate
+  plan: create and SHA-verify a minimal bundle from Guqq's known `a1464c0` to local `901533a`, transfer
+  it outside the remote worktree, then make `git pull --ff-only` from that bundle the first repository
+  operation before any job-514 read. Remove only this temporary bundle after evidence retrieval.
+- Offline pull succeeded and Guqq is at exact `901533a`. Job 514 is purged from live Slurm state, but
+  its stdout ends in `status=passed`; the isolated directory contains summary/predictions/JUnit,
+  provenance, best checkpoint, and all fifteen epoch-20 archives through epoch 300. Retrieval purpose:
+  copy only that exact result directory plus job-514 stdout/stderr into the ignored matching local
+  directory for independent validation; preserve all remote artifacts.
+- Retrieval and independent validation passed. Cleanup connection purpose: pull first from the same
+  SHA-verified bundle, then remove only `/home/xmz/expert-data/job514-eval-pull.bundle`; leave job-514
+  artifacts unchanged. Remove the matching local temporary bundle after remote cleanup succeeds.
+- Cleanup succeeded after an already-current pull at `901533a`; the exact remote and local temporary
+  bundles were removed. Job-514 result artifacts remain unchanged, and no further server connection
+  is required for this evaluation.
+
 ## 2026-09-30 - Job-498-schedule dual-selector DPA-GMTNet submission
 
 - Bundle-transfer connection purpose: GitHub push of local `a1464c0` failed on port 443 after one

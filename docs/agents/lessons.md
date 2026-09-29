@@ -1,5 +1,14 @@
 # Agent lessons
 
+## 2026-09-30 - capture runtime source identity for queued jobs
+
+- A launcher-side `git rev-parse` records submission-time identity, not necessarily the source seen
+  when a queued Slurm allocation starts: another pull can fast-forward the shared worktree meanwhile.
+- Training summaries should capture runtime Git identity, and acceptance must compare both revisions.
+  A mismatch is acceptable only after proving the intervening diff cannot affect code, configuration,
+  data, or launcher behavior. For stronger isolation, execute from an immutable per-job worktree or
+  archive rather than the mutable repository checkout.
+
 ## 2026-09-30 - preserving a shorter-run learning-rate trajectory
 
 - A longer GMTNet run must decouple the LR decay horizon from total epochs to reproduce a shorter

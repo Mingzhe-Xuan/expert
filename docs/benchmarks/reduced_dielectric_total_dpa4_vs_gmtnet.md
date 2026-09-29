@@ -60,6 +60,13 @@
   `640 -> 128` atom projection. This adds 70,144 projection parameters versus `92 -> 128`, so the
   experiment is architecture/training matched but not parameter-count matched. Job 498 selected
   epoch 196 at validation MAE `4.0616760254` and retained exact epoch-20 through epoch-200 archives.
+- DPA-embedded GMTNet 300e repeats the same non-attention model, frozen split/features, seed, batch,
+  loss, optimizer, endpoint learning rates, and checkpoint rule while extending the linear schedule
+  to 300 epochs. Job 512 selected epoch 170 at validation MAE/Fnorm `4.0326285362`/`23.6567325592`,
+  retained all fifteen epoch-20 archives, and reloaded that best checkpoint for test inference.
+- DPA-embedded GMTNet attention 300e changes only `use_equiv_attn=true` relative to that 300-epoch
+  protocol. Job 514 selected epoch 163 at validation MAE/Fnorm `3.9996964931`/`23.3941822052`,
+  retained all fifteen epoch-20 archives, and reloaded the MAE-selected checkpoint for test inference.
 - GMTNet model: pinned official dielectric implementation.
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
@@ -100,11 +107,11 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories through scalar-heavy 80D DPA relative-PG
+## All accepted training histories through 300-epoch attention DPA-GMTNet
 
-![All ten accepted experiment histories](all_experiment_training_history.svg)
+![All twelve accepted experiment histories](all_experiment_training_history.svg)
 
-The six-panel figure covers ten experiments, draws only fields actually present in each SHA-pinned
+The six-panel figure covers twelve experiments, draws only fields actually present in each SHA-pinned
 summary, and does not interpolate historical gaps. Every drawn line contains contiguous epochs;
 distinct line styles/markers expose exact overlaps that previously looked like broken curves.
 DPA relative-PG converges much more stably than CGCNN relative-PG:
@@ -121,6 +128,13 @@ than broken. The 80D run selects epoch 59 at validation MAE/Fnorm `4.3646`/`25.3
 The scalar-heavy 80D run selects epoch 112 at validation MAE/Fnorm `4.1914`/`24.3932` and ends at
 `4.2736`/`24.7818`. Its post-selection drift is mild, and its selected validation MAE is the best of
 the four relative-PG width variants.
+The 300-epoch DPA-GMTNet run adds the validation-Fnorm series absent from historical job 498. It
+selects epoch 170, then training loss falls from `1.7830` to `1.1294` while validation MAE/Fnorm rise
+from `4.0326`/`23.6567` to `4.1967`/`24.8652` by epoch 300, directly showing post-selection overfit.
+The attention run selects epoch 163 at validation MAE/Fnorm `3.9997`/`23.3942`; by epoch 300 its
+training loss falls further while validation MAE/Fnorm rise to `4.2173`/`24.5586`. Attention therefore
+also overfits after its selected checkpoint, although its selected validation values are the best of
+the three DPA-GMTNet trajectories.
 
 ## Metrics
 
@@ -137,12 +151,14 @@ the four relative-PG width variants.
 | GMTNet | 25.449894 | 19.169209 | 53.03% | 18.32% | 7.39% |
 | CGCNN B+A+PGE+R full_pg (current-group only) | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
 | CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors) | 26.144173 | 19.204304 | 41.51% | 11.52% | 4.87% |
-| CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 64D) | 24.567671 | 18.150909 | 47.12% | 14.48% | 5.32% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 80D) | 25.724415 | 19.069616 | 46.53% | 13.88% | 6.20% |
+| CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [16, 2, 2, 2, 2]) | 24.567671 | 18.150909 | 47.12% | 14.48% | 5.32% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 3, 3, 3, 3]) | 25.724415 | 19.069616 | 46.53% | 13.88% | 6.20% |
 | DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [32, 2, 2, 2, 2]) | 25.081018 | 18.268654 | 50.37% | 15.81% | 6.06% |
-| DPA-embedded GMTNet | **23.795513** | **17.019165** | **64.40%** | **25.85%** | **9.60%** |
+| DPA-embedded GMTNet | 23.795513 | **17.019165** | **64.40%** | **25.85%** | 9.60% |
+| DPA-embedded GMTNet (300 epochs) | 25.039696 | 17.379377 | 58.20% | 24.37% | **9.90%** |
+| DPA-embedded GMTNet + equivariant attention (300 epochs) | **23.093098** | 17.121731 | 54.80% | 19.94% | 7.98% |
 
 The DPA-embedded GMTNet run ranks first on all five held-out metrics. Relative to original GMTNet,
 RMSE/Fnorm fall by `1.654383`/`2.150045`, while EwT25/EwT10/EwT5 rise by
@@ -150,6 +166,23 @@ RMSE/Fnorm fall by `1.654383`/`2.150045`, while EwT25/EwT10/EwT5 rise by
 `1.373400`/`1.796947`, and the three EwT rates rise by `17.73`/`11.37`/`3.84` points. This directly
 supports using frozen DPA features inside GMTNet, although the wider atom projection adds 70,144
 trainable weights and prevents a strictly parameter-matched attribution.
+
+Extending DPA-GMTNet to 300 epochs does not improve overall held-out performance. Against job 498,
+the 300-epoch run lowers selected validation MAE by `0.029047`, but test RMSE/Fnorm worsen by
+`1.244183`/`0.360212`; EwT25 and EwT10 fall by `6.20`/`1.48` percentage points. Only EwT5 improves,
+by `0.30` points. The schedule is not a literal continuation: keeping the same endpoint learning
+rate over 300 epochs slows decay (LR `4.39e-4` at selected epoch 170). Together with the rising
+post-selection validation Fnorm, the result favors the accepted 200-epoch job 498 overall.
+
+Equivariant attention produces the lowest RMSE in the full comparison, improving on job 498 by
+`0.702415` and on the matched 300-epoch non-attention job 512 by `1.946598`. The result is not a
+uniform improvement: versus job 498, Fnorm worsens by `0.102566` and EwT25/EwT10/EwT5 fall by
+`9.60`/`5.91`/`1.62` percentage points. Versus job 512, attention improves Fnorm by `0.257647` but
+still lowers the three EwT rates by `3.40`/`4.43`/`1.92` points. This means attention reduces the
+large absolute component errors that dominate RMSE while producing fewer samples below each
+target-normalized threshold; it is preferable only if RMSE is the primary objective. Against the
+original CGCNN-feature GMTNet, it improves RMSE/Fnorm by `2.356798`/`2.047480` and raises all three
+EwT rates by `1.77`/`1.62`/`0.59` points.
 
 Relative to the matched DPA relative-PG 56D run, widening only the even scalar channel to 64D lowers
 RMSE by `0.601242` and Fnorm by `0.665203`, raises EwT25 by `0.44` percentage points, leaves EwT10
@@ -279,6 +312,20 @@ than stable rankings.
   epoch 196, exact 5,001/637/677 splits, 677 manifest-ordered finite symmetric predictions, clean
   JUnit, recomputed metrics, `[128, 640]` atom-projection checkpoint shape, and ten byte/SHA-verified
   interval archives. Its source/input/output provenance is `3200 -> 640 -> 128`.
+- DPA-embedded GMTNet 300e Slurm job 512: local strict acceptance passed 300/300 contiguous finite
+  epochs, exact minimum-MAE best epoch 170, 5,001/637/677 splits, 677 manifest-ordered finite
+  symmetric predictions, exact targets and float32 metric recomputation, clean JUnit, `[128, 640]`
+  atom projection, and fifteen byte/SHA/embedded-epoch-verified interval archives. Slurm had purged
+  the job record; completion is established by the passed summary, JUnit, logs, and complete artifacts.
+- DPA-embedded GMTNet attention 300e Slurm job 514: local strict acceptance passed 300/300 contiguous
+  finite epochs, exact minimum-MAE best epoch 163, 5,001/637/677 splits, 677 manifest-ordered finite
+  symmetric predictions, exact frozen targets and metric recomputation, clean JUnit, `[128, 640]`
+  atom projection, twelve attention parameter tensors, and fifteen byte/SHA/embedded-epoch-verified
+  archives. Slurm had purged the job record; completion is established by the passed summary, logs,
+  JUnit, and complete artifacts. The submission/runtime Git revisions differ only by job-record docs.
+  Summary/prediction SHA-256 values are
+  `1ca7ef0f8d8e2381c375d015fa596efb1b39dc64a11bc5e78c15ec894a118547` and
+  `9393da9e36a7be846d70dcaaee9fa044bfb80d779381684352a483401dd204f4`.
 - DPA relative-PG 64D Slurm job 505: remote and local strict acceptance passed 200/200 contiguous
   finite epochs, best epoch 69, exact 5,001/637/677 splits, 677 manifest-ordered finite symmetric
   predictions, clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams,
@@ -339,9 +386,14 @@ than stable rankings.
   `05da00622acd4b77b730e7dc5729c2e65cc781614d8b1e7de89bafc45b273101`,
   `4c98113e3944ee4c8c1237f218eb8bf499b9277635c9d606f4ab60f5f0e930c2`, and
   `fd803437eb057ecfab63ce5970bc9b8552882c7474b11627c23f90d382d7504f`.
-- Unified ten-model history SVG/PNG SHA-256:
-  `ed142f5d5a9b3e29995b297746f4d561ef3f1d8f6a26d94af2b255c5f9db69b2` and
-  `3521deb0cacc67295d91f42e389d3a1e0281be73589c3baff286eaa38d48ec68`.
+- DPA-embedded GMTNet 300e prediction, summary, JUnit, and best-checkpoint SHA-256:
+  `8d793f92eb7e6ca07f81b6a5e03be8c06e2d1a8a0ba2dfc2a7cd2c1144daa3aa`,
+  `664d24d60f31ce79fad599c02007ccc5bf3209601e4eeae3ea1a6409b9bb7fb1`,
+  `4c20d775a409080ab8c82eec1b420b80d7eba7b70e3402b7d66c07cf47524e25`, and
+  `770932805cbcfe89d4318ff493e4234c90268a7941c00f988e9d125315b3c489`.
+- Unified eleven-model history SVG/PNG SHA-256:
+  `d53f40a0f6094338cbebfc5dcdc2f58efc02be7e5dc79af31e6f60ac95b4e3a5` and
+  `800d2db0a5e5ebce5f67684b5323095e66afc10a15544e430f6b13ef99bb2b4b`.
 - Five-model comparison JSON and table SHA-256:
   `ddf28f44be8f9272fb39ee6c813081f242c38c69cc39e7a6dd402be9e23f426e` and
   `f8751f301500a9d3c14d7d074a2c6351f59b4dc45ee3e65974dbc291d409f0ea`.
