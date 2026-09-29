@@ -48,7 +48,7 @@ directory and waiting behind the active 64D job.
    training settings with focused tests and static checks.
 3. [x] Commit/push only task files, pull-first synchronize Guqq, and submit exactly one formal
    200-epoch Slurm job so it queues behind job 505.
-4. [ ] After completion, apply the same strict acceptance and add it to the unified comparison.
+4. [x] After completion, apply the same strict acceptance and add it to the unified comparison.
 
 ## Change log - 80D higher-order-widened DPA-relative-PG
 
@@ -60,6 +60,13 @@ directory and waiting behind the active 64D job.
 - 2026-09-28: Pushed commit `3134991`, pull-first synchronized Guqq, and submitted the sole formal
   80D run as job 506 with `afterok:505`. It will remain pending until the active 64D job completes
   successfully, then run 200 epochs with interval-20 retention in its isolated result namespace.
+- 2026-09-29: User reports job 506 complete. Entered terminal acceptance: first validate the remote
+  artifacts against the same gates used for 56D/64D, then retrieve only compact accepted outputs,
+  recompute metrics/order locally, regenerate the unified comparison, and document exact deltas.
+- 2026-09-29: Job 506 passed remote and local acceptance. It selected epoch 59 and reports test
+  RMSE/Fnorm `25.724415`/`19.069616`, EwT25/10/5 `46.53%`/`13.88%`/`6.20%`. The nine-model plot was
+  regenerated and visually accepted. Relative to 64D, 80D worsens RMSE/Fnorm by
+  `1.156744`/`0.918707` and only improves EwT5, so 64D remains the better overall PG width.
 
 ## Current snapshot - 64D scalar-widened DPA-relative-PG (2026-09-28)
 

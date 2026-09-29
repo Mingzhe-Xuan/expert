@@ -45,6 +45,30 @@ frozen dataset 24-edge model at 80 components and 199,754 registered/trainable p
 the 80D result directory cannot alias the 56D or 64D directories, and checks matched batch/seed/time/
 checkpoint settings. Bash syntax and scoped `git diff --check` pass.
 
+Terminal-acceptance plan:
+
+- require job 506 to be terminal-successful with a passed summary, exactly 200 contiguous finite
+  history rows, and `best_epoch` equal to the minimum validation-MAE epoch;
+- require exact 5,001/637/677 splits, `[8,3,3,3,3]`/80D/199,754 provenance, 24 material edges,
+  677 unique finite predictions, clean JUnit, and 15 expert buckets on 15 CUDA streams;
+- independently hash all ten interval-20 archives, then retrieve only summary/prediction/JUnit,
+  verify frozen-manifest prediction order and recompute RMSE/Fnorm/EwT from serialized tensors;
+- regenerate the unified history SVG/PNG from exact SHA-pinned inputs, visually inspect the result,
+  update the benchmark comparison, and run focused rendering/static checks before commit.
+
+Expected terminal result: either job 506 passes every gate and becomes the ninth accepted experiment,
+or integration stops with the exact failed invariant and no partial comparison update.
+
+Terminal result: job 506 passes all gates at revision `3134991`. The summary has 200 contiguous
+finite epochs, best epoch 59 exactly minimizes validation MAE (`4.3646082878`), and records exact
+5,001/637/677 splits plus `[8,3,3,3,3]`/80D/199,754 provenance. All 677 predictions are unique,
+finite, in frozen-manifest order, and their target eigenvalues match the manifest; float32
+RMSE/Fnorm/EwT recomputation exactly equals the summary. JUnit is clean, dispatch is 15 buckets on
+15 asynchronous CUDA streams, and all ten 39,362,260-byte interval archives independently match
+their recorded SHA-256 values. The unified nine-model SVG/PNG parses at 2810x1608, contains the 80D
+label, has no replacement characters, and passed visual inspection. Focused history tests pass 9/9;
+scoped whitespace checks pass.
+
 ## 2026-09-28 - 64D scalar-widened DPA-relative-PG
 
 Plan:

@@ -45,6 +45,10 @@
   preserving the frozen DPA4 input, 24 material edge gates, router, split, batch, seed, optimizer,
   schedule, and checkpoint protocol. Job 505 completed 200 epochs and selected epoch 69 at
   validation MAE `4.2565112114`.
+- DPA relative-PG 80D instead changes the hidden multiplicities to `[8,3,3,3,3]`, widening every
+  non-scalar irrep family while restoring the even-scalar multiplicity to eight. It has 199,754
+  trainable parameters under the same 24-edge dataset contract and otherwise preserves the 56D/64D
+  protocol. Job 506 completed 200 epochs and selected epoch 59 at validation MAE `4.3646082878`.
 - DPA-embedded GMTNet keeps the pinned official GMTNet graph, message passing, symmetry masks,
   tensor readout, Huber/AdamW schedule, batch size, seed, split, and 200 epochs. Its sole model-input
   change is replacing the fixed 92D CGCNN descriptor with the frozen parity-completed DPA4 feature:
@@ -92,11 +96,11 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories through 64D DPA relative-PG
+## All accepted training histories through 80D DPA relative-PG
 
-![All eight accepted experiment histories](all_experiment_training_history.svg)
+![All nine accepted experiment histories](all_experiment_training_history.svg)
 
-The six-panel figure covers eight experiments, draws only fields actually present in each SHA-pinned
+The six-panel figure covers nine experiments, draws only fields actually present in each SHA-pinned
 summary, and does not interpolate historical gaps. Every drawn line contains contiguous epochs;
 distinct line styles/markers expose exact overlaps that previously looked like broken curves.
 DPA relative-PG converges much more stably than CGCNN relative-PG:
@@ -108,7 +112,8 @@ history schema; it selects epoch 196 at validation MAE `4.0617`, below original 
 The 64D relative-PG run selects epoch 69 at validation MAE `4.2565`, substantially below the 56D
 run's `4.3896`. Its validation MAE/Fnorm bottom earlier and then rise mildly while training loss
 continues downward, so the best-checkpoint reload remains important; the curve is contiguous rather
-than broken.
+than broken. The 80D run selects epoch 59 at validation MAE/Fnorm `4.3646`/`25.3518` and ends at
+`4.4929`/`25.9475`; it also overfits after its selected checkpoint and does not improve on 64D.
 
 ## Metrics
 
@@ -128,6 +133,7 @@ than broken.
 | CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
 | DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
 | DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 64D) | 24.567671 | 18.150909 | 47.12% | 14.48% | 5.32% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 80D) | 25.724415 | 19.069616 | 46.53% | 13.88% | 6.20% |
 | DPA-embedded GMTNet | **23.795513** | **17.019165** | **64.40%** | **25.85%** | **9.60%** |
 
 The DPA-embedded GMTNet run ranks first on all five held-out metrics. Relative to original GMTNet,
@@ -146,6 +152,14 @@ tail. The 64D model also selects earlier (epoch 69 versus 95) and has 30,500 mor
 remains behind it on EwT25/EwT10/EwT5 by `5.91`/`3.84`/`2.07` points. DPA-embedded GMTNet remains
 best on all five held-out metrics; its RMSE/Fnorm advantages over 64D relative-PG are
 `0.772158`/`1.131744`.
+
+Widening the higher-order families to 80D is worse than the 64D scalar-widened model on four of five
+metrics: RMSE/Fnorm increase by `1.156744`/`0.918707`, and EwT25/EwT10 decrease by `0.59`/`0.59`
+percentage points. Only EwT5 improves, by `0.89` points. It is also worse than the 56D model on
+RMSE/Fnorm by `0.555502`/`0.253504`, with EwT25/EwT10 lower by `0.15`/`0.59` points and EwT5 higher
+by `0.44` points. Thus the extra 69,558 parameters over 64D do not improve overall generalization;
+among the relative-PG width ablations, 64D remains the best absolute-error configuration, while 80D
+only improves the strictest relative-error tail.
 
 Relative to the DPA4 current-group row, DPA relative-PG reduces RMSE/Fnorm by
 `0.997532`/`12.723013` and raises EwT25/EwT10/EwT5 by `34.42`/`11.96`/`4.73` percentage points.
@@ -252,6 +266,11 @@ than stable rankings.
   predictions, clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams,
   and ten byte/SHA-verified interval archives. Its hidden profile/dimension/parameter provenance is
   `[16,2,2,2,2]` / 64 / 130,196.
+- DPA relative-PG 80D Slurm job 506: remote and local strict acceptance passed 200/200 contiguous
+  finite epochs, best epoch 59, exact 5,001/637/677 splits, 677 manifest-ordered finite predictions,
+  clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams, and ten
+  independently SHA-verified interval archives. Its hidden profile/dimension/parameter provenance is
+  `[8,3,3,3,3]` / 80 / 199,754.
 - Five-model comparator job 479: status `passed`; all five files contain the identical ordered 677
   IDs and pass the symmetric target eigenvalue-equivalence gate. Curve job 480 produced the accepted
   SVG/PNG. Replacement manifest job 484 (for the environment-only failure of job 483) completed with
@@ -289,9 +308,13 @@ than stable rankings.
   `78f0bd0cb6c1b9170dc06b11bebcae6de21228a3fad86bfc9da03427f8b9d699`,
   `45f328671a23c122def7ba77d142472f92f26d7c36394b46940bb28539202780`, and
   `e55def7711cf81e56b6bb84b84f3596c169fae0c07b6418642d25f9a1101e596`.
-- Unified eight-model history SVG/PNG SHA-256:
-  `0ba650130fff2f73331bcdb435a32fdd74b5ae3432376c8f5e70ee62b1fef78f` and
-  `588554515f2b2248bf2600047a611e7ffcf4e4264535510d8a6182504960b5d9`.
+- DPA relative-PG 80D prediction, summary, and JUnit SHA-256:
+  `1fa93889139e5585243881e5896866517c7b431fbe501c314c3f916373b4f955`,
+  `88e56eace2a3172f4cfb363abb9ead2a1f3232b5b3ac53bdd132ae86e5f48cbf`, and
+  `199c0c9dde581b16b22b1a4c266ddfa967da9dffa2974e728dac23fb0b47b03f`.
+- Unified nine-model history SVG/PNG SHA-256:
+  `b7e79bd28a05d70263c14375199b98146b2b6cfbbc41ea77fc797412bfbd6c4f` and
+  `d6bbdaeb859dfd318c99f8f02d01070669ba937a7e26af3b4a4577fdef2abc09`.
 - Five-model comparison JSON and table SHA-256:
   `ddf28f44be8f9272fb39ee6c813081f242c38c69cc39e7a6dd402be9e23f426e` and
   `f8751f301500a9d3c14d7d074a2c6351f59b4dc45ee3e65974dbc291d409f0ea`.

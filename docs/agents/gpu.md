@@ -2817,6 +2817,59 @@
   on the intended dependency; do not update, release, cancel, or duplicate either job.
 - 2026-09-28: Queue verification confirmed job 506 is `PD (Dependency)` at 0:00 while job 505 is
   running on node221. The intended `afterok:505` ordering is active; neither job was modified.
+- 2026-09-29: Formal 80D job 506 terminal-evaluation purpose: user reports completion. Connect to
+  Guqq, verify `/home/xmz/expert`, and make the required pull the first repository operation using
+  the already documented bundle fallback if GitHub TLS remains unavailable. Then perform only a
+  bounded read-only audit of Slurm state, summary/history/provenance, prediction/JUnit artifacts,
+  asynchronous expert evidence, and all interval-20 checkpoint hashes. Do not modify remote source,
+  artifacts, jobs, or run model computation on the login node.
+- 2026-09-29: The first job-506 evaluation connection reused an occupied 1080 forward, but its
+  explicit-proxy pull produced no result for two minutes and was interrupted before any artifact
+  read. Fallback connection purpose: use the independently SHA-matched temporary `origin/main`
+  bundle from the just-completed checkpoint inventory as the first repository pull, then run the
+  same bounded read-only job-506 audit only if that offline pull succeeds.
+- 2026-09-29: The forwarding-disabled fallback returned only the Vlab banner and no pull evidence,
+  so it is not accepted as a completed gate and no artifacts were read. Verification connection
+  purpose: repeat the same offline bundle pull as the first repository operation and emit the exact
+  revision plus an explicit success marker before any job-506 audit.
+- 2026-09-29: Verification exited before the pull marker because the checkpoint-inventory task had
+  already cleaned its remote temporary bundle; no job-506 artifact was read. Recovery transfer
+  purpose: copy the already local SHA-identified `origin/main` bundle to the unique temporary path
+  `/home/xmz/expert-data/job506-origin-main.bundle`, then use it for a fresh pull-first connection.
+  The transfer must not touch the repository or any experiment output.
+- 2026-09-29: The recovery SCP did not connect because the inventory task had also removed its local
+  temporary bundle between discovery and transfer. Recreated-transfer purpose: generate a new bundle
+  containing only the current `origin/main` ref, verify it locally, and copy it to the same unique
+  remote temporary path; repository and experiment paths remain out of scope for this connection.
+- 2026-09-29: The verified complete-history bundle transfer stalled without progress and was stopped;
+  no repository or artifact was accessed. Thin-bundle transfer purpose: create a prerequisite-aware
+  bundle containing the `origin/main` tip over its immediate parent, verify it locally, and transfer
+  it to `/home/xmz/expert-data/job506-tip.bundle`; this minimizes the same authorized recovery data.
+- 2026-09-29: The 6,425-byte thin bundle verified locally and transferred successfully. Pull/audit
+  connection purpose: make `git pull --ff-only /home/xmz/expert-data/job506-tip.bundle origin/main`
+  the first repository operation, require exact revision `3134991`, then read only job 506's fixed
+  result/log paths and emit compact acceptance evidence plus independent checkpoint hashes.
+- 2026-09-29: Thin-bundle pull succeeded and the revision assertion passed, but Guqq reports Slurm
+  accounting storage disabled; the fail-closed command stopped at `sacct` before artifact reads.
+  Artifact-audit retry purpose: repeat the successful bundle pull first, use `squeue` only to confirm
+  job 506 is no longer live, and audit fixed output paths without depending on unavailable accounting.
+- 2026-09-29: The pull-first artifact audit passed at exact revision `3134991`; job 506 is absent
+  from the live queue, all three compact artifacts exist, predictions contain 677 lines, and ten
+  epoch-20 archives hashed successfully. Compact retrieval purpose: copy only summary, predictions,
+  and JUnit into the ignored local 80D result directory for schema/order/metric recomputation; do
+  not transfer checkpoints or modify any remote artifact.
+- 2026-09-29: The first compact SCP used modern SFTP mode, which does not expand the requested
+  three-file brace expression, so it transferred nothing. Retrieval retry purpose: use OpenSSH's
+  legacy SCP protocol solely to expand those same three explicit filenames in one connection;
+  remote checkpoint and source paths remain untouched.
+- 2026-09-29: Compact retrieval and local acceptance succeeded; all three local hashes equal the
+  remote values, and every schema/order/metric/JUnit gate passed. Cleanup connection purpose: pull
+  first from the verified thin bundle, then remove only the two task-created temporary bundle paths
+  `/home/xmz/expert-data/job506-tip.bundle` and any partial
+  `/home/xmz/expert-data/job506-origin-main.bundle` after verifying their resolved paths remain
+  directly under `/home/xmz/expert-data`; do not alter repository or experiment artifacts.
+- 2026-09-29: Cleanup pull was already current and exact-path validation passed; both task-created
+  remote bundle paths were removed. Job-506 source, results, logs, and checkpoints were not modified.
 - 2026-09-29: Formal 64D job 505 terminal-evaluation purpose: user reports completion. Connect to
   Guqq, verify `/home/xmz/expert`, and make explicit-proxy `git pull --ff-only` the first repository
   operation. Then read only jobs 505/506 scheduler state, job-505 summary/JUnit/prediction counts,

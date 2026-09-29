@@ -21,6 +21,13 @@
 - 2026-09-28: Pushed/synchronized `3134991` and submitted formal 80D job 506 with an explicit
   `afterok:505` dependency. The queued job preserves 64 cached feature shards, batch 64, seed 42,
   200 epochs, the GMTNet-aligned optimizer/schedule, and interval-20 checkpoint retention.
+- 2026-09-29: Began strict terminal acceptance of completed 80D job 506. The gate matches the 56D/
+  64D protocol: terminal Slurm status, 200 finite epochs, exact provenance/splits/predictions/JUnit,
+  15-stream dispatch, ten archive hashes, local order/metric recomputation, and unified-plot QA.
+- 2026-09-29: Completed job-506 acceptance and integrated 80D as the ninth experiment. Its test
+  RMSE/Fnorm are `25.724415`/`19.069616`, with EwT25/10/5 `46.53%`/`13.88%`/`6.20%`; every artifact,
+  ordering, metric, JUnit, stream, and archive gate passed. The regenerated plot passed visual and
+  structural QA. Compared with 64D, 80D has worse absolute error and only improves EwT5.
 
 - 2026-09-28: Started the `[16,2,2,2,2]` DPA-relative-PG ablation as a separate experiment. The
   implementation will keep the accepted job-488 defaults/artifacts unchanged, add an explicit 64D
