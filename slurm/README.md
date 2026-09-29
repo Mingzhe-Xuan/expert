@@ -1,5 +1,11 @@
 # Slurm entry points
 
+`test_gmtnet_attention.sbatch` runs the optional attention full-model forward/backward
+unit test on a compute allocation (two CPUs, 8 GiB, ten minutes). Set
+`EXPERT_GMTNET_VENV` and `EXPERT_GMTNET_ROOT`, submit from the repository root with
+`logs/slurm` present. JUnit is written to `results/gmtnet-attention-test/JOB_ID/`.
+The test checks both modes, checkpoint reload, and DPA input compatibility without training.
+
 `compare_reduced_benchmark.sbatch` runs the strict common-677-row comparison after all prediction
 artifacts exist. It requires explicit environment and four-model prediction paths; submit it with
 an `afterok` dependency on the parent-DAG CGCNN training job so evaluation never races an incomplete

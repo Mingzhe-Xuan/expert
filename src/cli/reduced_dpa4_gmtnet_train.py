@@ -95,6 +95,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             weight_decay=arguments.weight_decay,
             seed=arguments.seed,
             checkpoint_interval=arguments.checkpoint_interval,
+            use_equiv_attn=getattr(arguments, "use_equiv_attn", False),
         ),
         device=arguments.device,
         split_ids=selected_ids,
@@ -132,6 +133,7 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-interval", type=int, default=20)
+    parser.add_argument("--use-equiv-attn", action="store_true")
     parser.add_argument(
         "--smoke",
         action="store_true",

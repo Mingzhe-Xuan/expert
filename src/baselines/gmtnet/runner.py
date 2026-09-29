@@ -17,6 +17,8 @@ import numpy as np
 import torch
 from torch import nn
 
+from .attention import build_gmtnet
+
 from ...data import IndependentTensorDataset, TensorSample
 from ...evaluation import tensor_benchmark_metrics
 from ...features import cgcnn_node_features
@@ -36,6 +38,7 @@ class GMTNetConfig:
     weight_decay: float = 1.0e-5
     seed: int = 42
     checkpoint_interval: int = 0
+    use_equiv_attn: bool = False
 
     def __post_init__(self) -> None:
         if self.epochs < 1 or self.batch_size < 1:
@@ -368,8 +371,10 @@ def run_gmtnet_benchmark(
     torch.manual_seed(config.seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(config.seed)
-    model = official_model.GMTNet(
-        SimpleNamespace(target="dielectric", use_mask=True, reduce_cell=False)
+    model = build_gmtnet(
+        official_model,
+        SimpleNamespace(target="dielectric", use_mask=True, reduce_cell=False),
+        use_equiv_attn=config.use_equiv_attn,
     ).to(device)
     if dpa4_feature_layout is not None:
         _replace_atom_embedding(model, int(input_embedding["input_dimension"]))
