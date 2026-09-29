@@ -24,6 +24,30 @@ has a distinct `dpa4-relative-pg-scalar80d` result/log namespace and preserves b
 suite passes 331/331 in 380.15 seconds; Python compilation, Bash syntax, and scoped whitespace checks
 also pass.
 
+Terminal-acceptance plan:
+
+- require job 508 to be absent from the live queue with a passed summary, 200 contiguous finite
+  history rows, and `best_epoch` equal to the minimum validation-MAE epoch;
+- require exact 5,001/637/677 splits, `[32,2,2,2,2]`/80D/203,492 provenance, 24 material edges,
+  677 unique finite predictions, clean JUnit, and 15 expert buckets on 15 CUDA streams;
+- independently recompute all ten interval-20 checkpoint hashes, then retrieve summary/predictions/
+  JUnit and verify local hashes, frozen-manifest order, target equivalence, and RMSE/Fnorm/EwT;
+- regenerate the unified ten-experiment SVG/PNG from exact SHA-pinned histories, visually inspect it,
+  update the benchmark comparison and run focused rendering/static checks before commit.
+
+Expected terminal result: job 508 becomes the tenth accepted experiment only if every invariant
+passes; otherwise stop before changing the comparison and report the exact failed gate.
+
+Terminal result: passed. The remote artifact audit found a passed 200-row summary, exact split/model/
+dispatch provenance, ten 39,408,148-byte interval archives with independently matching SHA-256,
+and clean JUnit. The compact files matched their remote hashes after retrieval. Local validation
+confirmed 677 unique manifest-ordered IDs, finite tensors, target eigenvalue equivalence, maximum
+float32 prediction antisymmetry `3.1314e-6`, and exact recomputation of RMSE `25.081018`, Fnorm
+`18.268654`, and EwT25/10/5 `50.37%`/`15.81%`/`6.06%`. The ten-history SVG parses without replacement
+characters; its 2810x1608 PNG was visually inspected and shows all ten labels and contiguous curves.
+`python -m pytest tests/test_training_history_plot.py -q` passes 9/9; SVG XML parsing, pinned summary
+hashes, PNG dimensions/mode, and scoped whitespace checks pass.
+
 ## 2026-09-29 - GMTNet validation Fnorm history
 
 Plan:

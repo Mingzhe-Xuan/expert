@@ -49,6 +49,10 @@
   non-scalar irrep family while restoring the even-scalar multiplicity to eight. It has 199,754
   trainable parameters under the same 24-edge dataset contract and otherwise preserves the 56D/64D
   protocol. Job 506 completed 200 epochs and selected epoch 59 at validation MAE `4.3646082878`.
+- DPA relative-PG scalar-heavy 80D changes the hidden multiplicities to `[32,2,2,2,2]`. It has
+  203,492 trainable parameters and otherwise preserves the same cached DPA4 input, 24-edge router,
+  split, batch, seed, optimizer, schedule, and checkpoint protocol. Job 508 completed 200 epochs and
+  selected epoch 112 at validation MAE `4.1914272308`.
 - DPA-embedded GMTNet keeps the pinned official GMTNet graph, message passing, symmetry masks,
   tensor readout, Huber/AdamW schedule, batch size, seed, split, and 200 epochs. Its sole model-input
   change is replacing the fixed 92D CGCNN descriptor with the frozen parity-completed DPA4 feature:
@@ -96,11 +100,11 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories through 80D DPA relative-PG
+## All accepted training histories through scalar-heavy 80D DPA relative-PG
 
-![All nine accepted experiment histories](all_experiment_training_history.svg)
+![All ten accepted experiment histories](all_experiment_training_history.svg)
 
-The six-panel figure covers nine experiments, draws only fields actually present in each SHA-pinned
+The six-panel figure covers ten experiments, draws only fields actually present in each SHA-pinned
 summary, and does not interpolate historical gaps. Every drawn line contains contiguous epochs;
 distinct line styles/markers expose exact overlaps that previously looked like broken curves.
 DPA relative-PG converges much more stably than CGCNN relative-PG:
@@ -114,6 +118,9 @@ run's `4.3896`. Its validation MAE/Fnorm bottom earlier and then rise mildly whi
 continues downward, so the best-checkpoint reload remains important; the curve is contiguous rather
 than broken. The 80D run selects epoch 59 at validation MAE/Fnorm `4.3646`/`25.3518` and ends at
 `4.4929`/`25.9475`; it also overfits after its selected checkpoint and does not improve on 64D.
+The scalar-heavy 80D run selects epoch 112 at validation MAE/Fnorm `4.1914`/`24.3932` and ends at
+`4.2736`/`24.7818`. Its post-selection drift is mild, and its selected validation MAE is the best of
+the four relative-PG width variants.
 
 ## Metrics
 
@@ -134,6 +141,7 @@ than broken. The 80D run selects epoch 59 at validation MAE/Fnorm `4.3646`/`25.3
 | DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 56D) | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
 | DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 64D) | 24.567671 | 18.150909 | 47.12% | 14.48% | 5.32% |
 | DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, 80D) | 25.724415 | 19.069616 | 46.53% | 13.88% | 6.20% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [32, 2, 2, 2, 2]) | 25.081018 | 18.268654 | 50.37% | 15.81% | 6.06% |
 | DPA-embedded GMTNet | **23.795513** | **17.019165** | **64.40%** | **25.85%** | **9.60%** |
 
 The DPA-embedded GMTNet run ranks first on all five held-out metrics. Relative to original GMTNet,
@@ -160,6 +168,16 @@ RMSE/Fnorm by `0.555502`/`0.253504`, with EwT25/EwT10 lower by `0.15`/`0.59` poi
 by `0.44` points. Thus the extra 69,558 parameters over 64D do not improve overall generalization;
 among the relative-PG width ablations, 64D remains the best absolute-error configuration, while 80D
 only improves the strictest relative-error tail.
+
+The scalar-heavy 80D model adds 73,296 parameters over 64D (`203,492` versus `130,196`). It improves
+EwT25/EwT10/EwT5 by `3.25`/`1.33`/`0.74` percentage points, but RMSE/Fnorm worsen by
+`0.513348`/`0.117744`; therefore 64D remains the best relative-PG model on absolute errors, while
+scalar-heavy 80D is best on EwT25/EwT10 and second on EwT5. Against the nearly
+parameter-matched higher-order 80D model (3,738 fewer parameters), scalar-heavy 80D lowers
+RMSE/Fnorm by `0.643396`/`0.800962` and raises EwT25/EwT10 by `3.84`/`1.92` points, with EwT5 lower
+by `0.15` points. Concentrating the extra capacity in scalars is consequently much more effective
+than widening all higher-order families, but DPA-embedded GMTNet still leads scalar-heavy 80D by
+`1.285505` RMSE, `1.249489` Fnorm, and `14.03`/`10.04`/`3.55` EwT points.
 
 Relative to the DPA4 current-group row, DPA relative-PG reduces RMSE/Fnorm by
 `0.997532`/`12.723013` and raises EwT25/EwT10/EwT5 by `34.42`/`11.96`/`4.73` percentage points.
@@ -271,6 +289,11 @@ than stable rankings.
   clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams, and ten
   independently SHA-verified interval archives. Its hidden profile/dimension/parameter provenance is
   `[8,3,3,3,3]` / 80 / 199,754.
+- DPA relative-PG scalar-heavy 80D Slurm job 508: remote artifact audit and local strict acceptance
+  passed 200/200 contiguous finite epochs, best epoch 112, exact 5,001/637/677 splits, 677
+  manifest-ordered finite predictions, clean JUnit, exact float32 metric recomputation, 15/15
+  asynchronous CUDA streams, and ten independently SHA-verified interval archives. Its hidden
+  profile/dimension/parameter provenance is `[32,2,2,2,2]` / 80 / 203,492.
 - Five-model comparator job 479: status `passed`; all five files contain the identical ordered 677
   IDs and pass the symmetric target eigenvalue-equivalence gate. Curve job 480 produced the accepted
   SVG/PNG. Replacement manifest job 484 (for the environment-only failure of job 483) completed with
@@ -312,9 +335,13 @@ than stable rankings.
   `1fa93889139e5585243881e5896866517c7b431fbe501c314c3f916373b4f955`,
   `88e56eace2a3172f4cfb363abb9ead2a1f3232b5b3ac53bdd132ae86e5f48cbf`, and
   `199c0c9dde581b16b22b1a4c266ddfa967da9dffa2974e728dac23fb0b47b03f`.
-- Unified nine-model history SVG/PNG SHA-256:
-  `b7e79bd28a05d70263c14375199b98146b2b6cfbbc41ea77fc797412bfbd6c4f` and
-  `d6bbdaeb859dfd318c99f8f02d01070669ba937a7e26af3b4a4577fdef2abc09`.
+- DPA relative-PG scalar-heavy 80D prediction, summary, and JUnit SHA-256:
+  `05da00622acd4b77b730e7dc5729c2e65cc781614d8b1e7de89bafc45b273101`,
+  `4c98113e3944ee4c8c1237f218eb8bf499b9277635c9d606f4ab60f5f0e930c2`, and
+  `fd803437eb057ecfab63ce5970bc9b8552882c7474b11627c23f90d382d7504f`.
+- Unified ten-model history SVG/PNG SHA-256:
+  `ed142f5d5a9b3e29995b297746f4d561ef3f1d8f6a26d94af2b255c5f9db69b2` and
+  `3521deb0cacc67295d91f42e389d3a1e0281be73589c3baff286eaa38d48ec68`.
 - Five-model comparison JSON and table SHA-256:
   `ddf28f44be8f9272fb39ee6c813081f242c38c69cc39e7a6dd402be9e23f426e` and
   `f8751f301500a9d3c14d7d074a2c6351f59b4dc45ee3e65974dbc291d409f0ea`.

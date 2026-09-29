@@ -17,6 +17,13 @@
 - 2026-09-29: Job 508 is running on node221 with the exact requested GPU/CPU/memory/time resources
   and launcher. The task-created remote bundle has been removed. No duplicate job or output alias
   exists; strict evaluation and comparison will begin after the 200-epoch run completes.
+- 2026-09-30: User reports job 508 complete. Started strict terminal acceptance using the established
+  artifact-driven gates, followed by local metric/order recomputation and ten-model comparison only
+  after complete acceptance.
+- 2026-09-30: Accepted job 508 and integrated it as the tenth experiment. The scalar-heavy 80D model
+  selects epoch 112, reaches test RMSE/Fnorm `25.081018`/`18.268654`, and has the strongest
+  relative-PG EwT25/EwT10 (`50.37%`/`15.81%`) while 64D retains the best absolute errors. The
+  SHA-pinned comparison figure and benchmark report now include the result.
 
 - 2026-09-29: Started adding validation Fnorm to the shared GMTNet runner used by original and
   DPA-embedded GMTNet. New histories will record the exact full-validation benchmark metric;

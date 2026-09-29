@@ -2894,6 +2894,31 @@
   launcher with one GPU, eight CPUs, 48 GiB, and a 72-hour limit; no dependency or restart is present.
   Exact-path cleanup removed only `/home/xmz/expert-data/scalar80d-submit.bundle`. The active job and
   its isolated result/log paths were not modified.
+- 2026-09-30: Scalar-heavy 80D job-508 terminal-evaluation transfer purpose: user reports completion.
+  Create and verify a minimal bundle from Guqq's known `4a9f8dc` revision through local committed
+  `HEAD`, then copy it only to `/home/xmz/expert-data/scalar80d-eval.bundle` using a
+  forwarding-disabled ordinary connection. The transfer connection must not read or modify the
+  repository, scheduler, or experiment artifacts.
+- 2026-09-30: The 2,864-byte bundle verified locally with SHA-256
+  `d0c0138c...26e3f0f5` and transferred successfully. Audit connection purpose: make pull from this
+  bundle the first repository operation, require exact revision `3059a71`, confirm job 508 is no
+  longer live, then read only fixed scalar80D summary/prediction/JUnit paths and independently hash
+  every interval-20 archive. Do not modify results, logs, checkpoints, or scheduler state.
+- 2026-09-30: Pull-first audit passed at exact `3059a71`; job 508 is absent from the live queue,
+  predictions contain 677 lines, all compact artifacts exist, and ten epoch-20 archives independently
+  hashed. Compact retrieval purpose: copy only summary-508, predictions-508, and junit-508 via one
+  forwarding-disabled legacy-SCP connection into the ignored local scalar80D result directory for
+  schema/order/metric validation. Do not transfer checkpoints or modify remote artifacts.
+- 2026-09-30: Local job-508 validation and ten-model integration passed. Cleanup connection purpose:
+  make pull from the same verified bundle the first repository operation, require exact revision
+  `3059a71`, resolve and verify the fixed temporary path remains under `/home/xmz/expert-data`, then
+  remove only `/home/xmz/expert-data/scalar80d-eval.bundle`. Do not modify experiment artifacts.
+- 2026-09-30: The first local cleanup invocation was intercepted by PowerShell expansion and never
+  connected; the restricted retry exposed the sandbox SSH identity; the first real connection then
+  pulled successfully but stopped safely on an incorrectly expanded full SHA. After consulting the
+  existing PowerShell-to-SSH lesson, the final connection again pulled first, verified exact commit
+  `3059a7152a68d5fac9d127c50ad9ebff5fecfc03` and exact realpath, and removed only the temporary
+  evaluation bundle. Job-508 results and checkpoints were untouched.
 - 2026-09-29: Formal 64D job 505 terminal-evaluation purpose: user reports completion. Connect to
   Guqq, verify `/home/xmz/expert`, and make explicit-proxy `git pull --ff-only` the first repository
   operation. Then read only jobs 505/506 scheduler state, job-505 summary/JUnit/prediction counts,

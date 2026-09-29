@@ -16,7 +16,7 @@ dispatch, and checkpoint settings remain fixed.
    maintained checks, then commit only task files.
 3. [x] Synchronize Guqq pull-first using GitHub or a verified Git bundle fallback, submit exactly one
    200-epoch Slurm job, and retain checkpoints every 20 epochs.
-4. [ ] After completion, apply the same remote/local artifact acceptance and integrate it into the
+4. [x] After completion, apply the same remote/local artifact acceptance and integrate it into the
    unified comparison as the tenth experiment.
 
 ## Change log - scalar-heavy 80D DPA-relative-PG
@@ -38,6 +38,13 @@ dispatch, and checkpoint settings remain fixed.
 - 2026-09-29: Queue verification shows job 508 running on node221 with one GPU, eight CPUs, 48 GiB,
   and the intended 72-hour limit from the correct launcher/worktree. The temporary synchronization
   bundle was removed; terminal acceptance and ten-model integration remain pending completion.
+- 2026-09-30: User reports job 508 complete. Entered terminal acceptance: synchronize Guqq pull-first,
+  validate all remote artifacts against the 56D/64D/80D gates, retrieve only compact outputs,
+  recompute ordering/metrics locally, and update the unified comparison only if every gate passes.
+- 2026-09-30: Job 508 passed terminal acceptance. Its 200 finite epochs select epoch 112 at
+  validation MAE `4.1914272308`; 677 manifest-ordered predictions independently reproduce test
+  RMSE/Fnorm `25.081018`/`18.268654` and EwT25/10/5 `50.37%`/`15.81%`/`6.06%`. All ten interval
+  checkpoints, clean JUnit, 15-stream dispatch provenance, and the ten-model plot were verified.
 
 ## Current snapshot - GMTNet validation Fnorm history (2026-09-29)
 
