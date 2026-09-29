@@ -28,6 +28,9 @@ must continue to load without fabricated Fnorm values.
   all-epochs-or-absent schema validation, conditional overlay rendering, and documentation. Focused
   tests pass 18/18, the maintained suite passes 329/329, and compilation/whitespace checks pass.
   Best-checkpoint selection remains validation MAE; no historical curve was fabricated or rerun.
+- 2026-09-29: Committed the implementation locally as `92f830f`. One push attempt immediately
+  failed because GitHub port 443 remains unreachable; stopped retrying under the existing network
+  lesson. Before recording this failure, local `main` was three commits ahead of `origin/main`.
 
 ## Current snapshot - 80D higher-order-widened DPA-relative-PG (2026-09-28)
 
