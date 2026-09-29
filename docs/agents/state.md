@@ -1,5 +1,29 @@
 # Agent state
 
+## Current snapshot - 300-epoch attention DPA-GMTNet (2026-09-30)
+
+Queue one isolated DPA-embedded GMTNet run with `use_equiv_attn=True` for exactly 300 epochs. Reuse
+the accepted split, DPA4/GMTNet identities, graph and 64-shard feature caches, batch 64, seed 42,
+Huber/AdamW optimizer, per-step linear `1e-3 -> 1e-5` schedule, validation-MAE checkpoint selection,
+and interval-20 retention. Use a new result/log namespace distinct from both job 498 and the running
+non-attention 300-epoch job 512.
+
+## Current plan - 300-epoch attention DPA-GMTNet
+
+1. [x] Add a dedicated fixed-protocol launcher whose only model change is `--use-equiv-attn`.
+2. [x] Prove launcher isolation and run focused attention/DPA-GMTNet plus static checks.
+3. [ ] Commit/push, pull-first on Guqq, and submit exactly one formal Slurm job.
+4. [ ] After completion, strictly evaluate and add the attention ablation to the unified comparison.
+
+## Change log - 300-epoch attention DPA-GMTNet
+
+- 2026-09-30: User requested an additional queued DPA-GMTNet run with `use_equiv_attn=True` and 300
+  epochs. The opt-in implementation is already accepted at `513f5f9`; this unit adds only an isolated
+  production launcher, its protocol test, submission, and later evaluation.
+- 2026-09-30: Added the fixed attention launcher and isolated result/log namespace. Focused attention
+  plus DPA-GMTNet tests pass 14/14; Bash syntax, Python compilation, and scoped whitespace checks pass.
+  Next is a task-only commit/push followed by pull-first Guqq submission.
+
 ## Current snapshot - 300-epoch DPA-GMTNet rerun (2026-09-30)
 
 Run one isolated rerun of the accepted DPA-embedded GMTNet experiment for exactly 300 epochs. Keep

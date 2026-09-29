@@ -1,5 +1,25 @@
 # Test plan and results
 
+## 2026-09-30 - 300-epoch attention DPA-GMTNet
+
+Plan:
+
+- require a dedicated result/log namespace that cannot collide with job 498 or job 512;
+- require literal `--use-equiv-attn`, 300 epochs, batch 64, seed 42, 64 feature shards, the matched
+  Huber/AdamW `1e-3 -> 1e-5` schedule, interval 20, and the recorded GMTNet environment/checkout;
+- reuse the accepted graph/DPA4 caches and leave the default/non-attention launcher unchanged;
+- run focused DPA-GMTNet and equivariant-attention tests, Bash syntax, Python compilation, and scoped
+  whitespace checks before commit and submission.
+
+Expected result: exactly one isolated Slurm job is queued with attention enabled, while running job
+512 and all accepted historical artifacts remain unchanged.
+
+Local result: `python -m pytest tests/test_gmtnet_attention.py tests/test_dpa4_gmtnet.py -q -p
+no:faulthandler` passes 14/14. This covers the enabled full model, O(3) covariance, normalization,
+gradients, checkpoint compatibility, DPA4 input path, and both 300-epoch launchers. Bash syntax,
+Python compilation, and scoped `git diff --check` pass; only previously documented optional-library
+and dependency warnings remain.
+
 ## 2026-09-30 - 300-epoch DPA-GMTNet rerun
 
 Plan:

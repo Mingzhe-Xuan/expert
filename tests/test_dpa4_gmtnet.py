@@ -171,3 +171,27 @@ def test_dpa4_gmtnet_300e_launcher_is_isolated_and_protocol_matched() -> None:
     assert "--checkpoint-interval 20" in launcher
     assert "#SBATCH --time=3-00:00:00" in launcher
     assert 'run_root="results/reduced-benchmark/dpa4-gmtnet"' not in launcher
+
+
+def test_dpa4_gmtnet_equiv_attn_300e_launcher_is_isolated_and_matched() -> None:
+    launcher = (
+        ROOT / "slurm" / "train_reduced_dpa4_gmtnet_equiv_attn_300e.sbatch"
+    ).read_text(encoding="utf-8")
+    assert "src.cli.reduced_dpa4_gmtnet_train" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-gmtnet-equiv-attn-300e"' in launcher
+    assert "#SBATCH --output=logs/slurm/dpa4-gmtnet-equiv-attn-300e-%j.out" in launcher
+    assert "#SBATCH --error=logs/slurm/dpa4-gmtnet-equiv-attn-300e-%j.err" in launcher
+    assert 'EXPERT_GMTNET_VENV:?' in launcher
+    assert 'EXPERT_GMTNET_ROOT:?' in launcher
+    assert "--feature-shards 64" in launcher
+    assert "--epochs 300" in launcher
+    assert "--batch-size 64" in launcher
+    assert "--learning-rate 0.001" in launcher
+    assert "--end-learning-rate 0.00001" in launcher
+    assert "--weight-decay 0.00001" in launcher
+    assert "--seed 42" in launcher
+    assert "--checkpoint-interval 20" in launcher
+    assert "--use-equiv-attn" in launcher
+    assert "#SBATCH --time=3-00:00:00" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-gmtnet-300e"' not in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-gmtnet"' not in launcher

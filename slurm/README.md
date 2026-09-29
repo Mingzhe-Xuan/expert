@@ -65,6 +65,12 @@ the same accepted full split, graph/DPA4 caches, batch 64, seed 42, Huber/AdamW 
 epochs 20/40/.../300. It writes only to `results/reduced-benchmark/dpa4-gmtnet-300e/` and matching
 `dpa4-gmtnet-300e-*` logs, so the accepted 200-epoch artifacts are never overwritten.
 
+`train_reduced_dpa4_gmtnet_equiv_attn_300e.sbatch` is the matched attention ablation. It preserves
+the fixed 300-epoch protocol above and adds only `--use-equiv-attn`, enabling the maintained
+receiver-normalized invariant attention in all three GMTNet tensor-product layers. It writes to the
+separate `results/reduced-benchmark/dpa4-gmtnet-equiv-attn-300e/` namespace and matching logs, so it
+cannot overwrite either the accepted 200-epoch run or the non-attention 300-epoch run.
+
 These non-interactive jobs are the only supported path for full tests, model inference,
 training smoke runs, and batch data processing on Guqq. Activate the recorded project
 backbone-specific virtual environments through `EXPERT_MACE_VENV`, `EXPERT_GRACE_VENV`,

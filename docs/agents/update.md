@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-30: Started the requested additional 300-epoch DPA-GMTNet run with
+  `use_equiv_attn=True`. The already accepted opt-in attention path will be exercised through a new
+  fixed-protocol launcher and isolated output namespace; job 512 remains untouched.
+- 2026-09-30: Implemented and locally accepted the isolated attention 300-epoch launcher. Focused
+  tests pass 14/14 and Bash/Python/whitespace checks pass; next is commit/push and one pull-first
+  Slurm submission.
+
 - 2026-09-30: Started the requested 300-epoch DPA-GMTNet rerun. It will preserve job 498's model,
   data, seed, batch, optimizer, endpoint learning rates, caches, checkpoint selection, and interval-20
   retention while using a dedicated launcher and output namespace.
