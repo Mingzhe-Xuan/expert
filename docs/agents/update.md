@@ -8,6 +8,15 @@
   Focused tests pass 23/23, the full maintained suite passes 331/331, and compilation/Bash/whitespace
   checks pass. Existing width launchers and defaults are unchanged; next is commit, Guqq sync, and
   exactly one formal submission.
+- 2026-09-29: Created local launcher commit `4a9f8dc`. Because GitHub 443 remains unavailable, the
+  planned Guqq synchronization is a verified incremental Git bundle over the exact remote base
+  `3134991`, followed by the mandatory pull-first gate and one formal `sbatch`.
+- 2026-09-29: The verified bundle fast-forwarded Guqq to `4a9f8dc`, and exactly one formal run was
+  submitted as job 508. It preserves the accepted cached features and full protocol while writing
+  only to `dpa4-relative-pg-scalar80d`; queue verification and terminal monitoring follow.
+- 2026-09-29: Job 508 is running on node221 with the exact requested GPU/CPU/memory/time resources
+  and launcher. The task-created remote bundle has been removed. No duplicate job or output alias
+  exists; strict evaluation and comparison will begin after the 200-epoch run completes.
 
 - 2026-09-29: Started adding validation Fnorm to the shared GMTNet runner used by original and
   DPA-embedded GMTNet. New histories will record the exact full-validation benchmark metric;

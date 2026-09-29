@@ -2870,6 +2870,30 @@
   directly under `/home/xmz/expert-data`; do not alter repository or experiment artifacts.
 - 2026-09-29: Cleanup pull was already current and exact-path validation passed; both task-created
   remote bundle paths were removed. Job-506 source, results, logs, and checkpoints were not modified.
+- 2026-09-29: Scalar-heavy 80D submission transfer purpose: launcher commit `4a9f8dc` passed focused
+  23/23 and maintained 331/331 tests, but GitHub remains unavailable. Create and locally verify an
+  incremental bundle from Guqq's known `3134991` base through local `HEAD`, then transfer it only to
+  `/home/xmz/expert-data/scalar80d-submit.bundle` using a forwarding-disabled ordinary connection.
+  Do not touch the remote repository, results, or scheduler during this transfer connection.
+- 2026-09-29: The 977,291-byte incremental bundle transferred successfully with local SHA-256
+  `a6b9d548...b3e110a`. Submission connection purpose: make pull from that bundle the first
+  repository operation, require exact revision `4a9f8dc`, verify the dedicated result directory is
+  absent and no same-name job is live, then export the recorded DPA4 venv and submit exactly one
+  formal 200-epoch `train_reduced_dpa4_relative_pg_scalar80d.sbatch` job. Do not alter existing jobs
+  or result directories.
+- 2026-09-29: The bundle pull fast-forwarded Guqq to exact `4a9f8dc`, all pre-submit isolation gates
+  passed, and the sole formal run was submitted as job 508. Queue-verification/cleanup connection
+  purpose: pull first from the same bundle, read only job 508's scheduler record to confirm its
+  launcher/resources/state, then remove only the resolved task-created
+  `/home/xmz/expert-data/scalar80d-submit.bundle`. Do not modify job 508 or any result artifact.
+- 2026-09-29: The verification pull was current, but nested quoting split the custom `squeue -o`
+  format and the fail-closed chain stopped before scheduler inspection or bundle deletion. Retry
+  purpose: repeat pull-first, use default `squeue -j 508` plus `scontrol show job -o 508`, then apply
+  the same exact-path temporary-bundle cleanup; job and artifacts remain read-only.
+- 2026-09-29: Retry verification passed. Job 508 is `RUNNING` on node221 from the intended scalar80D
+  launcher with one GPU, eight CPUs, 48 GiB, and a 72-hour limit; no dependency or restart is present.
+  Exact-path cleanup removed only `/home/xmz/expert-data/scalar80d-submit.bundle`. The active job and
+  its isolated result/log paths were not modified.
 - 2026-09-29: Formal 64D job 505 terminal-evaluation purpose: user reports completion. Connect to
   Guqq, verify `/home/xmz/expert`, and make explicit-proxy `git pull --ff-only` the first repository
   operation. Then read only jobs 505/506 scheduler state, job-505 summary/JUnit/prediction counts,

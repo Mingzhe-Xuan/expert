@@ -14,7 +14,7 @@ dispatch, and checkpoint settings remain fixed.
    launchers or defaults.
 2. [x] Prove the exact 80D/203,492/24-edge model and protocol isolation with focused tests and
    maintained checks, then commit only task files.
-3. [ ] Synchronize Guqq pull-first using GitHub or a verified Git bundle fallback, submit exactly one
+3. [x] Synchronize Guqq pull-first using GitHub or a verified Git bundle fallback, submit exactly one
    200-epoch Slurm job, and retain checkpoints every 20 epochs.
 4. [ ] After completion, apply the same remote/local artifact acceptance and integrate it into the
    unified comparison as the tenth experiment.
@@ -28,6 +28,16 @@ dispatch, and checkpoint settings remain fixed.
   assertion. Focused tests pass 23/23, the maintained suite passes 331/331, and Python compilation,
   Bash syntax, and scoped whitespace checks pass. The next phase is isolated commit/synchronization
   and one formal Slurm submission.
+- 2026-09-29: Committed the locally accepted launcher as `4a9f8dc`. GitHub connectivity remains the
+  documented blocker, so Guqq synchronization will use a SHA-verified incremental bundle from its
+  known `3134991` base before submitting the single formal run.
+- 2026-09-29: Guqq fast-forwarded from `3134991` to exact `4a9f8dc` via the verified bundle, and the
+  single formal scalar-heavy 80D run was submitted as Slurm job 508. It uses the recorded DPA4 venv,
+  64 frozen feature shards, batch 64, seed 42, 200 epochs, and interval-20 archives in the isolated
+  `dpa4-relative-pg-scalar80d` namespace.
+- 2026-09-29: Queue verification shows job 508 running on node221 with one GPU, eight CPUs, 48 GiB,
+  and the intended 72-hour limit from the correct launcher/worktree. The temporary synchronization
+  bundle was removed; terminal acceptance and ten-model integration remain pending completion.
 
 ## Current snapshot - GMTNet validation Fnorm history (2026-09-29)
 
