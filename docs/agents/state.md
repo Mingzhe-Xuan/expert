@@ -12,8 +12,8 @@ its accepted 200-epoch artifacts remain immutable.
 
 1. [x] Add a dedicated fixed-300-epoch Slurm launcher and document its isolated inputs/outputs.
 2. [x] Add protocol-isolation regression coverage and run focused/static acceptance before commit.
-3. [ ] Synchronize Guqq pull-first and submit exactly one formal Slurm job; evaluate and add it to
-   the unified comparison after completion.
+3. [x] Synchronize Guqq pull-first and submit exactly one formal Slurm job.
+4. [ ] After completion, strictly evaluate job 512 and add it to the unified comparison.
 
 ## Change log - 300-epoch DPA-GMTNet rerun
 
@@ -24,6 +24,13 @@ its accepted 200-epoch artifacts remain immutable.
   `dpa4-gmtnet-300e` namespace and literal matched protocol. Focused tests pass 10/10; Bash syntax,
   Python compilation, and scoped whitespace checks pass. Next is a task-only commit and pull-first
   Guqq synchronization before the sole formal submission.
+
+- 2026-09-30: Committed the launcher as `037d3e1`, synchronized Guqq through a verified incremental
+  bundle, and submitted exactly one formal run as Slurm job 512. Queue/resource verification and
+  exact-path temporary-bundle cleanup remain before the submission phase closes.
+- 2026-09-30: Job 512 is running on node221 with one GPU, eight CPUs, 64 GiB, and the intended
+  72-hour limit from the exact launcher/worktree. The temporary bundle was removed locally/remotely;
+  the next phase is non-invasive progress monitoring followed by strict 300-epoch acceptance.
 
 ## Current snapshot - scalar-heavy 80D DPA-relative-PG (2026-09-29)
 

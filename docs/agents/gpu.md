@@ -1,5 +1,32 @@
 # GPU / server activity
 
+## 2026-09-30 - 300-epoch DPA-GMTNet submission
+
+- Bundle-transfer connection purpose: transfer only the locally verified 541,584-byte incremental
+  bundle (SHA-256 `b96029b1eed397284e973708bf22fa9d1601884481d4a9209dd47ee5add7413b`)
+  to `/home/xmz/expert-data/dpa-gmtnet-300e-submit.bundle` through a forwarding-disabled connection.
+  Do not access the remote repository, scheduler, environment, caches, or experiment artifacts.
+- Submission connection purpose after transfer: verify the repository exists, make pull from that
+  exact bundle the first repository operation, require exact revision `037d3e1`, then use only
+  lightweight path/config/scheduler checks and submit exactly one
+  `train_reduced_dpa4_gmtnet_300e.sbatch` job through Slurm. Do not run training or inference on the
+  login node and do not alter accepted job-498 artifacts.
+- Submission result: bundle SHA-256 matched, Guqq fast-forwarded from `3059a71` to exact `037d3e1`,
+  the recorded GMTNet venv/checkout and graph cache passed lightweight checks, and Slurm accepted the
+  sole formal run as job 512. Queue-verification/cleanup connection purpose: pull first from the same
+  verified bundle, inspect only job 512's scheduler record and fixed launcher/worktree identity, then
+  resolve and remove only `/home/xmz/expert-data/dpa-gmtnet-300e-submit.bundle`. Do not modify the job,
+  result directory, caches, or accepted job-498 artifacts.
+- First queue-verification attempt pulled and verified the exact commit, but the custom `squeue -o`
+  format lost its quoting across PowerShell/SSH and failed closed before scheduler output or cleanup.
+  Retry purpose: pull first again, use default `squeue -j 512` plus `scontrol show job -o 512`, and
+  perform the same exact-realpath temporary-bundle cleanup only after those checks pass.
+- Retry result: job 512 is `RUNNING` on node221 from the exact
+  `/home/xmz/expert/slurm/train_reduced_dpa4_gmtnet_300e.sbatch` command and worktree, with one GPU,
+  eight CPUs, 64 GiB, a 72-hour limit, no dependency, and no restart. Exact-realpath cleanup removed
+  only `/home/xmz/expert-data/dpa-gmtnet-300e-submit.bundle`; the active allocation and all result,
+  cache, checkpoint, and accepted job-498 paths were untouched.
+
 ## 2026-09-28 - DPA-embedded GMTNet smoke submission
 
 - Connection purpose: connect under the current RemoteForward SOCKS policy, make the first repository

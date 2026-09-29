@@ -7,6 +7,12 @@
   10/10 and Bash/Python/whitespace checks pass; the next phase is a task-only commit, Guqq pull-first
   synchronization, and exactly one formal Slurm submission.
 
+- 2026-09-30: Commit `037d3e1` synchronized to Guqq via a SHA-verified incremental bundle, and Slurm
+  accepted the single formal 300-epoch DPA-GMTNet run as job 512. Queue verification and temporary
+  bundle cleanup follow without changing the active allocation.
+- 2026-09-30: Job 512 is running on node221 with the exact launcher/worktree, one GPU, eight CPUs,
+  64 GiB, and a 72-hour limit. The task-created synchronization bundle was removed; no duplicate job
+  exists and accepted job-498 artifacts remain unchanged.
 - 2026-09-29: Started the authorized scalar-heavy 80D DPA-relative-PG experiment with
   `[32,2,2,2,2]` and exact production parameter count 203,492. It will use a dedicated launcher and
   output namespace while preserving job 505's complete data, routing, optimization, dispatch, and
