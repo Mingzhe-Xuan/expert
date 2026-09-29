@@ -1,5 +1,29 @@
 # Test plan and results
 
+## 2026-09-29 - scalar-heavy 80D DPA-relative-PG
+
+Plan:
+
+- derive the production 24 material edges from `REDUCED_POINT_GROUPS` and prove
+  `[32,2,2,2,2]` has dimension 80 with exactly 203,492 registered/trainable parameters;
+- require a dedicated result directory and launcher identity that cannot alias the 56D, scalar-64D,
+  or higher-order-80D outputs;
+- require batch 64, seed 42, 200 epochs, the matched GMTNet optimizer/schedule, one GPU/eight CPUs/
+  48 GiB/72 h, 64 frozen-feature shards, and checkpoint interval 20;
+- run focused reduced-benchmark tests, Python compilation, Bash syntax, and scoped whitespace checks
+  before commit and remote synchronization.
+
+Expected result: exactly one isolated formal Slurm job whose only scientific change from job 505 is
+`[16,2,2,2,2] -> [32,2,2,2,2]`, followed by the established strict terminal evaluation and unified
+comparison workflow.
+
+Local result: focused reduced-benchmark tests pass 23/23 in 29.69 seconds and construct the exact
+15-expert/24-edge model at 80 dimensions with 203,492 registered/trainable parameters. The launcher
+has a distinct `dpa4-relative-pg-scalar80d` result/log namespace and preserves batch 64, seed 42,
+200 epochs, 64 feature shards, 72-hour GPU allocation, and checkpoint interval 20. The maintained
+suite passes 331/331 in 380.15 seconds; Python compilation, Bash syntax, and scoped whitespace checks
+also pass.
+
 ## 2026-09-29 - GMTNet validation Fnorm history
 
 Plan:

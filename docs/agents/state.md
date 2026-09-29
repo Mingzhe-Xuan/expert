@@ -1,5 +1,34 @@
 # Agent state
 
+## Current snapshot - scalar-heavy 80D DPA-relative-PG (2026-09-29)
+
+Run a new isolated ablation with hidden multiplicities `[32,2,2,2,2]`. Under the frozen
+seven-current-PG/24-edge dataset contract this is an 80-component layout with exactly 203,492
+registered/trainable parameters. Its only scientific change from the accepted 64D run is doubling
+the even-scalar multiplicity from 16 to 32; all feature, routing, optimization, split, asynchronous
+dispatch, and checkpoint settings remain fixed.
+
+## Current plan - scalar-heavy 80D DPA-relative-PG
+
+1. [x] Add a dedicated launcher/result namespace for `[32,2,2,2,2]` without modifying existing
+   launchers or defaults.
+2. [x] Prove the exact 80D/203,492/24-edge model and protocol isolation with focused tests and
+   maintained checks, then commit only task files.
+3. [ ] Synchronize Guqq pull-first using GitHub or a verified Git bundle fallback, submit exactly one
+   200-epoch Slurm job, and retain checkpoints every 20 epochs.
+4. [ ] After completion, apply the same remote/local artifact acceptance and integrate it into the
+   unified comparison as the tenth experiment.
+
+## Change log - scalar-heavy 80D DPA-relative-PG
+
+- 2026-09-29: User authorized training and evaluation of `[32,2,2,2,2]`. Direct construction under
+  the production 15-expert/24-edge contract gives 80 hidden components and 203,492 parameters.
+  Implementation begins with an isolated launcher and explicit regression contract.
+- 2026-09-29: Added the dedicated `dpa4-relative-pg-scalar80d` launcher and exact production model
+  assertion. Focused tests pass 23/23, the maintained suite passes 331/331, and Python compilation,
+  Bash syntax, and scoped whitespace checks pass. The next phase is isolated commit/synchronization
+  and one formal Slurm submission.
+
 ## Current snapshot - GMTNet validation Fnorm history (2026-09-29)
 
 Both official-CGCNN-input GMTNet and DPA-embedded GMTNet use

@@ -1,5 +1,14 @@
 # Agent progress updates
 
+- 2026-09-29: Started the authorized scalar-heavy 80D DPA-relative-PG experiment with
+  `[32,2,2,2,2]` and exact production parameter count 203,492. It will use a dedicated launcher and
+  output namespace while preserving job 505's complete data, routing, optimization, dispatch, and
+  interval-20 checkpoint protocol.
+- 2026-09-29: Implemented and locally accepted the scalar-heavy 80D launcher and parameter contract.
+  Focused tests pass 23/23, the full maintained suite passes 331/331, and compilation/Bash/whitespace
+  checks pass. Existing width launchers and defaults are unchanged; next is commit, Guqq sync, and
+  exactly one formal submission.
+
 - 2026-09-29: Started adding validation Fnorm to the shared GMTNet runner used by original and
   DPA-embedded GMTNet. New histories will record the exact full-validation benchmark metric;
   historical job 443/498 summaries remain backward-compatible and will not be backfilled or

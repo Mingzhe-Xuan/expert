@@ -42,7 +42,9 @@ missing. Smoke mode defaults to one independently cached partition.
 `train_reduced_dpa4_relative_pg_64d.sbatch` and
 `train_reduced_dpa4_relative_pg_80d.sbatch` are isolated width ablations over the same cached
 features/routing and training protocol. They fix `[16,2,2,2,2]` (64D) and `[8,3,3,3,3]` (80D),
-respectively, and write to distinct result/log namespaces with independent interval-20 archives.
+respectively. `train_reduced_dpa4_relative_pg_scalar80d.sbatch` fixes the alternative scalar-heavy
+80D profile `[32,2,2,2,2]`. All three write to distinct result/log namespaces with independent
+interval-20 archives.
 
 `train_reduced_dpa4_gmtnet.sbatch` is the matched DPA-input GMTNet ablation. It requires both
 `EXPERT_GMTNET_VENV` and the pinned `EXPERT_GMTNET_ROOT`, reuses the accepted GMTNet graph cache and

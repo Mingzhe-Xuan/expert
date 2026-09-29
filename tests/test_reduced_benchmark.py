@@ -103,11 +103,28 @@ def test_dpa4_relative_pg_80d_launcher_is_isolated_and_protocol_matched() -> Non
     assert 'run_root="results/reduced-benchmark/dpa4-relative-pg-64d"' not in launcher
 
 
+def test_dpa4_relative_pg_scalar80d_launcher_is_isolated_and_protocol_matched() -> None:
+    launcher = (
+        ROOT / "slurm" / "train_reduced_dpa4_relative_pg_scalar80d.sbatch"
+    ).read_text(encoding="utf-8")
+    assert "src.cli.reduced_dpa4_relative_pg_train" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg-scalar80d"' in launcher
+    assert "--hidden-multiplicities 32 2 2 2 2" in launcher
+    assert '--batch-size "${EXPERT_REDUCED_DPA4_SCALAR80D_BATCH_SIZE:-64}"' in launcher
+    assert '--seed "${EXPERT_REDUCED_DPA4_SCALAR80D_SEED:-42}"' in launcher
+    assert '--checkpoint-interval "${EXPERT_DPA4_SCALAR80D_CHECKPOINT_INTERVAL:-20}"' in launcher
+    assert "#SBATCH --time=3-00:00:00" in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg"' not in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg-64d"' not in launcher
+    assert 'run_root="results/reduced-benchmark/dpa4-relative-pg-80d"' not in launcher
+
+
 @pytest.mark.parametrize(
     ("multiplicities", "expected_dimension", "expected_parameters"),
     (
         ((16, 2, 2, 2, 2), 64, 130_196),
         ((8, 3, 3, 3, 3), 80, 199_754),
+        ((32, 2, 2, 2, 2), 80, 203_492),
     ),
 )
 def test_widened_relative_pg_has_dataset_layout_and_parameter_count(
