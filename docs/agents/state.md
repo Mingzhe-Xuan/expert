@@ -67,6 +67,9 @@ directory and waiting behind the active 64D job.
   RMSE/Fnorm `25.724415`/`19.069616`, EwT25/10/5 `46.53%`/`13.88%`/`6.20%`. The nine-model plot was
   regenerated and visually accepted. Relative to 64D, 80D worsens RMSE/Fnorm by
   `1.156744`/`0.918707` and only improves EwT5, so 64D remains the better overall PG width.
+- 2026-09-29: Committed the accepted 80D integration as local `cb6971b`. The previously documented
+  GitHub port-443 failure has not changed, so no blind push retry was made; local `main` is five
+  commits ahead of `origin/main`, with all generated result payloads remaining ignored.
 
 ## Current snapshot - 64D scalar-widened DPA-relative-PG (2026-09-28)
 

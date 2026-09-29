@@ -28,6 +28,9 @@
   RMSE/Fnorm are `25.724415`/`19.069616`, with EwT25/10/5 `46.53%`/`13.88%`/`6.20%`; every artifact,
   ordering, metric, JUnit, stream, and archive gate passed. The regenerated plot passed visual and
   structural QA. Compared with 64D, 80D has worse absolute error and only improves EwT5.
+- 2026-09-29: Created local integration commit `cb6971b`. Because the known GitHub 443 outage has
+  not recovered, the prior no-blind-retry rule remains in effect; local `main` is five commits ahead
+  and the accepted job-506 compact artifacts remain safely in the ignored result directory.
 
 - 2026-09-28: Started the `[16,2,2,2,2]` DPA-relative-PG ablation as a separate experiment. The
   implementation will keep the accepted job-488 defaults/artifacts unchanged, add an explicit 64D
