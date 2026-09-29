@@ -301,3 +301,14 @@ diagonal values so the convention cannot pass accidentally.
   rest. Keep `set -e` so a failed verifier cannot accidentally certify later checks.
 - A checkpoint path reported in the summary is authoritative. Hash that exact path; do not infer a
   `checkpoints/` subdirectory or use a broad wildcard merely because another launcher uses one.
+
+## 2026-09-29 - Treat an ambiguous local Git push as unconfirmed until refs agree
+
+- `git push` can report an RPC reset followed by `Everything up-to-date` even though the local
+  `origin/main` tracking ref remains behind. Do not interpret the trailing text as success; compare
+  `git rev-parse HEAD`, `git rev-parse origin/main`, and `git status -sb` before deciding whether to
+  retry.
+- After three spaced failures (reset or port-443 timeout), stop blind push retries. Preserve the
+  isolated local commit, report its exact SHA and ahead count, and retry only after local GitHub
+  connectivity changes. Do not work around this by pushing from Guqq, whose permitted role is
+  pull/scheduler operation rather than source publication.

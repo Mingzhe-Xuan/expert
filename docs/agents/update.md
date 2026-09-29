@@ -53,6 +53,9 @@
   exact SHA-pinned summaries. The 64D model reaches RMSE/Fnorm 24.567671/18.150909, improving the
   56D run by 0.601242/0.665203, with EwT25 +0.44 points, EwT10 unchanged, and EwT5 -0.44 points.
   Visual inspection passed and benchmark documentation now records the full comparison/evidence.
+- 2026-09-29: Committed the 64D evaluation as local `b5c3a65`. Three GitHub push attempts failed due
+  reset/443 connectivity and ref comparison confirms `origin/main` is still one commit behind.
+  Stopped blind retries per lessons; the local commit and all accepted artifacts remain intact.
 - 2026-09-28: Formal job 505 is healthy after 4:17:42 and has written exact epoch-20 through
   epoch-100 archives. It is currently between epochs 101 and 119 of 200; no traceback is present,
   only the known non-fatal TorchScript warnings. Recent checkpoint cadence is about 47 minutes per

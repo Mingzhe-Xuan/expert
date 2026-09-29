@@ -73,6 +73,10 @@ Existing job-488 artifacts and defaults must remain immutable.
   The eight-model unified SVG/PNG was regenerated from SHA-pinned summaries and visually accepted.
   The 64D run improves RMSE/Fnorm over 56D by 0.601242/0.665203, but strict EwT5 falls 0.44 points;
   DPA-GMTNet remains best overall. The 64D experiment is complete while job 506 continues.
+- 2026-09-29: Evaluation evidence is isolated in local commit `b5c3a65`, but three local GitHub push
+  attempts failed (one RPC reset, then two port-443 timeouts); `origin/main` remains at `3134991` and
+  local `main` is ahead by one. Stop retries until connectivity changes; no evaluation artifact or
+  remote training result is affected.
 - 2026-09-28: Implemented the explicit cached-trainer hidden-layout interface, fail-closed five-
   multiplicity builder, 64D CLI provenance, exact trainable-parameter reporting, and isolated Slurm
   launcher/result directory. Focused tests pass 33/33, the new/affected core checks pass 7/7, and
