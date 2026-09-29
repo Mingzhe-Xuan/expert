@@ -1,5 +1,19 @@
 # GPU / server activity
 
+## 2026-09-30 - 300-epoch attention DPA-GMTNet submission
+
+- Connection purpose: verify `/home/xmz/expert` exists, make `git pull --ff-only` the first
+  repository operation, require exact revision `4730847`, verify the recorded GMTNet environment,
+  pinned official checkout, and accepted graph/DPA4 caches, reject an existing job with the same
+  name, then submit exactly one `use_equiv_attn=True` 300-epoch training job through Slurm.
+  Follow-up connections will pull first and inspect only this job's queue/allocation state and logs.
+- Submission result: proxy health, pull, exact revision, environment, pinned checkout, and cache
+  gates passed; Slurm accepted the single run as job 514. Queue-audit connection purpose: pull first,
+  then read only job 514's `squeue`/`scontrol` state and expected output paths; do not resubmit.
+- Queue audit result: Guqq was already current at `4730847`; job 514 is RUNNING on node221 with
+  1 GPU, 8 CPUs, 64 GiB, and `3-00:00:00`. Stdout/stderr are the isolated
+  `dpa4-gmtnet-equiv-attn-300e-514` logs. No duplicate submission was made.
+
 ## 2026-09-30 - 300-epoch DPA-GMTNet submission
 
 - Bundle-transfer connection purpose: transfer only the locally verified 541,584-byte incremental

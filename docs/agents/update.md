@@ -6,6 +6,9 @@
 - 2026-09-30: Implemented and locally accepted the isolated attention 300-epoch launcher. Focused
   tests pass 14/14 and Bash/Python/whitespace checks pass; next is commit/push and one pull-first
   Slurm submission.
+- 2026-09-30 01:08 +08:00: Published `4730847`; Guqq pulled the exact revision and Slurm accepted
+  the single attention-enabled 300-epoch run as job 514. Queue audit shows RUNNING on node221 with
+  1 GPU, 8 CPUs, 64 GiB, and a 72-hour limit; its artifacts use the isolated attention namespace.
 
 - 2026-09-30: Started the requested 300-epoch DPA-GMTNet rerun. It will preserve job 498's model,
   data, seed, batch, optimizer, endpoint learning rates, caches, checkpoint selection, and interval-20
