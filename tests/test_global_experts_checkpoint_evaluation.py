@@ -43,7 +43,7 @@ def test_invalid_history(tmp_path):
 def test_evaluate_without_optimizer(tmp_path, monkeypatch, corruption):
     class Model(torch.nn.Linear):
         def metadata(self):
-            return {"test": True}
+            return {"test": True, "expert_numbers": (5, 8)}
     model = Model(1, 1)
     config = GlobalExpertsTrainConfig(batch_size=1)
     splits = {name: [{"sample_id": name, "target": torch.eye(3)}]

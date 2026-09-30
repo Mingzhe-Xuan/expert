@@ -45,8 +45,10 @@ def evaluate_checkpoint(model, splits, *, output_dir, provenance, config, device
     if file_sha256(source_summary) != source_sha256:
         raise ValueError("source summary SHA mismatch")
     source = json.loads(source_summary.read_text(encoding="utf-8"))
-    if (source.get("status") != "passed" or source["provenance"] != provenance
-            or source["model_metadata"] != model.metadata()
+    # Summaries encode tuples as JSON lists; checkpoints retain their Python types.
+    if (source.get("status") != "passed"
+            or source["provenance"] != json.loads(json.dumps(provenance))
+            or source["model_metadata"] != json.loads(json.dumps(model.metadata()))
             or source["training_config"] != asdict(config)
             or source["split_counts"] != {k: len(v) for k, v in splits.items()}):
         raise ValueError("source identity mismatch")
