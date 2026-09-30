@@ -24,6 +24,18 @@ available before100; only the best-checkpoint selector has an exclusive boundary
 
 ## Existing-checkpoint evaluation
 
+For read-only feature magnitudes use `python -m src.cli.global_experts_norms` with
+the same data/model arguments, `--source-summary`, `--source-summary-sha256`,
+`--checkpoint-sha256` and `--predictions-sha256`. It loads that run's `best.pt`,
+checks predictions against its accepted test output and writes per-crystal L2 norms
+and distribution summaries in a fresh output directory. Measurements are in the
+shared global carrier after PG pooling/routing/output projection, before and after
+the official symmetry mask. Ratios with exactly zero global norm are null and
+counted as undefined, not epsilon-clamped. No optimizer or parameter updates occur.
+The diagnostic is `feature_norms.py`; Slurm launcher is
+`slurm/diagnose_global_experts_norms.sbatch`. Norm ratios are feature magnitudes,
+not percentages of final prediction importance or a predictive ablation.
+
 `python -m src.cli.global_experts_evaluate` accepts the same model/data arguments
 as training, plus `--source-summary`, `--source-summary-sha256` and
 `--minimum-checkpoint-epoch-exclusive` (default100). Supply a new output directory.
