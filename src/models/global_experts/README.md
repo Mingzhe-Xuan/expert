@@ -1,5 +1,10 @@
 # Global GMTNet plus hierarchical Full-PG experts
 
+Standard-frame representation matrices are built from detached geometric metadata
+on CPU, then moved to the feature device/dtype. This supports e3nn versions whose
+Wigner generators otherwise mix CPU constants with CUDA angles. It does not detach
+the learned features or alter feature/parameter gradients.
+
 This package implements `docs/analysis/algorithm.md` independently of the existing
 GMTNet baseline runner and PG dispatcher. It reuses the official encoder/readout and
 the existing two-block `FullPointGroupExpert`, with new routing and Adapter modules.

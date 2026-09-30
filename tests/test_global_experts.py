@@ -525,6 +525,28 @@ def test_profiler_artifacts_and_cleanup(official, tmp_path):
     assert (tmp_path / "profile" / "trace.json").stat().st_size > 0
 
 
+def test_frame_representation_uses_detached_cpu_metadata(official, monkeypatch):
+    from src.training.global_experts.runner import collate
+    model, splits = _tiny_model_and_splits(official)
+    model.train()
+    data, mask, equality, routing, target, _ = collate(splits["train"], "cpu")
+    routing = tuple(replace(r, input_to_standard=r.input_to_standard.clone().requires_grad_())
+                    for r in routing)
+    original = o3.Irreps.D_from_matrix
+    seen = []
+    def checked(irreps, frame):
+        assert frame.device.type == "cpu"
+        assert not frame.requires_grad
+        seen.append(frame.dtype)
+        return original(irreps, frame)
+    monkeypatch.setattr(o3.Irreps, "D_from_matrix", checked)
+    output = model(data, mask, equality, routing)
+    (output - target).square().mean().backward()
+    assert seen == [data.x.dtype] * len(routing)
+    assert model.input_map.weight.grad is not None
+    assert all(r.input_to_standard.grad is None for r in routing)
+
+
 @pytest.mark.parametrize("input_features", ["dpa4", "cgcnn"])
 def test_default_cli_real_graph_cache_and_training(official, monkeypatch, tmp_path, input_features):
     from pathlib import Path

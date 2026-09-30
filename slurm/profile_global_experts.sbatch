@@ -16,7 +16,7 @@ run_root="results/global-pg-profile/${SLURM_JOB_ID}"
 mkdir -p "${run_root}"
 git rev-parse HEAD > "${run_root}/revision.txt"
 python -m src.cli.global_experts_profile \
-  --official-root /home/xmz/expert-data/vendor/GMTNet \
+  --official-root /home/xmz/expert-data/vendor/GMTNet-pinned-7a606a4 \
   --graph-cache results/global-pg-profile/cache/smoke-graphs.pt \
   --routing-cache results/global-pg-profile/cache/smoke-routing.pt \
   --output-dir "${run_root}/profile" \

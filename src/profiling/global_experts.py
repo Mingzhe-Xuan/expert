@@ -4,8 +4,10 @@ from contextlib import contextmanager
 import json
 from pathlib import Path
 import time
+import sys
 
 import torch
+import e3nn
 from torch.profiler import ProfilerActivity, profile, record_function
 
 from ..training.global_experts.runner import collate, masked_huber
@@ -13,7 +15,8 @@ from ..training.global_experts.runner import collate, masked_huber
 
 @contextmanager
 def module_ranges(model):
-    targets = [(model, "encode_nodes", "stage/GMTNet_encoder")]
+    targets = [(model, "encode_nodes", "stage/GMTNet_encoder"),
+               (type(model.expert_irreps), "D_from_matrix", "stage/frame_representation")]
     for name, module in model.named_modules():
         if name in {"input_map", "output_map", "adapter", "router",
                     "global_model.output_block"} or name.startswith("experts."):
@@ -100,6 +103,8 @@ def profile_global_experts(model, splits, *, output_dir, provenance, config,
             counts[str(pg)] = counts.get(str(pg), 0) + 1
     report = {
         "status": "passed", "device": str(device), "torch_version": str(torch.__version__),
+        "runtime": {"python": sys.executable, "torch_path": torch.__file__,
+                    "e3nn_path": e3nn.__file__, "e3nn_version": e3nn.__version__},
         "device_name": torch.cuda.get_device_name(device) if cuda else "CPU",
         "model_metadata": model.metadata(), "provenance": provenance,
         "batch": {"samples": len(rows), "nodes": len(data.x), "edges": data.edge_index.shape[1],

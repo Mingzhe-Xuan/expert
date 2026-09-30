@@ -14,3 +14,7 @@ Module ranges describe forward calls, not module-attributed backward. Nested
 inclusive times overlap; do not sum them or confuse kernel time with wall time.
 Full backward operators and launch gaps are available in the trace. Local CPU
 profiling validates instrumentation only; Guqq computation must use Slurm.
+
+The report records actual interpreter/torch/e3nn paths and versions. Frame Wigner-D
+construction has a separate `stage/frame_representation` range; this runs on CPU
+for compatibility with older e3nn and is included in overall forward wall time.

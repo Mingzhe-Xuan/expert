@@ -171,15 +171,17 @@ class GlobalExpertsModel(nn.Module):
             for row in routing:
                 if row.sample_id != row.dag.material_id:
                     raise ValueError("routing sample/DAG identity mismatch")
-                frame = row.input_to_standard.to(nodes)
+                # Frames are detached geometric metadata; older e3nn Wigner generators
+                # allocate on CPU even for CUDA angles. Build D on CPU, then transfer it.
+                frame = row.input_to_standard.detach().to(device="cpu", dtype=nodes.dtype)
                 if frame.shape != (3, 3) or not torch.allclose(
                     frame @ frame.T,
-                    torch.eye(3, device=nodes.device, dtype=nodes.dtype),
+                    torch.eye(3, dtype=nodes.dtype),
                     atol=1e-5,
                     rtol=1e-5,
                 ):
                     raise ValueError("standard frame must be orthogonal")
-                transforms.append(self.expert_irreps.D_from_matrix(frame))
+                transforms.append(self.expert_irreps.D_from_matrix(frame).to(nodes))
                 weights.append(self.router(row.dag, row.residuals))
             adapted = self.adapter(
                 self.input_map(nodes), data.edge_index, data.edge_attr
