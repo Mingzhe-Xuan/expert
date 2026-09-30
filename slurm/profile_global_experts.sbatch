@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=profile-global-pg
+#SBATCH --partition=compute
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --gres=gpu:1
+#SBATCH --mem=64G
+#SBATCH --time=01:00:00
+#SBATCH --output=logs/slurm/profile-global-pg-%j.out
+#SBATCH --error=logs/slurm/profile-global-pg-%j.err
+set -euo pipefail
+source /home/xmz/expert-envs/gmtnet-py310/bin/activate
+export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK}"
+run_root="results/global-pg-profile/${SLURM_JOB_ID}"
+mkdir -p "${run_root}"
+git rev-parse HEAD > "${run_root}/revision.txt"
+python -m src.cli.global_experts_profile \
+  --official-root /home/xmz/expert-data/vendor/GMTNet \
+  --graph-cache results/global-pg-profile/cache/smoke-graphs.pt \
+  --routing-cache results/global-pg-profile/cache/smoke-routing.pt \
+  --output-dir "${run_root}/profile" \
+  --smoke --device cuda --batch-size 64 "$@"
