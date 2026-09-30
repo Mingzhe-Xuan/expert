@@ -18,3 +18,8 @@ profiling validates instrumentation only; Guqq computation must use Slurm.
 The report records actual interpreter/torch/e3nn paths and versions. Frame Wigner-D
 construction has a separate `stage/frame_representation` range; this runs on CPU
 for compatibility with older e3nn and is included in overall forward wall time.
+
+`python -m src.profiling.analyze_trace TRACE_JSON OUTPUT_JSON` attributes actual
+kernel events using external IDs and forward/backward flow links. It excludes
+GPU annotation spans and keeps unmatched work separate. The synthetic regression
+test covers attribution across autograd threads and annotation exclusion.
