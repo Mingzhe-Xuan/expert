@@ -1,5 +1,26 @@
 # GPU / server activity
 
+## 2026-09-30 - retrieve missing benchmark runtime evidence
+
+- Planned connection purpose: make a no-op self-source `git pull --ff-only` the first repository
+  operation at Guqq's already accepted `2383f74`, then read and retrieve only the missing JUnit files
+  for jobs 458, 488, and 498. Do not run computation, modify training artifacts, submit jobs, or
+  transfer the separately blocked profiler-fix source payload.
+- Pull-first succeeded at `2383f74`, but the fail-closed existence gate found at least one expected
+  JUnit path absent, so no archive was created or retrieved. Diagnostic reconnect purpose: pull first,
+  then list only `junit-*.xml` beneath the three exact accepted result directories to locate available
+  runtime evidence; do not inspect unrelated results or weaken the timing-source definition.
+- Diagnostic pull succeeded, but Guqq's main revision had advanced concurrently, so the stale exact
+  `2383f74` assertion stopped the script before directory reads. No evidence was read or changed.
+  Retry purpose: pull first, report the current revision, require it to be an allowed descendant of
+  `2383f74`, then perform the same three-directory JUnit-only listing.
+- The ancestry-guarded retry found Guqq at approved descendant `c1a9fdc` and located all three exact
+  JUnit files. A subsequent pull-first connection archived only jobs 458/488/498 JUnit XML; the local
+  SHA-256 matched `6e0ca3f1...35ade69e`, and all report one passing case. Cleanup connection purpose:
+  pull first, then remove only the task-created remote tar and helper script; preserve result files.
+- Cleanup pull succeeded; the exact remote tar/helper files and matching local temporaries were
+  removed. The accepted JUnit result files remain unchanged, and no further Guqq connection is needed.
+
 ## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 516
 
 - Planned connection purpose: make `git pull --ff-only` the first repository operation, then perform

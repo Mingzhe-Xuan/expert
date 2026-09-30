@@ -1,5 +1,26 @@
 # Agent state
 
+## Current snapshot - add runtime and best epoch to benchmark table (2026-09-30)
+
+Update the unified results table with validation-selected best epoch and a consistent measured
+training/evaluation wall-time column. Use runner JUnit seconds as the auditable source; label the
+scope explicitly and never infer missing durations from checkpoint timestamps.
+
+## Current plan - benchmark timing columns
+
+1. [x] Inventory accepted summaries/JUnit files and retrieve only missing accepted JUnit evidence.
+2. [x] Add best epoch and formatted runner wall time for every row, with an explicit scope note.
+3. [x] Validate every table value against source artifacts, check Markdown formatting, and commit
+   only the documentation/log changes owned by this task.
+
+## Change log - benchmark timing columns
+
+- 2026-09-30: User requested training time and best epoch in the comparison table. Adopted JUnit
+  runner duration because it is directly recorded and includes cached-input loading, training,
+  validation, best-checkpoint reload, and test inference; external feature-cache preparation is excluded.
+- 2026-09-30: All fourteen rows now contain summary-derived best epoch and zero-failure-JUnit runtime
+  formatted as `HH:MM:SS`. Artifact-to-table validation passed for every row and all eight columns.
+
 ## Current snapshot - evaluate 200-epoch attention DPA-GMTNet job 516 (2026-09-30)
 
 Strictly evaluate the completed Job 516 without modifying its artifacts. Require exact 200-epoch

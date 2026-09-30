@@ -1,5 +1,17 @@
 # Test plan and results
 
+## 2026-09-30 - benchmark runtime and best-epoch columns
+
+Plan: require all fourteen accepted rows to have a summary-derived best epoch and a JUnit-derived
+runner duration; verify JUnit success status, convert seconds deterministically to `HH:MM:SS`, and
+state the timing boundary beside the table. Check Markdown column counts, source-path coverage,
+numeric consistency, and scoped whitespace. This is documentation-only; no model test is required.
+
+Result: passed. The verifier matched all fourteen table rows to their accepted summary `best_epoch`
+and zero-failure JUnit `time`, including the three read-only retrieved files for jobs 458/488/498.
+Every row has eight columns, durations use deterministic rounded `HH:MM:SS`, the timing-scope note is
+present, and scoped `git diff --check` passes with only the existing line-ending notice.
+
 ## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 516
 
 Plan:

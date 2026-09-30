@@ -160,22 +160,26 @@ shows clear post-selection overfit despite the improved validation minimum.
 
 ## Results
 
-| Model | RMSE ↓ | Fnorm ↓ | EwT 25% ↑ | EwT 10% ↑ | EwT 5% ↑ |
-|---|---:|---:|---:|---:|---:|
-| DPA4 B+A+PGE+R full_pg (current-group only) | 26.166445 | 31.539129 | 12.26% | 2.51% | 1.03% |
-| GMTNet | 25.449894 | 19.169209 | 53.03% | 18.32% | 7.39% |
-| CGCNN B+A+PGE+R full_pg (current-group only) | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
-| CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors) | 26.144173 | 19.204304 | 41.51% | 11.52% | 4.87% |
-| CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [16, 2, 2, 2, 2]) | 24.567671 | 18.150909 | 47.12% | 14.48% | 5.32% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 3, 3, 3, 3]) | 25.724415 | 19.069616 | 46.53% | 13.88% | 6.20% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [32, 2, 2, 2, 2]) | 25.081018 | 18.268654 | 50.37% | 15.81% | 6.06% |
-| DPA-embedded GMTNet | 23.795513 | **17.019165** | **64.40%** | **25.85%** | 9.60% |
-| DPA-embedded GMTNet (300 epochs) | 25.039696 | 17.379377 | 58.20% | 24.37% | **9.90%** |
-| DPA-embedded GMTNet + equivariant attention (300 epochs) | **23.093098** | 17.121731 | 54.80% | 19.94% | 7.98% |
-| DPA-embedded GMTNet (300 epochs, Job-498 LR then constant tail) | 24.343472 | 17.081095 | 53.77% | 17.73% | 6.50% |
-| DPA-embedded GMTNet + equivariant attention (200 epochs) | 24.280762 | 17.646751 | 54.06% | 14.33% | 4.73% |
+| Model | Best epoch | 训练/评测时长† | RMSE ↓ | Fnorm ↓ | EwT 25% ↑ | EwT 10% ↑ | EwT 5% ↑ |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| DPA4 B+A+PGE+R full_pg (current-group only) | 12 | 02:21:27 | 26.166445 | 31.539129 | 12.26% | 2.51% | 1.03% |
+| GMTNet | 93 | 01:31:31 | 25.449894 | 19.169209 | 53.03% | 18.32% | 7.39% |
+| CGCNN B+A+PGE+R full_pg (current-group only) | 159 | 10:56:41 | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
+| CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors) | 122 | 31:07:22 | 26.144173 | 19.204304 | 41.51% | 11.52% | 4.87% |
+| CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 28 | 56:36:29 | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 95 | 07:57:47 | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [16, 2, 2, 2, 2]) | 69 | 08:00:45 | 24.567671 | 18.150909 | 47.12% | 14.48% | 5.32% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 3, 3, 3, 3]) | 59 | 08:37:56 | 25.724415 | 19.069616 | 46.53% | 13.88% | 6.20% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [32, 2, 2, 2, 2]) | 112 | 08:09:52 | 25.081018 | 18.268654 | 50.37% | 15.81% | 6.06% |
+| DPA-embedded GMTNet | 196 | 00:33:15 | 23.795513 | **17.019165** | **64.40%** | **25.85%** | 9.60% |
+| DPA-embedded GMTNet (300 epochs) | 170 | 00:49:28 | 25.039696 | 17.379377 | 58.20% | 24.37% | **9.90%** |
+| DPA-embedded GMTNet + equivariant attention (300 epochs) | 163 | 00:51:40 | **23.093098** | 17.121731 | 54.80% | 19.94% | 7.98% |
+| DPA-embedded GMTNet (300 epochs, Job-498 LR then constant tail) | 40 | 00:50:18 | 24.343472 | 17.081095 | 53.77% | 17.73% | 6.50% |
+| DPA-embedded GMTNet + equivariant attention (200 epochs) | 111 | 00:34:44 | 24.280762 | 17.646751 | 54.06% | 14.33% | 4.73% |
+
+† 时长格式为 `HH:MM:SS`，来自各 accepted run 的零失败 JUnit runner wall time。它覆盖缓存读取、
+训练、逐 epoch 验证、best-checkpoint 重载和测试推理；不包含在该 runner 之外预先完成的 DPA
+特征或图缓存生成，因此不能直接解释为完整 Slurm 作业从提交到结束的端到端耗时。
 
 The five DPA-GMTNet variants split metric leadership: 300e attention has the lowest RMSE, job 498 has
 the lowest Fnorm and highest EwT25/EwT10, and job 512 has the highest EwT5. Relative to original GMTNet,

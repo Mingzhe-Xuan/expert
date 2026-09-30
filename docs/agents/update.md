@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-30: Started adding best epoch and measured runtime to the fourteen-row benchmark table.
+  Timing uses accepted runner JUnit seconds under one explicit scope; three locally missing JUnit
+  files will be retrieved read-only rather than approximated from logs or timestamps.
+- 2026-09-30: Completed the benchmark table update. All fourteen rows now show best epoch and
+  `HH:MM:SS` runner time, with an explicit note excluding external cache preparation. Automated
+  artifact comparison validated every value and Markdown column count.
+
 - 2026-09-30: Started strict terminal evaluation of completed 200-epoch attention DPA-GMTNet job
   516. The gate covers scheduler/log success, exact source/config, complete history and checkpoint
   inventory, frozen predictions, independent metrics, and SHA-pinned unified-plot regeneration.
