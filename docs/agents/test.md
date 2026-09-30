@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 516
+
+Plan:
+
+- require terminal-success evidence, exact revision and `use_equiv_attn=true` 200-epoch protocol,
+  200 contiguous finite history rows, exact validation-MAE argmin, and ten interval-20 archives;
+- require 677 unique finite predictions in frozen-manifest order with exact reference targets, then
+  independently recompute repository RMSE, Fnorm, and EwT25/10/5 metrics;
+- require clean JUnit/logs and verify checkpoint byte counts, SHA-256 values, and embedded epochs;
+- regenerate the SHA-pinned unified SVG/PNG only after acceptance, then run history tests, compilation,
+  scoped whitespace checks, SVG parsing, and visual PNG inspection.
+
+Expected result: Job 516 becomes a fourteenth accepted trajectory only if every artifact, provenance,
+metric, and plot gate passes; otherwise report the failed invariant and leave the comparison unchanged.
+
+Result: passed. Job 516 has 200 contiguous finite epochs and the exact Job-498 learning-rate sequence;
+epoch 111 is the validation-MAE argmin (`3.9724941254`, Fnorm `23.2336750031`). All ten interval
+archives match recorded bytes/SHA-256 and embedded epochs; the best checkpoint has epoch 111,
+`[128,640]` projection, and attention parameters. All 677 predictions are finite, symmetric, unique,
+in frozen order, and have exact accepted targets; independent float32 metrics are RMSE/Fnorm
+`24.2807617188`/`17.6467514038`, EwT25/10/5 `54.06%`/`14.33%`/`4.73%`. JUnit/log gates pass.
+The launch revision `bfe0beb` differs from end metadata `2383f74` only because the shared worktree
+advanced to disjoint global-experts/docs/profiling additions during execution. Plot/history tests pass
+26/26, compilation and scoped whitespace/SVG parsing pass, and the 14-run PNG passed visual QA.
+
 ## 2026-09-30 - 200-epoch attention DPA-GMTNet submission
 
 Plan:

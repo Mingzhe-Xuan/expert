@@ -1,5 +1,18 @@
 # Agent progress updates
 
+- 2026-09-30: Started strict terminal evaluation of completed 200-epoch attention DPA-GMTNet job
+  516. The gate covers scheduler/log success, exact source/config, complete history and checkpoint
+  inventory, frozen predictions, independent metrics, and SHA-pinned unified-plot regeneration.
+- 2026-09-30: Pull-first inspection found Job 516 purged from live Slurm state, while its stdout ends
+  in `status=passed` and its isolated artifacts are complete through epoch 200. Retrieval is limited
+  to those declared artifacts and two logs for independent local validation.
+- 2026-09-30: Job 516 passed strict local acceptance and is the fourteenth unified trajectory. Best
+  epoch is 111; test RMSE/Fnorm are `24.280762`/`17.646751`. Against matched 200e job 498, attention
+  is worse on all five held-out metrics despite a better validation minimum. Plot tests pass 26/26
+  and the regenerated figure passed SVG/static and visual inspection.
+- 2026-09-30: Pull-first cleanup removed only the exact remote/local evaluation temporaries; accepted
+  Job-516 artifacts remain immutable. Evaluation is complete and ready for a task-only commit.
+
 - 2026-09-30: Started the requested 200-epoch DPA-GMTNet attention experiment. Added an isolated
   fixed-protocol launcher whose sole model change from Job 498 is `--use-equiv-attn`; focused
   acceptance and one pull-first Slurm submission follow.

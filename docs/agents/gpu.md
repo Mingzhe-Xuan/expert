@@ -1,5 +1,25 @@
 # GPU / server activity
 
+## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 516
+
+- Planned connection purpose: make `git pull --ff-only` the first repository operation, then perform
+  bounded read-only inspection of Job 516 and its isolated `dpa4-gmtnet-equiv-attn-200e` results.
+  Verify scheduler/log terminal status, exact revision/config, history, prediction/JUnit files, and
+  checkpoint inventory. Do not execute model computation, alter artifacts, or submit another job;
+  retrieve only the declared compact evidence needed for independent local acceptance.
+- SHA-verified offline pull advanced Guqq to `2383f74`. Job 516 is purged from `scontrol` and Slurm
+  accounting is disabled, but stdout ends with `status=passed`; the isolated directory has summary,
+  677-row predictions, JUnit/provenance, best checkpoint, and ten epoch-20 archives through epoch 200.
+  Retrieval connection purpose: copy only this exact result directory and Job-516 stdout/stderr into
+  the ignored matching local directory for independent validation; preserve all remote artifacts.
+- The exact evidence archive transferred with matching SHA-256 `41aa9a5a...a4d495f`; independent local
+  validation passed all history, prediction, metric, checkpoint, JUnit, and log gates. Cleanup
+  connection purpose: pull first from the same verified bundle, then remove only the task-created
+  remote bundle, evidence tar, and two helper scripts. Preserve all Job-516 artifacts and logs.
+- Cleanup pull was already current at `2383f74`; only the exact task-created remote bundle, evidence
+  tar, and helper scripts were removed, followed by their local temporary copies. Job-516 artifacts
+  and logs remain unchanged. No further Guqq connection is required for this evaluation.
+
 ## 2026-09-30 - submit 200-epoch attention DPA-GMTNet
 
 - Planned connection purpose: transfer a locally created SHA-verified incremental Git bundle outside

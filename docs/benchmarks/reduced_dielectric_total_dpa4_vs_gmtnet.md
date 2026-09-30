@@ -67,6 +67,10 @@
 - DPA-embedded GMTNet attention 300e changes only `use_equiv_attn=true` relative to that 300-epoch
   protocol. Job 514 selected epoch 163 at validation MAE/Fnorm `3.9996964931`/`23.3941822052`,
   retained all fifteen epoch-20 archives, and reloaded the MAE-selected checkpoint for test inference.
+- DPA-embedded GMTNet attention 200e is the exact Job-498-length attention ablation: same frozen
+  split/features, seed, batch, Huber/AdamW settings, per-step `1e-3 -> 1e-5` trajectory, checkpoint
+  interval, and validation-MAE selection, with only `use_equiv_attn=true`. Job 516 selected epoch 111
+  at validation MAE/Fnorm `3.9724941254`/`23.2336750031` and retained all ten interval archives.
 - DPA-embedded GMTNet constant-tail 300e (job 515) exactly reuses job 498's first-200 per-step
   `1e-3 -> 1e-5` trajectory, then holds `1e-5` through epoch 300. Independent validation-MAE and
   validation-Fnorm selectors both selected epoch 40, with identical checkpoint weights and aggregate
@@ -111,11 +115,11 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories through constant-tail 300-epoch DPA-GMTNet
+## All accepted training histories through 200-epoch attention DPA-GMTNet
 
-![All thirteen accepted experiment histories](all_experiment_training_history.svg)
+![All fourteen accepted experiment histories](all_experiment_training_history.svg)
 
-The six-panel figure covers thirteen experiments, draws only fields actually present in each SHA-pinned
+The six-panel figure covers fourteen experiments, draws only fields actually present in each SHA-pinned
 summary, and does not interpolate historical gaps. Every drawn line contains contiguous epochs;
 distinct line styles/markers expose exact overlaps that previously looked like broken curves.
 DPA relative-PG converges much more stably than CGCNN relative-PG:
@@ -142,6 +146,10 @@ the three DPA-GMTNet trajectories.
 The constant-tail run selects epoch 40 by both validation MAE and Fnorm (`4.0184`/`23.5412`). Despite
 holding the smaller learning rate for another 100 epochs, validation MAE/Fnorm end at
 `4.2687`/`25.0854`; the extra tail therefore does not reverse the early post-selection overfit.
+The matched 200-epoch attention run selects epoch 111 at validation MAE/Fnorm `3.9725`/`23.2337`,
+the best selected validation pair among the DPA-GMTNet runs. Its training loss continues from
+`3.0713` to `2.2761` while validation MAE/Fnorm rise to `4.2943`/`25.1734` by epoch 200, so it also
+shows clear post-selection overfit despite the improved validation minimum.
 
 ## Metrics
 
@@ -167,8 +175,9 @@ holding the smaller learning rate for another 100 epochs, validation MAE/Fnorm e
 | DPA-embedded GMTNet (300 epochs) | 25.039696 | 17.379377 | 58.20% | 24.37% | **9.90%** |
 | DPA-embedded GMTNet + equivariant attention (300 epochs) | **23.093098** | 17.121731 | 54.80% | 19.94% | 7.98% |
 | DPA-embedded GMTNet (300 epochs, Job-498 LR then constant tail) | 24.343472 | 17.081095 | 53.77% | 17.73% | 6.50% |
+| DPA-embedded GMTNet + equivariant attention (200 epochs) | 24.280762 | 17.646751 | 54.06% | 14.33% | 4.73% |
 
-The four DPA-GMTNet variants split metric leadership: attention has the lowest RMSE, job 498 has
+The five DPA-GMTNet variants split metric leadership: 300e attention has the lowest RMSE, job 498 has
 the lowest Fnorm and highest EwT25/EwT10, and job 512 has the highest EwT5. Relative to original GMTNet,
 job 498's
 RMSE/Fnorm fall by `1.654383`/`2.150045`, while EwT25/EwT10/EwT5 rise by
@@ -193,6 +202,15 @@ large absolute component errors that dominate RMSE while producing fewer samples
 target-normalized threshold; it is preferable only if RMSE is the primary objective. Against the
 original CGCNN-feature GMTNet, it improves RMSE/Fnorm by `2.356798`/`2.047480` and raises all three
 EwT rates by `1.77`/`1.62`/`0.59` points.
+
+At the matched 200-epoch schedule, equivariant attention improves the selected validation MAE/Fnorm
+over job 498 by `0.089182`/`0.556331`, but this does not transfer to the held-out set. Job 516 worsens
+test RMSE/Fnorm by `0.485249`/`0.627586` and lowers EwT25/EwT10/EwT5 by
+`10.34`/`11.52`/`4.87` percentage points. Extending the same attention model to 300 epochs improves
+all five test metrics relative to job 516: RMSE/Fnorm fall by `1.187664`/`0.525021`, while the three
+EwT rates rise by `0.74`/`5.61`/`3.25` points. Thus attention is not beneficial under the strict
+Job-498-length protocol; its strongest result depends on the longer schedule and remains
+metric-dependent rather than uniformly better than non-attention job 498.
 
 The constant-tail schedule does not improve on job 498: RMSE/Fnorm worsen by
 `0.547958`/`0.061930`, and EwT25/EwT10/EwT5 fall by `10.64`/`8.12`/`3.10` percentage points. It does
@@ -343,6 +361,16 @@ than stable rankings.
   Summary/prediction SHA-256 values are
   `1ca7ef0f8d8e2381c375d015fa596efb1b39dc64a11bc5e78c15ec894a118547` and
   `9393da9e36a7be846d70dcaaee9fa044bfb80d779381684352a483401dd204f4`.
+- DPA-embedded GMTNet attention 200e Slurm job 516: local strict acceptance passed 200/200 contiguous
+  finite epochs, the exact Job-498 learning-rate sequence, minimum-MAE best epoch 111, exact
+  5,001/637/677 splits, 677 frozen-order finite symmetric predictions, exact frozen targets and
+  float32 metric recomputation, clean JUnit/logs, `[128,640]` projection, attention parameters, and
+  all ten byte/SHA/embedded-epoch archives. The launch-time revision is `bfe0beb`; the end-of-run
+  metadata reports `2383f74` because the shared worktree advanced during execution, but that commit
+  adds only disjoint global-experts/docs/profiling files and changes no imported DPA-GMTNet source.
+  Summary/prediction SHA-256 values are
+  `30a6571b8fa0b9ee948165b68262829de060e8af30287d3dd55e6a59fa2b669b` and
+  `149dc8a180629f38208a30dff2b6143ca7f944a49d6c42a50527da524fe7161b`.
 - DPA-embedded GMTNet constant-tail 300e Slurm job 515: local strict acceptance passed 300/300
   contiguous finite epochs, exact job-498 first-200 learning rates, constant `1e-5` epochs 201--300,
   and exact MAE/Fnorm minima at epoch 40. Both selector checkpoints contain identical model weights

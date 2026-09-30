@@ -1,5 +1,30 @@
 # Agent state
 
+## Current snapshot - evaluate 200-epoch attention DPA-GMTNet job 516 (2026-09-30)
+
+Strictly evaluate the completed Job 516 without modifying its artifacts. Require exact 200-epoch
+attention protocol/provenance, validation-MAE checkpoint selection, interval-20 archives, frozen test
+order and independently recomputed metrics before adding it to the unified experiment comparison.
+
+## Current plan - evaluate job 516
+
+1. [x] Pull first on Guqq and establish terminal-success plus a complete isolated artifact inventory.
+2. [x] Retrieve only compact Job-516 evidence and independently validate history, checkpoints,
+   prediction order/targets, JUnit/logs, and RMSE/Fnorm/EwT metrics locally.
+3. [x] Add the accepted trajectory to the unified plot/comparison, run focused/static/visual checks,
+   and commit only task-owned changes.
+
+## Change log - evaluate job 516
+
+- 2026-09-30: User reported training complete and requested evaluation. Acceptance uses the same
+  fail-closed gates as Jobs 498 and 514; no comparison update is allowed before all checks pass.
+- 2026-09-30: Job 516 is purged from live Slurm state, but stdout terminates with `status=passed` and
+  the isolated directory contains summary/predictions/JUnit/provenance, best checkpoint, and all ten
+  interval-20 archives through epoch 200. Compact retrieval and independent validation follow.
+- 2026-09-30: Strict acceptance passed. Epoch 111 minimizes validation MAE at `3.9724941254`; 677
+  ordered predictions independently reproduce RMSE/Fnorm `24.2807617188`/`17.6467514038`, and all ten
+  archives pass size/SHA/embedded-epoch checks. The fourteen-history plot passed visual/static QA.
+
 ## Current snapshot - 200-epoch attention DPA-GMTNet (2026-09-30)
 
 Train one isolated DPA-embedded GMTNet run for exactly 200 epochs with `use_equiv_attn=True`.
