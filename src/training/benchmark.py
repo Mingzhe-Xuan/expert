@@ -142,6 +142,13 @@ class CachedBackboneTensorModel(nn.Module):
         expert_point_groups: tuple[str, ...],
         material_edge_ids: tuple[str, ...] | None = None,
         hidden_layout: IrrepLayout | None = None,
+        *,
+        grouped_pg_gates: bool = True,
+        vectorized_pg_routing: bool = True,
+        pg_weighting: str = "legacy",
+        chain_temperature: float = 1.0,
+        initial_sigma: float = 0.08,
+        sigma_floor: float = 1e-8,
     ) -> None:
         super().__init__()
         hidden_layout = hidden_layout or default_hidden_layout(architecture)
@@ -152,6 +159,12 @@ class CachedBackboneTensorModel(nn.Module):
             hidden_layout=hidden_layout,
             expert_point_groups=expert_point_groups,
             material_edge_ids=material_edge_ids,
+            grouped_pg_gates=grouped_pg_gates,
+            vectorized_pg_routing=vectorized_pg_routing,
+            pg_weighting=pg_weighting,
+            chain_temperature=chain_temperature,
+            initial_sigma=initial_sigma,
+            sigma_floor=sigma_floor,
         )
 
     def forward(
@@ -542,6 +555,12 @@ def train_cached_backbone_readout(
     predictions_path: str | Path | None = None,
     material_edge_ids: tuple[str, ...] | None = None,
     hidden_layout: IrrepLayout | None = None,
+    pg_weighting: str = "legacy",
+    chain_temperature: float = 1.0,
+    initial_sigma: float = 0.08,
+    sigma_floor: float = 1e-8,
+    grouped_pg_gates: bool = True,
+    vectorized_pg_routing: bool = True,
 ) -> dict[str, object]:
     """Train a tensor architecture over a once-materialized frozen backbone tap."""
 
@@ -588,6 +607,12 @@ def train_cached_backbone_readout(
                 expert_point_groups,
                 material_edge_ids,
                 hidden_layout,
+                pg_weighting=pg_weighting,
+                chain_temperature=chain_temperature,
+                initial_sigma=initial_sigma,
+                sigma_floor=sigma_floor,
+                grouped_pg_gates=grouped_pg_gates,
+                vectorized_pg_routing=vectorized_pg_routing,
             ).to(device)
     else:
         if hidden_layout is not None:
@@ -822,6 +847,9 @@ def train_cached_backbone_readout(
         "periodic_checkpoints": periodic_checkpoints,
     }
     dispatcher = getattr(model, "downstream", model)
+    if getattr(dispatcher, "uses_chain_router", False):
+        report["routing"] = "point_group_within_cross_chain"
+        report["pg_routing"] = dispatcher.pg_routing_metadata()
     dispatch_stats = getattr(dispatcher, "last_dispatch_stats", None)
     if dispatch_stats:
         report["last_dispatch_stats"] = dict(dispatch_stats)

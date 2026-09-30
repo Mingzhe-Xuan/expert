@@ -29,6 +29,8 @@ from .modules import (
     active_parent_point_group_numbers,
     material_point_group_stick_breaking_weights,
 )
+from .optimized import GroupedFullPointGroupExpert, VectorizedMaterialWeights
+from .chain_routing import HierarchicalChainRouter, VectorizedChainRouter
 
 
 def hidden_layout_from_multiplicities(multiplicities: Sequence[int]) -> IrrepLayout:
@@ -96,10 +98,22 @@ class PointGroupTensorModel(nn.Module):
         point_group_parent_dag: PointGroupAncestorDAG | None = None,
         material_edge_ids: tuple[str, ...] | None = None,
         cutoff: float = 6.0,
+        grouped_pg_gates: bool = True,
+        vectorized_pg_routing: bool = True,
+        pg_weighting: str = "legacy",
+        chain_temperature: float = 1.0,
+        initial_sigma: float = 0.08,
+        sigma_floor: float = 1e-8,
     ) -> None:
         super().__init__()
         self.architecture = architecture
         self.task = task
+        self.grouped_pg_gates = grouped_pg_gates
+        self.vectorized_pg_routing = vectorized_pg_routing
+        if pg_weighting not in {"legacy", "within_cross_chain"}:
+            raise ValueError("pg_weighting must be legacy or within_cross_chain")
+        self.pg_weighting = pg_weighting
+        self._material_weights = VectorizedMaterialWeights()
         if point_group_parent_dag is not None and material_edge_ids is not None:
             raise ValueError("static and residual-weighted PG routing configurations are exclusive")
         self.hidden_layout = hidden_layout or default_hidden_layout(architecture)
@@ -146,7 +160,7 @@ class PointGroupTensorModel(nn.Module):
             expert_type = (
                 A1PointGroupExpert
                 if architecture.pg_hidden_mode == "a1_only"
-                else FullPointGroupExpert
+                else (GroupedFullPointGroupExpert if grouped_pg_gates else FullPointGroupExpert)
             )
             self.pg_experts = nn.ModuleDict(
                 {
@@ -161,11 +175,18 @@ class PointGroupTensorModel(nn.Module):
             if self.o3_experts is not None or self.pg_experts is not None
             else None
         )
-        self.edge_gate = (
-            ContinuousEdgeGate(tuple(sorted(material_edge_ids)))
-            if material_edge_ids is not None
-            else None
+        self.uses_chain_router = (
+            pg_weighting == "within_cross_chain" and architecture.pg_hidden_mode == "full_pg"
+            and self.o3_experts is None and material_edge_ids is not None
         )
+        self.edge_gate = None
+        if material_edge_ids is not None:
+            if self.uses_chain_router:
+                router_type = VectorizedChainRouter if vectorized_pg_routing else HierarchicalChainRouter
+                self.edge_gate = router_type(tuple(sorted(material_edge_ids)), initial_sigma=initial_sigma,
+                    sigma_floor=sigma_floor, temperature=chain_temperature)
+            else:
+                self.edge_gate = ContinuousEdgeGate(tuple(sorted(material_edge_ids)), initial_sigma=initial_sigma)
         self.readout = TensorReadout(
             self.hidden_layout,
             task,
@@ -173,6 +194,13 @@ class PointGroupTensorModel(nn.Module):
             mmax=architecture.o2_mmax,
             cutoff=cutoff,
         )
+
+    def pg_routing_metadata(self):
+        if not self.uses_chain_router:
+            return None
+        return {"algorithm": "near-current-stick-breaking-immediate-parent-softmax-v1",
+                "temperature": self.edge_gate.temperature, "sigma_floor": self.edge_gate.sigma_floor,
+                "edge_ids": list(self.edge_gate.edge_ids), "residual_gradients": "detached_metadata"}
 
     def _active_parent_point_groups(
         self,
@@ -200,7 +228,11 @@ class PointGroupTensorModel(nn.Module):
         weights_by_graph = []
         expert_buckets: dict[int, list[int]] = {}
         for graph_index, symmetry in enumerate(symmetries):
-            node_indices, local_graph = _extract_graph(graph, graph_index)
+            if self.vectorized_pg_routing and self.o3_experts is None:
+                node_indices = torch.nonzero(graph.node_batch == graph_index, as_tuple=False).flatten()
+                local_graph = None
+            else:
+                node_indices, local_graph = _extract_graph(graph, graph_index)
             node_indices_by_graph.append(node_indices)
             local_graphs.append(local_graph)
             local_features = features[node_indices]
@@ -233,9 +265,14 @@ class PointGroupTensorModel(nn.Module):
                 else:
                     if self.edge_gate is None:
                         raise ValueError("material PG routing requires configured cover-edge IDs")
-                    weights = material_point_group_stick_breaking_weights(
-                        material_dag, supplied, self.edge_gate
-                    )
+                    if self.uses_chain_router:
+                        weights = self.edge_gate(material_dag, supplied).alpha
+                    else:
+                        weight_function = (
+                            self._material_weights if self.vectorized_pg_routing and self.o3_experts is None
+                            else material_point_group_stick_breaking_weights
+                        )
+                        weights = weight_function(material_dag, supplied, self.edge_gate)
                 active_ids = tuple(sorted(weights))
             stacked_weights = torch.stack(
                 [torch.as_tensor(weights[active_id]).to(local_features) for active_id in active_ids]

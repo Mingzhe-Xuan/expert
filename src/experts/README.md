@@ -1,5 +1,33 @@
 # Experts
 
+`PointGroupTensorModel` defaults to `grouped_pg_gates=True` and
+`vectorized_pg_routing=True`; `CachedBackboneTensorModel` exposes the same keyword
+options. Set both false for the original execution path. Grouping lives in
+`optimized.py`, shared with the GMTNet wrapper and retaining identical state-dict keys.
+The general model constructor keeps `pg_weighting="legacy"` for existing callers.
+Set `pg_weighting="within_cross_chain"` for the same router as the GMTNet wrapper,
+shared under `chain_routing.py` (wrapper import paths remain compatible). It uses
+near-current within-chain stick breaking and softmax over immediate-parent energies.
+The dedicated DPA relative-PG training CLI defaults to this **new** weighting. Exposed
+controls: `chain_temperature=1.0`, `initial_sigma=.08`, `sigma_floor=1e-8`.
+There are no independent chain logits: edge sigmas are trainable, residuals are detached
+metadata, exactly as in the wrapper. Static ancestor routing and O(3)/A1 experts retain
+their established routing. Legacy dynamic PG routing uses root-to-current order and
+node-count priors, preserving its residual gradients.
+Topology caches are bounded and contain no autograd values.
+PG-only dispatch skips unused local edge graphs, retaining independent
+CUDA streams. O(3) expert dispatch remains on the reference routing/graph path.
+Canonicalization is already performed at input preparation; no wrapper frame cache is
+needed here. Input/output contracts, training losses and optimizer ownership are unchanged.
+
+Old full-PG checkpoints load directly with `pg_weighting="legacy"`. To explicitly change
+algorithms, use `migrate_legacy_edge_scales(state_dict, model.edge_gate)`; for a cached
+backbone model pass `model.downstream.edge_gate` and `prefix="downstream.edge_gate."`.
+This converts per-edge logits to the shared vector while preserving positive sigmas and
+all non-routing weights. It intentionally changes predictions; create a **new optimizer**
+rather than reuse the old optimizer's parameter state. New checkpoints record routing
+temperature/floor/edge order and reject mismatches before state mutation.
+
 This module contains shared O(3) adaptation, routed O(3) experts, A1-only PG experts,
 Full-PG experts, continuous residual gates, and hierarchical fusion. Each active PG
 expert contains exactly two independently parameterized blocks. Fusion occurs only in a

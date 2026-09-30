@@ -1,5 +1,19 @@
 # GPU / server activity
 
+## 2026-09-30 - standalone pure PG comparison
+
+Planned connections (after local tests and scoped commit): transfer a Git bundle under
+standing user authorization to /home/xmz/expert-data/standalone-pg-optimized.bundle;
+verify SHA-256 and pull first before any repo/task inspection. Then inspect scheduler
+and submit slurm/compare_standalone_pg.sbatch. All tests, native-DPA routing preparation
+and paired 7/64-crystal profiling run through Slurm. Follow-ups pull first from the same
+verified bundle before inspecting this job and retrieving compact reports. No source
+editing, environment mutations, existing training interruptions, or proxy resets.
+Use ClearAllForwardings=yes. No internet access is required for bundle synchronization.
+User scope update adds wrapper-style within/cross-chain weighting. Compare legacy
+algorithm separately from three same-new-algorithm execution paths; only the latter
+require output/gradient parity. Tests passed locally (131 + 38).
+
 ## 2026-09-30 - retrieve missing benchmark runtime evidence
 
 - Planned connection purpose: make a no-op self-source `git pull --ff-only` the first repository

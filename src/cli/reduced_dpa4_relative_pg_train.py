@@ -161,6 +161,15 @@ def _load_feature_splits(arguments, unit, dataset, selected_ids, dataset_sha256,
 
 
 def run(arguments: argparse.Namespace) -> dict[str, object]:
+    pg_weighting = getattr(arguments, "pg_weighting", "within_cross_chain")
+    chain_options = {
+        "pg_weighting": pg_weighting,
+        "chain_temperature": getattr(arguments, "chain_temperature", 1.0),
+        "initial_sigma": getattr(arguments, "initial_sigma", .08),
+        "sigma_floor": getattr(arguments, "sigma_floor", 1e-8),
+        "grouped_pg_gates": getattr(arguments, "grouped_pg_gates", True),
+        "vectorized_pg_routing": getattr(arguments, "vectorized_pg_routing", True),
+    }
     hidden_layout = hidden_layout_from_multiplicities(arguments.hidden_multiplicities)
     hidden_multiplicities = tuple(term.multiplicity for term in hidden_layout.terms)
     unit = TrainingUnit("curated_reduced_total", "dielectric")
@@ -205,13 +214,14 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         "schema_version": 1,
         "status": "passed",
         "model": (
-            MODEL_NAME
+            MODEL_NAME + (" within-cross-chain" if pg_weighting == "within_cross_chain" else "")
             if hidden_multiplicities == DEFAULT_HIDDEN_MULTIPLICITIES
-            else f"{MODEL_NAME} hidden={list(hidden_multiplicities)}"
+            else f"{MODEL_NAME} hidden={list(hidden_multiplicities)} weighting={pg_weighting}"
         ),
         "hidden_multiplicities": list(hidden_multiplicities),
         "hidden_dimension": hidden_layout.dimension,
-        "routing": "point_group_relative_edge_stick_breaking",
+        "routing": "point_group_within_cross_chain" if pg_weighting == "within_cross_chain" else "point_group_relative_edge_stick_breaking",
+        "pg_options": chain_options,
         "training_unit": unit.namespace,
         "dataset_sha256": dataset_sha256,
         "feature_embedding": {
@@ -228,9 +238,9 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         },
         "path_fusion": {
             "path_definition": "maximal_current_point_group_to_root",
-            "between_path_prior": "node_count_normalized",
-            "within_path_weighting": "relative_vector_point_group_edge_stick_breaking",
-            "duplicate_destination_reduction": "sum_then_normalize",
+            "between_path_prior": "immediate_parent_energy_softmax" if pg_weighting == "within_cross_chain" else "node_count_normalized",
+            "within_path_weighting": "near_current_stick_breaking" if pg_weighting == "within_cross_chain" else "root_to_current_stick_breaking",
+            "duplicate_destination_reduction": "sum_pi_times_omega" if pg_weighting == "within_cross_chain" else "sum_then_normalize",
         },
         "split_counts": {name: len(rows) for name, rows in splits.items()},
         "execution": execution_metadata(),
@@ -260,6 +270,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         expert_point_groups=expert_point_groups,
         material_edge_ids=material_edge_ids,
         hidden_layout=hidden_layout,
+        **chain_options,
         config=BenchmarkConfig(
             max_epochs=arguments.epochs,
             batch_size=arguments.batch_size,
@@ -303,6 +314,12 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-interval", type=int, default=20)
+    parser.add_argument("--pg-weighting", choices=("within_cross_chain", "legacy"), default="within_cross_chain")
+    parser.add_argument("--chain-temperature", type=float, default=1.0)
+    parser.add_argument("--initial-sigma", type=float, default=.08)
+    parser.add_argument("--sigma-floor", type=float, default=1e-8)
+    parser.add_argument("--grouped-pg-gates", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--vectorized-pg-routing", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
         "--hidden-multiplicities",
         type=int,

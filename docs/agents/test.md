@@ -1,5 +1,32 @@
 # Test plan and results
 
+## 2026-09-30 - standalone PG optimization
+
+Scope update: verify standalone wrapper-style omega/pi/alpha and scale gradients against
+the shared wrapper implementation, detached residual metadata, zero/singleton/mixed DAGs,
+temperature controls, explicit old-state migration, and unchanged legacy fallback. New
+weighting reference/grouped/optimized must match; legacy-vs-new outputs are NOT expected
+to match because the user explicitly requested a changed algorithm.
+
+Plan: legacy vs vectorized weights and sigma/residual gradients, zero/mixed/singleton
+and invalid inputs; shared grouped expert tests; dispatcher full outputs/gradients and
+state-dict parity. Regress old expert/parent-DAG/global tests. GPU comparison must pass
+complete model output/gradient parity and retain asynchronous expert-stream dispatch.
+
+Focused final run: 18 passed (results/standalone-pg-focused-2.xml), including complete
+CPU profiler artifact checks. Initial fixture used a nonexistent class-DAG symbol()
+method (corrected to symbols()); initial trace check exposed Kineto's Unicode-path
+failure, fixed via temporary ASCII export. Neither failure was waived. Static compilation
+and scoped whitespace checks pass. Broader regression suite still running; GPU pending.
+
+After the requested chain-weighting change: 131 passed in standalone/global optimized,
+parent-DAG and checkpoint suites (results/standalone-chain-tests.xml); 38 passed in
+reduced-benchmark/training regressions (results/standalone-training-regression.xml).
+The initial long dispatcher suite completed all its existing tests including the
+26-architecture train/checkpoint check; its only two failures were the already-fixed
+new fixture typo, both covered by the final passing suite. No remaining known failures.
+Static compilation and scoped whitespace checks pass. GPU parity/performance remains pending.
+
 ## 2026-09-30 - benchmark runtime and best-epoch columns
 
 Plan: require all fourteen accepted rows to have a summary-derived best epoch and a JUnit-derived

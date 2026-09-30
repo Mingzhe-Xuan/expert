@@ -1,5 +1,17 @@
 # CLI
 
+`python -m src.cli.standalone_pg_compare --output-dir <fresh-path> --train-samples 64`
+loads manifest/SHA-validated DPA features and compares the complete standalone PG
+reference/grouped/optimized paths. Native graph routing is prepared separately from
+GMTNet caches. This is a compute command: use Slurm on Guqq.
+
+`reduced_dpa4_relative_pg_train` now defaults to `--pg-weighting within_cross_chain`.
+Use `--pg-weighting legacy` for the old algorithm, `--chain-temperature`, `--initial-sigma`,
+`--sigma-floor` for routing, and `--no-grouped-pg-gates` / `--no-vectorized-pg-routing`
+for reference execution. Model APIs preserve the legacy weighting default for existing
+generic callers; the dedicated DPA CLI explicitly opts into new weighting. Training
+summaries identify the algorithm and settings. Do not mix these runs under one benchmark label.
+
 Non-interactive entry points prepare data, train independent units, run test suites, and
 serialize reports. Every command accepts frozen configs and seeds, returns nonzero on
 failure, and is suitable for the Slurm scripts required by `GOAL.md`.

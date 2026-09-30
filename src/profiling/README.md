@@ -1,5 +1,22 @@
 # Global-experts runtime profiling
 
+## Standalone pure PG
+
+`python -m src.cli.standalone_pg_compare --output-dir <fresh-path> --train-samples 64`
+compares a legacy-weighting baseline and new-weighting reference/grouped/optimized models. The full pass
+includes the 3200D frozen-DPA O(3) source interface, Adapter, full_pg and tensor readout;
+unlike the wrapper it uses native DPA graphs. New weighting shares the wrapper router. Fresh routing
+caches are derived from those graphs. CUDA expert streams are required and recorded.
+Optimization flags preserve same-algorithm state-dict keys. Legacy scales are explicitly
+migrated to equal positive sigmas for the new algorithm. Six warmups, seven synchronized passes, identical non-routing parameters/data/RNG,
+Huber Cartesian loss, no optimizer update. Output and all parameter-gradient parity
+must pass between the three new-weighting variants; legacy output equality is not expected.
+Report same-algorithm speedup separately from legacy-to-new total change.
+Traces and summaries are stored separately for each variant.
+`slurm/compare_standalone_pg.sbatch` runs regression tests and real 7/64-crystal batches
+in the same GPU allocation. Preparation is excluded from timed passes. Kernel counts
+are device events, not CPU launch counts; nested module totals must not be summed.
+
 `python -m src.cli.global_experts_compare` uses the same data/CLI and compares the
 reference, grouped gates, grouped gates + frame cache, and all three optimizations.
 Every variant starts from identical weights/buffers and RNG; outputs and parameter

@@ -1,5 +1,13 @@
 # Agent lessons
 
+## 2026-09-30 - standalone PG optimization
+
+Legacy standalone routing is root-to-current with length priors, unlike the wrapper.
+Share finite-group gates but preserve each model's formulas and residual gradients.
+Native DPA graphs/canonical inputs do not require the wrapper's frame cache.
+Kineto on Windows can log an error without raising for non-ASCII absolute trace paths;
+export through an ASCII temporary path and verify the destination artifact exists.
+
 ## 2026-09-30 - capture runtime source identity for queued jobs
 
 - A launcher-side `git rev-parse` records submission-time identity, not necessarily the source seen

@@ -5,6 +5,12 @@ dataset-by-property unit independent. Checkpoints store model/optimizer state,
 train-split normalizers, configuration, and all numerical convention checksums; loading
 fails closed on incompatibility.
 
+Standalone `within_cross_chain` PG models additionally store `pg_routing` metadata
+(algorithm, temperature, sigma floor, edge order and detached-residual convention).
+Loading rejects mismatches before model/optimizer mutation. Legacy models/checkpoints
+without this field continue to load as before. Explicit legacy-to-new model-state
+migration is documented in `../experts/README.md`; optimizer state is not transferable.
+
 `BenchmarkConfig.checkpoint_interval` is an opt-in exact-epoch archive. A positive interval writes
 `<best-stem>-epoch-NNN.pt` after that epoch while leaving the validation-selected checkpoint at its
 original path. Each archive contains the full resumable checkpoint payload, and the returned report

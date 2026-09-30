@@ -16,6 +16,12 @@ from .normalization import CoefficientNormalizer
 CHECKPOINT_SCHEMA_VERSION = 1
 
 
+def _pg_routing_metadata(model):
+    downstream = getattr(model, "downstream", model)
+    method = getattr(downstream, "pg_routing_metadata", None)
+    return method() if method is not None else None
+
+
 @dataclass(frozen=True, slots=True)
 class LoadedCheckpoint:
     step: int
@@ -53,6 +59,9 @@ def save_checkpoint(
         "model_state": model.state_dict(),
         "optimizer_state": optimizer.state_dict(),
     }
+    routing_metadata = _pg_routing_metadata(model)
+    if routing_metadata is not None:
+        payload["pg_routing"] = routing_metadata
     try:
         torch.save(payload, temporary)
         os.replace(temporary, target)
@@ -84,6 +93,8 @@ def load_checkpoint(
     expected_convention.require_compatible(payload)
     if payload.get("conventions") != asdict(expected_convention):
         raise ValueError("checkpoint convention metadata mismatch")
+    if payload.get("pg_routing") != _pg_routing_metadata(model):
+        raise ValueError("checkpoint PG routing metadata mismatch")
     normalizer = CoefficientNormalizer.from_state_dict(
         payload["normalizer"],
         expected_unit=expected_unit,

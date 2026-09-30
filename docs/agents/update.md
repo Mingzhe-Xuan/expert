@@ -1,5 +1,11 @@
 # Agent progress updates
 
+- 2026-09-30: Standalone PG now supports the wrapper's shared within/cross-chain router,
+  optimized grouped gates and vectorized dispatch/routing. DPA relative-PG CLI defaults
+  to new weighting; legacy APIs/path and explicit sigma migration remain available.
+  Routing metadata guards checkpoint compatibility. 131 model/routing/checkpoint and
+  38 training regressions passed. Four-variant Slurm performance comparison prepared.
+
 - 2026-09-30: Started adding best epoch and measured runtime to the fourteen-row benchmark table.
   Timing uses accepted runner JUnit seconds under one explicit scope; three locally missing JUnit
   files will be retrieved read-only rather than approximated from logs or timestamps.

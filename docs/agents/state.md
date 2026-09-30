@@ -1,5 +1,37 @@
 # Agent state
 
+## Current snapshot - standalone PG optimization (2026-09-30)
+
+Port wrapper within-chain/cross-chain weighting to standalone full_pg, per user update.
+Preserve legacy routing as an explicit option and retain per-expert CUDA streams.
+Standalone inputs are already canonical; no repeated Wigner-D stage exists to cache.
+
+## Current plan - standalone PG optimization
+
+1. [done] Share grouped gates under src/experts; add vectorized legacy-weight helper and optional
+   dispatcher flags, preserve checkpoints and non-PG behavior. Skip unused local graph
+   extraction for optimized PG-only buckets.
+2. Share wrapper reference/vectorized chain routers, expose temperature/sigma interfaces,
+   add explicit old-checkpoint scale migration. Wrapper residuals remain detached metadata.
+3. Test exact wrapper-routing parity, gradients, migration and legacy fallback. Benchmark
+   legacy baseline separately from new-weighting reference/grouped/optimized implementations
+   on identical real 7/64-crystal batches through Slurm; only same-algorithm paths require parity.
+
+## Change log - standalone PG optimization
+
+- 2026-09-30: Started requested port. Pure-PG chain semantics differ from global wrapper;
+  preserve its exact legacy equations rather than substitute the new wrapper router.
+- 2026-09-30: Implementation and 18 focused tests complete. Reused shared grouped gates,
+  vectorized exact legacy routes, skipped unused PG local edge extraction; CPU profiler
+  validates full-pass parity/artifacts. Existing 26-architecture regression still running.
+- 2026-09-30: User changed scope to wrapper within/cross-chain weights. New default will
+  use near-current within-chain weights and immediate-parent-energy chain softmax. Old
+  length-prior route becomes optional; separate algorithm and execution comparisons.
+- 2026-09-30: Shared router and explicit scale migration implemented. Dedicated DPA CLI
+  defaults to new weighting; generic APIs preserve legacy callers. New checkpoint
+  metadata prevents temperature/floor mismatches. Final suites: 131 + 38 passed.
+  Next: scoped commit, approved bundle sync, Slurm four-variant 7/64-crystal comparison.
+
 ## Current snapshot - add runtime and best epoch to benchmark table (2026-09-30)
 
 Update the unified results table with validation-selected best epoch and a consistent measured

@@ -1,5 +1,11 @@
 # Slurm entry points
 
+`compare_standalone_pg.sbatch` runs standalone/global PG regression tests and paired
+pure-PG 7/64-crystal forward/backward profiling on a single GPU. Uses the existing
+gmtnet-py310 environment and native frozen-DPA caches; writes only new job-specific
+results under `results/standalone-pg-compare/JOB_ID/` and Slurm logs. It does not train
+or overwrite checkpoints. Submit from the repo root with `logs/slurm` present.
+
 `test_gmtnet_attention.sbatch` runs the optional attention full-model forward/backward
 unit test on a compute allocation (two CPUs, 8 GiB, ten minutes). Set
 `EXPERT_GMTNET_VENV` and `EXPERT_GMTNET_ROOT`, submit from the repository root with
