@@ -1,5 +1,14 @@
 # GPU / server activity
 
+## 2026-09-30 - submit 200-epoch attention DPA-GMTNet
+
+- Planned connection purpose: transfer a locally created SHA-verified incremental Git bundle outside
+  the Guqq worktree; then, on a forward-disabled work connection, make `git pull --ff-only` from that
+  bundle the first repository operation. Verify the exact source revision, recorded GMTNet Python
+  environment/pinned checkout, DPA/graph caches, and absence of a live same-name job before submitting
+  exactly one `train_reduced_dpa4_gmtnet_equiv_attn_200e.sbatch` run through Slurm. Only lightweight
+  scheduler/path checks run on the login node; training runs on the allocated compute node.
+
 ## 2026-09-30 - constant-tail 300-epoch DPA-GMTNet evaluation
 
 - Connection purpose: restore a valid pull-first gate, then perform bounded read-only inspection of

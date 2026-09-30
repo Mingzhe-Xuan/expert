@@ -1,5 +1,24 @@
 # Test plan and results
 
+## 2026-09-30 - 200-epoch attention DPA-GMTNet submission
+
+Plan:
+
+- require a dedicated result/log namespace and job name that cannot collide with Jobs 498 or 514;
+- require literal `--use-equiv-attn`, 200 epochs, batch 64, seed 42, 64 feature shards, the accepted
+  Huber/AdamW `1e-3 -> 1e-5` schedule, interval 20, and recorded GMTNet environment/checkout;
+- prove the 300-epoch attention launcher and default/non-attention launchers remain unchanged;
+- run focused DPA-GMTNet/attention tests, Bash syntax, Python compilation, and scoped whitespace checks
+  before commit and exactly one Slurm submission.
+
+Expected result: one isolated 200-epoch attention job is submitted with Job-498-matched training
+protocol, while all accepted artifacts and active jobs remain unchanged.
+
+Result before submission: passed. The focused DPA-GMTNet and attention suites pass 20/20; Python
+compilation, Bash syntax, and scoped `git diff --check` also pass. Static assertions verify the
+isolated namespace/job name and every required Job-498 protocol literal, including interval-20
+checkpoint retention and the sole model delta `--use-equiv-attn`.
+
 ## 2026-09-30 - constant-tail 300-epoch DPA-GMTNet evaluation
 
 Plan:

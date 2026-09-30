@@ -1,5 +1,25 @@
 # Agent state
 
+## Current snapshot - 200-epoch attention DPA-GMTNet (2026-09-30)
+
+Train one isolated DPA-embedded GMTNet run for exactly 200 epochs with `use_equiv_attn=True`.
+Match Job 498's split, frozen DPA4/GMTNet identities, caches, batch 64, seed 42, Huber/AdamW,
+per-step `1e-3 -> 1e-5` schedule, validation-MAE selection, and interval-20 retention.
+
+## Current plan - 200-epoch attention DPA-GMTNet
+
+1. [x] Add a dedicated launcher/result/log namespace whose only model change from Job 498 is attention.
+2. [x] Add protocol-isolation coverage and run focused Python/Bash/static acceptance.
+3. [ ] Commit task-owned files, synchronize Guqq pull-first, and submit exactly one Slurm job.
+4. [ ] After completion, strictly evaluate it against Jobs 498, 514, and 515 and update the comparison.
+
+## Change log - 200-epoch attention DPA-GMTNet
+
+- 2026-09-30: User requested a new 200-epoch `use_equiv_attn=True` DPA-GMTNet run. Implementation
+  uses a new fixed launcher and namespace; no accepted result or existing launcher is overwritten.
+- 2026-09-30: Local acceptance passed: 20 focused tests, Python compilation, Bash syntax, and scoped
+  whitespace checks. The launcher preserves Job 498's protocol and adds only equivariant attention.
+
 ## Current snapshot - evaluate constant-tail 300-epoch DPA-GMTNet run (2026-09-30)
 
 Strictly evaluate completed Job 515: epochs 1--200 must exactly reproduce Job 498's per-step

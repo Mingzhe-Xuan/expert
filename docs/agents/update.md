@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-30: Started the requested 200-epoch DPA-GMTNet attention experiment. Added an isolated
+  fixed-protocol launcher whose sole model change from Job 498 is `--use-equiv-attn`; focused
+  acceptance and one pull-first Slurm submission follow.
+- 2026-09-30: Local acceptance for the 200-epoch attention launcher passed: 20 focused tests plus
+  Python compilation, Bash syntax, and scoped whitespace checks. Next is a task-only commit and one
+  SHA-verified pull-first Guqq submission.
+
 - 2026-09-30: Started strict evaluation of completed Job 515 after the user clarified the schedule is
   `1e-3 -> 1e-5 -> 1e-5`. Both validation-MAE and validation-Fnorm selections will be independently
   verified and compared from the one shared 300-epoch trajectory.

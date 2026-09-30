@@ -71,6 +71,11 @@ receiver-normalized invariant attention in all three GMTNet tensor-product layer
 separate `results/reduced-benchmark/dpa4-gmtnet-equiv-attn-300e/` namespace and matching logs, so it
 cannot overwrite either the accepted 200-epoch run or the non-attention 300-epoch run.
 
+`train_reduced_dpa4_gmtnet_equiv_attn_200e.sbatch` is the Job-498-length attention ablation. It
+preserves the accepted full split, frozen DPA4/graph caches, batch 64, seed 42, Huber/AdamW settings,
+and 200-epoch per-step `1e-3 -> 1e-5` schedule, adding only `--use-equiv-attn`. It archives epochs
+20/40/.../200 and writes to the isolated `dpa4-gmtnet-equiv-attn-200e` result/log namespace.
+
 `train_reduced_dpa4_gmtnet_job498_lr_300e_dual.sbatch` is the schedule-continuation ablation. Its
 first 200 epochs use Job 498's exact per-step linear `1e-3 -> 1e-5` trajectory; epochs 201--300 hold
 `1e-5`. A single training trajectory independently saves validation-MAE and validation-Fnorm best
