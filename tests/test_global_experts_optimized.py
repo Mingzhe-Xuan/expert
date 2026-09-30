@@ -13,6 +13,17 @@ from test_gmtnet_attention import official
 from e3nn import o3
 
 
+@pytest.fixture
+def double_precision_construction():
+    # e3nn 0.5.x constructs Wigner generators in the default dtype, not angle dtype.
+    previous = torch.get_default_dtype()
+    torch.set_default_dtype(torch.float64)
+    try:
+        yield
+    finally:
+        torch.set_default_dtype(previous)
+
+
 def assert_gradients_equal(reference, actual, atol=1e-8, rtol=1e-7):
     expected = dict(reference.named_parameters())
     for name, parameter in actual.named_parameters():
@@ -23,7 +34,7 @@ def assert_gradients_equal(reference, actual, atol=1e-8, rtol=1e-7):
 
 
 @pytest.mark.parametrize("pg", range(1, 33))
-def test_grouped_pg_equivalence_gradients_and_group_action(pg):
+def test_grouped_pg_equivalence_gradients_and_group_action(pg, double_precision_construction):
     group = PointGroupRegistry()[pg]
     layout = layout_from_irreps("2x0e + 1x1o + 1x2e")
     reference = FullPointGroupExpert(group, layout).double()
@@ -39,6 +50,7 @@ def test_grouped_pg_equivalence_gradients_and_group_action(pg):
     torch.testing.assert_close(y.grad, x.grad, atol=1e-10, rtol=1e-9)
     assert_gradients_equal(reference, actual)
     for d in group.representation(layout)[::max(1, group.order // 3)]:
+        torch.testing.assert_close(reference(x.detach() @ d.T), left.detach() @ d.T, atol=1e-7, rtol=1e-6)
         torch.testing.assert_close(actual(x.detach() @ d.T), right.detach() @ d.T, atol=1e-7, rtol=1e-6)
 
 

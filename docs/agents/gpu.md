@@ -1,5 +1,9 @@
 # GPU / server activity
 
+- 2026-09-30: Precision retry planned after 33 passing local tests. Transfer and verify
+  /home/xmz/expert-data/standalone-pg-precision.bundle, pull first, resubmit comparison;
+  preserve failed jobs 521/522. Job 522 used sh-incompatible source and did not execute.
+
 ## 2026-09-30 - standalone pure PG comparison
 
 Planned connections (after local tests and scoped commit): transfer a Git bundle under

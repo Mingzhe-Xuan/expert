@@ -23,6 +23,17 @@ from src.training import CoefficientNormalizer, coefficient_mse, load_checkpoint
 from e3nn import o3
 
 
+@pytest.fixture
+def double_precision_construction():
+    # e3nn 0.5.x generates Wigner constants in the default construction dtype.
+    previous = torch.get_default_dtype()
+    torch.set_default_dtype(torch.float64)
+    try:
+        yield
+    finally:
+        torch.set_default_dtype(previous)
+
+
 SMALL_LAYOUT = IrrepLayout(
     (
         IrrepTerm(2, 0, "e", "scalar"),
@@ -304,7 +315,7 @@ def test_global_readout_uses_each_crystals_actual_operation_orientation() -> Non
     assert features.grad is not None and torch.isfinite(features.grad).all()
 
 
-def test_readout_is_o3_equivariant_for_proper_and_improper_rotations() -> None:
+def test_readout_is_o3_equivariant_for_proper_and_improper_rotations(double_precision_construction) -> None:
     torch.manual_seed(44)
     graph = _graph(torch.float64)
     features = torch.randn(graph.num_nodes, SMALL_LAYOUT.dimension, dtype=torch.float64)

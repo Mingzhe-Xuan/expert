@@ -1,5 +1,8 @@
 # Agent progress updates
 
+- 2026-09-30: Server 521 stopped before profiling on Wigner construction precision;
+  33 corrected strict-double tests pass locally. No tolerance or production changes.
+
 - 2026-09-30: Standalone PG now supports the wrapper's shared within/cross-chain router,
   optimized grouped gates and vectorized dispatch/routing. DPA relative-PG CLI defaults
   to new weighting; legacy APIs/path and explicit sigma migration remain available.

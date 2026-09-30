@@ -1,5 +1,13 @@
 # Test plan and results
 
+## 2026-09-30 - standalone PG precision retry
+
+33 corrected float64 construction tests passed locally (pg-double-construction-tests.xml).
+Server 521: 113 passed, 27 strict group-action failures. Installed e3nn 0.5.9 constructs
+Wigner generators in default dtype; explicit float64 inputs/.double() alone leave float32
+constants. Correct test construction dtype and restore after; retain all tolerances and
+add unoptimized reference equivariance checks. Production float32 code unchanged.
+
 ## 2026-09-30 - standalone PG optimization
 
 Scope update: verify standalone wrapper-style omega/pi/alpha and scale gradients against
