@@ -1,5 +1,8 @@
 # Test plan and results
 
+- 2026-09-30: Standalone PG handoff documentation checked: shared-router and Slurm
+  links resolve; scoped whitespace checks passed. No model code changed in this update.
+
 ## 2026-09-30 - standalone PG precision retry
 
 33 corrected float64 construction tests passed locally (pg-double-construction-tests.xml).

@@ -1,5 +1,10 @@
 # Agent progress updates
 
+- 2026-09-30: Standalone implementation pushed through ef167ba and synchronized to
+  Guqq. Server CPU job 525 passed all 33 strict-double tests. GPU retry 524 remains
+  queued behind existing job 523. Documented validation and pending measurement;
+  no pure-PG speedup is claimed. Report links and scoped whitespace checks passed.
+
 - 2026-09-30: Server 521 stopped before profiling on Wigner construction precision;
   33 corrected strict-double tests pass locally. No tolerance or production changes.
 

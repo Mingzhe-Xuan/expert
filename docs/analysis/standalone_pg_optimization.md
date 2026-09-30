@@ -56,4 +56,24 @@ source rather than the wrapper's 640D invariant embedding. Preparation is exclud
 New-weighting variants must match outputs (atol 2e-5, rtol 2e-4) and all parameter
 gradients (atol 2e-4, rtol 2e-3). Legacy is a separate algorithm baseline, not a parity test.
 
-GPU results are pending; do not infer speedup from CPU instrumentation or wrapper numbers.
+## Verification and current measurement status
+
+Implementation commit: `7750d43`; strict-double test setup fix: `ef167ba`. Both are
+pushed to GitHub and synchronized to Guqq.
+
+- Local final model/router/checkpoint suite: 131 passed.
+- Local reduced benchmark/training regression suite: 38 passed.
+- Strict-double construction/equivariance tests: 33 passed locally and on Guqq CPU
+  Slurm job 525 (10.95 seconds); unchanged tolerances, including reference experts.
+- Initial server job 521 stopped before profiling: 113 passed, 27 strict-double failures.
+  Installed e3nn 0.5.9 builds Wigner generators in the global default dtype; float64
+  angles and `.double()` alone retained float32 generator error (~1e-6). The fix scopes
+  float64 default construction to strict-double tests and restores it afterward.
+  Production float32 initialization and GPU parity thresholds are unchanged.
+
+GPU retry **524 is queued for Resources behind existing job 523**, which is not modified
+or interrupted. The retry reruns the full server suite before both four-variant batches.
+Expected outputs: `results/standalone-pg-compare/524/{smoke,batch64}/comparison.json`,
+per-variant `summary.json` and `trace.json`, plus `tests.xml` and `revision.txt`.
+No successful GPU comparison has been obtained yet. In particular, **no pure-PG speedup
+is claimed** from CPU timings, incomplete jobs, or the previous GMTNet-wrapper speedup.
