@@ -12,6 +12,18 @@ Each row contains the official graph, feature/equality masks, target, sample ID,
 and test require complete targets for the existing full-tensor benchmark definition.
 Use a fresh output directory. The final partial training batch is retained.
 
+## Existing-checkpoint evaluation
+
+`python -m src.cli.global_experts_evaluate` accepts the same model/data arguments
+as training, plus `--source-summary`, `--source-summary-sha256` and
+`--minimum-checkpoint-epoch-exclusive` (default100). Supply a new output directory.
+`checkpoint_evaluation.py` selects the lowest recorded validation MAE among actual
+retained checkpoints strictly after that boundary, verifies source/model/cache and
+embedded epoch/config/step identities, and performs only held-out inference. It
+never constructs an optimizer or alters original weights/results. Historical best
+eligible epoch and best loadable epoch are reported separately. Existing training
+defaults and checkpoint-selection rules are not changed.
+
 ## CLI and Slurm
 
 ```bash
