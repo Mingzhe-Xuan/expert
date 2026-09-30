@@ -17,6 +17,10 @@ set -euo pipefail
 : "${EXPERT_GLOBAL_ROUTING_CACHE:?Set a new global-experts routing cache path}"
 source "${EXPERT_GMTNET_VENV}/bin/activate"
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK}"
+launch_root="results/global-pg-experts/launch-${SLURM_JOB_ID}"
+mkdir -p "${launch_root}"
+git rev-parse HEAD > "${launch_root}/revision.txt"
+printf '%s\n' "$@" > "${launch_root}/arguments.txt"
 python -m src.cli.global_experts_train \
   --official-root "${EXPERT_GMTNET_ROOT}" \
   --graph-cache "${EXPERT_GLOBAL_GRAPH_CACHE}" \

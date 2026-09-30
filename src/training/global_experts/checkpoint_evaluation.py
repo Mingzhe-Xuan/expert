@@ -10,7 +10,7 @@ import torch
 
 from ...evaluation import tensor_benchmark_metrics
 from .data import file_sha256
-from .runner import load_checkpoint, predict
+from .runner import load_checkpoint, normalized_training_config, predict
 
 
 def select_retained(source, source_dir, minimum_epoch=100):
@@ -49,7 +49,7 @@ def evaluate_checkpoint(model, splits, *, output_dir, provenance, config, device
     if (source.get("status") != "passed"
             or source["provenance"] != json.loads(json.dumps(provenance))
             or source["model_metadata"] != json.loads(json.dumps(model.metadata()))
-            or source["training_config"] != asdict(config)
+            or normalized_training_config(source["training_config"]) != asdict(config)
             or source["split_counts"] != {k: len(v) for k, v in splits.items()}):
         raise ValueError("source identity mismatch")
     selected, checkpoint, historical = select_retained(
@@ -63,7 +63,8 @@ def evaluate_checkpoint(model, splits, *, output_dir, provenance, config, device
     model.to(device)
     payload = load_checkpoint(model, checkpoint, provenance=provenance, device=device)
     if (payload["epoch"] != selected["epoch"]
-            or payload["training_config"] != source["training_config"]
+            or normalized_training_config(payload["training_config"])
+            != normalized_training_config(source["training_config"])
             or payload["step"] != math.ceil(len(splits["train"]) / config.batch_size)
             * selected["epoch"]):
         raise ValueError("checkpoint epoch/config/step mismatch")

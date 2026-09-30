@@ -12,6 +12,16 @@ Each row contains the official graph, feature/equality masks, target, sample ID,
 and test require complete targets for the existing full-tensor benchmark definition.
 Use a fresh output directory. The final partial training batch is retained.
 
+Default best-checkpoint eligibility is now strictly `epoch > 100`, selected by
+validation component MAE. Short smoke runs must explicitly pass
+`--minimum-checkpoint-epoch-exclusive 0`; no eligible epochs is a configuration error.
+For a 300-epoch constant-tail run, pass `--epochs 300 --decay-epochs 200`:
+the per-update LR follows the original 200-epoch `1e-3 -> 1e-5` schedule, reaching
+`1e-5` at the end of epoch200 and remaining there for epochs201--300. Default
+`--decay-epochs 0` decays over the total training horizon. Dataset/batch semantics
+are unchanged (79 updates/epoch for5001 samples, batch64). Interval archives remain
+available before100; only the best-checkpoint selector has an exclusive boundary.
+
 ## Existing-checkpoint evaluation
 
 `python -m src.cli.global_experts_evaluate` accepts the same model/data arguments
@@ -21,8 +31,10 @@ as training, plus `--source-summary`, `--source-summary-sha256` and
 retained checkpoints strictly after that boundary, verifies source/model/cache and
 embedded epoch/config/step identities, and performs only held-out inference. It
 never constructs an optimizer or alters original weights/results. Historical best
-eligible epoch and best loadable epoch are reported separately. Existing training
-defaults and checkpoint-selection rules are not changed.
+eligible epoch and best loadable epoch are reported separately. The evaluator reads
+training settings from its SHA-verified source summary. Legacy summaries lacking
+the new fields retain their old full-horizon decay and all-epoch selection semantics;
+the reevaluation's explicit post-100 selection boundary is independent of those settings.
 
 ## CLI and Slurm
 

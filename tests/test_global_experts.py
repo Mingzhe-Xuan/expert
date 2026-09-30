@@ -368,7 +368,8 @@ def test_training_lifecycle_and_frozen_global(official, tmp_path):
         splits,
         output_dir=tmp_path / "run",
         provenance={"dataset": "synthetic"},
-        config=GlobalExpertsTrainConfig(epochs=1, batch_size=2, checkpoint_interval=1),
+        config=GlobalExpertsTrainConfig(epochs=1, batch_size=2, checkpoint_interval=1,
+                                       minimum_checkpoint_epoch_exclusive=0),
         device="cpu",
     )
     assert summary["status"] == "passed" and summary["best_epoch"] == 1
@@ -616,6 +617,8 @@ def test_default_cli_real_graph_cache_and_training(official, monkeypatch, tmp_pa
             "cpu",
             "--epochs",
             "1",
+            "--minimum-checkpoint-epoch-exclusive",
+            "0",
             "--batch-size",
             "1",
             "--checkpoint-interval",

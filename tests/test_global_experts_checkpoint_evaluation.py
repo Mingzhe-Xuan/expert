@@ -40,23 +40,27 @@ def test_invalid_history(tmp_path):
 
 
 @pytest.mark.parametrize("corruption", [None, "sha", "epoch", "metadata", "step"])
-def test_evaluate_without_optimizer(tmp_path, monkeypatch, corruption):
+@pytest.mark.parametrize("legacy", [False, True])
+def test_evaluate_without_optimizer(tmp_path, monkeypatch, corruption, legacy):
     class Model(torch.nn.Linear):
         def metadata(self):
             return {"test": True, "expert_numbers": (5, 8)}
     model = Model(1, 1)
-    config = GlobalExpertsTrainConfig(batch_size=1)
+    config = GlobalExpertsTrainConfig(batch_size=1, minimum_checkpoint_epoch_exclusive=0)
+    stored_config = asdict(config)
+    if legacy:
+        del stored_config["decay_epochs"], stored_config["minimum_checkpoint_epoch_exclusive"]
     splits = {name: [{"sample_id": name, "target": torch.eye(3)}]
               for name in ("train", "validation", "test")}
     source = {**source_history(), "status": "passed", "provenance": {},
-              "model_metadata": model.metadata(), "training_config": asdict(config),
+              "model_metadata": model.metadata(), "training_config": stored_config,
               "split_counts": {k: 1 for k in splits}}
     path = tmp_path / "summary.json"
     path.write_text(json.dumps(source), encoding="utf-8")
     checkpoint = tmp_path / "epoch-0200.pt"
     torch.save({"schema_version": 1, "model_metadata": (
         {} if corruption == "metadata" else model.metadata()), "provenance": {},
-        "model_state": model.state_dict(), "training_config": asdict(config),
+        "model_state": model.state_dict(), "training_config": stored_config,
         "epoch": 100 if corruption == "epoch" else 200,
         "step": 0 if corruption == "step" else 200}, checkpoint)
     before = checkpoint.read_bytes()

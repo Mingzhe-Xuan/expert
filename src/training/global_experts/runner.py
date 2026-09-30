@@ -24,10 +24,16 @@ class GlobalExpertsTrainConfig:
     huber_delta: float = 1.0
     checkpoint_interval: int = 20
     gradient_clip: float | None = None
+    decay_epochs: int = 0
+    minimum_checkpoint_epoch_exclusive: int = 100
 
     def __post_init__(self):
         if self.epochs < 1 or self.batch_size < 1 or self.checkpoint_interval < 0:
             raise ValueError("invalid training counts")
+        if not 0 <= self.decay_epochs <= self.epochs:
+            raise ValueError("decay_epochs must be zero or within the training horizon")
+        if not 0 <= self.minimum_checkpoint_epoch_exclusive < self.epochs:
+            raise ValueError("checkpoint boundary must leave an eligible epoch")
         if (
             not 0 < self.end_learning_rate <= self.learning_rate
             or self.huber_delta <= 0
@@ -48,6 +54,23 @@ class GlobalExpertsTrainConfig:
             not math.isfinite(self.gradient_clip) or self.gradient_clip <= 0
         ):
             raise ValueError("gradient clip must be finite and positive")
+
+
+def learning_rate_after_step(config, step, steps_per_epoch):
+    """LR for the next update; step zero is the optimizer's initial learning rate."""
+    decay_steps = steps_per_epoch * (config.decay_epochs or config.epochs)
+    if step < 0 or steps_per_epoch < 1:
+        raise ValueError("invalid step count")
+    return config.end_learning_rate + (
+        config.learning_rate - config.end_learning_rate
+    ) * (1 - min(step / decay_steps, 1.0))
+
+
+def normalized_training_config(saved):
+    """Pre-post100 checkpoints selected across all epochs and decayed throughout."""
+    return asdict(GlobalExpertsTrainConfig(**{
+        "decay_epochs": 0, "minimum_checkpoint_epoch_exclusive": 0, **saved,
+    }))
 
 
 def collate(rows, device):
@@ -139,7 +162,7 @@ def train_global_experts(
         lr=config.learning_rate,
         weight_decay=config.weight_decay,
     )
-    steps = math.ceil(len(splits["train"]) / config.batch_size) * config.epochs
+    steps_per_epoch = math.ceil(len(splits["train"]) / config.batch_size)
     history, best_mae, best_epoch, step = [], float("inf"), 0, 0
     best = output_dir / "best.pt"
 
@@ -185,9 +208,7 @@ def train_global_experts(
             entries += count
             step += 1
             for group in optimizer.param_groups:
-                group["lr"] = config.end_learning_rate + (
-                    config.learning_rate - config.end_learning_rate
-                ) * (1 - step / steps)
+                group["lr"] = learning_rate_after_step(config, step, steps_per_epoch)
         prediction = predict(model, splits["validation"], config.batch_size, device)
         target = torch.stack([r["target"] for r in splits["validation"]])
         metrics = _validation_history_metrics(prediction, target)
@@ -199,7 +220,8 @@ def train_global_experts(
                 "learning_rate": optimizer.param_groups[0]["lr"],
             }
         )
-        if metrics["validation_mae"] < best_mae:
+        if (epoch > config.minimum_checkpoint_epoch_exclusive
+                and metrics["validation_mae"] < best_mae):
             best_mae, best_epoch = metrics["validation_mae"], epoch
             save(best, epoch)
         if config.checkpoint_interval and epoch % config.checkpoint_interval == 0:
