@@ -49,6 +49,10 @@ record ID and scored by `src.evaluation.tensor_benchmark_metrics`.
 Every validation epoch records both component MAE and the mean per-sample
 Frobenius distance (`validation_fnorm`) using that same dielectric metric
 implementation. Best-checkpoint selection remains based on validation MAE.
+Checkpoint selection is restricted by `minimum_checkpoint_epoch_exclusive`, which defaults to 100:
+epoch 100 is ineligible and epoch 101 is the first eligible checkpoint. The same strict threshold
+applies to the optional independent validation-Fnorm selector. The training horizon must contain at
+least one eligible epoch; deliberately short diagnostic runs must explicitly lower the threshold.
 
 `GMTNetConfig.learning_rate_decay_epochs` optionally decouples the linear decay horizon from the
 total training horizon. The default `None` preserves decay across all epochs; setting it to 200 in a

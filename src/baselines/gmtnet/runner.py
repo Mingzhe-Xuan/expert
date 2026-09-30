@@ -39,6 +39,7 @@ class GMTNetConfig:
     seed: int = 42
     checkpoint_interval: int = 0
     learning_rate_decay_epochs: int | None = None
+    minimum_checkpoint_epoch_exclusive: int = 100
     select_validation_fnorm: bool = False
     use_equiv_attn: bool = False
 
@@ -51,6 +52,10 @@ class GMTNetConfig:
             raise ValueError("weight decay must be non-negative")
         if self.checkpoint_interval < 0:
             raise ValueError("checkpoint interval must be non-negative")
+        if not 0 <= self.minimum_checkpoint_epoch_exclusive < self.epochs:
+            raise ValueError(
+                "minimum checkpoint epoch must be non-negative and below the training horizon"
+            )
         if self.learning_rate_decay_epochs is not None and not (
             1 <= self.learning_rate_decay_epochs <= self.epochs
         ):
@@ -74,6 +79,12 @@ def _learning_rate_after_step(
         (config.learning_rate - config.end_learning_rate) * (1.0 - fraction)
         + config.end_learning_rate
     )
+
+
+def _checkpoint_epoch_is_eligible(config: GMTNetConfig, epoch: int) -> bool:
+    """Return whether an epoch may be used for validation checkpoint selection."""
+
+    return epoch > config.minimum_checkpoint_epoch_exclusive
 
 
 def dpa4_invariant_node_embedding(
@@ -512,11 +523,16 @@ def run_gmtnet_benchmark(
         history.append({"epoch": epoch, "training_loss": total_loss / seen,
                         **validation_metrics,
                         "learning_rate": optimizer.param_groups[0]["lr"]})
-        if validation_mae < best_mae:
+        checkpoint_is_eligible = _checkpoint_epoch_is_eligible(config, epoch)
+        if checkpoint_is_eligible and validation_mae < best_mae:
             best_mae, best_epoch = validation_mae, epoch
             torch.save(checkpoint_payload(epoch), checkpoint)
         validation_fnorm = validation_metrics["validation_fnorm"]
-        if config.select_validation_fnorm and validation_fnorm < best_fnorm:
+        if (
+            checkpoint_is_eligible
+            and config.select_validation_fnorm
+            and validation_fnorm < best_fnorm
+        ):
             best_fnorm, best_fnorm_epoch = validation_fnorm, epoch
             torch.save(checkpoint_payload(epoch), Path(fnorm_checkpoint_path))
         if config.checkpoint_interval and epoch % config.checkpoint_interval == 0:
@@ -571,11 +587,13 @@ def run_gmtnet_benchmark(
         "no_wandb",
         "explicit_paths",
         "complete_validation_and_test_batches",
-        "best_validation_mae_from_epoch_1",
+        f"best_validation_mae_after_epoch_{config.minimum_checkpoint_epoch_exclusive}",
         "pyg_scatter_compatibility_if_torch_scatter_unavailable",
     ]
     if config.select_validation_fnorm:
-        protocol_repairs.append("independent_validation_mae_and_fnorm_selection")
+        protocol_repairs.append(
+            "independent_validation_mae_and_fnorm_selection_with_shared_epoch_threshold"
+        )
     report = {
         "schema_version": 1,
         "status": "passed",

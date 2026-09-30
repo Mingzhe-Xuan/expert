@@ -98,6 +98,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             seed=arguments.seed,
             checkpoint_interval=arguments.checkpoint_interval,
             learning_rate_decay_epochs=arguments.learning_rate_decay_epochs,
+            minimum_checkpoint_epoch_exclusive=arguments.minimum_checkpoint_epoch_exclusive,
             select_validation_fnorm=arguments.select_validation_fnorm,
             use_equiv_attn=getattr(arguments, "use_equiv_attn", False),
         ),
@@ -140,6 +141,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-interval", type=int, default=20)
     parser.add_argument("--learning-rate-decay-epochs", type=int)
+    parser.add_argument("--minimum-checkpoint-epoch-exclusive", type=int, default=100)
     parser.add_argument("--select-validation-fnorm", action="store_true")
     parser.add_argument("--use-equiv-attn", action="store_true")
     parser.add_argument(

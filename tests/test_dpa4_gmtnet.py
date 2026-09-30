@@ -9,6 +9,7 @@ import torch
 from src.baselines.gmtnet.runner import (
     GMTNetConfig,
     _attach_dpa4_node_embeddings,
+    _checkpoint_epoch_is_eligible,
     _learning_rate_after_step,
     _replace_atom_embedding,
     _validation_history_metrics,
@@ -252,6 +253,27 @@ def test_job498_learning_rate_trajectory_is_reused_then_held() -> None:
     ) > 1.0e-5
 
 
+def test_checkpoint_selection_threshold_is_strictly_exclusive() -> None:
+    config = GMTNetConfig(epochs=101)
+    assert config.minimum_checkpoint_epoch_exclusive == 100
+    assert not _checkpoint_epoch_is_eligible(config, 100)
+    assert _checkpoint_epoch_is_eligible(config, 101)
+
+
+@pytest.mark.parametrize(
+    ("epochs", "threshold"),
+    ((100, 100), (300, -1), (300, 300)),
+)
+def test_checkpoint_selection_threshold_requires_an_eligible_epoch(
+    epochs: int, threshold: int
+) -> None:
+    with pytest.raises(ValueError, match="minimum checkpoint epoch"):
+        GMTNetConfig(
+            epochs=epochs,
+            minimum_checkpoint_epoch_exclusive=threshold,
+        )
+
+
 @pytest.mark.parametrize("decay_epochs", (0, 301))
 def test_learning_rate_decay_horizon_is_bounded(decay_epochs: int) -> None:
     with pytest.raises(ValueError, match="decay epochs"):
@@ -303,3 +325,22 @@ def test_job498_schedule_dual_selector_launcher_is_isolated() -> None:
     assert "--seed 42" in launcher
     assert "--use-equiv-attn" not in launcher
     assert 'run_root="results/reduced-benchmark/dpa4-gmtnet-300e"' not in launcher
+
+
+def test_post100_constant_tail_launcher_is_isolated_and_strict() -> None:
+    launcher = (
+        ROOT
+        / "slurm"
+        / "train_reduced_dpa4_gmtnet_job498_lr_300e_dual_post100.sbatch"
+    ).read_text(encoding="utf-8")
+    assert "src.cli.reduced_dpa4_gmtnet_train" in launcher
+    assert (
+        'run_root="results/reduced-benchmark/'
+        'dpa4-gmtnet-job498-lr-300e-dual-post100"' in launcher
+    )
+    assert "--epochs 300" in launcher
+    assert "--learning-rate-decay-epochs 200" in launcher
+    assert "--minimum-checkpoint-epoch-exclusive 100" in launcher
+    assert "--select-validation-fnorm" in launcher
+    assert "--checkpoint-interval 20" in launcher
+    assert "--use-equiv-attn" not in launcher

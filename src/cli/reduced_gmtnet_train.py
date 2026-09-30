@@ -31,6 +31,7 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--learning-rate-decay-epochs", type=int)
+    parser.add_argument("--minimum-checkpoint-epoch-exclusive", type=int, default=100)
     parser.add_argument("--select-validation-fnorm", action="store_true")
     parser.add_argument("--use-equiv-attn", action="store_true")
     parser.add_argument("--smoke", action="store_true",
@@ -59,6 +60,7 @@ def main() -> None:
                 weight_decay=arguments.weight_decay,
                 seed=arguments.seed,
                 learning_rate_decay_epochs=arguments.learning_rate_decay_epochs,
+                minimum_checkpoint_epoch_exclusive=arguments.minimum_checkpoint_epoch_exclusive,
                 select_validation_fnorm=arguments.select_validation_fnorm,
                 use_equiv_attn=arguments.use_equiv_attn,
             ),

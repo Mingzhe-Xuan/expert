@@ -22,10 +22,12 @@ python -m pip freeze > "${run_root}/environment-${SLURM_JOB_ID}.txt"
 smoke_args=()
 graph_cache="results/reduced-benchmark/cache/gmtnet-graphs.pt"
 checkpoint_interval="${EXPERT_DPA4_GMTNET_CHECKPOINT_INTERVAL:-20}"
+minimum_checkpoint_epoch_exclusive="${EXPERT_GMTNET_MINIMUM_CHECKPOINT_EPOCH_EXCLUSIVE:-100}"
 if [[ "${EXPERT_REDUCED_SMOKE:-0}" == "1" ]]; then
   smoke_args+=(--smoke)
   graph_cache="results/reduced-benchmark/cache/gmtnet-smoke-graphs.pt"
   checkpoint_interval="${EXPERT_DPA4_GMTNET_CHECKPOINT_INTERVAL:-1}"
+  minimum_checkpoint_epoch_exclusive="${EXPERT_GMTNET_MINIMUM_CHECKPOINT_EPOCH_EXCLUSIVE:-0}"
 fi
 
 python -m src.cli.reduced_dpa4_gmtnet_train \
@@ -41,6 +43,7 @@ python -m src.cli.reduced_dpa4_gmtnet_train \
   --weight-decay "${EXPERT_DPA4_GMTNET_WEIGHT_DECAY:-0.00001}" \
   --seed "${EXPERT_DPA4_GMTNET_SEED:-42}" \
   --checkpoint-interval "${checkpoint_interval}" \
+  --minimum-checkpoint-epoch-exclusive "${minimum_checkpoint_epoch_exclusive}" \
   "${smoke_args[@]}" \
   --checkpoint "${run_root}/checkpoint-${SLURM_JOB_ID}.pt" \
   --predictions "${run_root}/predictions-${SLURM_JOB_ID}.jsonl" \
