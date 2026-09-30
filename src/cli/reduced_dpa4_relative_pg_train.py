@@ -161,6 +161,11 @@ def _load_feature_splits(arguments, unit, dataset, selected_ids, dataset_sha256,
 
 
 def run(arguments: argparse.Namespace) -> dict[str, object]:
+    minimum_checkpoint_epoch_exclusive = getattr(
+        arguments, "minimum_checkpoint_epoch_exclusive", None
+    )
+    if minimum_checkpoint_epoch_exclusive is None:
+        minimum_checkpoint_epoch_exclusive = 0 if arguments.smoke else 100
     pg_weighting = getattr(arguments, "pg_weighting", "within_cross_chain")
     chain_options = {
         "pg_weighting": pg_weighting,
@@ -281,6 +286,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
             seed=arguments.seed,
             training_protocol="gmtnet",
             checkpoint_interval=arguments.checkpoint_interval,
+            minimum_checkpoint_epoch_exclusive=minimum_checkpoint_epoch_exclusive,
         ),
         device=arguments.device,
     )
@@ -314,6 +320,7 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-interval", type=int, default=20)
+    parser.add_argument("--minimum-checkpoint-epoch-exclusive", type=int)
     parser.add_argument("--pg-weighting", choices=("within_cross_chain", "legacy"), default="within_cross_chain")
     parser.add_argument("--chain-temperature", type=float, default=1.0)
     parser.add_argument("--initial-sigma", type=float, default=.08)

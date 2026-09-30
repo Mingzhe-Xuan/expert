@@ -16,6 +16,13 @@ migration is documented in `../experts/README.md`; optimizer state is not transf
 original path. Each archive contains the full resumable checkpoint payload, and the returned report
 records its epoch, path, byte size, and SHA-256. The default `0` preserves prior runner behavior.
 
+`BenchmarkConfig.minimum_checkpoint_epoch_exclusive` controls the first epoch eligible for best
+checkpoint selection. The generic runner default `0` preserves deliberate short diagnostics, while
+the production DPA relative-PG CLI defaults to `100` (epoch 101 is first eligible). Pre-threshold
+epochs neither update the best checkpoint nor consume early-stopping patience. Existing runs may be
+reevaluated without training only from retained eligible archives; an unavailable exact history
+minimum must not be reconstructed or represented by a different epoch.
+
 `train_cached_backbone_readout(..., hidden_layout=...)` optionally injects an explicit downstream
 O(3) layout into the cached-feature interface, adaptation, routed experts, and readout. `None`
 preserves `default_hidden_layout`; combining the override with `model_builder` is rejected because

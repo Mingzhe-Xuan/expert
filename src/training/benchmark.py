@@ -66,6 +66,7 @@ class BenchmarkConfig:
     training_protocol: str = "coefficient_mse"
     end_learning_rate: float = 1.0e-5
     checkpoint_interval: int = 0
+    minimum_checkpoint_epoch_exclusive: int = 0
 
     def __post_init__(self) -> None:
         if self.max_epochs < 1 or self.batch_size < 1 or self.patience < 1:
@@ -80,6 +81,14 @@ class BenchmarkConfig:
             raise ValueError("end_learning_rate must be positive and no larger than learning_rate")
         if self.checkpoint_interval < 0:
             raise ValueError("checkpoint_interval must be non-negative")
+        if not 0 <= self.minimum_checkpoint_epoch_exclusive < self.max_epochs:
+            raise ValueError(
+                "minimum checkpoint epoch must be non-negative and below the training horizon"
+            )
+
+
+def _checkpoint_epoch_is_eligible(config: BenchmarkConfig, epoch: int) -> bool:
+    return epoch > config.minimum_checkpoint_epoch_exclusive
 
 
 @dataclass(frozen=True, slots=True)
@@ -710,7 +719,8 @@ def train_cached_backbone_readout(
             if config.training_protocol == "gmtnet"
             else validation_loss
         )
-        if selection_score < best:
+        checkpoint_is_eligible = _checkpoint_epoch_is_eligible(config, epoch)
+        if checkpoint_is_eligible and selection_score < best:
             best, best_validation_loss, best_epoch, stale = (
                 selection_score,
                 validation_loss,
@@ -727,7 +737,7 @@ def train_cached_backbone_readout(
                 normalizer=normalizer,
                 step=epoch,
             )
-        else:
+        elif checkpoint_is_eligible:
             stale += 1
             if config.training_protocol == "coefficient_mse" and stale >= config.patience:
                 break
