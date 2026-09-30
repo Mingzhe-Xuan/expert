@@ -191,6 +191,22 @@ def test_gmtnet_history_accepts_legacy_missing_fnorm_and_rejects_partial_or_nonf
         load_gmtnet_history(path)
 
 
+def test_gmtnet_history_respects_exclusive_checkpoint_epoch_threshold(tmp_path) -> None:
+    path = _gmtnet_summary(tmp_path / "threshold.json", include_validation_fnorm=True)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["config"] = {"minimum_checkpoint_epoch_exclusive": 100}
+    payload["history"][39]["validation_mae"] = 0.01
+    payload["history"][139]["validation_mae"] = 0.02
+    payload["best_epoch"] = 140
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    assert load_gmtnet_history(path)["best_epoch"] == 140
+
+    payload["config"]["minimum_checkpoint_epoch_exclusive"] = 200
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="no checkpoint-eligible epoch"):
+        load_gmtnet_history(path)
+
+
 def test_parent_dag_history_validates_hash_routing_and_best_epoch(tmp_path) -> None:
     path = _parent_summary(tmp_path / "parent.json")
     payload = load_parent_dag_history(path, expected_sha256=file_sha256(path))

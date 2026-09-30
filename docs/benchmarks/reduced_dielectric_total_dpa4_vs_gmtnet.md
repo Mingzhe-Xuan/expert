@@ -71,10 +71,12 @@
   split/features, seed, batch, Huber/AdamW settings, per-step `1e-3 -> 1e-5` trajectory, checkpoint
   interval, and validation-MAE selection, with only `use_equiv_attn=true`. Job 516 selected epoch 111
   at validation MAE/Fnorm `3.9724941254`/`23.2336750031` and retained all ten interval archives.
-- DPA-embedded GMTNet constant-tail 300e (job 515) exactly reuses job 498's first-200 per-step
+- DPA-embedded GMTNet constant-tail 300e post-100 rerun (job 519) exactly reuses job 498's first-200 per-step
   `1e-3 -> 1e-5` trajectory, then holds `1e-5` through epoch 300. Independent validation-MAE and
-  validation-Fnorm selectors both selected epoch 40, with identical checkpoint weights and aggregate
-  test metrics; consequently this is one training-history/result row rather than two experiments.
+  validation-Fnorm selectors may only select `epoch > 100`; both selected epoch 140 and report the
+  same aggregate test metrics. Consequently this is one training-history/result row rather than two
+  experiments. The superseded job-515 result used the old unrestricted selector and is retained only
+  as audit evidence, not as the accepted comparison row.
 - GMTNet model: pinned official dielectric implementation.
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
@@ -115,7 +117,7 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories through 200-epoch attention DPA-GMTNet
+## All accepted training histories under post-100 checkpoint selection
 
 ![All fourteen accepted experiment histories](all_experiment_training_history.svg)
 
@@ -143,9 +145,10 @@ The attention run selects epoch 163 at validation MAE/Fnorm `3.9997`/`23.3942`; 
 training loss falls further while validation MAE/Fnorm rise to `4.2173`/`24.5586`. Attention therefore
 also overfits after its selected checkpoint, although its selected validation values are the best of
 the three DPA-GMTNet trajectories.
-The constant-tail run selects epoch 40 by both validation MAE and Fnorm (`4.0184`/`23.5412`). Despite
+The post-100 constant-tail rerun selects epoch 140 by both validation MAE and Fnorm
+(`4.1180`/`24.0768`). Despite
 holding the smaller learning rate for another 100 epochs, validation MAE/Fnorm end at
-`4.2687`/`25.0854`; the extra tail therefore does not reverse the early post-selection overfit.
+`4.2677`/`25.0196`; the extra tail therefore does not reverse the post-selection overfit.
 The matched 200-epoch attention run selects epoch 111 at validation MAE/Fnorm `3.9725`/`23.2337`,
 the best selected validation pair among the DPA-GMTNet runs. Its training loss continues from
 `3.0713` to `2.2761` while validation MAE/Fnorm rise to `4.2943`/`25.1734` by epoch 200, so it also
@@ -174,15 +177,16 @@ shows clear post-selection overfit despite the improved validation minimum.
 | DPA-embedded GMTNet | 196 | 00:33:15 | 23.795513 | **17.019165** | **64.40%** | **25.85%** | 9.60% |
 | DPA-embedded GMTNet (300 epochs) | 170 | 00:49:28 | 25.039696 | 17.379377 | 58.20% | 24.37% | **9.90%** |
 | DPA-embedded GMTNet + equivariant attention (300 epochs) | 163 | 00:51:40 | **23.093098** | 17.121731 | 54.80% | 19.94% | 7.98% |
-| DPA-embedded GMTNet (300 epochs, Job-498 LR then constant tail) | 40 | 00:50:18 | 24.343472 | 17.081095 | 53.77% | 17.73% | 6.50% |
+| DPA-embedded GMTNet (300 epochs, Job-498 LR then constant tail, epoch > 100) | 140 | 00:49:43 | 24.195375 | **16.655451** | 59.23% | 21.27% | 7.98% |
 | DPA-embedded GMTNet + equivariant attention (200 epochs) | 111 | 00:34:44 | 24.280762 | 17.646751 | 54.06% | 14.33% | 4.73% |
 
 † 时长格式为 `HH:MM:SS`，来自各 accepted run 的零失败 JUnit runner wall time。它覆盖缓存读取、
 训练、逐 epoch 验证、best-checkpoint 重载和测试推理；不包含在该 runner 之外预先完成的 DPA
 特征或图缓存生成，因此不能直接解释为完整 Slurm 作业从提交到结束的端到端耗时。
 
-The five DPA-GMTNet variants split metric leadership: 300e attention has the lowest RMSE, job 498 has
-the lowest Fnorm and highest EwT25/EwT10, and job 512 has the highest EwT5. Relative to original GMTNet,
+The five DPA-GMTNet variants split metric leadership: 300e attention has the lowest RMSE, the
+post-100 constant-tail rerun has the lowest Fnorm, job 498 has the highest EwT25/EwT10, and job 512
+has the highest EwT5. Relative to original GMTNet,
 job 498's
 RMSE/Fnorm fall by `1.654383`/`2.150045`, while EwT25/EwT10/EwT5 rise by
 `11.37`/`7.53`/`2.22` percentage points. Relative to DPA relative-PG, RMSE/Fnorm fall by
@@ -216,12 +220,16 @@ EwT rates rise by `0.74`/`5.61`/`3.25` points. Thus attention is not beneficial 
 Job-498-length protocol; its strongest result depends on the longer schedule and remains
 metric-dependent rather than uniformly better than non-attention job 498.
 
-The constant-tail schedule does not improve on job 498: RMSE/Fnorm worsen by
-`0.547958`/`0.061930`, and EwT25/EwT10/EwT5 fall by `10.64`/`8.12`/`3.10` percentage points. It does
-improve absolute error over the stretched 300-epoch job 512 by `0.696224` RMSE and `0.298283` Fnorm,
-but its EwT rates remain lower by `4.43`/`6.65`/`3.40` points. Both selectors choosing epoch 40 means
-the constant epochs 201--300 cannot affect the selected test checkpoint; scientifically, the result
-tests the faster first-200 decay and selector behavior more than the utility of the final 100 epochs.
+The post-100 constant-tail rerun is mixed against job 498: RMSE worsens by `0.399862`, while Fnorm
+improves by `0.363714`; EwT25/EwT10/EwT5 fall by `5.17`/`4.58`/`1.62` percentage points. Against the
+stretched 300-epoch job 512, RMSE/Fnorm improve by `0.844320`/`0.723927` and EwT25 rises by `1.03`
+points, while EwT10/EwT5 fall by `3.10`/`1.92` points. Both selectors choose epoch 140, so epochs
+201--300 still cannot affect the selected test checkpoint; this result evaluates the faster decay
+and the enforced post-100 selection boundary, not the utility of the final constant-LR tail.
+The rerun diverges from job 515 from epoch 1 despite identical learning rates, seed, data and model,
+so CUDA training is not bitwise deterministic here. Its metric change cannot be attributed solely
+to moving the selection lower bound; job 515 remains an old-rule audit run rather than a controlled
+counterfactual checkpoint re-selection.
 
 Relative to the matched DPA relative-PG 56D run, widening only the even scalar channel to 64D lowers
 RMSE by `0.601242` and Fnorm by `0.665203`, raises EwT25 by `0.44` percentage points, leaves EwT10
@@ -375,15 +383,18 @@ than stable rankings.
   Summary/prediction SHA-256 values are
   `30a6571b8fa0b9ee948165b68262829de060e8af30287d3dd55e6a59fa2b669b` and
   `149dc8a180629f38208a30dff2b6143ca7f944a49d6c42a50527da524fe7161b`.
-- DPA-embedded GMTNet constant-tail 300e Slurm job 515: local strict acceptance passed 300/300
+- DPA-embedded GMTNet constant-tail post-100 Slurm job 519: local strict acceptance passed 300/300
   contiguous finite epochs, exact job-498 first-200 learning rates, constant `1e-5` epochs 201--300,
-  and exact MAE/Fnorm minima at epoch 40. Both selector checkpoints contain identical model weights
-  and independently reproduce the same metrics over 677 frozen-order predictions; their separate GPU
-  inference files differ by at most `1.5259e-5` per component. JUnit/logs, `[128,640]` projection, and
-  all fifteen byte/SHA/embedded-epoch archives pass. Summary SHA-256 is
-  `b2247c2905655aa9d07fb14bc8788849a2440de1b362d3180ace61b68596a096`; MAE/Fnorm prediction SHA-256
-  values are `0409a57d83f5f048e53448db253c56262b15428d6b19dfb4dbeb7c9bc556dbda` and
-  `1d2a6f1e078fe0a878e0eeeda290ee3de10a2ef5e0875042ea8c7c28c7af8c80`.
+  explicit exclusive threshold 100, and exact eligible MAE/Fnorm minima at epoch 140. Both best
+  checkpoints embed epoch 140, threshold 100, the pinned official commit and dataset SHA; both
+  independently reproduce the same aggregate metrics over 677 frozen-order predictions with exact
+  accepted targets. Their GPU inference files differ by at most `6.1035e-5` per component. Clean
+  JUnit/logs and all fifteen byte/SHA/embedded-epoch archives pass. Summary SHA-256 is
+  `4036ea0829135ba1c22f29794e920268dea20e78aace407fcb7afe04901e76b2`; MAE/Fnorm prediction SHA-256
+  values are `f48d12e997f2654f1580d6c98475799526e21f23a670ab7992a86b77959ebeb6` and
+  `8d1c4e96e2dceeb9f8822467268db4051c2821202c50c685b345700c70d32848`.
+  The launch revision is `5866ac9`; the shared remote worktree later advanced only through disjoint
+  concurrent work. Superseded job 515 is retained as old-rule evidence and is not plotted or tabulated.
 - DPA relative-PG 64D Slurm job 505: remote and local strict acceptance passed 200/200 contiguous
   finite epochs, best epoch 69, exact 5,001/637/677 splits, 677 manifest-ordered finite symmetric
   predictions, clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams,

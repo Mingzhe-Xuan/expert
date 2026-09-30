@@ -162,9 +162,26 @@ def load_gmtnet_history(
     if epochs != list(range(1, expected_epochs + 1)):
         raise ValueError("GMTNet epochs must be contiguous and one-indexed")
     best_epoch = int(payload.get("best_epoch", 0))
-    minimum_epoch = min(history, key=lambda row: float(row["validation_mae"]))["epoch"]
+    config = payload.get("config")
+    minimum_checkpoint_epoch_exclusive = (
+        int(config.get("minimum_checkpoint_epoch_exclusive", 0))
+        if isinstance(config, Mapping)
+        else 0
+    )
+    eligible_history = [
+        row
+        for row in history
+        if int(row["epoch"]) > minimum_checkpoint_epoch_exclusive
+    ]
+    if not eligible_history:
+        raise ValueError("GMTNet history contains no checkpoint-eligible epoch")
+    minimum_epoch = min(
+        eligible_history, key=lambda row: float(row["validation_mae"])
+    )["epoch"]
     if best_epoch != int(minimum_epoch):
-        raise ValueError("GMTNet best epoch disagrees with minimum validation MAE")
+        raise ValueError(
+            "GMTNet best epoch disagrees with eligible minimum validation MAE"
+        )
     return payload
 
 
