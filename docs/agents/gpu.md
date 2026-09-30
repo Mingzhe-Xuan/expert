@@ -8,6 +8,20 @@
   environment/pinned checkout, DPA/graph caches, and absence of a live same-name job before submitting
   exactly one `train_reduced_dpa4_gmtnet_equiv_attn_200e.sbatch` run through Slurm. Only lightweight
   scheduler/path checks run on the login node; training runs on the allocated compute node.
+- First connection stopped before entering the repository because nested `printf` quoting produced an
+  invalid `sha256sum -c` input line. No pull, cache read, or submission occurred. Retry purpose is
+  unchanged, using a literal checksum file argument instead of formatted standard input.
+- Second connection also stopped before repository entry: the transported nested `cut -d` quoting was
+  parsed as a multi-character delimiter. No repository or scheduler action occurred. Final retry will
+  validate the complete `sha256sum` output with a shell `case` prefix, avoiding nested delimiter syntax.
+- The auditable transferred script avoided command-transport quoting: bundle SHA verification and
+  pull-first succeeded, Guqq reached exact `bfe0beb`, and all environment/cache/no-duplicate gates
+  passed. Slurm accepted exactly one run as job 516; it is pending with 1 GPU, 8 CPUs, 64 GiB, and
+  `3-00:00:00`. Cleanup connection purpose: pull first from the same verified bundle, then delete only
+  the task-created remote bundle and submission script; preserve job 516 and every result artifact.
+- Cleanup pull reported already up to date at `bfe0beb`; the exact task-created remote bundle and both
+  helper scripts were removed, followed by their local temporary copies. Job 516 is `RUNNING` on
+  node221 with its requested resources. No duplicate job was submitted.
 
 ## 2026-09-30 - constant-tail 300-epoch DPA-GMTNet evaluation
 

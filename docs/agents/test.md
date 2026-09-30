@@ -19,6 +19,10 @@ compilation, Bash syntax, and scoped `git diff --check` also pass. Static assert
 isolated namespace/job name and every required Job-498 protocol literal, including interval-20
 checkpoint retention and the sole model delta `--use-equiv-attn`.
 
+Submission result: passed. Guqq verified the bundle SHA-256 and fast-forwarded to exact `bfe0beb`;
+the environment, pinned checkout, graph cache, boundary DPA shards, and no-live-duplicate gates all
+passed. Slurm accepted exactly one job as 516 with the requested GPU/CPU/memory/time resources.
+
 ## 2026-09-30 - constant-tail 300-epoch DPA-GMTNet evaluation
 
 Plan:

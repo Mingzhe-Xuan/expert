@@ -6,6 +6,11 @@
 - 2026-09-30: Local acceptance for the 200-epoch attention launcher passed: 20 focused tests plus
   Python compilation, Bash syntax, and scoped whitespace checks. Next is a task-only commit and one
   SHA-verified pull-first Guqq submission.
+- 2026-09-30: Guqq pulled exact commit `bfe0beb` from the verified bundle and accepted the single
+  200-epoch attention run as Slurm job 516. It is pending with 1 GPU, 8 CPUs, 64 GiB, and 72 hours;
+  its result and logs use only the new `dpa4-gmtnet-equiv-attn-200e` namespace.
+- 2026-09-30: Job 516 is now running on node221. A second pull-first check succeeded, and only the
+  exact task-created bundle/helper scripts were removed remotely and locally; no duplicate was queued.
 
 - 2026-09-30: Started strict evaluation of completed Job 515 after the user clarified the schedule is
   `1e-3 -> 1e-5 -> 1e-5`. Both validation-MAE and validation-Fnorm selections will be independently

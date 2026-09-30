@@ -10,7 +10,7 @@ per-step `1e-3 -> 1e-5` schedule, validation-MAE selection, and interval-20 rete
 
 1. [x] Add a dedicated launcher/result/log namespace whose only model change from Job 498 is attention.
 2. [x] Add protocol-isolation coverage and run focused Python/Bash/static acceptance.
-3. [ ] Commit task-owned files, synchronize Guqq pull-first, and submit exactly one Slurm job.
+3. [x] Commit task-owned files, synchronize Guqq pull-first, and submit exactly one Slurm job.
 4. [ ] After completion, strictly evaluate it against Jobs 498, 514, and 515 and update the comparison.
 
 ## Change log - 200-epoch attention DPA-GMTNet
@@ -19,6 +19,10 @@ per-step `1e-3 -> 1e-5` schedule, validation-MAE selection, and interval-20 rete
   uses a new fixed launcher and namespace; no accepted result or existing launcher is overwritten.
 - 2026-09-30: Local acceptance passed: 20 focused tests, Python compilation, Bash syntax, and scoped
   whitespace checks. The launcher preserves Job 498's protocol and adds only equivariant attention.
+- 2026-09-30: Commit `bfe0beb` was SHA-verified and pulled first on Guqq; exactly one run was accepted
+  as Slurm job 516 with 1 GPU, 8 CPUs, 64 GiB, and a 72-hour limit. It is pending scheduling.
+- 2026-09-30: Job 516 entered `RUNNING` on node221. Exact remote/local synchronization helpers were
+  removed after a second pull-first check; the isolated training artifacts remain untouched.
 
 ## Current snapshot - evaluate constant-tail 300-epoch DPA-GMTNet run (2026-09-30)
 
