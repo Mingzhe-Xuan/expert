@@ -1,5 +1,16 @@
 # Global GMTNet plus hierarchical Full-PG experts
 
+Performance paths default on for this additive model only: `grouped_pg_gates`,
+`cache_frames`, `vectorized_routing`. Disable all three to reproduce the reference
+execution path. `optimized.py` groups copy gates by width/type and owns a value-keyed
+LRU frame cache (`frame_cache_size=8192`, cleared on model device/dtype conversion).
+Derived indices/caches are nonpersistent; learned state-dict keys stay unchanged.
+`vectorized_routing.py` caches validated immutable DAG plans and evaluates padded
+prefix products in batches, including exact zero-gate cases. Residuals and learned
+scales are never cached. With vectorized routing, the bias-free output projection
+is applied once after weighted pooling; requested diagnostics still expose per-PG
+projected features. Floating-point reduction order may differ, not the algorithm.
+
 Standard-frame representation matrices are built from detached geometric metadata
 on CPU, then moved to the feature device/dtype. This supports e3nn versions whose
 Wigner generators otherwise mix CPU constants with CUDA angles. It does not detach

@@ -527,7 +527,8 @@ def test_profiler_artifacts_and_cleanup(official, tmp_path):
 
 def test_frame_representation_uses_detached_cpu_metadata(official, monkeypatch):
     from src.training.global_experts.runner import collate
-    model, splits = _tiny_model_and_splits(official)
+    model, splits = _tiny_model_and_splits(official, GlobalExpertsConfig(
+        expert_irreps="2x0e + 1x1o + 1x2e", cache_frames=False))
     model.train()
     data, mask, equality, routing, target, _ = collate(splits["train"], "cpu")
     routing = tuple(replace(r, input_to_standard=r.input_to_standard.clone().requires_grad_())

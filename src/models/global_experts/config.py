@@ -34,8 +34,14 @@ class GlobalExpertsConfig:
     auxiliary_enabled: bool = True
     use_equiv_attn: bool = False
     freeze_global: bool = False
+    grouped_pg_gates: bool = True
+    cache_frames: bool = True
+    vectorized_routing: bool = True
+    frame_cache_size: int = 8192
 
     def __post_init__(self):
+        if self.frame_cache_size < 1:
+            raise ValueError("frame_cache_size must be positive")
         layout_from_irreps(self.expert_irreps)
         if self.adapter_backend not in ("full_o3", "o2_tp"):
             raise ValueError("unsupported Adapter backend")

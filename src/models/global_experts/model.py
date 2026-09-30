@@ -15,6 +15,8 @@ from e3nn import o3
 from .config import GlobalExpertsConfig, layout_from_irreps
 from .adapter import IdentityMessageAdapter
 from .routing import HierarchicalChainRouter
+from .optimized import GroupedFullPointGroupExpert, FrameRepresentationCache
+from .vectorized_routing import VectorizedChainRouter
 
 
 @dataclass(frozen=True)
@@ -39,6 +41,7 @@ class GlobalExpertsModel(nn.Module):
     ):
         super().__init__()
         self.config = config
+        self.frame_cache = FrameRepresentationCache(config.frame_cache_size)
         self.global_model = configure_equivariant_attention(
             global_model, use_equiv_attn=config.use_equiv_attn
         )
@@ -67,13 +70,13 @@ class GlobalExpertsModel(nn.Module):
         )
         self.experts = nn.ModuleDict(
             {
-                str(number): FullPointGroupExpert(
+                str(number): (GroupedFullPointGroupExpert if config.grouped_pg_gates else FullPointGroupExpert)(
                     registry[number], self.expert_layout, bypass_c1=config.bypass_c1
                 )
                 for number in self.expert_numbers
             }
         )
-        self.router = HierarchicalChainRouter(
+        self.router = (VectorizedChainRouter if config.vectorized_routing else HierarchicalChainRouter)(
             edge_ids,
             initial_sigma=config.initial_sigma,
             sigma_floor=config.sigma_floor,
@@ -92,6 +95,10 @@ class GlobalExpertsModel(nn.Module):
         if self.config.freeze_global:
             self.global_model.eval()
         return self
+
+    def _apply(self, fn, recurse=True):
+        self.frame_cache.clear()
+        return super()._apply(fn, recurse=recurse)
 
     def metadata(self):
         return {
@@ -168,21 +175,14 @@ class GlobalExpertsModel(nn.Module):
             if not torch.equal(data.batch[receiver], data.batch[sender]):
                 raise ValueError("cross-crystal edges are forbidden")
             weights, transforms = [], []
+            shared_scales = self.router.scales if self.config.vectorized_routing else None
             for row in routing:
                 if row.sample_id != row.dag.material_id:
                     raise ValueError("routing sample/DAG identity mismatch")
-                # Frames are detached geometric metadata; older e3nn Wigner generators
-                # allocate on CPU even for CUDA angles. Build D on CPU, then transfer it.
-                frame = row.input_to_standard.detach().to(device="cpu", dtype=nodes.dtype)
-                if frame.shape != (3, 3) or not torch.allclose(
-                    frame @ frame.T,
-                    torch.eye(3, dtype=nodes.dtype),
-                    atol=1e-5,
-                    rtol=1e-5,
-                ):
-                    raise ValueError("standard frame must be orthogonal")
-                transforms.append(self.expert_irreps.D_from_matrix(frame).to(nodes))
-                weights.append(self.router(row.dag, row.residuals))
+                transforms.append(self.frame_cache.get(
+                    self.expert_irreps, row.input_to_standard, nodes, enabled=self.config.cache_frames))
+                weights.append(self.router(row.dag, row.residuals, scales=shared_scales)
+                               if self.config.vectorized_routing else self.router(row.dag, row.residuals))
             adapted = self.adapter(
                 self.input_map(nodes), data.edge_index, data.edge_attr
             )
@@ -190,6 +190,7 @@ class GlobalExpertsModel(nn.Module):
             standard = torch.einsum("nij,nj->ni", rotations[data.batch], adapted)
             pooled = [dict() for _ in routing]
             active = sorted({pg for w in weights for pg in w.alpha})
+            expert_features = []
             for pg in active:
                 if str(pg) not in self.experts:
                     raise ValueError(f"unregistered active expert {pg}")
@@ -210,17 +211,26 @@ class GlobalExpertsModel(nn.Module):
                     dim_size=batch_size,
                     reduce="mean",
                 )
-                projected = self.output_map(feature)
-                for i in crystals:
-                    pooled[i][pg] = projected[i]
-            auxiliary = torch.stack(
+                if self.config.vectorized_routing:
+                    expert_features.append(feature)
+                if not self.config.vectorized_routing or return_diagnostics:
+                    projected = self.output_map(feature)
+                    for i in crystals:
+                        pooled[i][pg] = projected[i]
+            if self.config.vectorized_routing:
+                coefficients = torch.stack([torch.stack([w.alpha.get(pg, nodes.new_zeros(()))
+                                                         for pg in active]) for w in weights])
+                # output_map is a bias-free e3nn Linear: projection commutes with weighted sum.
+                auxiliary = self.output_map((torch.stack(expert_features, dim=1) * coefficients[..., None]).sum(1))
+            else:
+                auxiliary = torch.stack(
                 [
                     torch.stack(
                         [pooled[i][pg] * weight for pg, weight in w.alpha.items()]
                     ).sum(0)
                     for i, w in enumerate(weights)
                 ]
-            )
+                )
             fused = global_features + self.branch_logit.sigmoid() * auxiliary
             diagnostics.update(
                 routing=weights,

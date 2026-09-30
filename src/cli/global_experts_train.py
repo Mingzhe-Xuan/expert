@@ -71,7 +71,7 @@ def parser():
     return result
 
 
-def run(arguments, *, executor=train_global_experts):
+def run(arguments, *, executor=train_global_experts, split_selector=None):
     if bool(arguments.node_features) != bool(arguments.node_feature_sha256):
         raise ValueError("--node-features and --node-feature-sha256 are required together")
     if arguments.input_features == "cgcnn" and arguments.node_features:
@@ -94,6 +94,8 @@ def run(arguments, *, executor=train_global_experts):
             for key in ("train", "validation", "test")
         }
     )
+    if split_selector is not None:
+        selected = split_selector(dataset, selected)
     dataset_hash = str(dataset[0].source["manifest_sha256"])
     official, _, _ = load_official_modules(arguments.official_root)
     splits = _prepare_cache(

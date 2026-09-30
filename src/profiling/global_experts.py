@@ -88,6 +88,7 @@ def profile_global_experts(model, splits, *, output_dir, provenance, config,
     prof.export_chrome_trace(str(output_dir / "trace.json"))
     events = prof.key_averages()
     records = [{"name": e.key, "calls": e.count,
+                "device_type": str(e.device_type), "is_user_annotation": e.is_user_annotation,
                 "cpu_total_ms": e.cpu_time_total/1000,
                 "cpu_self_ms": e.self_cpu_time_total/1000,
                 "device_total_ms": getattr(e, "device_time_total", 0)/1000,
@@ -115,6 +116,9 @@ def profile_global_experts(model, splits, *, output_dir, provenance, config,
         "loss": float(loss.detach()), "parameters_with_grad": len(gradients),
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device) if cuda else None,
         "peak_reserved_bytes": torch.cuda.max_memory_reserved(device) if cuda else None,
+        "cuda_kernel_calls": sum(e.count for e in events
+            if str(e.device_type) == "DeviceType.CUDA" and not e.is_user_annotation
+            and not e.key.startswith(("Memcpy", "Memset"))),
         "events": records,
         "notes": "Frozen DPA cache loading/model construction excluded; train mode, no optimizer step. "
                  "Module ranges are forward-only and nested: inclusive totals must not be summed. "
