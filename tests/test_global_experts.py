@@ -549,8 +549,8 @@ def test_frame_representation_uses_detached_cpu_metadata(official, monkeypatch):
     assert all(r.input_to_standard.grad is None for r in routing)
 
 
-@pytest.mark.parametrize("input_features", ["dpa4", "cgcnn"])
-def test_default_cli_real_graph_cache_and_training(official, monkeypatch, tmp_path, input_features):
+@pytest.mark.parametrize("input_features,auxiliary_type", [("dpa4", "pg"), ("cgcnn", "pg"), ("dpa4", "dense")])
+def test_default_cli_real_graph_cache_and_training(official, monkeypatch, tmp_path, input_features, auxiliary_type):
     from pathlib import Path
     from src.cli import global_experts_train as cli
     from src.data import TrainingUnit, IndependentTensorDataset, TensorSample
@@ -628,11 +628,17 @@ def test_default_cli_real_graph_cache_and_training(official, monkeypatch, tmp_pa
     )
     if input_features == "cgcnn":
         args.input_features = "cgcnn"
+    args.auxiliary_type = auxiliary_type
+    args.match_pg_active_budget = auxiliary_type == "dense"
     prepared = cli.run(args)
     assert prepared["status"] == "prepared"
     args.prepare_only = False
     summary = cli.run(args)
     assert summary["status"] == "passed"
+    if auxiliary_type == "dense":
+        budget = summary["provenance"]["dense_budget"]
+        assert budget["training_crystals"] == 1
+        assert budget["auxiliary_relative_error"] <= 0.01
     assert (
         summary["model_metadata"]["config"]["expert_irreps"]
         == GlobalExpertsConfig().expert_irreps

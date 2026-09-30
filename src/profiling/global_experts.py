@@ -18,8 +18,8 @@ def module_ranges(model):
     targets = [(model, "encode_nodes", "stage/GMTNet_encoder"),
                (type(model.expert_irreps), "D_from_matrix", "stage/frame_representation")]
     for name, module in model.named_modules():
-        if name in {"input_map", "output_map", "adapter", "router",
-                    "global_model.output_block"} or name.startswith("experts."):
+        if name in {"input_map", "output_map", "adapter", "router", "dense",
+                    "global_model.output_block"} or name.startswith(("experts.", "dense.blocks.")):
             targets.append((module, "forward", "module/" + name))
     originals = []
     try:
@@ -80,7 +80,7 @@ def profile_global_experts(model, splits, *, output_dir, provenance, config,
         torch.cuda.reset_peak_memory_stats(device)
     activities = [ProfilerActivity.CPU] + ([ProfilerActivity.CUDA] if cuda else [])
     with module_ranges(model), profile(activities=activities, record_shapes=True,
-                                      profile_memory=True) as prof:
+                                      profile_memory=True, with_flops=True) as prof:
         loss, instrumented_timing = step()
     gradients = {name: p.grad for name, p in model.named_parameters() if p.grad is not None}
     if not gradients or not all(torch.isfinite(g).all() for g in gradients.values()):
@@ -120,6 +120,8 @@ def profile_global_experts(model, splits, *, output_dir, provenance, config,
             if str(e.device_type) == "DeviceType.CUDA" and not e.is_user_annotation
             and not e.key.startswith(("Memcpy", "Memset"))),
         "events": records,
+        "estimated_supported_operator_flops": sum(e.flops or 0 for e in events),
+        "flop_coverage": "PyTorch supported operators only; not complete TP/scatter/backward FLOPs",
         "notes": "Frozen DPA cache loading/model construction excluded; train mode, no optimizer step. "
                  "Module ranges are forward-only and nested: inclusive totals must not be summed. "
                  "Uninstrumented timings are authoritative; profiler adds overhead.",

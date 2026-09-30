@@ -89,3 +89,20 @@ Existing GMTNet and PG classes, runners, initialization, and routing remain unch
 Training uses the new `src.cli.global_experts_train` entry point; see
 `src/training/global_experts/README.md`. No formal ablation or accuracy improvement is
 claimed by the implementation/unit tests.
+
+## Dense auxiliary ablation
+
+`GlobalExpertsConfig(auxiliary_type="dense")` replaces experts/router with the
+always-active [dense O(3) module](dense/README.md), keeping the input/output maps,
+base Adapter, mean pooling, sigmoid lambda, mask and tensor readout. `pg` remains
+the default; its checkpoint metadata and state-dict keys are preserved. `none`
+disables the auxiliary contribution. Dense forwarding needs no routing records.
+
+The training CLI accepts `--auxiliary-type dense --match-pg-active-budget` to select
+depth, internal multiplicities and invariant gate width using only mean structural
+active PG/router parameter counts over training crystals. It explicitly copies
+shared initialization from a same-seed PG reference and verifies the analytic count
+against instantiated parameters. Matching must be within1% of total auxiliary
+capacity; actual replacement and total errors are stored in provenance. Explicit
+`--dense-depth`, `--dense-hidden-irreps`, `--dense-radial-width`, `--dense-gate-width`
+and `--dense-initial-logit` also support manual configurations without auto matching.

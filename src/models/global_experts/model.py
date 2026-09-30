@@ -17,6 +17,7 @@ from .adapter import IdentityMessageAdapter
 from .routing import HierarchicalChainRouter
 from .optimized import GroupedFullPointGroupExpert, FrameRepresentationCache
 from .vectorized_routing import VectorizedChainRouter
+from .dense import DenseO3Branch
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,7 @@ class GlobalExpertsModel(nn.Module):
         if self.registry_sha256 != self.class_dag.asset_sha256:
             raise ValueError("PG registry and DAG asset hashes differ")
         self.expert_numbers = tuple(sorted(set(expert_numbers)))
+        self.edge_ids = tuple(edge_ids)
         if not self.expert_numbers:
             raise ValueError("at least one registered expert required")
         self.global_irreps = o3.Irreps(global_model.equi_update.nlayer_3.out_irreps)
@@ -73,7 +75,7 @@ class GlobalExpertsModel(nn.Module):
                 str(number): (GroupedFullPointGroupExpert if config.grouped_pg_gates else FullPointGroupExpert)(
                     registry[number], self.expert_layout, bypass_c1=config.bypass_c1
                 )
-                for number in self.expert_numbers
+                for number in self.expert_numbers if config.auxiliary_type == "pg"
             }
         )
         self.router = (VectorizedChainRouter if config.vectorized_routing else HierarchicalChainRouter)(
@@ -82,7 +84,13 @@ class GlobalExpertsModel(nn.Module):
             sigma_floor=config.sigma_floor,
             temperature=config.chain_temperature,
             class_dag=self.class_dag,
-        )
+        ) if config.auxiliary_type == "pg" else None
+        if config.auxiliary_type == "dense":
+            self.dense = DenseO3Branch(
+                self.expert_irreps, hidden_irreps=config.dense_hidden_irreps or None,
+                depth=config.dense_depth, radial_width=config.dense_radial_width,
+                gate_width=config.dense_gate_width, edge_lmax=config.adapter_edge_lmax,
+                cutoff=config.adapter_cutoff, initial_logit=config.dense_initial_logit)
         self.branch_logit = nn.Parameter(
             torch.tensor(float(config.branch_initial_logit))
         )
@@ -107,7 +115,7 @@ class GlobalExpertsModel(nn.Module):
             "global_irreps": str(self.global_irreps),
             "expert_layout": self.expert_layout.to_spec(),
             "expert_numbers": self.expert_numbers,
-            "edge_ids": self.router.edge_ids,
+            "edge_ids": self.router.edge_ids if self.router is not None else self.edge_ids,
             "dag_sha256": self.class_dag.asset_sha256,
             "registry_sha256": self.registry_sha256,
             "input_map": "e3nn.o3.Linear",
@@ -155,14 +163,24 @@ class GlobalExpertsModel(nn.Module):
             )
         if feat_mask.shape != (count, self.global_irreps.dim, self.global_irreps.dim):
             raise ValueError("feature masks do not match crystal/carrier shape")
-        if not self.config.auxiliary_enabled and not return_diagnostics:
+        enabled = self.config.auxiliary_enabled and self.config.auxiliary_type != "none"
+        if not enabled and not return_diagnostics:
             return self.global_model(data, feat_mask, equality)
         nodes = self.encode_nodes(data)
         global_features = scatter(nodes, data.batch, dim=0, reduce="mean")
         batch_size = len(global_features)
         diagnostics = {"global_features": global_features}
         fused = global_features
-        if self.config.auxiliary_enabled:
+        if enabled and self.config.auxiliary_type == "dense":
+            receiver, sender = data.edge_index
+            if not torch.equal(data.batch[receiver], data.batch[sender]):
+                raise ValueError("cross-crystal edges are forbidden")
+            adapted = self.adapter(self.input_map(nodes), data.edge_index, data.edge_attr)
+            dense_nodes = self.dense(adapted, data.edge_index, data.edge_attr)
+            auxiliary = self.output_map(scatter(dense_nodes, data.batch, dim=0, reduce="mean"))
+            fused = global_features + self.branch_logit.sigmoid() * auxiliary
+            diagnostics.update(auxiliary=auxiliary, branch_scale=self.branch_logit.sigmoid())
+        elif enabled:
             if routing is None or len(routing) != batch_size:
                 raise ValueError("one routing record per crystal required")
             if len({row.sample_id for row in routing}) != batch_size:

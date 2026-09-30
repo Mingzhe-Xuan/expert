@@ -38,8 +38,22 @@ class GlobalExpertsConfig:
     cache_frames: bool = True
     vectorized_routing: bool = True
     frame_cache_size: int = 8192
+    auxiliary_type: str = "pg"
+    dense_depth: int = 3
+    dense_hidden_irreps: str = ""
+    dense_radial_width: int = 8
+    dense_gate_width: int = 32
+    dense_initial_logit: float = 0.0
 
     def __post_init__(self):
+        if self.auxiliary_type not in ("pg", "dense", "none"):
+            raise ValueError("auxiliary_type must be pg, dense or none")
+        if min(self.dense_depth, self.dense_radial_width, self.dense_gate_width) < 1:
+            raise ValueError("dense dimensions must be positive")
+        if not math.isfinite(self.dense_initial_logit):
+            raise ValueError("dense initial logit must be finite")
+        if self.dense_hidden_irreps:
+            layout_from_irreps(self.dense_hidden_irreps)
         if self.frame_cache_size < 1:
             raise ValueError("frame_cache_size must be positive")
         layout_from_irreps(self.expert_irreps)
@@ -70,4 +84,10 @@ class GlobalExpertsConfig:
             raise ValueError("initial logits must be finite")
 
     def metadata(self):
-        return asdict(self)
+        values = asdict(self)
+        # Keep historical PG checkpoint identity byte-for-byte in field content.
+        if self.auxiliary_type == "pg":
+            for key in tuple(values):
+                if key == "auxiliary_type" or key.startswith("dense_"):
+                    del values[key]
+        return values

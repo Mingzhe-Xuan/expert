@@ -1,7 +1,7 @@
 """Train the additive algorithm.md GMTNet + hierarchical Full-PG model."""
 
 import argparse
-from dataclasses import fields
+from dataclasses import fields, replace
 import json
 from pathlib import Path
 import random
@@ -55,6 +55,8 @@ def parser():
         "--dpa-cache-root", type=Path, default=Path("results/reduced-benchmark/cache")
     )
     result.add_argument("--feature-shards", type=int, default=64)
+    result.add_argument("--match-pg-active-budget", action="store_true",
+                        help="Select dense capacity using training crystals only")
     for config_type in (GlobalExpertsConfig, GlobalExpertsTrainConfig):
         for field in fields(config_type):
             option = "--" + field.name.replace("_", "-")
@@ -198,6 +200,21 @@ def run(arguments, *, executor=train_global_experts, split_selector=None):
     edge_ids = sorted(
         {e.edge_id for row in rows for e in row["routing"].dag.embeddings}
     )
+    reference = None
+    if arguments.match_pg_active_budget:
+        if model_config.auxiliary_type != "dense":
+            raise ValueError("--match-pg-active-budget requires --auxiliary-type dense")
+        from ..models.global_experts.dense.budget import pg_active_budget, match_dense_config
+        reference = GlobalExpertsModel(
+            baseline, official.equality_adjustment, expert_numbers=active,
+            edge_ids=edge_ids, config=replace(model_config, auxiliary_type="pg"),
+            class_dag=class_dag)
+        model_config, report = match_dense_config(
+            model_config, pg_active_budget(reference, splits["train"]))
+        if report["auxiliary_relative_error"] > 0.01:
+            raise ValueError(f"dense active-parameter mismatch exceeds1%: {report}")
+        provenance["dense_budget"] = report
+        print(json.dumps({"dense_budget": report}), flush=True)
     model = GlobalExpertsModel(
         baseline,
         official.equality_adjustment,
@@ -206,6 +223,16 @@ def run(arguments, *, executor=train_global_experts, split_selector=None):
         config=model_config,
         class_dag=class_dag,
     )
+    if reference is not None:
+        from ..models.global_experts.dense.budget import trainable_count
+        for name in ("input_map", "output_map", "adapter"):
+            getattr(model, name).load_state_dict(getattr(reference, name).state_dict(), strict=True)
+        with torch.no_grad():
+            model.branch_logit.copy_(reference.branch_logit)
+        actual = trainable_count([model.dense])
+        if actual != provenance["dense_budget"]["dense_experts_replacement_parameters"]:
+            raise ValueError("dense analytic and instantiated parameter counts differ")
+        del reference
     return executor(
         model,
         splits,
