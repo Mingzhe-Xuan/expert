@@ -67,6 +67,10 @@
 - DPA-embedded GMTNet attention 300e changes only `use_equiv_attn=true` relative to that 300-epoch
   protocol. Job 514 selected epoch 163 at validation MAE/Fnorm `3.9996964931`/`23.3941822052`,
   retained all fifteen epoch-20 archives, and reloaded the MAE-selected checkpoint for test inference.
+- DPA-embedded GMTNet constant-tail 300e (job 515) exactly reuses job 498's first-200 per-step
+  `1e-3 -> 1e-5` trajectory, then holds `1e-5` through epoch 300. Independent validation-MAE and
+  validation-Fnorm selectors both selected epoch 40, with identical checkpoint weights and aggregate
+  test metrics; consequently this is one training-history/result row rather than two experiments.
 - GMTNet model: pinned official dielectric implementation.
 - All rows use the same ordered 677 test IDs. The strict comparator additionally verifies symmetric
   target eigenvalue equivalence with `atol=2e-4`, `rtol=2e-5`.
@@ -107,11 +111,11 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories through 300-epoch attention DPA-GMTNet
+## All accepted training histories through constant-tail 300-epoch DPA-GMTNet
 
-![All twelve accepted experiment histories](all_experiment_training_history.svg)
+![All thirteen accepted experiment histories](all_experiment_training_history.svg)
 
-The six-panel figure covers twelve experiments, draws only fields actually present in each SHA-pinned
+The six-panel figure covers thirteen experiments, draws only fields actually present in each SHA-pinned
 summary, and does not interpolate historical gaps. Every drawn line contains contiguous epochs;
 distinct line styles/markers expose exact overlaps that previously looked like broken curves.
 DPA relative-PG converges much more stably than CGCNN relative-PG:
@@ -135,6 +139,9 @@ The attention run selects epoch 163 at validation MAE/Fnorm `3.9997`/`23.3942`; 
 training loss falls further while validation MAE/Fnorm rise to `4.2173`/`24.5586`. Attention therefore
 also overfits after its selected checkpoint, although its selected validation values are the best of
 the three DPA-GMTNet trajectories.
+The constant-tail run selects epoch 40 by both validation MAE and Fnorm (`4.0184`/`23.5412`). Despite
+holding the smaller learning rate for another 100 epochs, validation MAE/Fnorm end at
+`4.2687`/`25.0854`; the extra tail therefore does not reverse the early post-selection overfit.
 
 ## Metrics
 
@@ -159,8 +166,11 @@ the three DPA-GMTNet trajectories.
 | DPA-embedded GMTNet | 23.795513 | **17.019165** | **64.40%** | **25.85%** | 9.60% |
 | DPA-embedded GMTNet (300 epochs) | 25.039696 | 17.379377 | 58.20% | 24.37% | **9.90%** |
 | DPA-embedded GMTNet + equivariant attention (300 epochs) | **23.093098** | 17.121731 | 54.80% | 19.94% | 7.98% |
+| DPA-embedded GMTNet (300 epochs, Job-498 LR then constant tail) | 24.343472 | 17.081095 | 53.77% | 17.73% | 6.50% |
 
-The DPA-embedded GMTNet run ranks first on all five held-out metrics. Relative to original GMTNet,
+The four DPA-GMTNet variants split metric leadership: attention has the lowest RMSE, job 498 has
+the lowest Fnorm and highest EwT25/EwT10, and job 512 has the highest EwT5. Relative to original GMTNet,
+job 498's
 RMSE/Fnorm fall by `1.654383`/`2.150045`, while EwT25/EwT10/EwT5 rise by
 `11.37`/`7.53`/`2.22` percentage points. Relative to DPA relative-PG, RMSE/Fnorm fall by
 `1.373400`/`1.796947`, and the three EwT rates rise by `17.73`/`11.37`/`3.84` points. This directly
@@ -183,6 +193,13 @@ large absolute component errors that dominate RMSE while producing fewer samples
 target-normalized threshold; it is preferable only if RMSE is the primary objective. Against the
 original CGCNN-feature GMTNet, it improves RMSE/Fnorm by `2.356798`/`2.047480` and raises all three
 EwT rates by `1.77`/`1.62`/`0.59` points.
+
+The constant-tail schedule does not improve on job 498: RMSE/Fnorm worsen by
+`0.547958`/`0.061930`, and EwT25/EwT10/EwT5 fall by `10.64`/`8.12`/`3.10` percentage points. It does
+improve absolute error over the stretched 300-epoch job 512 by `0.696224` RMSE and `0.298283` Fnorm,
+but its EwT rates remain lower by `4.43`/`6.65`/`3.40` points. Both selectors choosing epoch 40 means
+the constant epochs 201--300 cannot affect the selected test checkpoint; scientifically, the result
+tests the faster first-200 decay and selector behavior more than the utility of the final 100 epochs.
 
 Relative to the matched DPA relative-PG 56D run, widening only the even scalar channel to 64D lowers
 RMSE by `0.601242` and Fnorm by `0.665203`, raises EwT25 by `0.44` percentage points, leaves EwT10
@@ -326,6 +343,15 @@ than stable rankings.
   Summary/prediction SHA-256 values are
   `1ca7ef0f8d8e2381c375d015fa596efb1b39dc64a11bc5e78c15ec894a118547` and
   `9393da9e36a7be846d70dcaaee9fa044bfb80d779381684352a483401dd204f4`.
+- DPA-embedded GMTNet constant-tail 300e Slurm job 515: local strict acceptance passed 300/300
+  contiguous finite epochs, exact job-498 first-200 learning rates, constant `1e-5` epochs 201--300,
+  and exact MAE/Fnorm minima at epoch 40. Both selector checkpoints contain identical model weights
+  and independently reproduce the same metrics over 677 frozen-order predictions; their separate GPU
+  inference files differ by at most `1.5259e-5` per component. JUnit/logs, `[128,640]` projection, and
+  all fifteen byte/SHA/embedded-epoch archives pass. Summary SHA-256 is
+  `b2247c2905655aa9d07fb14bc8788849a2440de1b362d3180ace61b68596a096`; MAE/Fnorm prediction SHA-256
+  values are `0409a57d83f5f048e53448db253c56262b15428d6b19dfb4dbeb7c9bc556dbda` and
+  `1d2a6f1e078fe0a878e0eeeda290ee3de10a2ef5e0875042ea8c7c28c7af8c80`.
 - DPA relative-PG 64D Slurm job 505: remote and local strict acceptance passed 200/200 contiguous
   finite epochs, best epoch 69, exact 5,001/637/677 splits, 677 manifest-ordered finite symmetric
   predictions, clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams,

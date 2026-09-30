@@ -1,5 +1,12 @@
 # Agent progress updates
 
+- 2026-09-30: Started strict evaluation of completed Job 515 after the user clarified the schedule is
+  `1e-3 -> 1e-5 -> 1e-5`. Both validation-MAE and validation-Fnorm selections will be independently
+  verified and compared from the one shared 300-epoch trajectory.
+- 2026-09-30: Job 515 passed strict acceptance and is the thirteenth unified trajectory. Both
+  selectors choose epoch 40 and identical weights/metrics; test RMSE/Fnorm are
+  `24.343472`/`17.081095`. Fifteen archives, both 677-row outputs, JUnit/logs, metrics, and plot QA pass.
+
 - 2026-09-30: Started strict terminal evaluation of completed attention DPA-GMTNet job 514. The
   acceptance gate covers scheduler/artifact identity, 300 epochs, best and interval checkpoints,
   frozen prediction order, independent metrics, and SHA-pinned unified-history regeneration.

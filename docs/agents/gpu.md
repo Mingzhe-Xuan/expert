@@ -1,5 +1,24 @@
 # GPU / server activity
 
+## 2026-09-30 - constant-tail 300-epoch DPA-GMTNet evaluation
+
+- Connection purpose: restore a valid pull-first gate, then perform bounded read-only inspection of
+  completed Job 515 and its isolated `dpa4-gmtnet-job498-lr-300e-dual` results. Verify the exact
+  `1e-3 -> 1e-5` first-200 trajectory, constant `1e-5` tail, both selector artifacts, logs, JUnit,
+  provenance, and archive inventory. Do not run model computation, modify artifacts, or submit jobs;
+  retrieve only Job 515 evidence and declared checkpoints for local strict validation.
+- Offline bundle pull advanced Guqq to exact `26b147c`. Job 515 is purged from live Slurm state, but
+  stdout ends in `status=passed`; its isolated directory contains two selector checkpoints/predictions,
+  fifteen epoch-20 MAE archives through epoch 300, summary, JUnit, and provenance. Retrieval purpose:
+  copy only this exact result directory plus job-515 stdout/stderr into the ignored matching local
+  directory for independent validation; preserve all remote artifacts.
+- Retrieval and independent validation passed. Cleanup connection purpose: pull first from the same
+  SHA-verified bundle, then remove only `/home/xmz/expert-data/job515-eval-pull.bundle`; leave all
+  job-515 results unchanged. Remove the matching local temporary bundle after remote confirmation.
+- Cleanup succeeded after an already-current pull at `26b147c`; the exact remote/local temporary
+  bundles and local verifier were removed. Job-515 artifacts remain unchanged, and no further Guqq
+  connection is required for this evaluation.
+
 ## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 514
 
 - Connection purpose: make `git pull --ff-only` the first repository operation, then perform bounded

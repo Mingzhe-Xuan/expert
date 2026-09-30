@@ -1,5 +1,28 @@
 # Agent state
 
+## Current snapshot - evaluate constant-tail 300-epoch DPA-GMTNet run (2026-09-30)
+
+Strictly evaluate completed Job 515: epochs 1--200 must exactly reproduce Job 498's per-step
+`1e-3 -> 1e-5` trajectory and epochs 201--300 must hold `1e-5`. Independently accept and compare
+the validation-MAE-selected and validation-Fnorm-selected checkpoints from the single trajectory.
+
+## Current plan - evaluate constant-tail 300-epoch DPA-GMTNet run
+
+1. [x] Pull-first on Guqq and identify the unique completed result from scheduler/log/artifact evidence.
+2. [x] Verify 300 finite epochs, exact decay/constant-tail schedule, selectors, checkpoints, provenance,
+   frozen prediction order, targets, and independently recomputed metrics.
+3. [x] Add each accepted selection to the unified comparison, regenerate/inspect the figure, document
+   exact deltas, run focused/static checks, and publish only task-owned changes.
+
+## Change log - evaluate constant-tail 300-epoch DPA-GMTNet run
+
+- 2026-09-30: User clarified the target is Job 515 with `1e-3 -> 1e-5 -> 1e-5`, superseding the
+  interrupted message's `1e-4` typo. Acceptance will treat MAE and Fnorm as two selectors over one
+  shared 300-epoch trajectory, not as separate training runs.
+- 2026-09-30: Job 515 passed strict acceptance. Both selectors choose epoch 40 and identical weights/
+  metrics: RMSE/Fnorm `24.343472`/`17.081095`, EwT25/10/5 `53.77%`/`17.73%`/`6.50%`. The accepted
+  trajectory is now the thirteenth unified history; plot tests pass 9/9 and visual/static QA passes.
+
 ## Current snapshot - Job-498 schedule continuation with dual selection (2026-09-30)
 
 Train one isolated non-attention DPA-GMTNet run for 300 epochs. Epochs 1--200 must use the exact

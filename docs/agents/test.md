@@ -1,5 +1,30 @@
 # Test plan and results
 
+## 2026-09-30 - constant-tail 300-epoch DPA-GMTNet evaluation
+
+Plan:
+
+- require isolated Job 515 and prove that every first-200 per-step LR equals Job 498's schedule,
+  epoch 200 reaches `1e-5`, and every epoch 201--300 remains exactly at `1e-5`;
+- require 300 contiguous finite epochs, exact split/model/cache/provenance identity, clean terminal
+  evidence, and independent validation of every reported checkpoint selector;
+- require 677 unique finite predictions per selection in frozen-manifest order, exact reference
+  targets, repository-metric recomputation, and byte/SHA/embedded-epoch verification for archives;
+- update the SHA-pinned unified comparison only after all gates pass, then parse and visually inspect
+  SVG/PNG and run focused history/static checks.
+
+Expected result: accept and compare both Job-515 selection outputs only if schedule, provenance,
+checkpoint, prediction, and metric gates all pass; otherwise report the exact failed invariant.
+
+Result: passed. Job 515 contains 300 contiguous finite epochs; its first 200 recorded LR values equal
+job 498 exactly, epoch 200 is `1e-5`, and epochs 201--300 remain `1e-5`. Validation MAE and Fnorm both
+select epoch 40 (`4.0183911324`/`23.5411643982`) with tensor-identical checkpoint weights and identical
+aggregate test metrics. Both 677-row files match frozen IDs and exact reference targets; separate GPU
+inference differs by at most `1.5258789e-5` per component. Repository metric recomputation gives
+RMSE/Fnorm `24.3434715271`/`17.0810947418` and EwT25/10/5
+`53.77%`/`17.73%`/`6.50%`. JUnit/logs and all fifteen archive size/SHA/epoch gates pass. The
+thirteen-history SVG parses cleanly; the 2810x1608 PNG passed visual inspection and plot tests pass 9/9.
+
 ## 2026-09-30 - terminal evaluation of attention DPA-GMTNet job 514
 
 Plan:
