@@ -1,5 +1,11 @@
 # Global + PG experts：完整前后向 profiling
 
+后续三项优化的同卡对比已完成，见
+[Job 520 优化结果](global_experts_optimization_results.md)。
+
+后续三项优化的同卡对比已完成，见
+[Job 520 优化结果](global_experts_optimization_results.md)。
+
 ## 结论
 
 2026-09-30，Guqq Slurm **Job 518 已完成**完整 CUDA 前向、loss、反向采集。
