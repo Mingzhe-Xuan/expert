@@ -38,17 +38,21 @@
 - DPA relative-PG uses the identical 56-component expert/router and GMTNet optimization protocol,
   replacing only the input representation with frozen DPA4 features. Per batch it groups structures
   by expert, executes each expert once over its collated sub-batch, and launches the 15 active expert
-  buckets on 15 distinct CUDA streams. Job 488 completed 200 epochs, selected epoch 95 at validation
-  MAE `4.3895916939`, and retained exact epoch-20 through epoch-200 archives.
+  buckets on 15 distinct CUDA streams. Job 488 completed 200 epochs and retained exact epoch-20
+  through epoch-200 archives. Under the current strict `epoch > 100` rule, checkpoint-only job 523
+  selects the best retained eligible archive, epoch 120, at validation MAE/Fnorm
+  `4.4088015556`/`25.5451450348`.
 - DPA relative-PG 64D changes only the hidden multiplicities from `[8,2,2,2,2]` to
   `[16,2,2,2,2]`, increasing the dataset-instantiated trainable count from 99,696 to 130,196 while
   preserving the frozen DPA4 input, 24 material edge gates, router, split, batch, seed, optimizer,
-  schedule, and checkpoint protocol. Job 505 completed 200 epochs and selected epoch 69 at
-  validation MAE `4.2565112114`.
+  schedule, and checkpoint protocol. Job 505 completed 200 epochs; checkpoint-only job 523 reselects
+  retained epoch 120 under the strict rule, at validation MAE/Fnorm
+  `4.3096604347`/`25.0233058929`.
 - DPA relative-PG 80D instead changes the hidden multiplicities to `[8,3,3,3,3]`, widening every
   non-scalar irrep family while restoring the even-scalar multiplicity to eight. It has 199,754
   trainable parameters under the same 24-edge dataset contract and otherwise preserves the 56D/64D
-  protocol. Job 506 completed 200 epochs and selected epoch 59 at validation MAE `4.3646082878`.
+  protocol. Job 506 completed 200 epochs; checkpoint-only job 523 reselects retained epoch 120 under
+  the strict rule, at validation MAE/Fnorm `4.4442877769`/`25.7197227478`.
 - DPA relative-PG scalar-heavy 80D changes the hidden multiplicities to `[32,2,2,2,2]`. It has
   203,492 trainable parameters and otherwise preserves the same cached DPA4 input, 24-edge router,
   split, batch, seed, optimizer, schedule, and checkpoint protocol. Job 508 completed 200 epochs and
@@ -117,24 +121,26 @@ validation MAE/Fnorm, and learning-rate history. Job-478 summary and curve SVG/P
 `d92632a5210bc4e6d7915943d5602d409ba2613ce5081ea2202474a1ed77f1a7`, and
 `889937f8958092445790bf87e77bbc995fbdd3bba033f7bc6dbc59a5d18e069c`.
 
-## All accepted training histories under post-100 checkpoint selection
+## All accepted training histories with post-100 DPA+PG reselection
 
 ![All fourteen accepted experiment histories](all_experiment_training_history.svg)
 
 The six-panel figure covers fourteen experiments, draws only fields actually present in each SHA-pinned
-summary, and does not interpolate historical gaps. Every drawn line contains contiguous epochs;
-distinct line styles/markers expose exact overlaps that previously looked like broken curves.
+training summary, and does not interpolate historical gaps. Every drawn line contains contiguous
+epochs; distinct line styles/markers expose exact overlaps that previously looked like broken curves.
+For the 56D/64D/higher-order-80D DPA relative-PG bars, the held-out Fnorm comes from job 523's
+checkpoint-only epoch-120 reevaluation; their original histories remain unchanged.
 DPA relative-PG converges much more stably than CGCNN relative-PG:
-after its epoch-95 selection point, validation Fnorm changes only from `25.4673` to `25.6309` by
-epoch 200, whereas CGCNN relative-PG selects epoch 28 and ends at `27.7946`. GMTNet still shows the
+after the newly selected retained epoch-120 point, its validation Fnorm changes only from `25.5451`
+to `25.6309` by epoch 200, whereas CGCNN relative-PG selects epoch 28 and ends at `27.7946`. GMTNet still shows the
 largest train/validation separation, but its historical runner did not record validation loss or
 validation Fnorm, so those series are intentionally absent. DPA-embedded GMTNet uses that same
 history schema; it selects epoch 196 at validation MAE `4.0617`, below original GMTNet's `4.1133`.
-The 64D relative-PG run selects epoch 69 at validation MAE `4.2565`, substantially below the 56D
-run's `4.3896`. Its validation MAE/Fnorm bottom earlier and then rise mildly while training loss
-continues downward, so the best-checkpoint reload remains important; the curve is contiguous rather
-than broken. The 80D run selects epoch 59 at validation MAE/Fnorm `4.3646`/`25.3518` and ends at
-`4.4929`/`25.9475`; it also overfits after its selected checkpoint and does not improve on 64D.
+At the retained epoch-120 checkpoints, 64D has validation MAE/Fnorm `4.3097`/`25.0233`, below 56D's
+`4.4088`/`25.5451`. Their validation minima occur earlier and the curves then rise mildly while
+training loss continues downward, so the post-100 checkpoint boundary changes the accepted test
+results without changing the recorded histories. Higher-order 80D has epoch-120 validation
+MAE/Fnorm `4.4443`/`25.7197` and ends at `4.4929`/`25.9475`; it remains worse than 64D.
 The scalar-heavy 80D run selects epoch 112 at validation MAE/Fnorm `4.1914`/`24.3932` and ends at
 `4.2736`/`24.7818`. Its post-selection drift is mild, and its selected validation MAE is the best of
 the four relative-PG width variants.
@@ -170,9 +176,9 @@ shows clear post-selection overfit despite the improved validation minimum.
 | CGCNN B+A+PGE+R full_pg (current-group only) | 159 | 10:56:41 | 26.186150 | 19.496103 | 40.77% | 10.64% | 4.28% |
 | CGCNN B+A+PGE+R full_pg (PG parent-DAG all ancestors) | 122 | 31:07:22 | 26.144173 | 19.204304 | 41.51% | 11.52% | 4.87% |
 | CGCNN B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 28 | 56:36:29 | 26.259335 | 19.407409 | 42.39% | 10.04% | 4.58% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 95 | 07:57:47 | 25.168913 | 18.816113 | 46.68% | 14.48% | 5.76% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [16, 2, 2, 2, 2]) | 69 | 08:00:45 | 24.567671 | 18.150909 | 47.12% | 14.48% | 5.32% |
-| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 3, 3, 3, 3]) | 59 | 08:37:56 | 25.724415 | 19.069616 | 46.53% | 13.88% | 6.20% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 2, 2, 2, 2]) | 120 | 07:57:47 + 00:06:22 eval | 25.129623 | 18.755424 | 46.23% | 14.03% | 4.58% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [16, 2, 2, 2, 2]) | 120 | 08:00:45 + 00:06:37 eval | 23.860819 | 17.836666 | 46.68% | 15.07% | 5.76% |
+| DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [8, 3, 3, 3, 3]) | 120 | 08:37:56 + 00:06:25 eval | 25.333380 | 19.152016 | 45.05% | 14.92% | 5.61% |
 | DPA4 B+A+PGE+R full_pg (relative-PG path-weighted, [32, 2, 2, 2, 2]) | 112 | 08:09:52 | 25.081018 | 18.268654 | 50.37% | 15.81% | 6.06% |
 | DPA-embedded GMTNet | 196 | 00:33:15 | 23.795513 | **17.019165** | **64.40%** | **25.85%** | 9.60% |
 | DPA-embedded GMTNet (300 epochs) | 170 | 00:49:28 | 25.039696 | 17.379377 | 58.20% | 24.37% | **9.90%** |
@@ -182,15 +188,17 @@ shows clear post-selection overfit despite the improved validation minimum.
 
 † 时长格式为 `HH:MM:SS`，来自各 accepted run 的零失败 JUnit runner wall time。它覆盖缓存读取、
 训练、逐 epoch 验证、best-checkpoint 重载和测试推理；不包含在该 runner 之外预先完成的 DPA
-特征或图缓存生成，因此不能直接解释为完整 Slurm 作业从提交到结束的端到端耗时。
+特征或图缓存生成，因此不能直接解释为完整 Slurm 作业从提交到结束的端到端耗时。三个带
+`+ eval` 的 DPA relative-PG 行保留原训练时长，并另列 job 523 对既有 checkpoint 的纯评估
+JUnit 时长；job 523 没有训练或 optimizer step。
 
 The five DPA-GMTNet variants split metric leadership: 300e attention has the lowest RMSE, the
 post-100 constant-tail rerun has the lowest Fnorm, job 498 has the highest EwT25/EwT10, and job 512
 has the highest EwT5. Relative to original GMTNet,
 job 498's
 RMSE/Fnorm fall by `1.654383`/`2.150045`, while EwT25/EwT10/EwT5 rise by
-`11.37`/`7.53`/`2.22` percentage points. Relative to DPA relative-PG, RMSE/Fnorm fall by
-`1.373400`/`1.796947`, and the three EwT rates rise by `17.73`/`11.37`/`3.84` points. This directly
+`11.37`/`7.53`/`2.22` percentage points. Relative to reselected 56D DPA relative-PG, RMSE/Fnorm fall by
+`1.334110`/`1.736259`, and the three EwT rates rise by `18.17`/`11.82`/`5.02` points. This directly
 supports using frozen DPA features inside GMTNet, although the wider atom projection adds 70,144
 trainable weights and prevents a strictly parameter-matched attribution.
 
@@ -232,35 +240,33 @@ to moving the selection lower bound; job 515 remains an old-rule audit run rathe
 counterfactual checkpoint re-selection.
 
 Relative to the matched DPA relative-PG 56D run, widening only the even scalar channel to 64D lowers
-RMSE by `0.601242` and Fnorm by `0.665203`, raises EwT25 by `0.44` percentage points, leaves EwT10
-unchanged, and lowers EwT5 by `0.44` points. Thus the additional scalar capacity clearly improves
-absolute tensor error and the looser relative threshold, but does not improve the strictest relative
-tail. The 64D model also selects earlier (epoch 69 versus 95) and has 30,500 more parameters
-(`130,196` versus `99,696`). It beats original GMTNet on RMSE/Fnorm by `0.882225`/`1.018301`, but
-remains behind it on EwT25/EwT10/EwT5 by `5.91`/`3.84`/`2.07` points. DPA-embedded GMTNet remains
-best on all five held-out metrics; its RMSE/Fnorm advantages over 64D relative-PG are
-`0.772158`/`1.131744`.
+RMSE by `1.268805` and Fnorm by `0.918758`, and raises EwT25/EwT10/EwT5 by
+`0.44`/`1.03`/`1.18` percentage points. Thus the additional scalar capacity improves all five
+held-out metrics after enforcing the same checkpoint boundary. Both models select retained epoch
+120, and 64D has 30,500 more parameters (`130,196` versus `99,696`). It beats original GMTNet on
+RMSE/Fnorm by `1.589077`/`1.332544`, but remains behind it on EwT25/EwT10/EwT5 by
+`6.35`/`3.25`/`1.62` points. DPA-embedded GMTNet remains better than 64D on all five held-out
+metrics, but its RMSE/Fnorm advantages narrow to `0.065306`/`0.817501`.
 
-Widening the higher-order families to 80D is worse than the 64D scalar-widened model on four of five
-metrics: RMSE/Fnorm increase by `1.156744`/`0.918707`, and EwT25/EwT10 decrease by `0.59`/`0.59`
-percentage points. Only EwT5 improves, by `0.89` points. It is also worse than the 56D model on
-RMSE/Fnorm by `0.555502`/`0.253504`, with EwT25/EwT10 lower by `0.15`/`0.59` points and EwT5 higher
-by `0.44` points. Thus the extra 69,558 parameters over 64D do not improve overall generalization;
-among the relative-PG width ablations, 64D remains the best absolute-error configuration, while 80D
-only improves the strictest relative-error tail.
+Widening the higher-order families to 80D is worse than the 64D scalar-widened model on all five
+metrics: RMSE/Fnorm increase by `1.472561`/`1.315350`, and EwT25/EwT10/EwT5 decrease by
+`1.62`/`0.15`/`0.15` percentage points. It is also worse than 56D on RMSE/Fnorm by
+`0.203756`/`0.396591` and EwT25 by `1.18` points, although EwT10/EwT5 improve by
+`0.89`/`1.03` points. Thus the extra 69,558 parameters over 64D do not improve generalization;
+among these three uniformly reselected width ablations, 64D is best on every held-out metric.
 
 The scalar-heavy 80D model adds 73,296 parameters over 64D (`203,492` versus `130,196`). It improves
-EwT25/EwT10/EwT5 by `3.25`/`1.33`/`0.74` percentage points, but RMSE/Fnorm worsen by
-`0.513348`/`0.117744`; therefore 64D remains the best relative-PG model on absolute errors, while
-scalar-heavy 80D is best on EwT25/EwT10 and second on EwT5. Against the nearly
+EwT25/EwT10/EwT5 by `3.69`/`0.74`/`0.30` percentage points, but RMSE/Fnorm worsen by
+`1.220200`/`0.431988`; therefore 64D remains the best relative-PG model on absolute errors, while
+scalar-heavy 80D is best on EwT25/EwT10/EwT5. Against the nearly
 parameter-matched higher-order 80D model (3,738 fewer parameters), scalar-heavy 80D lowers
-RMSE/Fnorm by `0.643396`/`0.800962` and raises EwT25/EwT10 by `3.84`/`1.92` points, with EwT5 lower
-by `0.15` points. Concentrating the extra capacity in scalars is consequently much more effective
+RMSE/Fnorm by `0.252361`/`0.883362` and raises EwT25/EwT10/EwT5 by
+`5.32`/`0.89`/`0.44` points. Concentrating the extra capacity in scalars is consequently much more effective
 than widening all higher-order families, but DPA-embedded GMTNet still leads scalar-heavy 80D by
 `1.285505` RMSE, `1.249489` Fnorm, and `14.03`/`10.04`/`3.55` EwT points.
 
 Relative to the DPA4 current-group row, DPA relative-PG reduces RMSE/Fnorm by
-`0.997532`/`12.723013` and raises EwT25/EwT10/EwT5 by `34.42`/`11.96`/`4.73` percentage points.
+`1.036822`/`12.783705` and raises EwT25/EwT10/EwT5 by `33.97`/`11.52`/`3.55` percentage points.
 DPA4 current-group's best checkpoint was epoch 12
 (`validation_loss=0.9333040631`); GMTNet's was epoch 93 (`validation_mae=4.1132789`); CGCNN's was
 epoch 159 (`validation_mae=4.3647098541`) after completing all 200 epochs.
@@ -281,9 +287,9 @@ GMTNet remains best on all five metrics; the CGCNN relative-PG gaps to GMTNet ar
 multiplicities, these cross-width deltas cannot isolate the causal effect of residual path weighting.
 
 DPA relative-PG improves on CGCNN relative-PG across all five metrics: RMSE/Fnorm fall by
-`1.090422`/`0.591297`, while EwT25/EwT10/EwT5 rise by `4.28`/`4.43`/`1.18` percentage points. Versus
-GMTNet it improves RMSE by `0.280983` and Fnorm by `0.353098`, but remains lower on EwT25/EwT10/EwT5
-by `6.35`/`3.84`/`1.62` points. Thus the absolute-error ranking and relative-error ranking differ:
+`1.129712`/`0.651985`, while EwT25/EwT10 rise by `3.84`/`3.99` percentage points and EwT5 is equal
+to table precision. Versus GMTNet it improves RMSE by `0.320271` and Fnorm by `0.413785`, but remains
+lower on EwT25/EwT10/EwT5 by `6.79`/`4.28`/`2.81` points. Thus the absolute-error ranking and relative-error ranking differ:
 the new model reduces large absolute tensor errors, while GMTNet still places more samples below
 each target-normalized error threshold.
 
@@ -351,7 +357,8 @@ than stable rankings.
   complete offline path topology, edge stick-breaking, path prior, and duplicate-PG reduction
   metadata verified by strict acceptance job 482.
 - DPA relative-PG Slurm job 488: artifact-driven strict acceptance passed 200/200 contiguous epochs,
-  best epoch 95, exact 5,001/637/677 splits, 677 ordered predictions, JUnit 1/0/0/0, finite metrics,
+  original unrestricted best epoch 95, exact 5,001/637/677 splits, 677 ordered predictions,
+  JUnit 1/0/0/0, finite metrics,
   ten byte/SHA-verified interval archives, and 15/15 asynchronous CUDA expert streams with up to 37
   structures in one expert sub-batch. Slurm accounting is disabled, so terminal status is established
   by the complete accepted artifact set rather than `sacct`.
@@ -396,15 +403,23 @@ than stable rankings.
   The launch revision is `5866ac9`; the shared remote worktree later advanced only through disjoint
   concurrent work. Superseded job 515 is retained as old-rule evidence and is not plotted or tabulated.
 - DPA relative-PG 64D Slurm job 505: remote and local strict acceptance passed 200/200 contiguous
-  finite epochs, best epoch 69, exact 5,001/637/677 splits, 677 manifest-ordered finite symmetric
+  finite epochs, original unrestricted best epoch 69, exact 5,001/637/677 splits, 677 manifest-ordered finite symmetric
   predictions, clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams,
   and ten byte/SHA-verified interval archives. Its hidden profile/dimension/parameter provenance is
   `[16,2,2,2,2]` / 64 / 130,196.
 - DPA relative-PG 80D Slurm job 506: remote and local strict acceptance passed 200/200 contiguous
-  finite epochs, best epoch 59, exact 5,001/637/677 splits, 677 manifest-ordered finite predictions,
+  finite epochs, original unrestricted best epoch 59, exact 5,001/637/677 splits, 677 manifest-ordered finite predictions,
   clean JUnit, exact float32 metric recomputation, 15/15 asynchronous CUDA streams, and ten
   independently SHA-verified interval archives. Its hidden profile/dimension/parameter provenance is
   `[8,3,3,3,3]` / 80 / 199,754.
+- DPA relative-PG post-100 Slurm job 523: checkpoint-only reevaluation loaded the SHA-pinned epoch-120
+  archives from jobs 488/505/506, performed zero optimizer steps and no training, and produced three
+  clean 1/0/0/0 JUnit suites over the same 677 ordered test structures. Every checkpoint satisfies
+  the exclusive `epoch > 100` boundary and embeds the expected hidden profile. The original histories'
+  exact eligible validation-MAE minima occur at epochs 106/106/101, but those epochs were not retained;
+  epoch 120 is the best actually loadable eligible interval-20 archive for all three runs. Local
+  recomputation exactly matches all reported metrics except the 64D RMSE, whose CPU/GPU reduction-order
+  difference is `1.91e-6`.
 - DPA relative-PG scalar-heavy 80D Slurm job 508: remote artifact audit and local strict acceptance
   passed 200/200 contiguous finite epochs, best epoch 112, exact 5,001/637/677 splits, 677
   manifest-ordered finite predictions, clean JUnit, exact float32 metric recomputation, 15/15
@@ -451,6 +466,21 @@ than stable rankings.
   `1fa93889139e5585243881e5896866517c7b431fbe501c314c3f916373b4f955`,
   `88e56eace2a3172f4cfb363abb9ead2a1f3232b5b3ac53bdd132ae86e5f48cbf`, and
   `199c0c9dde581b16b22b1a4c266ddfa967da9dffa2974e728dac23fb0b47b03f`.
+- Job-523 56D post-100 summary, prediction, JUnit, and source-checkpoint SHA-256:
+  `c7f56776ba9efb539b204f1d27fb8a861d54a70b3a1eaf8e82383dc68ddc8871`,
+  `114382b54c9db29e6e05374773df4ba564d35b8109323c9737f8e3795d0cfcd9`,
+  `1b439797e0922457ffa96348eeffb4c0d09240c3b9191026de43d9c6b69f2849`, and
+  `e0a950b5e30ceefa1465a7c3943271b716157ad0a3ecb3e7c4deb4dae2d589c7`.
+- Job-523 64D post-100 summary, prediction, JUnit, and source-checkpoint SHA-256:
+  `3f2962eb16a2cd41e6802e18388ececc7a7a78a0c703115934f9ed63b7ebf90c`,
+  `231c2151463278c4cd29c120df65f138316d2d43cba0a4541409d3f60ac56bc3`,
+  `048be8079101036178d6d7efe6d66583e3e682f8c0259477c1ff800f1f9b5db6`, and
+  `d8f0094501e65c5214002cfd7409d047540a83121b0ab235147aecac1f9fdb2e`.
+- Job-523 higher-order-80D post-100 summary, prediction, JUnit, and source-checkpoint SHA-256:
+  `0fc66778a42b38182f6b2978ca4e59c5ff88e85297dedbbc7d90cdf11b72ac21`,
+  `beefa3dd7ffd9e7bc3290bcd3dd88de3ca688cb2c4fef7509cc552ce08b4e960`,
+  `5a9de0e57d8186585fba72e15b641d93bdf269fe1761014a3c285752d64e1337`, and
+  `195b2096f89dcca4a456b4b95bc76dd79354ccca6064ab6242803db6541fd88a`.
 - DPA relative-PG scalar-heavy 80D prediction, summary, and JUnit SHA-256:
   `05da00622acd4b77b730e7dc5729c2e65cc781614d8b1e7de89bafc45b273101`,
   `4c98113e3944ee4c8c1237f218eb8bf499b9277635c9d606f4ab60f5f0e930c2`, and
@@ -460,9 +490,9 @@ than stable rankings.
   `664d24d60f31ce79fad599c02007ccc5bf3209601e4eeae3ea1a6409b9bb7fb1`,
   `4c20d775a409080ab8c82eec1b420b80d7eba7b70e3402b7d66c07cf47524e25`, and
   `770932805cbcfe89d4318ff493e4234c90268a7941c00f988e9d125315b3c489`.
-- Unified eleven-model history SVG/PNG SHA-256:
-  `d53f40a0f6094338cbebfc5dcdc2f58efc02be7e5dc79af31e6f60ac95b4e3a5` and
-  `800d2db0a5e5ebce5f67684b5323095e66afc10a15544e430f6b13ef99bb2b4b`.
+- Unified fourteen-model history SVG/PNG SHA-256 after post-100 DPA+PG bar updates:
+  `3e4fb96afd39944a2e1b3def795ccf48e14727f81d07468188cfacbdaa231de8` and
+  `89943408e9e14c3ed5becca32e44b05284931aaa8f6559f1cb4fcf1e85755b69`.
 - Five-model comparison JSON and table SHA-256:
   `ddf28f44be8f9272fb39ee6c813081f242c38c69cc39e7a6dd402be9e23f426e` and
   `f8751f301500a9d3c14d7d074a2c6351f59b4dc45ee3e65974dbc291d409f0ea`.
