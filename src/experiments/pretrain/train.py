@@ -20,6 +20,7 @@ from ...cli.reporting import execution_metadata
 from ...evaluation import tensor_benchmark_metrics
 from ...features import cgcnn_node_features
 from .data import dataset_from_records, standard_voigt
+from .constraints import equality_adjustment, verify_equivalence
 from .prepare import official_modules, prepare_graph, save_tensor, synchronize
 from .protocol import grid, load_records, nested_ids, run_name, sha256, write_json
 
@@ -72,6 +73,10 @@ def run(args):
         splits = {name: [attach(row, features["by_id"][row["sample_id"]]) for row in values]
                   for name, values in splits.items()}
     model_module, official_graphs, official_data = official_modules(args.official_root, task)
+    constraint_proof=verify_equivalence(model_module.equality_adjustment,
+        torch.stack([row["equality"] for row in splits["train"][:64]]).to(args.device),
+        3 if task=="dielectric" else 6,device=args.device)
+    model_module.equality_adjustment=equality_adjustment
     from torch_geometric.data import Batch
     data_type = official_graphs.Data
     config = GMTNetConfig(epochs=args.epochs, seed=spec["seed"], batch_size=64,
@@ -163,6 +168,8 @@ def run(args):
               "epochs": args.epochs, "smoke": args.smoke, "best_epoch": best_epoch,
               "best_validation_fnorm": best, "selection": "validation Fnorm; second half of training",
               "official_commit": GMTNET_OFFICIAL_COMMIT, "use_equivariant_attention": False,
+              "constraint_implementation": "original ordered operations batched across structures",
+              "constraint_equivalence": constraint_proof,
               "history": history, "test_metrics": test_metrics, "execution": execution_metadata(),
               "checkpoint_sha256": sha256(out / "best.pt"), "prediction_sha256": sha256(out / "predictions.jsonl"),
               "timing": {"feature_preparation_seconds": feature_seconds,

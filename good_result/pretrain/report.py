@@ -59,16 +59,16 @@ def dataset_figures(rows, task, output, plt):
         "split": Counter(r["split"] for r in rows)})
 
 
-def audit_run(path, spec, provenance, rows):
+def audit_run(path, spec, provenance, rows, *, smoke=False):
     report = json.loads(path.read_text(encoding="utf-8"))
-    if report["status"] != "passed" or report["smoke"] or report["spec"] != spec:
+    if report["status"] != "passed" or report["smoke"] != smoke or report["spec"] != spec:
         raise ValueError(f"invalid completed run: {path}")
-    if report["provenance"] != provenance or report["split_ids"] != nested_ids(rows, spec["fraction"]):
+    if report["provenance"] != provenance or report["split_ids"] != nested_ids(rows, spec["fraction"],smoke=smoke):
         raise ValueError(f"dataset/subset mismatch: {path}")
     history = report["history"]
     if [r["epoch"] for r in history] != list(range(1, report["epochs"]+1)):
         raise ValueError("missing epoch history")
-    eligible = [r for r in history if r["epoch"] > report["epochs"]//2]
+    eligible = [r for r in history if r["epoch"] > (0 if smoke else report["epochs"]//2)]
     best = min(eligible, key=lambda r: r["validation_fnorm"])
     if best["epoch"] != report["best_epoch"]:
         raise ValueError("checkpoint selection does not match validation history")

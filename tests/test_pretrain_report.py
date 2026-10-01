@@ -60,6 +60,17 @@ def test_pending_table_does_not_invent_metrics():
     assert "DPA" not in markup and "GMTNet" not in markup
 
 
+def test_smoke_requires_explicit_audit_opt_in(tmp_path):
+    path,spec,prov,rows,report=fixture_run(tmp_path)
+    report["smoke"]=True
+    report["history"][0]["validation_fnorm"]=.5
+    report["best_epoch"]=1
+    write_json(path,report)
+    with pytest.raises(ValueError,match="invalid completed"):
+        audit_run(path,spec,prov,rows)
+    assert audit_run(path,spec,prov,rows,smoke=True)["best_epoch"]==1
+
+
 def test_std_is_sample_std_and_single_seed_unknown():
     assert mean_std([3])[1] is None
     assert mean_std([1,2,3])==(2.,1.)

@@ -19,6 +19,9 @@ membership is preserved; other source datasets are excluded.
   using the pretrained model's native neighbor builder. Omit redundant generic
   Python neighbor enumeration, which is ignored by that extractor. Slurm smoke
   compares two actual structures against the original extraction path per task.
+- `constraints.py`: batch the original equality adjustment across structures while
+  retaining the original ordered pair updates. Every training run verifies values
+  and gradients against the original function on up to 64 actual training masks.
 - `train.py`: one grid entry per process, original per-task model architecture,
   paired training, checkpointing, test metrics and inference timing.
 - `good_result/pretrain/`: report and figures from recorded artifacts.
