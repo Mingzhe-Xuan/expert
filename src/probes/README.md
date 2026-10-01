@@ -2,6 +2,43 @@
 
 ## Standalone DPA-GMTNet probe
 
+Job537 completed on2026-10-01, using independent DPA-GMTNet498 best196 (200epochs).
+Same frozen train/validation/test5001/637/677 and source-PG ridge protocol.
+
+| Representation | Dimensions (variable) | Train accuracy | Validation accuracy | Test accuracy | Test macro-F1 |
+|---|---:|---:|---:|---:|---:|
+| **Independent DPA-GMTNet, before mask** |32 (32)|27.83%|25.59%|**23.63%**|**13.83%**|
+| Independent DPA-GMTNet, after mask |32 (29)|29.85%|30.46%|26.29%|16.52%|
+| Before mask, shuffled train labels |32 (32)|18.88%*|25.90%|22.60%|11.45%|
+| DPA PCA32 (536) |32 (32)|44.33%|42.07%|45.20%|44.61%|
+| Global branch of Global+PG (535) |32 (32)|24.98%|25.12%|21.57%|12.02%|
+| Global+PG fusion (535), before mask |32 (32)|27.27%|27.47%|25.85%|16.87%|
+| Projected PG branch (535), before mask |32 (16)|36.25%|36.11%|36.19%|27.89%|
+
+*Against shuffled labels. All three537 probes selected alpha0.001 via validation
+macro-F1. Standalone DPA-GMTNet is only1.03 percentage points above its shuffled
+control in test accuracy; this is weak evidence of PG linear separability, not a
+statistically established improvement. It is2.22 points below Global+PG fusion and
+21.57 below DPA PCA32. The majority-class bias remains (512/677 predictions are mmm).
+This does NOT establish that GMTNet destroys all PG information or has worse dielectric
+prediction. Learned compression, nonlinear encoding, scalarization before message
+passing, and task-specific training differ from raw DPA pooling/PCA; their individual
+effects have not been isolated. In particular, pooling node-wise irrep norms (GMTNet
+input processing) is not the same operation as norms after pooling used in534.
+
+Job537: COMPLETED/0:0,node221,21:51:27--21:52:12,45s wall /34.49s executor,
+sourcecd4dc03. Four preflight tests pass. Strict checkpoint/config/input metadata,
+split IDs and hashes verified; original677 dielectric predictions reproduce within
+atol2e-5/rtol2e-4 (max absolute difference4.58e-5). No optimizer/model updates.
+Independent NumPy audit matches all probe metrics/alpha choices and exact536 test labels.
+Summary `results/gmtnet-pg-probe/537/summary.json`, SHA256
+`fc07fecae1406aa441dc31255fef6e162b8ba63982fd7162c98f34d2f77bf31f`.
+Frozen pooled features saved in the same directory as `features.pt`.
+
+```bash
+python good_result/report_pca_probe.py results/pca-pg-probe/536/summary.json --sha256 ba63673016aec2fc72b27871f962c7062da8d4d442d5a6fb52d450777fbfc2dd --gmtnet-summary results/gmtnet-pg-probe/537/summary.json --gmtnet-sha256 fc07fecae1406aa441dc31255fef6e162b8ba63982fd7162c98f34d2f77bf31f
+```
+
 `slurm/probe_gmtnet_pg.sbatch` / `src.probes.gmtnet_pg` freezes Job498 best196,
 the independent200-epoch DPA-GMTNet (no optional equivariant attention). Reuses its
 exact graph cache and DPA node scalarization. Read-only hooks capture equi_update

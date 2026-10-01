@@ -27,6 +27,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('summary',type=Path)
     parser.add_argument('--sha256',required=True)
+    parser.add_argument('--gmtnet-summary',type=Path)
+    parser.add_argument('--gmtnet-sha256')
     args = parser.parse_args()
     raw = args.summary.read_bytes()
     assert hashlib.sha256(raw).hexdigest() == args.sha256
@@ -45,6 +47,17 @@ def main():
     assert 0 < ratio.sum() <= 1
     audit(pca)
     audit(fused)
+    if args.gmtnet_summary:
+        if not args.gmtnet_sha256:
+            parser.error('--gmtnet-summary requires --gmtnet-sha256')
+        raw = args.gmtnet_summary.read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == args.gmtnet_sha256
+        gmtnet = json.loads(raw)
+        assert gmtnet['source_run'] == 498 and gmtnet['checkpoint_epoch'] == 196
+        assert gmtnet['status'] == 'passed' and gmtnet['model_optimizer_steps'] == 0
+        assert gmtnet['groups'] == pca['groups'] and gmtnet['dataset_sha256'] == pca['dataset_sha256']
+        assert dict(zip(gmtnet['test_ids'],gmtnet['test_labels'])) == dict(zip(pca['test_ids'],pca['test_labels']))
+        audit(gmtnet)
     print('PCA cumulative explained variance',ratio.sum())
     print('PASS: all metrics, validation choices and test-ID labels agree')
 
