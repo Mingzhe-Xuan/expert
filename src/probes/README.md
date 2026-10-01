@@ -1,5 +1,17 @@
 # Frozen point-group probe
 
+## Standalone DPA-GMTNet probe
+
+`slurm/probe_gmtnet_pg.sbatch` / `src.probes.gmtnet_pg` freezes Job498 best196,
+the independent200-epoch DPA-GMTNet (no optional equivariant attention). Reuses its
+exact graph cache and DPA node scalarization. Read-only hooks capture equi_update
+node outputs (then crystal mean pooling) and actual output_block input after mask.
+Primary probe is before mask,32D; controls are post-mask32D and shuffled labels.
+No forward replacement or optimizer; strict checkpoint/source identity and original
+677 dielectric predictions must reproduce before any probe is accepted. Same ridge
+protocol and source PG labels as534/535/536. PG-informed preprocessing/masks used in
+training still limit claims of independent symmetry discovery.
+
 ## Dimension-matched DPA PCA probe
 
 Job536 completed successfully on2026-10-01. The first32 principal components retain
