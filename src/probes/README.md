@@ -1,5 +1,16 @@
 # Frozen point-group probe
 
+`slurm/probe_fused_pg.sbatch` probes the frozen Global+PG528 best196 checkpoint using
+existing diagnostics. Primary tap is32D crystal-level `global + sigmoid(logit)*auxiliary`,
+BEFORE explicit feature mask; no additional node pooling needed. Same ridge protocol
+as DPA probe. Controls: same-checkpoint global32D, projected PG auxiliary32D, fused
+copy-norm8D (nonlinear), post-mask32D (explicit symmetry control), shuffled fused labels.
+PG routing already uses the current PG, so this measures symmetry-conditioned decodability,
+not independently learned point-group discovery. It also cannot isolate a training effect
+versus a separately trained DPA-GMTNet. Extraction reproduces accepted test predictions,
+checks model/checkpoint metadata and SHA, never updates backbone weights; saves small
+pooled feature matrices for reuse under ignored results/fused-pg-probe/JOB.
+
 Run `python -m src.probes.pg_linear --output results/pg-probe/RUN --device cuda`
 inside Slurm using the existing DPA4 environment. Reads the 192 frozen reduced-total
 DPA feature shards and the SHA-verified reduced manifest/JSONL. Never runs DPA or
