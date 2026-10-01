@@ -2,6 +2,43 @@
 
 ## Dimension-matched DPA PCA probe
 
+Job536 completed successfully on2026-10-01. The first32 principal components retain
+**56.996% of training variance**. All comparisons below use the same6315 structures,
+train/validation/test5001/637/677, source PG labels and validation-selected ridge.
+Global/fused/PG rows reuse audited Job535, frozen528 best196; all before explicit mask.
+
+| Representation | Nominal dimension | Train accuracy | Validation accuracy | Test accuracy | Test macro-F1 |
+|---|---:|---:|---:|---:|---:|
+| **DPA mean pooling + PCA32** |32|44.33%|42.07%|**45.20%**|**44.61%**|
+| Global branch |32|24.98%|25.12%|21.57%|12.02%|
+| Global + PG fusion |32|27.27%|27.47%|25.85%|16.87%|
+| Projected PG branch |32 (16 variable)|36.25%|36.11%|36.19%|27.89%|
+| PCA32, shuffled training labels |32|20.70%*|20.25%|22.30%|16.47%|
+| DPA raw mean (reference, Job534) |3200|92.66%|63.27%|63.66%|64.25%|
+
+*Shuffled training accuracy uses shuffled labels. PCA32 alpha0.01 was chosen solely
+by validation macro-F1; no test-based PCA dimension or regularization selection.
+PCA32 exceeds global/fused/PG test accuracy by23.63/19.35/9.01 percentage points.
+Thus the observed weaker final-branch linear decoding cannot be attributed solely to
+nominal dimensionality. PCA32 loses18.46 points versus uncompressed DPA, but also
+has no large train/test gap. PCA maximizes total feature variance, not PG information;
+56.996% explained variance is NOT the fraction of PG information retained.
+These are descriptive single-split results, not causal attribution or regression rankings.
+Global/PG have task-trained representations and PG-informed routing; DPA PCA does not.
+Canonical-frame and dataset correlations remain possible for all these comparisons.
+
+Job536: COMPLETED/0:0, node221,21:27:29--21:27:52 (23s wall,13.86s probe), source67ca5eb.
+Eight preflight tests passed; reused dpa4-py310 without changes. All192 shards and6315
+unique IDs verified; independent NumPy audit agrees on both new probes' predictions,
+metrics, validation selection and exact test ID-label mapping versus535.
+Result `results/pca-pg-probe/536/summary.json`, SHA256
+`ba63673016aec2fc72b27871f962c7062da8d4d442d5a6fb52d450777fbfc2dd`.
+Saved fitted basis/mean and split projections: `results/pca-pg-probe/536/pca_features.pt`.
+
+```bash
+python good_result/report_pca_probe.py results/pca-pg-probe/536/summary.json --sha256 ba63673016aec2fc72b27871f962c7062da8d4d442d5a6fb52d450777fbfc2dd
+```
+
 `slurm/probe_pca_pg.sbatch` runs `src.probes.pg_linear --pca-dimension 32` in the
 existing dpa4-py310 environment. `src/probes/pca.py` fits exact float64 covariance
 PCA using ONLY5001 training mean-pooled raw DPA vectors (3200D): subtract training
