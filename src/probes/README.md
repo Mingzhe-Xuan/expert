@@ -2,6 +2,60 @@
 
 ## Four-model softmax probe
 
+### Results (Job 538)
+
+All four primary vectors are32D, with frozen5001/637/677 train/validation/test splits
+and seven source PG classes. No hidden layer; validation-selected L2 multinomial
+logistic regression (linear logits + softmax, cross entropy).
+
+| Representation | Checkpoint epoch | Alpha | Train accuracy | Validation accuracy | Test accuracy | Test macro-F1 | Shuffled test accuracy |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| DPA mean pooling -> PCA32 |N/A|0.001|46.31%|42.54%|**45.94%**|**46.72%**|15.51%|
+| Original GMTNet443 |93*|0.001|30.33%|29.20%|29.84%|24.07%|17.13%|
+| DPA-GMTNet498 |196|0.00001|30.31%|29.36%|27.33%|20.05%|18.32%|
+| Global+PG528 fused |196|0.000001|33.89%|33.28%|32.05%|24.81%|19.05%|
+
+*Historical original GMTNet checkpoint already used in the benchmark; it does not
+satisfy the subsequently introduced >100 rule. No new regression checkpoint selection
+was performed. This exception limits strict training-protocol comparisons.
+
+| Representation | Prior ridge accuracy / macro-F1 | Softmax accuracy / macro-F1 |
+|---|---:|---:|
+| DPA PCA32 |45.20% /44.61%|45.94% /46.72%|
+| DPA-GMTNet |23.63% /13.83%|27.33% /20.05%|
+| Global+PG fusion |25.85% /16.87%|32.05% /24.81%|
+
+No prior ridge result exists for original GMTNet443. Softmax improves Global+PG
+accuracy by6.20 points and DPA-GMTNet by3.69 points; the prior ridge limitation matters,
+but DPA PCA32 remains highest. All four exceed their own shuffled controls. Global+PG
+exceeds original GMTNet by2.22 accuracy points but only0.74 macro-F1 points; one split
+does not establish statistical significance. No result is a dielectric-performance
+ranking or proof of absence/presence of a complete internal symmetry algorithm.
+PG routing and symmetry-derived preprocessing remain explicit confounds.
+
+Global+PG selects alpha1e-6 at the lower search boundary: the grid is not exhaustively
+optimized, and was not expanded after seeing test results. Shuffled controls use a
+common permutation of sorted train IDs in538; prior jobs used their cache order, so
+their shuffled numbers are not paired controls for the classifier-family comparison.
+
+Job538 COMPLETED/0:0,node221,2026-10-01 23:16:42--23:17:31 (49s wall,38.33s executor),
+source816e5de. Six preflight tests pass. All56 optimization fits converged; largest
+max-absolute gradient8.46e-8 (required <=1e-6). Original GMTNet443 predictions reproduce
+within atol2e-5/rtol2e-4; frozen input cache hashes and all split IDs/labels verified.
+Independent NumPy audit verifies probabilities, argmax, metrics, validation-alpha choice,
+and saved classifier predictions. Existing gmtnet-py310 environment reused unchanged.
+
+Summary: `results/softmax-pg-probe/538/summary.json`, SHA256
+`f5ad2f75d79a44d2ba6144790edf8f6da587e80ffcfe98d341530375871e768b`.
+Fitted scaling/weights/biases: `classifiers.json` in the same directory. Original GMTNet
+pooled vectors: `gmtnet_extraction/features.pt`. Generated artifacts are Git-ignored.
+
+```bash
+python good_result/report_softmax_probe.py results/softmax-pg-probe/538/summary.json --sha256 f5ad2f75d79a44d2ba6144790edf8f6da587e80ffcfe98d341530375871e768b
+```
+
+### Protocol
+
 `slurm/probe_softmax_pg.sbatch` runs `src.probes.softmax_pg`. Reuses SHA-verified
 PCA536,DPA-GMTNet537 and Global+PG535 feature caches; extracts original GMTNet443
 with read-only hooks and strict reproduction of677 accepted dielectric predictions.
