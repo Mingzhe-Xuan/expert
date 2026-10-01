@@ -104,10 +104,16 @@ class PointGroupTensorModel(nn.Module):
         chain_temperature: float = 1.0,
         initial_sigma: float = 0.08,
         sigma_floor: float = 1e-8,
+        pg_expert_depth: int = 2,
     ) -> None:
         super().__init__()
         self.architecture = architecture
         self.task = task
+        if isinstance(pg_expert_depth, bool) or not isinstance(pg_expert_depth, int) or pg_expert_depth < 1:
+            raise ValueError("PG expert depth must be a positive integer")
+        if pg_expert_depth != 2 and architecture.pg_hidden_mode != "full_pg":
+            raise ValueError("custom PG expert depth requires full_pg")
+        self.pg_expert_depth = pg_expert_depth
         self.grouped_pg_gates = grouped_pg_gates
         self.vectorized_pg_routing = vectorized_pg_routing
         if pg_weighting not in {"legacy", "within_cross_chain"}:
@@ -165,7 +171,8 @@ class PointGroupTensorModel(nn.Module):
             self.pg_experts = nn.ModuleDict(
                 {
                     _expert_key(self.registry[symbol].number): expert_type(
-                        self.registry[symbol], self.hidden_layout
+                        self.registry[symbol], self.hidden_layout,
+                        **({"depth": pg_expert_depth} if architecture.pg_hidden_mode == "full_pg" else {}),
                     )
                     for symbol in selected
                 }

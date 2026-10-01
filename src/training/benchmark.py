@@ -158,6 +158,7 @@ class CachedBackboneTensorModel(nn.Module):
         chain_temperature: float = 1.0,
         initial_sigma: float = 0.08,
         sigma_floor: float = 1e-8,
+        pg_expert_depth: int = 2,
     ) -> None:
         super().__init__()
         hidden_layout = hidden_layout or default_hidden_layout(architecture)
@@ -174,6 +175,7 @@ class CachedBackboneTensorModel(nn.Module):
             chain_temperature=chain_temperature,
             initial_sigma=initial_sigma,
             sigma_floor=sigma_floor,
+            pg_expert_depth=pg_expert_depth,
         )
 
     def forward(
@@ -570,6 +572,8 @@ def train_cached_backbone_readout(
     sigma_floor: float = 1e-8,
     grouped_pg_gates: bool = True,
     vectorized_pg_routing: bool = True,
+    pg_expert_depth: int = 2,
+    expected_trainable_parameters: int | None = None,
 ) -> dict[str, object]:
     """Train a tensor architecture over a once-materialized frozen backbone tap."""
 
@@ -617,6 +621,7 @@ def train_cached_backbone_readout(
                 material_edge_ids,
                 hidden_layout,
                 pg_weighting=pg_weighting,
+                pg_expert_depth=pg_expert_depth,
                 chain_temperature=chain_temperature,
                 initial_sigma=initial_sigma,
                 sigma_floor=sigma_floor,
@@ -650,6 +655,9 @@ def train_cached_backbone_readout(
     best_epoch = 0
     stale = 0
     history = []
+    actual_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    if expected_trainable_parameters is not None and actual_parameters != expected_trainable_parameters:
+        raise ValueError(f"trainable parameter budget mismatch: {actual_parameters} != {expected_trainable_parameters}")
     periodic_checkpoints = []
     training_batch_size = min(config.batch_size, len(train_examples))
     steps_per_epoch = (

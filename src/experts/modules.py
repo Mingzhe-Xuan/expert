@@ -179,10 +179,14 @@ class _FiniteGroupBlock(nn.Module):
 
 
 class FullPointGroupExpert(nn.Module):
-    """Two independent blocks retaining all finite-group irreducible carriers."""
+    """Independent blocks retaining all finite-group irreducible carriers."""
 
-    def __init__(self, group: PointGroup, layout: IrrepLayout, *, bypass_c1: bool = True) -> None:
+    def __init__(self, group: PointGroup, layout: IrrepLayout, *, bypass_c1: bool = True,
+                 depth: int = 2) -> None:
         super().__init__()
+        if isinstance(depth, bool) or not isinstance(depth, int) or depth < 1:
+            raise ValueError("expert depth must be a positive integer")
+        self.depth = depth
         self.group_symbol = group.symbol
         self.layout = layout
         plan = build_subduction_plan(group, layout)
@@ -191,13 +195,10 @@ class FullPointGroupExpert(nn.Module):
         self.copy_metadata = plan.copies
         slices = tuple(slice(copy.start, copy.stop) for copy in plan.copies)
         if group.symbol == "1" and bypass_c1:
-            self.blocks = nn.ModuleList((nn.Identity(), nn.Identity()))
+            self.blocks = nn.ModuleList(nn.Identity() for _ in range(depth))
         else:
             self.blocks = nn.ModuleList(
-                (
-                    _FiniteGroupBlock(plan.representation, slices),
-                    _FiniteGroupBlock(plan.representation, slices),
-                )
+                _FiniteGroupBlock(plan.representation, slices) for _ in range(depth)
             )
 
     def forward(self, features: torch.Tensor) -> torch.Tensor:

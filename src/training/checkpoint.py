@@ -58,6 +58,7 @@ def save_checkpoint(
         "normalizer": normalizer.state_dict(),
         "model_state": model.state_dict(),
         "optimizer_state": optimizer.state_dict(),
+        "pg_expert_depth": getattr(getattr(model, "downstream", model), "pg_expert_depth", 2),
     }
     routing_metadata = _pg_routing_metadata(model)
     if routing_metadata is not None:
@@ -95,6 +96,10 @@ def load_checkpoint(
         raise ValueError("checkpoint convention metadata mismatch")
     if payload.get("pg_routing") != _pg_routing_metadata(model):
         raise ValueError("checkpoint PG routing metadata mismatch")
+    if payload.get("pg_expert_depth", 2) != getattr(
+        getattr(model, "downstream", model), "pg_expert_depth", 2
+    ):
+        raise ValueError("checkpoint PG expert depth mismatch")
     normalizer = CoefficientNormalizer.from_state_dict(
         payload["normalizer"],
         expected_unit=expected_unit,

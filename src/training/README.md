@@ -1,5 +1,10 @@
 # Training
 
+Standalone full-PG training accepts `pg_expert_depth` (default 2). The heavy DPA+PG
+launcher uses 12 independent blocks per expert, 64D carrier, 200 epochs, saved weights
+every 20 epochs and validation-MAE selection strictly after epoch 100. Checkpoint metadata
+records depth and rejects incompatible restores; absent historical depth means two blocks.
+
 Training computes supervised loss in labelled irrep coefficient blocks and keeps each
 dataset-by-property unit independent. Checkpoints store model/optimizer state,
 train-split normalizers, configuration, and all numerical convention checksums; loading

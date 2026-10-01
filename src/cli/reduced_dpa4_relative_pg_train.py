@@ -168,6 +168,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         minimum_checkpoint_epoch_exclusive = 0 if arguments.smoke else 100
     pg_weighting = getattr(arguments, "pg_weighting", "within_cross_chain")
     chain_options = {
+        "pg_expert_depth": getattr(arguments, "pg_expert_depth", 2),
         "pg_weighting": pg_weighting,
         "chain_temperature": getattr(arguments, "chain_temperature", 1.0),
         "initial_sigma": getattr(arguments, "initial_sigma", .08),
@@ -276,6 +277,7 @@ def run(arguments: argparse.Namespace) -> dict[str, object]:
         material_edge_ids=material_edge_ids,
         hidden_layout=hidden_layout,
         **chain_options,
+        expected_trainable_parameters=getattr(arguments, "expected_trainable_parameters", None),
         config=BenchmarkConfig(
             max_epochs=arguments.epochs,
             batch_size=arguments.batch_size,
@@ -320,6 +322,8 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1.0e-5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-interval", type=int, default=20)
+    parser.add_argument("--pg-expert-depth", type=int, default=2)
+    parser.add_argument("--expected-trainable-parameters", type=int)
     parser.add_argument("--minimum-checkpoint-epoch-exclusive", type=int)
     parser.add_argument("--pg-weighting", choices=("within_cross_chain", "legacy"), default="within_cross_chain")
     parser.add_argument("--chain-temperature", type=float, default=1.0)

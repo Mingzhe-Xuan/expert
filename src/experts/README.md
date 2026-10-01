@@ -1,5 +1,12 @@
 # Experts
 
+`FullPointGroupExpert(depth=2)` and `PointGroupTensorModel(pg_expert_depth=2)` expose
+the number of independently initialized finite-group blocks. Grouped execution accepts
+the same depth and retains identical parameter keys. Default two-block checkpoints remain
+compatible. Depth is recorded in newly saved training checkpoints; loading a different
+depth is rejected before model state mutation. The standalone DPA training CLI exposes
+`--pg-expert-depth`; the heavy launcher uses 12 blocks at [16,2,2,2,2] (64D).
+
 `PointGroupTensorModel` defaults to `grouped_pg_gates=True` and
 `vectorized_pg_routing=True`; `CachedBackboneTensorModel` exposes the same keyword
 options. Set both false for the original execution path. Grouping lives in
