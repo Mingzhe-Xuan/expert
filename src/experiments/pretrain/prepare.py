@@ -90,7 +90,21 @@ def prepare(args):
         samples = tuple(dataset.by_id(sid) for sid in dataset.split_manifest.test[:32])
     output = args.output
     if output.exists():
-        raise FileExistsError(f"refusing to overwrite preparation artifact: {output}")
+        if not args.reuse_existing:
+            raise FileExistsError(f"refusing to overwrite preparation artifact: {output}")
+        if args.mode == "verify":
+            previous=json.loads(output.read_text())
+            if previous.get("status")!="passed" or previous["provenance"]!=provenance:
+                raise ValueError("existing feature equivalence proof mismatch")
+        else:
+            previous=torch.load(output,map_location="cpu",weights_only=True)
+            if (previous["provenance"]!=provenance or previous["smoke"]!=args.smoke
+                or previous["inference"]!=args.inference
+                or set(previous["by_id"])!={s.sample_id for s in samples}
+                or not output.with_suffix(".json").is_file()):
+                raise ValueError("existing preparation cache mismatch")
+        print(json.dumps({"reused_verified_artifact":str(output)}),flush=True)
+        return
     start = time.perf_counter()
     by_id = {}
     times = {}
@@ -153,6 +167,7 @@ def main():
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--inference", action="store_true")
+    parser.add_argument("--reuse-existing", action="store_true")
     prepare(parser.parse_args())
 
 

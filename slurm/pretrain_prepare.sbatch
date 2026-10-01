@@ -11,22 +11,22 @@
 #SBATCH --error=logs/slurm/pretrain-prepare-%A_%a.err
 set -euo pipefail
 export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
-: "${EXPERT_GMTNET_ROOT:=/home/xmz/expert-data/vendor/GMTNet}"
+: "${EXPERT_GMTNET_ROOT:=/home/xmz/expert-data/vendor/GMTNet-pinned-7a606a4}"
 : "${EXPERT_GMTNET_VENV:=/home/xmz/expert-envs/gmtnet-py310}"
 : "${EXPERT_DPA4_VENV:=/home/xmz/expert-envs/dpa4-py310}"
 : "${EXPERT_PRETRAIN_ROOT:=results/pretrain/20261001}"
 tasks=(dielectric elastic)
 task="${tasks[${SLURM_ARRAY_TASK_ID:-0}]}"
-extra=()
+extra=(--reuse-existing)
 if [[ "${EXPERT_PRETRAIN_SMOKE:-0}" == 1 ]]; then extra+=(--smoke); fi
 cache="${EXPERT_PRETRAIN_ROOT}/cache/${task}"
 mkdir -p "${cache}"
-git rev-parse HEAD > "${cache}/git.txt"
-"${EXPERT_DPA4_VENV}/bin/python" -m pip freeze > "${cache}/feature-environment.txt"
-"${EXPERT_GMTNET_VENV}/bin/python" -m pip freeze > "${cache}/training-environment.txt"
+git rev-parse HEAD > "${cache}/git-${SLURM_JOB_ID}.txt"
+"${EXPERT_DPA4_VENV}/bin/python" -m pip freeze > "${cache}/feature-environment-${SLURM_JOB_ID}.txt"
+"${EXPERT_GMTNET_VENV}/bin/python" -m pip freeze > "${cache}/training-environment-${SLURM_JOB_ID}.txt"
 if [[ "${EXPERT_PRETRAIN_SMOKE:-0}" == 1 ]]; then
   "${EXPERT_DPA4_VENV}/bin/python" -m src.experiments.pretrain.prepare \
-    --task "${task}" --mode verify --output "${cache}/native-equivalence.json" --smoke
+    --task "${task}" --mode verify --output "${cache}/native-equivalence.json" --smoke --reuse-existing
 fi
 "${EXPERT_DPA4_VENV}/bin/python" -m src.experiments.pretrain.prepare \
   --task "${task}" --mode features --output "${cache}/features.pt" "${extra[@]}"

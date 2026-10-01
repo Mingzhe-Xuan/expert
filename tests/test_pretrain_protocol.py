@@ -1,5 +1,7 @@
 import math
 import unittest
+import tempfile
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -105,6 +107,26 @@ class ProtocolTests(unittest.TestCase):
         carrier=geometry_input(sample.cartesian_positions,sample.lattice,sample.atomic_numbers,1.)
         self.assertEqual(carrier.num_edges,0)
         self.assertGreater(graph.num_edges,0)
+
+    def test_preparation_reuse_rejects_identity_drift(self):
+        from src.experiments.pretrain.prepare import prepare
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/"features.pt"
+            args=SimpleNamespace(task="dielectric",group_scope="all",smoke=False,inference=False,
+                                 output=path,reuse_existing=True,mode="features")
+            payload={"provenance":{"sha":"abc"},"smoke":False,"inference":False,"by_id":{"a":{}}}
+            torch.save(payload,path)
+            path.with_suffix(".json").write_text("{}")
+            with patch("src.experiments.pretrain.prepare.load_records",return_value=([],{"sha":"abc"})), \
+                 patch("src.experiments.pretrain.prepare.dataset_from_records",return_value=[SimpleNamespace(sample_id="a")]):
+                prepare(args)
+                payload["by_id"]={"b":{}}
+                torch.save(payload,path)
+                with self.assertRaisesRegex(ValueError,"cache mismatch"):
+                    prepare(args)
+                args.reuse_existing=False
+                with self.assertRaises(FileExistsError):
+                    prepare(args)
 
 
 if __name__ == "__main__":

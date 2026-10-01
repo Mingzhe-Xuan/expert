@@ -11,7 +11,7 @@
 #SBATCH --error=logs/slurm/pretrain-train-%A_%a.err
 set -euo pipefail
 export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
-: "${EXPERT_GMTNET_ROOT:=/home/xmz/expert-data/vendor/GMTNet}"
+: "${EXPERT_GMTNET_ROOT:=/home/xmz/expert-data/vendor/GMTNet-pinned-7a606a4}"
 : "${EXPERT_GMTNET_VENV:=/home/xmz/expert-envs/gmtnet-py310}"
 : "${EXPERT_PRETRAIN_ROOT:=results/pretrain/20261001}"
 extra=()

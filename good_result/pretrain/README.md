@@ -36,6 +36,10 @@ AdamW、batch 64、学习率 1e-3 线性衰减到 1e-5。仅替换节点输入�
   目标幅值分箱仅用完整训练集四分位数确定，各组标注样本数。
 - `*_dataset_distribution.png/svg`：全部 train/validation/test 结构的点群和晶系分布。
 - `audit.json`：来源、划分、曲线、独立重算指标及风险统计。
+- `efficiency_comparisons.json`：pretrain 50% 与 O(3) 100% 的配对 seed Fnorm 差值，
+  以及达到共同 validation Fnorm 阈值的 epoch／训练秒数；未达到阈值的运行明确保留。
+
+当前协议检验同一固定划分上的数据效率；没有成分隔离或结构族隔离，不能据此宣称域外泛化改善。
 
 Fnorm 为逐结构矩阵 Frobenius 误差的均值；elastic 使用 6×6 Voigt 矩阵。
 EwT 使用 `||error|| / (||target|| + 1e-5)`，表内为百分比。

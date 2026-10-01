@@ -120,6 +120,36 @@ def mean_std(values):
     return float(values.mean()), float(values.std(ddof=1)) if len(values)>1 else None
 
 
+def efficiency_comparisons(reports):
+    comparisons={}
+    for task in TASKS:
+        baseline={r["spec"]["seed"]:r for r in reports if r["spec"]["task"]==task
+                  and r["spec"]["model"]=="O(3)" and r["spec"]["fraction"]==100}
+        half={r["spec"]["seed"]:r for r in reports if r["spec"]["task"]==task
+              and r["spec"]["model"]=="pretrain" and r["spec"]["fraction"]==50}
+        if set(baseline)!=set(SEEDS) or set(half)!=set(SEEDS):
+            comparisons[task]={"status":"pending three complete seeds for both comparisons"}
+            continue
+        delta=[half[s]["test_metrics"]["fnorm"]-baseline[s]["test_metrics"]["fnorm"] for s in SEEDS]
+        avg,std=mean_std(delta)
+        threshold=float(np.mean([r["best_validation_fnorm"] for r in baseline.values()]))
+        hits=[]
+        for r in reports:
+            if r["spec"]["task"]!=task:
+                continue
+            hit=next((h for h in r["history"] if h["validation_fnorm"]<=threshold),None)
+            hits.append({"spec":r["spec"],"epoch":None if hit is None else hit["epoch"],
+                         "seconds":None if hit is None else hit["elapsed_training_seconds"],
+                         "status":"not reached" if hit is None else "reached"})
+        comparisons[task]={"status":"complete", "fnorm_pretrain50_minus_o3_100_mean":avg,
+                           "paired_seed_difference_std":std,"point_estimate_matches_or_improves":avg<=0,
+                           "interpretation":"descriptive comparison; not a formal noninferiority test",
+                           "validation_convergence_threshold":threshold,
+                           "threshold_definition":"mean best validation Fnorm of O(3) with 100% labels",
+                           "convergence":hits}
+    return comparisons
+
+
 def table(reports):
     columns = [("Fnorm", lambda r:r["test_metrics"]["fnorm"]),
                ("EwT 5% (%)", lambda r:r["test_metrics"]["ewt_5"]),
@@ -250,6 +280,16 @@ def render(args):
     body=f"<h1>Pretraining label efficiency</h1><p><strong>{status}</strong>. Missing runs are pending; no estimated metrics.</p>"
     body+="<p>Each row reports mean ± sample standard deviation over training seeds. Separate tasks and units: total dielectric (dimensionless), elastic (GPa). Fixed validation/test sets; nested training subsets.</p>"+markup
     body+="<p>Preparation: measured work allocated to selected train+validation records, including initialization and full serialization overhead. Total = feature preparation + graph preparation + training. Preparation is reused across seeds. New-structure latency sums fresh feature extraction, graph construction and prediction with resident models.</p>"
+    comparisons=efficiency_comparisons(reports)
+    write_json(output/"efficiency_comparisons.json",comparisons)
+    body+="<h2>50% labels versus 100% labels</h2>"
+    for task,comparison in comparisons.items():
+        if comparison["status"]!="complete":
+            body+=f"<p>{TASKS[task]}: pending three seeds for each model.</p>"
+        else:
+            delta=comparison["fnorm_pretrain50_minus_o3_100_mean"]
+            sd=comparison["paired_seed_difference_std"]
+            body+=f"<p>{TASKS[task]}: Fnorm difference (pretrain 50% minus O(3) 100%) = {delta:.4g} ± {sd:.3g}. Negative favors pretrain. Descriptive seed comparison; no formal equivalence claim.</p>"
     for task in TASKS:
         body+=f'<h2>{TASKS[task]}</h2><img src="{task}_dataset_distribution.png">'
         task_reports=[r for r in reports if r["spec"]["task"]==task]

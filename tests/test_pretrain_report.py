@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pytest
 
-from good_result.pretrain.report import audit_run, mean_std, table
+from good_result.pretrain.report import audit_run, efficiency_comparisons, mean_std, table
 from src.experiments.pretrain.protocol import nested_ids, sha256, write_json
 
 
@@ -63,3 +63,16 @@ def test_pending_table_does_not_invent_metrics():
 def test_std_is_sample_std_and_single_seed_unknown():
     assert mean_std([3])[1] is None
     assert mean_std([1,2,3])==(2.,1.)
+
+
+def test_efficiency_comparison_preserves_unreached_runs():
+    reports=[]
+    for seed in (42,43,44):
+        for model,fraction,score in (("O(3)",100,5.),("pretrain",50,4.)):
+            reports.append({"spec":{"task":"dielectric","seed":seed,"fraction":fraction,"model":model},
+                            "test_metrics":{"fnorm":score},"best_validation_fnorm":2.,
+                            "history":[{"epoch":1,"validation_fnorm":3.,"elapsed_training_seconds":1.}]})
+    got=efficiency_comparisons(reports)
+    assert got["dielectric"]["fnorm_pretrain50_minus_o3_100_mean"]==-1
+    assert all(r["epoch"] is None and r["status"]=="not reached" for r in got["dielectric"]["convergence"])
+    assert got["elastic"]["status"].startswith("pending")
