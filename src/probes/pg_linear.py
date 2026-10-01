@@ -70,7 +70,7 @@ def fit_probe(x, y, classes, device='cpu', shuffle=False):
                 test_predictions=prediction.tolist())
 
 
-def run(output, device):
+def run(output, device, pca_dimension=None):
     started = time.monotonic()
     root = Path.cwd()
     manifest = json.loads((root/'data/manifests/curated_tensors_reduced_gt_5pct.json').read_text())['artifacts']['dielectric_total']
@@ -118,9 +118,17 @@ def run(output, device):
         print(f'pooled {split}: {count}', flush=True)
     majority = int(torch.bincount(targets['train'], minlength=len(groups)).argmax())
     results = {}
-    for name in ('raw_mean','even_scalars','pooled_norms','composition','shuffled_raw_mean'):
-        feature = 'raw_mean' if name == 'shuffled_raw_mean' else name
-        results[name] = fit_probe({s:matrices[s][feature] for s in matrices}, targets, len(groups), device, name=='shuffled_raw_mean')
+    pca_state = None
+    names = ('raw_mean','even_scalars','pooled_norms','composition','shuffled_raw_mean')
+    if pca_dimension is not None:
+        from .pca import project_pca
+        projected, pca_state = project_pca({s:v['raw_mean'] for s,v in matrices.items()},pca_dimension,device)
+        for s in matrices:
+            matrices[s]['pca'] = projected[s]
+        names = ('pca','shuffled_pca')
+    for name in names:
+        feature = name.removeprefix('shuffled_')
+        results[name] = fit_probe({s:matrices[s][feature] for s in matrices}, targets, len(groups), device, name.startswith('shuffled_'))
         print(name, results[name]['alpha'], results[name]['test'], flush=True)
     summary = dict(status='passed', classifier='affine_multiclass_ridge_one_hot',
                    label_definition='source_point_group', groups=groups, dataset_sha256=DATA_SHA,
@@ -132,6 +140,13 @@ def run(output, device):
                    probes=results, test_ids=split_ids['test'], test_labels=targets['test'].tolist(),
                    seconds=time.monotonic()-started, torch_version=str(torch.__version__))
     output.mkdir(parents=True, exist_ok=True)
+    if pca_state is not None:
+        summary['pca'] = dict(input_dimension=3200,output_dimension=pca_dimension,
+                             fit_split='train',input_scaling='center_only',whiten=False,
+                             explained_variance_ratio=pca_state['explained_variance_ratio'].tolist(),
+                             cumulative_explained_variance=float(pca_state['explained_variance_ratio'].sum()))
+        torch.save(dict(**pca_state,features=projected,ids=split_ids,labels=targets,
+                        dataset_sha256=DATA_SHA), output/'pca_features.pt')
     (output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
 
 
@@ -139,6 +154,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--device', default='cuda')
+    parser.add_argument('--pca-dimension', type=int)
     args = parser.parse_args()
     torch.set_num_threads(4)
-    run(args.output,args.device)
+    run(args.output,args.device,args.pca_dimension)

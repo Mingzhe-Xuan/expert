@@ -1,5 +1,20 @@
 # Frozen point-group probe
 
+## Dimension-matched DPA PCA probe
+
+`slurm/probe_pca_pg.sbatch` runs `src.probes.pg_linear --pca-dimension 32` in the
+existing dpa4-py310 environment. `src/probes/pca.py` fits exact float64 covariance
+PCA using ONLY5001 training mean-pooled raw DPA vectors (3200D): subtract training
+mean, no input variance scaling or whitening, retain top32 principal directions.
+Validation/test only transform using this frozen basis. Subsequent train-only
+standardization and ridge selection are identical to previous probes. No PG labels
+enter PCA; it remains an affine linear map of raw mean-pooled DPA features.
+Outputs include variance ratios, basis/mean and projected split matrices in ignored
+`pca_features.pt`, metrics/predictions in `summary.json`, plus shuffled-label control.
+Comparison uses Job535 global32D/fused32D/projected PG32D (16 nonconstant coordinates).
+This matches nominal dimension, not irrep content, feature rank or training objective;
+global and PG here are branches of528, not separately trained model checkpoints.
+
 ## Global + PG final fusion result (Job 535)
 
 Frozen Job528 best196 checkpoint; reduced dielectric splits5001/637/677, seven
