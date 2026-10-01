@@ -38,6 +38,8 @@ def test_independent_metrics_and_risk(tmp_path):
     got=audit_run(path,spec,prov,rows)
     assert got["_distance"].tolist()==[3.,0.]
     assert got["risk"]["over_25pct"]==0
+    assert got["physical_consistency"]["matrix_symmetry_max_abs"]==0
+    assert got["physical_consistency"]["positive_prediction_percent_on_positive_reference"]==100
 
 
 @pytest.mark.parametrize("field",["fnorm","subset","time","checkpoint"])

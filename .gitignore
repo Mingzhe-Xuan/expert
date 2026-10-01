@@ -12,3 +12,6 @@ data/vendor/
 results/
 logs/
 checkpoints/
+
+# Temporary bundles, checks and collector logs for the pretraining experiment.
+/tmp/pretrain*

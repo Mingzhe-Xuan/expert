@@ -111,6 +111,21 @@ def audit_run(path, spec, provenance, rows, *, smoke=False):
                       "relative_p90": float(np.quantile(relative,.90)),
                       "relative_p95": float(np.quantile(relative,.95)),
                       "over_25pct": float(100*np.mean(relative>=.25))}
+    symmetry_error=np.linalg.norm((pred-pred.transpose(0,2,1)).reshape(len(pred),-1),axis=1)
+    pred_norm=np.linalg.norm(pred.reshape(len(pred),-1),axis=1)
+    scale=np.ones(pred.shape[-1])
+    if spec["task"]=="elastic":
+        scale[3:]=np.sqrt(2.)
+    kelvin_pred=.5*(pred+pred.transpose(0,2,1))*scale[None,:,None]*scale[None,None,:]
+    kelvin_target=.5*(target+target.transpose(0,2,1))*scale[None,:,None]*scale[None,None,:]
+    target_stable=np.linalg.eigvalsh(kelvin_target)[:,0]>1e-6
+    report["physical_consistency"]={
+        "matrix_symmetry_relative_mean":float(np.mean(symmetry_error/(pred_norm+1e-5))),
+        "matrix_symmetry_max_abs":float(np.max(np.abs(pred-pred.transpose(0,2,1)))),
+        "positive_reference_count":int(target_stable.sum()),
+        "positive_prediction_percent_on_positive_reference":float(100*np.mean(
+            np.linalg.eigvalsh(kelvin_pred)[target_stable,0]>1e-6)) if target_stable.any() else None,
+        "definition":"symmetric dielectric matrix or Kelvin stiffness; absolute eigenvalue threshold 1e-6; no point-group residual claim"}
     report["_distance"], report["_relative"] = distance, relative
     return report
 

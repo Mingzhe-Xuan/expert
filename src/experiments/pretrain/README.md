@@ -24,6 +24,11 @@ membership is preserved; other source datasets are excluded.
   and gradients against the original function on up to 64 actual training masks.
 - `train.py`: one grid entry per process, original per-task model architecture,
   paired training, checkpointing, test metrics and inference timing.
+- `collect.py`: optional local background collection after the dependency-gated
+  report job. Every SSH/SCP connection is logged before use; work connections disable
+  forwards and pull the exact task bundle first. Checksums and archive member paths
+  are validated before extraction. No checkpoints are downloaded; final visual
+  inspection remains explicit. Three failed SSH attempts stop with needs-attention.
 - `good_result/pretrain/`: report and figures from recorded artifacts.
 
 The two models differ only in the scalar atom inputs (92 elemental descriptors versus

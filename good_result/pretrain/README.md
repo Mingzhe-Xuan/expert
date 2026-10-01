@@ -37,7 +37,8 @@ AdamW、batch 64、学习率 1e-3 线性衰减到 1e-5。仅替换节点输入�
 - `*_groups_p{25,50,75,100}.png/svg`：固定测试集按点群、元素数、原子数、目标幅值分组的 Fnorm。
   目标幅值分箱仅用完整训练集四分位数确定，各组标注样本数。
 - `*_dataset_distribution.png/svg`：全部 train/validation/test 结构的点群和晶系分布。
-- `audit.json`：来源、划分、曲线、独立重算指标及风险统计。
+- `audit.json`：来源、划分、曲线、独立重算指标、相对误差中位数／P90／P95／超过 25% 比例，
+  以及矩阵对称性误差和参考张量为正定时的预测正定比例（elastic 使用 Kelvin 矩阵）。
 - `efficiency_comparisons.json`：pretrain 50% 与 O(3) 100% 的配对 seed Fnorm 差值，
   以及达到共同 validation Fnorm 阈值的 epoch／训练秒数；未达到阈值的运行明确保留。
 
