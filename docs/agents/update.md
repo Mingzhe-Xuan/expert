@@ -1,5 +1,9 @@
 # Agent progress updates
 
+## Heavy PG completion record (2026-10-01 12:04)
+
+Source 9a41979: requested [16,2,2,2,2], 12 independent blocks, 769156 trainable parameters (+4.13% vs DPA-GMTNet). Local 41 tests passed; Job 533 preflight 18 passed. Verified RUNNING on node221 with 8 CPUs, 64G, 1 GPU; 200 epochs, interval 20, selection >100. SHA-verified bundle pull, existing dpa4-py310 and 192 frozen shards reused. No other jobs changed. Depth is checkpoint metadata; uniform integer depth gives approximate, not exact, parameter matching. Details: docs/benchmarks/heavy_dpa_relative_pg.md.
+
 - 2026-09-30: Standalone implementation pushed through ef167ba and synchronized to
   Guqq. Server CPU job 525 passed all 33 strict-double tests. GPU retry 524 remains
   queued behind existing job 523. Documented validation and pending measurement;

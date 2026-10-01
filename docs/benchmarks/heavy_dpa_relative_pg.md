@@ -45,3 +45,17 @@ Requested 64D/12-block tests: 41 passed (172.79s), covering independent blocks, 
 output and gradient parity, exact budget/nearest depth, full-model optimizer step and checkpoint
 round trip, plus reduced-trainer and historical checkpoint regressions. Launcher bash syntax and
 scoped diff checks passed. The Slurm job repeats heavy/checkpoint tests before training.
+
+## Submitted run
+
+Job **533** started on node221 at 2026-10-01 12:04:17 +08:00, source `9a41979`.
+Slurm confirms RUNNING, 8 CPUs, 64 GiB, one GPU and a three-day limit. All 192 frozen
+feature shards are present. Slurm preflight: **18 passed in 16.49s**. Training outputs:
+`results/reduced-benchmark/dpa4-relative-pg-heavy/533/`. No training result is claimed yet.
+
+## Submitted run
+
+Job **533** started on node221 at 2026-10-01 12:04:17 +08:00, source `9a41979`.
+Slurm confirms RUNNING, 8 CPUs, 64 GiB, one GPU and a three-day limit. All 192 frozen
+feature shards are present. Slurm preflight: **18 passed in 16.49s**. Training outputs:
+`results/reduced-benchmark/dpa4-relative-pg-heavy/533/`. No training result is claimed yet.
