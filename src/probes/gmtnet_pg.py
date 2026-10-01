@@ -38,31 +38,44 @@ def run(args):
         _load_official_modules,_replace_atom_embedding,_collate)
     from torch_geometric.data import Batch
     started = time.monotonic()
-    assert sha(SOURCE) == SOURCE_SHA
-    source = json.loads(SOURCE.read_text())
+    baseline = getattr(args,'baseline',False)
+    source_path = Path('results/reduced-benchmark/gmtnet/summary-443.json') if baseline else SOURCE
+    source_sha = 'b4ded0b3696e87406fef4046b56685c0ae4d21b9bd5f9f3bd7cb1354abd9e6ae' if baseline else SOURCE_SHA
+    checkpoint_sha = '7b3dc15bd5c342a768d77f39a17e42cc9934dc5251fb5f6eea2231da866c0d0d' if baseline else CHECKPOINT_SHA
+    predictions_sha = '484a4aa4137779013387f1470e5f9278d4f02c12523512c698128c7b4ca9d64c' if baseline else PREDICTIONS_SHA
+    assert sha(source_path) == source_sha
+    source = json.loads(source_path.read_text())
     checkpoint = Path(source['checkpoint'])
-    assert sha(checkpoint) == CHECKPOINT_SHA and sha(source['predictions']) == PREDICTIONS_SHA
-    assert source['dataset_sha256'] == DATA_SHA and source['dpa4_checkpoint_sha256'] == DPA_SHA
+    assert sha(checkpoint) == checkpoint_sha and sha(source['predictions']) == predictions_sha
+    assert source['dataset_sha256'] == DATA_SHA
+    if not baseline:
+        assert source['dpa4_checkpoint_sha256'] == DPA_SHA
     unit = TrainingUnit('curated_reduced_total','dielectric')
     manifest = Path('data/manifests/curated_tensors_reduced_gt_5pct.json')
     dataset = load_training_dataset(unit,manifest_path=manifest)
     assert dataset[0].source['manifest_sha256'] == DATA_SHA
     ids = {s:tuple(getattr(dataset.split_manifest,s)) for s in ('train','validation','test')}
     assert {s:len(v) for s,v in ids.items()} == dict(train=5001,validation=637,test=677)
-    layout,features = _load_dpa4_feature_splits(cache_root=Path('results/reduced-benchmark/cache'),
-        unit=unit,full_ids=ids,selected_ids=ids,shard_count=64,checkpoint_sha256=DPA_SHA,dataset_sha256=DATA_SHA)
     splits = _prepare_cache(dataset,args.official_root,Path('results/reduced-benchmark/cache/gmtnet-graphs.pt'),DATA_SHA,ids)
-    splits = _attach_dpa4_node_embeddings(splits,features,layout)
-    del features
+    if not baseline:
+        layout,features = _load_dpa4_feature_splits(cache_root=Path('results/reduced-benchmark/cache'),
+            unit=unit,full_ids=ids,selected_ids=ids,shard_count=64,checkpoint_sha256=DPA_SHA,dataset_sha256=DATA_SHA)
+        splits = _attach_dpa4_node_embeddings(splits,features,layout)
+        del features
     official,graphs,_ = _load_official_modules(args.official_root)
     torch.manual_seed(source['config']['seed'])
     model = official.GMTNet(SimpleNamespace(target='dielectric',use_mask=True,reduce_cell=False))
-    _replace_atom_embedding(model,640)
+    if not baseline:
+        _replace_atom_embedding(model,640)
     saved = torch.load(checkpoint,map_location='cpu',weights_only=True)
-    assert saved['epoch'] == source['best_epoch'] == 196
+    assert saved['epoch'] == source['best_epoch'] == (93 if baseline else 196)
     assert saved['official_commit'] == source['official_commit'] == GMTNET_OFFICIAL_COMMIT
     assert saved['dataset_sha256'] == DATA_SHA
-    assert saved['input_embedding'] == source['input_embedding']
+    if baseline:
+        assert model.atom_embedding.in_features == 92
+        assert saved.get('input_embedding') == source.get('input_embedding')
+    else:
+        assert saved['input_embedding'] == source['input_embedding']
     assert saved['config'] == source['config'] and not saved['config'].get('use_equiv_attn',False)
     model.load_state_dict(saved['model_state'],strict=True)
     model.to(args.device).eval()
@@ -107,18 +120,19 @@ def run(args):
     expected = torch.tensor([r['prediction'] for r in reference],dtype=actual.dtype)
     torch.testing.assert_close(actual,expected,atol=2e-5,rtol=2e-4)
     reports = {}
-    for key in ('before_mask','after_mask','shuffled_before_mask'):
+    for key in (() if getattr(args,'extract_only',False) else ('before_mask','after_mask','shuffled_before_mask')):
         reports[key] = fit_probe({s:v[key.removeprefix('shuffled_')] for s,v in matrices.items()},targets,7,args.device,key.startswith('shuffled_'))
         print(key,reports[key]['test'],flush=True)
-    assert sha(checkpoint) == CHECKPOINT_SHA
-    report = dict(status='passed',source_run=498,checkpoint_epoch=196,checkpoint_sha256=CHECKPOINT_SHA,
-        source_summary_sha256=SOURCE_SHA,dataset_sha256=DATA_SHA,groups=groups,
+    assert sha(checkpoint) == checkpoint_sha
+    report = dict(status='passed',source_run=443 if baseline else 498,checkpoint_epoch=saved['epoch'],checkpoint_sha256=checkpoint_sha,
+        source_summary_sha256=source_sha,dataset_sha256=DATA_SHA,groups=groups,
         split_counts={s:len(v) for s,v in ids.items()},test_ids=ids['test'],test_labels=targets['test'].tolist(),
         model_optimizer_steps=0,probes=reports,max_prediction_difference=float((actual-expected).abs().max()),
         seconds=time.monotonic()-started)
     args.output.mkdir(parents=True,exist_ok=True)
     (args.output/'summary.json').write_text(json.dumps(report,indent=2)+'\n')
-    torch.save(dict(features=matrices,ids=ids,labels=targets,checkpoint_sha256=CHECKPOINT_SHA),args.output/'features.pt')
+    torch.save(dict(features=matrices,ids=ids,labels=targets,checkpoint_sha256=checkpoint_sha),args.output/'features.pt')
+    return report
 
 
 if __name__ == '__main__':
@@ -126,5 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('--official-root',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--device',default='cuda')
+    parser.add_argument('--baseline',action='store_true')
+    parser.add_argument('--extract-only',action='store_true')
     torch.set_num_threads(4)
     run(parser.parse_args())

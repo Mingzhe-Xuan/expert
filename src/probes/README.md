@@ -1,5 +1,28 @@
 # Frozen point-group probe
 
+## Four-model softmax probe
+
+`slurm/probe_softmax_pg.sbatch` runs `src.probes.softmax_pg`. Reuses SHA-verified
+PCA536,DPA-GMTNet537 and Global+PG535 feature caches; extracts original GMTNet443
+with read-only hooks and strict reproduction of677 accepted dielectric predictions.
+All primary vectors are32D before explicit mask. GMTNet443 epoch93 is the historical
+baseline exception, not a new selection satisfying the later >100 checkpoint rule;
+DPA-GMTNet498 and Global+PG528 are epoch196. Every split is ID-aligned to the frozen
+manifest; same source PG labels and same train-only standardization for all models.
+
+`src/probes/logistic.py` minimizes mean multiclass cross entropy plus
+`0.5 * alpha * ||W||^2` (unpenalized intercept), no class weighting. Seven fixed
+alphas1e-6..1, selected by validation macro-F1, then accuracy, then larger alpha.
+Exact analytic float64 gradients and SciPy L-BFGS-B, up to5000 iterations; every
+candidate must report success and final max-absolute gradient <=1e-6. No hidden
+layer and no backbone updates. Test predictions/probabilities produced only for the
+selected classifier; softmax output does not imply calibrated probabilities.
+Each model also has a seed42 shuffled-training-label control. All groups use the
+same sorted IDs/permutation. Saved classifiers include train mean/scale/keep mask,
+weights/bias; summary includes convergence for every alpha and all test predictions.
+Regularization grids have the same numeric values as ridge but different losses,
+so selected alpha values are not directly comparable between classifier families.
+
 ## Standalone DPA-GMTNet probe
 
 Job537 completed on2026-10-01, using independent DPA-GMTNet498 best196 (200epochs).
