@@ -249,7 +249,14 @@ def grouped(reports, rows, task, fraction, output, plt):
     numerical={"training_magnitude_quartile_edges":cuts.tolist()}
     for ax,(name,assignments) in zip(axes,groupings.items()):
         counts=Counter(assignments)
-        groups=sorted(counts,key=lambda g:(-counts[g],g)) if name=="Point group" else sorted(counts)
+        if name=="Point group":
+            groups=sorted(counts,key=lambda g:(-counts[g],g))
+        elif name=="Element count":
+            groups=sorted(counts,key=int)
+        elif name=="Structure size":
+            groups=[g for g in ("1–5","6–10","11–20",">20") if g in counts]
+        else:
+            groups=sorted(counts)
         y=np.arange(len(groups))
         numerical[name]={}
         for model, offset in (("pretrain",-.18),("O(3)",.18)):
