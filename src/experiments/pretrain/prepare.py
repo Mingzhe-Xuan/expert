@@ -17,6 +17,7 @@ from ...irreps import IrrepLayout, IrrepTerm
 from ...models import build_backbone_adapter
 from ...training import extract_frozen_examples
 from .data import dataset_from_records, official_voigt
+from .features import extract_embedding
 from .protocol import FRACTIONS, load_records, nested_ids, write_json
 
 
@@ -94,7 +95,7 @@ def prepare(args):
     by_id = {}
     times = {}
     initialization_start = time.perf_counter()
-    if args.mode == "features":
+    if args.mode in ("features", "verify"):
         resource = BackboneResourceRegistry()["dpa4"]
         adapter = build_backbone_adapter("dpa4", IrrepLayout((IrrepTerm(1, 0, "e", "unused"),)),
                                          device=args.device)
@@ -102,23 +103,30 @@ def prepare(args):
     else:
         _, graphs, data = official_modules(args.official_root, args.task)
     initialization_seconds = time.perf_counter() - initialization_start
+    if args.mode == "verify":
+        comparisons=[]
+        for sample in sorted(samples,key=lambda s:len(s.atomic_numbers))[:2]:
+            layout, examples=extract_frozen_examples(adapter,(sample,),
+                cutoff=resource.cutoff_angstrom,device=args.device)
+            reference=dpa4_invariant_node_embedding(examples[0].features,layout).float()
+            actual=extract_embedding(adapter,sample,device=args.device)
+            torch.testing.assert_close(actual,reference,atol=1e-5,rtol=1e-5)
+            comparisons.append({"sample_id":sample.sample_id,"atoms":len(sample.atomic_numbers),
+                                "max_abs":float((actual-reference).abs().max())})
+        write_json(output,{"status":"passed","comparisons":comparisons,"provenance":provenance})
+        return
     for index, sample in enumerate(samples):
         synchronize(args.device)
         sample_start = time.perf_counter()
         if args.mode == "features":
-            layout, examples = extract_frozen_examples(adapter, (sample,),
-                                                       cutoff=resource.cutoff_angstrom, device=args.device)
-            example = examples[0]
-            if not torch.equal(example.graph.atomic_numbers, sample.atomic_numbers):
-                raise ValueError("feature extraction changed atom ordering")
-            value = {"embedding": dpa4_invariant_node_embedding(example.features, layout).float(),
-                     "atomic_numbers": example.graph.atomic_numbers}
+            value = {"embedding": extract_embedding(adapter,sample,device=args.device),
+                     "atomic_numbers": sample.atomic_numbers}
         else:
             value = prepare_graph(sample, data, graphs)
         synchronize(args.device)
         times[sample.sample_id] = time.perf_counter() - sample_start
         by_id[sample.sample_id] = value
-        if index % 100 == 0:
+        if index % 100 == 0 or index == len(samples)-1:
             print(json.dumps({"stage": args.mode, "task": args.task, "completed": index+1,
                               "total": len(samples)}), flush=True)
     payload = {"provenance": provenance, "by_id": by_id, "seconds_by_id": times,
@@ -138,7 +146,7 @@ def prepare(args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", choices=("dielectric", "elastic"), required=True)
-    parser.add_argument("--mode", choices=("features", "graphs"), required=True)
+    parser.add_argument("--mode", choices=("features", "graphs", "verify"), required=True)
     parser.add_argument("--group-scope", choices=("all", "seven"), default="all")
     parser.add_argument("--official-root", type=Path)
     parser.add_argument("--output", type=Path, required=True)

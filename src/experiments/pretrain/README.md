@@ -15,6 +15,10 @@ membership is preserved; other source datasets are excluded.
 - `data.py`: tensor contracts and explicit elastic component conversion.
 - `prepare.py`: Slurm GPU feature extraction to compact per-node invariant embeddings;
   official graph and mask construction; fresh test-structure feature timing.
+- `features.py`: preserve canonicalization and the two-pass even/odd parity formula,
+  using the pretrained model's native neighbor builder. Omit redundant generic
+  Python neighbor enumeration, which is ignored by that extractor. Slurm smoke
+  compares two actual structures against the original extraction path per task.
 - `train.py`: one grid entry per process, original per-task model architecture,
   paired training, checkpointing, test metrics and inference timing.
 - `good_result/pretrain/`: report and figures from recorded artifacts.

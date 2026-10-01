@@ -148,7 +148,8 @@ def run(args):
     test_metrics = metrics(test_pred, test_target, task)
     _write_predictions(out / "predictions.jsonl", splits["test"], test_pred)
     inference = benchmark_inference(args, task, provenance, rows, model, data_type, Batch,
-                                    official_data, official_graphs, features is not None)
+                                    official_data, official_graphs, features is not None,
+                                    dict(zip(ids["test"], test_pred)))
     # Exact per-record measured extraction costs, plus fixed initialization and full
     # cache serialization overhead. No linear extrapolation from sample counts.
     preparation_ids = ids["train"] + ids["validation"]
@@ -172,7 +173,8 @@ def run(args):
     write_json(out / "summary.json", report)
 
 
-def benchmark_inference(args, task, provenance, rows, model, data_type, batch_type, data, graphs, pretrain):
+def benchmark_inference(args, task, provenance, rows, model, data_type, batch_type, data, graphs,
+                        pretrain, expected_predictions):
     """Batch-one warm resident-model latency from uncached structures, excluding I/O."""
     dataset = dataset_from_records(rows, provenance)
     selected = list(dataset.split_manifest.test[:(8 if args.smoke else 32)])
@@ -191,18 +193,22 @@ def benchmark_inference(args, task, provenance, rows, model, data_type, batch_ty
         synchronize(args.device)
         start = time.perf_counter()
         row = prepare_graph(dataset.by_id(sid), data, graphs)
-        graph_time = time.perf_counter()-start
         if pretrain:
             row = attach(row, fresh["by_id"][sid])
+        graph_time = time.perf_counter()-start
         synchronize(args.device)
         start = time.perf_counter()
         pred = _predict(model, [row], 1, data_type, batch_type, args.device)
         synchronize(args.device)
         downstream_time = time.perf_counter()-start
         feature_time = fresh["seconds_by_id"][sid] if pretrain else 0.0
+        expected = expected_predictions[sid]
+        if not torch.allclose(pred[0], expected, atol=2e-4, rtol=2e-4):
+            raise ValueError("fresh inference does not reproduce the cached prediction")
         trials.append({"sample_id": sid, "feature_seconds": feature_time, "graph_seconds": graph_time,
                        "downstream_seconds": downstream_time,
-                       "total_seconds": feature_time+graph_time+downstream_time})
+                       "total_seconds": feature_time+graph_time+downstream_time,
+                       "reproduction_max_abs": float((pred[0]-expected).abs().max())})
         if not torch.isfinite(pred).all():
             raise ValueError("non-finite uncached inference")
     return {"batch_size": 1, "samples": trials,

@@ -1,0 +1,8 @@
+*.png
+*.svg
+*.json
+*.jsonl
+*.html
+*.tsv
+*.txt
+!requirements.txt

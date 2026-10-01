@@ -24,6 +24,10 @@ mkdir -p "${cache}"
 git rev-parse HEAD > "${cache}/git.txt"
 "${EXPERT_DPA4_VENV}/bin/python" -m pip freeze > "${cache}/feature-environment.txt"
 "${EXPERT_GMTNET_VENV}/bin/python" -m pip freeze > "${cache}/training-environment.txt"
+if [[ "${EXPERT_PRETRAIN_SMOKE:-0}" == 1 ]]; then
+  "${EXPERT_DPA4_VENV}/bin/python" -m src.experiments.pretrain.prepare \
+    --task "${task}" --mode verify --output "${cache}/native-equivalence.json" --smoke
+fi
 "${EXPERT_DPA4_VENV}/bin/python" -m src.experiments.pretrain.prepare \
   --task "${task}" --mode features --output "${cache}/features.pt" "${extra[@]}"
 "${EXPERT_DPA4_VENV}/bin/python" -m src.experiments.pretrain.prepare \

@@ -1,11 +1,14 @@
 import math
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import torch
 
 from src.experiments.pretrain.protocol import crystal_system, grid, nested_ids, run_name
 from src.experiments.pretrain.data import official_voigt, standard_voigt
-from src.experiments.pretrain.train import metrics
+from src.experiments.pretrain.train import benchmark_inference, metrics
+from src.experiments.pretrain.features import extract_embedding, geometry_input
 
 
 class ProtocolTests(unittest.TestCase):
@@ -62,6 +65,46 @@ class ProtocolTests(unittest.TestCase):
         self.assertEqual(got["ewt_25"], 100)
         self.assertEqual(got["ewt_10"], 50)
         self.assertAlmostEqual(got["mae"], 3/18)
+
+    def test_fresh_inference_requires_prediction_reproduction(self):
+        args = SimpleNamespace(smoke=True, device="cpu")
+        dataset = SimpleNamespace(split_manifest=SimpleNamespace(test=("a",)), by_id=lambda sid: sid)
+        prediction = torch.eye(3).unsqueeze(0)
+        with patch("src.experiments.pretrain.train.dataset_from_records", return_value=dataset), \
+             patch("src.experiments.pretrain.train.prepare_graph", return_value={}), \
+             patch("src.experiments.pretrain.train._predict", return_value=prediction):
+            result = benchmark_inference(args,"dielectric",{},[],None,None,None,None,None,False,
+                                         {"a":prediction[0]})
+            self.assertEqual(result["samples"][0]["reproduction_max_abs"], 0)
+            self.assertGreaterEqual(result["mean_seconds_per_structure"], 0)
+            with self.assertRaisesRegex(ValueError, "reproduce"):
+                benchmark_inference(args,"dielectric",{},[],None,None,None,None,None,False,
+                                    {"a":prediction[0]+1})
+
+    def test_native_geometry_matches_legacy_parity_formula(self):
+        from src.backbones.parity import SO3FeatureBatch, SO3Layout, SO3Term, InversionPairedReynolds
+        from src.baselines.gmtnet.runner import dpa4_invariant_node_embedding
+        from src.graphs import build_periodic_graph
+        from src.symmetry import canonicalize_structure
+        layout=SO3Layout((SO3Term(1,0,"s"),SO3Term(1,1,"v")))
+        class Extractor(torch.nn.Module):
+            def forward(self,graph):
+                x=graph.positions
+                return SO3FeatureBatch(torch.cat((x.square().sum(1,keepdim=True),x),1),layout,graph.node_batch)
+        extractor=Extractor()
+        adapter=SimpleNamespace(extractor=extractor,parity=InversionPairedReynolds(extractor,layout),
+                                resource=SimpleNamespace(cutoff_angstrom=1.0))
+        sample=SimpleNamespace(cartesian_positions=torch.tensor([[.13,.27,.38],[.61,.74,.82]]),
+                               lattice=torch.eye(3)*3,atomic_numbers=torch.tensor([6,8]))
+        canonical=canonicalize_structure(sample.cartesian_positions,sample.lattice,sample.atomic_numbers)
+        graph=build_periodic_graph(canonical.canonical_positions,canonical.canonical_cell,sample.atomic_numbers,1.)
+        reference=adapter.parity(graph)
+        expected=dpa4_invariant_node_embedding(reference.node_features,reference.node_layout)
+        actual=extract_embedding(adapter,sample,device="cpu")
+        torch.testing.assert_close(actual,expected,atol=0,rtol=0)
+        carrier=geometry_input(sample.cartesian_positions,sample.lattice,sample.atomic_numbers,1.)
+        self.assertEqual(carrier.num_edges,0)
+        self.assertGreater(graph.num_edges,0)
 
 
 if __name__ == "__main__":
