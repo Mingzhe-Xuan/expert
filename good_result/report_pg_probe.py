@@ -1,5 +1,6 @@
 """Audit saved probe predictions and render categorical classification evidence."""
 import hashlib
+import argparse
 import json
 from pathlib import Path
 import numpy as np
@@ -12,11 +13,24 @@ OUT = Path(__file__).resolve().parent
 
 
 def main():
-    raw = (ROOT/'results/pg-probe/534/summary.json').read_bytes()
-    assert hashlib.sha256(raw).hexdigest() == '51244f7fb8ed1d7ed2b4a8feb8c11d360bc8fcd0aa562e90c531c246a550a86f'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--fused-summary', type=Path)
+    parser.add_argument('--sha256')
+    args = parser.parse_args()
+    fused = args.fused_summary is not None
+    if fused and not args.sha256:
+        parser.error('--fused-summary requires independently verified --sha256')
+    raw = (args.fused_summary if fused else ROOT/'results/pg-probe/534/summary.json').read_bytes()
+    expected_sha = args.sha256 if fused else '51244f7fb8ed1d7ed2b4a8feb8c11d360bc8fcd0aa562e90c531c246a550a86f'
+    assert hashlib.sha256(raw).hexdigest() == expected_sha
     data = json.loads(raw)
     y = np.array(data['test_labels'])
     assert len(y) == 677 and len(set(data['test_ids'])) == 677
+    if fused:
+        previous = json.loads((ROOT/'results/pg-probe/534/summary.json').read_text())
+        assert dict(zip(data['test_ids'],data['test_labels'])) == dict(zip(previous['test_ids'],previous['test_labels']))
+        assert data['status'] == 'passed' and data['checkpoint_epoch'] == 196
+        assert data['model_optimizer_steps'] == 0 and data['symmetry_conditioned']
     for name, probe in data['probes'].items():
         pred = np.array(probe['test_predictions'])
         cm = np.bincount(y*7+pred,minlength=49).reshape(7,7)
@@ -29,7 +43,9 @@ def main():
         print(name, f"accuracy={100*probe['test']['accuracy']:.2f}% macroF1={100*f1:.2f}%")
     plt.rcParams.update({'font.size':11,'svg.fonttype':'none'})
     fig, axes = plt.subplots(1,2,figsize=(12,5.5))
-    for ax, key, title in zip(axes,['raw_mean','pooled_norms'],['Raw mean pooling + linear probe','Pooled irrep norms + linear classifier']):
+    keys = ['global_before_mask','fused_before_mask'] if fused else ['raw_mean','pooled_norms']
+    titles = ['Same-checkpoint global features (32D)','Global + PG fused features (32D)'] if fused else ['Raw mean pooling + linear probe','Pooled irrep norms + linear classifier']
+    for ax, key, title in zip(axes,keys,titles):
         cm = np.array(data['probes'][key]['test']['confusion_matrix'])
         fraction = cm / cm.sum(1,keepdims=True)
         im = ax.imshow(fraction, vmin=0,vmax=1,cmap='Blues')
@@ -42,9 +58,12 @@ def main():
     fig.subplots_adjust(top=.85,bottom=.17,left=.08,right=.91,wspace=.32)
     cax=fig.add_axes([.93,.21,.015,.59])
     fig.colorbar(im,cax=cax,label='Fraction within true class')
-    fig.text(.5,.04,'Frozen reduced dielectric split: 677 test structures. Left: strictly linear in pooled features. Right: nonlinear norm preprocessing.',ha='center',fontsize=9)
+    caption = ('Frozen reduced dielectric split: 677 test structures. Both before explicit mask. PG routing already uses point-group information.'
+               if fused else 'Frozen reduced dielectric split: 677 test structures. Left: strictly linear in pooled features. Right: nonlinear norm preprocessing.')
+    fig.text(.5,.04,caption,ha='center',fontsize=9)
     for ext in ('png','svg'):
-        fig.savefig(OUT/f'pg_probe_confusion.{ext}',dpi=180)
+        prefix = 'fused_pg_probe_confusion' if fused else 'pg_probe_confusion'
+        fig.savefig(OUT/f'{prefix}.{ext}',dpi=180)
     plt.close(fig)
     print('PASS: saved predictions, confusion matrices, metrics and validation-only alpha selection')
 

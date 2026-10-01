@@ -1,5 +1,62 @@
 # Frozen point-group probe
 
+## Global + PG final fusion result (Job 535)
+
+Frozen Job528 best196 checkpoint; reduced dielectric splits5001/637/677, seven
+source-PG classes, same train-only standardized ridge protocol as Job534 below.
+All rows except the norm control are affine linear probes of the indicated vector.
+
+| Input | Raw / retained dimensions | Alpha | Train accuracy | Validation accuracy | Test accuracy | Test macro-F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| Same-checkpoint global, before mask |32 /32|0.01|24.98%|25.12%|21.57%|12.02%|
+| Projected PG auxiliary, before mask |32 /16|0.01|36.25%|36.11%|36.19%|27.89%|
+| **Final fused, before mask** |32 /32|0.0001|27.27%|27.47%|**25.85%**|**16.87%**|
+| Final fused, after explicit mask |32 /29|0.001|31.79%|33.28%|28.80%|20.19%|
+| Fused copy norms (nonlinear control) |8 /8|0.0001|28.29%|28.57%|28.21%|19.46%|
+| Fused, shuffled training labels |32 /32|0.001|19.68%*|23.86%|20.38%|10.06%|
+| Training-majority class (mmm) |N/A|N/A|N/A|N/A|17.87%|4.33%|
+
+*Shuffled-control train accuracy is against shuffled labels. Constant coordinates are
+removed using training data only; retained dimension is not a learned rank estimate.
+
+Fusion improves accuracy by4.28 percentage points over the same-checkpoint global
+branch, but absolute linear decodability is weak. It is below the isolated projected
+PG branch and the earlier raw-DPA mean probe (63.66%,3200D). Train accuracy27.27%
+versus test25.85% does not resemble the earlier raw-DPA probe's large train/test gap.
+This does not prove absence of PG information: nonlinear encoding, dimensional reduction,
+and task-specific regression training are possible explanations, not isolated causes.
+The classifier predicts mmm for514/677 test structures; recalls for4/mmm and m-3m
+are zero. Macro-F1 therefore matters alongside accuracy. This is one exploratory split,
+not a statistically established improvement or a dielectric-performance comparison.
+
+The learned fusion coefficient is0.0246711 in
+`fused = global + coefficient * auxiliary`. A small coefficient alone does not measure
+the branch contribution: feature scales and their joint statistics also matter.
+PG routing explicitly uses current PG, so even successful probing would be
+symmetry-conditioned decodability, not independent discovery of symmetry.
+The global row is from the same jointly trained528 model, not standalone DPA-GMTNet.
+
+Job535: COMPLETED/0:0, node221, 2026-10-01 20:55:56--21:02:55; wall6m59s,
+extraction/probe executor31.61s (wall also includes loading/construction), source5f6ed79.
+Four preflight tests passed. Dataset/split/checkpoint hashes, metadata, all6315 IDs,
+and unchanged checkpoint verified. All677 dielectric test predictions reproduce the
+accepted528 outputs within atol2e-5/rtol2e-4 (max absolute difference4.58e-5).
+An independent NumPy audit reproduces all six confusion matrices, accuracy/macro-F1,
+validation-only alpha choices, and exact test ID-to-label mapping versus Job534.
+
+Result: `results/fused-pg-probe/535/summary.json`, SHA256
+`64b110cd63c84e7c0f86808cde3df72b0f0ae9b9c030db00fe77b74b1231cdae`.
+Pooled matrices and IDs: `results/fused-pg-probe/535/features.pt` (ignored generated artifact).
+Reproduce the audit/figure with:
+
+```bash
+python good_result/report_pg_probe.py --fused-summary results/fused-pg-probe/535/summary.json --sha256 64b110cd63c84e7c0f86808cde3df72b0f0ae9b9c030db00fe77b74b1231cdae
+```
+
+![Global versus fused test confusion matrices](../../good_result/fused_pg_probe_confusion.png)
+
+## Implementation
+
 `slurm/probe_fused_pg.sbatch` probes the frozen Global+PG528 best196 checkpoint using
 existing diagnostics. Primary tap is32D crystal-level `global + sigmoid(logit)*auxiliary`,
 BEFORE explicit feature mask; no additional node pooling needed. Same ridge protocol
