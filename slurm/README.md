@@ -148,3 +148,11 @@ Run the lightweight login-node audit with
 It queries allocation-only pipe-delimited records and fails unless every expected single job or
 array task appears exactly once with state `COMPLETED` and exit code `0:0`. Array parent and step
 rows cannot conceal a missing task.
+## Paired pretraining experiments
+
+`pretrain_prepare.sbatch` prepares JARVIS-only total dielectric and elastic inputs.
+`pretrain_train.sbatch` runs the 48-entry paired label-efficiency grid;
+`pretrain_report.sbatch` audits all completed runs and creates the report archive.
+Submit with `afterok` dependencies and the same `EXPERT_PRETRAIN_ROOT`; full protocol,
+environment paths, smoke gates and timing definitions are documented in
+[`src/experiments/pretrain/README.md`](../src/experiments/pretrain/README.md).
